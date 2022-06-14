@@ -7,12 +7,12 @@ import (
 )
 
 type Embargo struct {
-	client *pangea.Client
+	*pangea.Client
 }
 
-func New(authToken string, cfg *pangea.Config) *Embargo {
+func New(cfg pangea.Config) *Embargo {
 	return &Embargo{
-		client: pangea.NewClient(authToken, cfg),
+		Client: pangea.NewClient(cfg),
 	}
 }
 
@@ -37,13 +37,12 @@ func (e *Embargo) Check(ctx context.Context, input *CheckInput) (*CheckOutput, *
 	if input == nil {
 		input = &CheckInput{}
 	}
-	req, err := e.client.NewRequest("POST", "embargo", "v1/check", input)
-	req.Header.Add("Host", "embargo.pangea.minikube")
+	req, err := e.Client.NewRequest("POST", "embargo", "v1/check", input)
 	if err != nil {
 		return nil, nil, err
 	}
 	out := CheckOutput{}
-	resp, err := e.client.Do(ctx, req, &out)
+	resp, err := e.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, resp, err
 	}

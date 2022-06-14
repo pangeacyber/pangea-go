@@ -7,11 +7,13 @@ import (
 )
 
 type Audit struct {
-	client *pangea.Client
+	*pangea.Client
 }
 
-func New() *Audit {
-	return &Audit{}
+func New(cfg pangea.Config) *Audit {
+	return &Audit{
+		Client: pangea.NewClient(cfg),
+	}
 }
 
 type DataInput struct {
@@ -38,13 +40,13 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 	if input == nil {
 		input = &LogInput{}
 	}
-	req, err := a.client.NewRequest("POST", "audit", "v1/audit/log", input)
+	req, err := a.Client.NewRequest("POST", "audit", "v1/audit/log", input)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	var out LogOutput
-	resp, err := a.client.Do(ctx, req, &out)
+	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, resp, err
 	}

@@ -7,7 +7,13 @@ import (
 )
 
 type Redact struct {
-	Client *pangea.Client
+	*pangea.Client
+}
+
+func New(cfg pangea.Config) *Redact {
+	return &Redact{
+		Client: pangea.NewClient(cfg),
+	}
 }
 
 type TextInput struct {
@@ -75,6 +81,5 @@ func (r *Redact) Structured(ctx context.Context, input *StructuredInput) (*Struc
 	if err != nil {
 		return nil, resp, err
 	}
-
 	return &out, resp, nil
 }
