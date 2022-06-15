@@ -3,7 +3,7 @@ package embargo
 import (
 	"context"
 
-	"go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/pangea"
 )
 
 type Embargo struct {

@@ -3,7 +3,7 @@ package redact
 import (
 	"context"
 
-	"go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/pangea"
 )
 
 type Redact struct {

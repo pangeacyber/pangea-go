@@ -3,7 +3,7 @@ package audit
 import (
 	"context"
 
-	"go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/pangea"
 )
 
 type Audit struct {

@@ -10,8 +10,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"go-pangea/pangea"
-	"go-pangea/service/embargo"
+
+	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/service/embargo"
 )
 
 func main() {
