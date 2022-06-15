@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/pangeacyber/go-pangea/internal/defaults"
 )
 
 const (
@@ -62,7 +64,7 @@ func NewClient(cfg Config) *Client {
 		Token: cfg.Token,
 	}
 	if cfg.HTTPClient == nil {
-		cfg.HTTPClient = http.DefaultClient
+		cfg.HTTPClient = defaults.HTTPClient()
 	}
 	c.Config = cfg
 	c.UserAgent = userAgent
@@ -161,7 +163,6 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*Response, erro
 	if ctx == nil {
 		return nil, errNonNilContext
 	}
-
 	resp, err := c.Config.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, NewAPIError(err, resp, nil)
@@ -224,5 +225,6 @@ func CheckResponse(r *Response) error {
 	return &APIError{
 		HTTPResponse:     r.HTTPResponse,
 		ResponseMetadata: &r.ResponseMetadata,
+		Result:           r.Result,
 	}
 }

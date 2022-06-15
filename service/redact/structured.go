@@ -6,43 +6,6 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-type Redact struct {
-	*pangea.Client
-}
-
-func New(cfg pangea.Config) *Redact {
-	return &Redact{
-		Client: pangea.NewClient(cfg),
-	}
-}
-
-type TextInput struct {
-	Text  *string `json:"text"`
-	Debug *bool   `json:"debug"`
-}
-
-type TextOutput struct {
-	Text  *string `json:"text"`
-	Debug *bool   `json:"debug"`
-}
-
-func (r *Redact) Text(ctx context.Context, input *TextInput) (*TextOutput, *pangea.Response, error) {
-	if input == nil {
-		input = &TextInput{}
-	}
-	req, err := r.Client.NewRequest("POST", "redact", "v1/redact", input)
-	if err != nil {
-		return nil, nil, err
-	}
-	out := TextOutput{}
-	resp, err := r.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, resp, err
-	}
-
-	return &out, resp, nil
-}
-
 type StructuredInput struct {
 	Data   *string `json:"data"`
 	Format *string `json:"format"`
@@ -63,12 +26,13 @@ type StructuredReportOutput struct {
 	SummaryCounts     *string             `json:"summary_counts"`
 	RecognizerResults []*RecognizerResult `json:"recognizer_results"`
 }
+
 type StructuredOutput struct {
 	RedactedData *string                 `json:"redacted_data"`
 	Report       *StructuredReportOutput `json:"report"`
 }
 
-func (r *Redact) Structured(ctx context.Context, input *StructuredInput) (*StructuredOutput, *pangea.Response, error) {
+func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*StructuredOutput, *pangea.Response, error) {
 	if input == nil {
 		input = &StructuredInput{}
 	}

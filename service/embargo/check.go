@@ -6,22 +6,12 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-type Embargo struct {
-	*pangea.Client
-}
-
-func New(cfg pangea.Config) *Embargo {
-	return &Embargo{
-		Client: pangea.NewClient(cfg),
-	}
-}
-
 type CheckInput struct {
 	IP      *string `json:"ip,omitempty"`
-	ISOCode *string `json:"iso_code"`
+	ISOCode *string `json:"iso_code,omitempty"`
 }
 
-type SanctionOutput struct {
+type Saction struct {
 	ListName                *string `json:"list_name,omitempty"`
 	EmbargoedCountryName    *string `json:"embargoed_country_name"`
 	EmbargoedCountryISOCode *string `json:"embargoed_country_iso_code"`
@@ -29,8 +19,8 @@ type SanctionOutput struct {
 }
 
 type CheckOutput struct {
-	Count     *int              `json:"count"`
-	Sanctions []*SanctionOutput `json:"sanctions"`
+	Count     *int       `json:"count"`
+	Sanctions []*Saction `json:"sanctions"`
 }
 
 func (e *Embargo) Check(ctx context.Context, input *CheckInput) (*CheckOutput, *pangea.Response, error) {

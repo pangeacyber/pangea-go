@@ -2,9 +2,12 @@ package pangea
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
+
+var nullRepreInBytes = []byte("null")
 
 type APIError struct {
 	// the HTTP response
@@ -12,6 +15,9 @@ type APIError struct {
 
 	// the reponse metadata of the request if any
 	ResponseMetadata *ResponseMetadata
+
+	// the result of the request
+	Result json.RawMessage
 
 	// The underlying error that triggered this one, if any.
 	Err error
@@ -34,6 +40,10 @@ func (e *APIError) Error() string {
 			b.WriteString(fmt.Sprintf("%v", e.ResponseMetadata.String()))
 		} else {
 			b.WriteString(fmt.Sprintf("%v", e.HTTPResponse.StatusCode))
+		}
+		if len(e.Result) > 0 && bytes.Compare(e.Result, nullRepreInBytes) != 0 {
+			pad(b, ": ")
+			b.WriteString(fmt.Sprintf("%s", e.Result))
 		}
 	}
 	if e.Err != nil {
