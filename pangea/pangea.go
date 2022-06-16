@@ -156,16 +156,30 @@ func newResponse(r *http.Response) (*Response, error) {
 // BareDo sends an API request and lets you handle the api response.
 //	If an error or API Error occurs, the error will contain more information. Otherwise you
 // 	are supposed to read and close the response's Body.
-//
-// 	The provided ctx must be non-nil, if it is nil an error is returned. If it is
-// 	canceled or times out, ctx.Err() will be returned.
-func (c *Client) BareDo(ctx context.Context, req *http.Request) (*Response, error) {
-	if ctx == nil {
-		return nil, errNonNilContext
-	}
+func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 	resp, err := c.Config.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, NewAPIError(err, resp, nil)
+	}
+	return resp, nil
+}
+
+// Do sends an API request and returns the API response. The API response is
+// JSON decoded and stored in the value pointed to by v, or returned as an
+// error if an API error has occurred. If v is nil, and no error hapens, the response is returned as is.
+// The provided ctx must be non-nil, if it is nil an error is returned. If it
+// is canceled or times out, ctx.Err() will be returned.
+//
+// The provided ctx must be non-nil, if it is nil an error is returned. If it is
+// canceled or times out, ctx.Err() will be returned.
+func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
+	if ctx == nil {
+		return nil, errNonNilContext
+	}
+
+	resp, err := c.BareDo(ctx, req)
+	if err != nil {
+		return nil, err
 	}
 
 	response, err := newResponse(resp)
@@ -177,42 +191,16 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*Response, erro
 	if err != nil {
 		return nil, err
 	}
-	return response, nil
-}
 
-// Do sends an API request and returns the API response. The API response is
-// JSON decoded and stored in the value pointed to by v, or returned as an
-// error if an API error has occurred. If v is nil, and no error hapens, the response is returned as is.
-// The provided ctx must be non-nil, if it is nil an error is returned. If it
-// is canceled or times out, ctx.Err() will be returned.
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
-	resp, err := c.BareDo(ctx, req)
-	if err != nil {
-		return nil, err
-	}
 	switch v := v.(type) {
 	case nil:
 	default:
-		err = resp.UnMarshalResult(v)
+		err = response.UnMarshalResult(v)
 		if err != nil {
-			return nil, NewUnMarshalError(err, resp.Result, resp.HTTPResponse, &resp.ResponseMetadata)
+			return nil, NewUnMarshalError(err, response.Result, response.HTTPResponse, &response.ResponseMetadata)
 		}
 	}
-	return resp, nil
-}
-
-// compareHTTPResponse returns whether two http.Response objects are equal or not.
-// Currently, only StatusCode is checked. This function is used when implementing the
-// Is(error) bool interface for the custom error types in this package.
-func compareHTTPResponse(r1, r2 *http.Response) bool {
-	if r1 == nil && r2 == nil {
-		return true
-	}
-
-	if r1 != nil && r2 != nil {
-		return r1.StatusCode == r2.StatusCode
-	}
-	return false
+	return response, nil
 }
 
 func CheckResponse(r *Response) error {

@@ -10,12 +10,9 @@ import (
 type Hash []byte
 
 func Decode(hash string) (Hash, error) {
-	if hash == "" {
-		return nil, fmt.Errorf("hash: empty hash")
-	}
 	decoded, err := hex.DecodeString(hash)
 	if err != nil {
-		return nil, fmt.Errorf("hash: invalid hash: %v", err)
+		return nil, fmt.Errorf("hash: invalid hash: %w", err)
 	}
 	return Hash(decoded), nil
 }

@@ -7,8 +7,6 @@ import (
 	"net/http"
 )
 
-var nullRepreInBytes = []byte("null")
-
 type APIError struct {
 	// the HTTP response
 	HTTPResponse *http.Response
@@ -41,9 +39,9 @@ func (e *APIError) Error() string {
 		} else {
 			b.WriteString(fmt.Sprintf("%v", e.HTTPResponse.StatusCode))
 		}
-		if len(e.Result) > 0 && bytes.Compare(e.Result, nullRepreInBytes) != 0 {
+		if len(e.Result) > 0 {
 			pad(b, ": ")
-			b.WriteString(fmt.Sprintf("%s", e.Result))
+			b.WriteString(fmt.Sprintf("body: %s", e.Result))
 		}
 	}
 	if e.Err != nil {

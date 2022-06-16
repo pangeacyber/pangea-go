@@ -1,46 +1,34 @@
 package pangea
 
 import (
-	"bytes"
 	"fmt"
 )
 
 type ResponseMetadata struct {
-	RequestID    *string `json:"request_id"`    // The request ID
-	RequestTime  *string `json:"request_time"`  // The time the request was issued, ISO8601
-	ResponseTime *string `json:"response_time"` // The time the response was issued, ISO8601
-	Status       *string `json:"status"`        //
-	StatusCode   *int    `json:"status_code"`
-	Summary      *string `json:"summary"`
+	// The request ID
+	RequestID *string `json:"request_id"`
+
+	// The time the request was issued, ISO8601
+	RequestTime *string `json:"request_time"`
+
+	// The time the response was issued, ISO8601
+	ResponseTime *string `json:"response_time"`
+
+	// The HTTP status code msg
+	Status *string `json:"status"`
+
+	// The HTTP status code
+	StatusCode *int `json:"status_code"`
+
+	// The summary of the response
+	Summary *string `json:"summary"`
 }
 
 func (r *ResponseMetadata) String() string {
-	b := new(bytes.Buffer)
 	if r == nil {
 		return ""
 	}
-	if r.RequestID != nil {
-		b.WriteString(fmt.Sprintf("request_id: %v", *r.RequestID))
-	}
-	if r.RequestTime != nil {
-		pad(b, ", ")
-		b.WriteString(fmt.Sprintf("request_time: %v", *r.RequestTime))
-	}
-	if r.ResponseTime != nil {
-		pad(b, ", ")
-		b.WriteString(fmt.Sprintf("response_time: %v", *r.ResponseTime))
-	}
-	if r.Status != nil {
-		pad(b, ", ")
-		b.WriteString(fmt.Sprintf("status: %v", *r.Status))
-	}
-	if r.StatusCode != nil {
-		pad(b, ", ")
-		b.WriteString(fmt.Sprintf("status_code: %v", *r.StatusCode))
-	}
-	if r.Summary != nil {
-		pad(b, ", ")
-		b.WriteString(fmt.Sprintf("summary: %v", *r.Summary))
-	}
-	return b.String()
+	return fmt.Sprintf("request_id: %v, request_time: %v, response_time: %v, status_code: %v, status: %v, summary: %v",
+		StringValue(r.RequestID), StringValue(r.RequestTime), StringValue(r.ResponseTime), IntValue(r.StatusCode),
+		StringValue(r.Status), StringValue(r.Summary))
 }
