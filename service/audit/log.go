@@ -9,13 +9,13 @@ import (
 type LogInput struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>, and/or a free-form <message>.
-	Data *Data `json:"data"`
+	Data *Record `json:"data"`
 
 	// If the response should include the hash.
 	ReturnHash *bool `json:"return_hash"`
 }
 
-type Data struct {
+type Record struct {
 	// An identifier for _who_ the audit record is about.
 	Actor *string `json:"actor,omitempty"`
 

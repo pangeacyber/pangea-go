@@ -48,26 +48,19 @@ type SerarchInput struct {
 }
 
 type SearchOutput struct {
-	Root *RootOutput `json:"root"`
+	Root *Root `json:"root"`
 
 	// A list of matching audit records.
-	Audits []*AuditOutput `json:"audits"`
+	Audits []*AuditRecord `json:"audits"`
 
 	// An opaque identifier that can be used to fetch the next page of the results.
 	Last string `json:"last"`
 }
 
-type RootOutput struct {
-	Size        *int    `json:"size"`
-	RootHash    *string `json:"root_hash"`
-	URL         *string `json:"url"`
-	PublishedAt *string `json:"published_at"`
-}
-
-type AuditOutput struct {
+type AuditRecord struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>, and/or a free-form <message>.
-	Data *Data `json:"data"`
+	Data *Record `json:"data"`
 
 	// A list of hashes that prove the membership of the log with the root hash.
 	MembershipProof *string `json:"membership_proof"`
@@ -138,7 +131,7 @@ func DecodeProof(s string) (Proof, error) {
 	return proof, nil
 }
 
-func VerifyMembershipProof(root *RootOutput, auditOutput *AuditOutput, required bool) (bool, error) {
+func VerifyMembershipProof(root *Root, auditOutput *AuditRecord, required bool) (bool, error) {
 	membershipProof := pangea.StringValue(auditOutput.MembershipProof)
 	if membershipProof == "" {
 		return !required, nil
