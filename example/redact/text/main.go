@@ -1,9 +1,3 @@
-# go-pangea
-
-
-# Usage 
-```go
-// embargo check is an example of how to use the check method
 package main
 
 import (
@@ -13,7 +7,7 @@ import (
 	"os"
 
 	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/service/embargo"
+	"github.com/pangeacyber/go-pangea/service/redact"
 )
 
 func main() {
@@ -22,7 +16,7 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	embargocli := embargo.New(pangea.Config{
+	redactcli := redact.New(pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -31,15 +25,14 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &embargo.CheckInput{
-		ISOCode: pangea.String("CU"),
+	input := &redact.TextInput{
+		Text: pangea.String("my phone number is 123-456-7890"),
 	}
 
-	checkOutput, _, err := embargocli.Check(ctx, input)
+	redactOutput, _, err := redactcli.Redact(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(checkOutput.String())
+	fmt.Println(redactOutput.String())
 }
-```

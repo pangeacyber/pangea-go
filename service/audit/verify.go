@@ -24,7 +24,40 @@ type proofItem struct {
 
 type proof []proofItem
 
-func DecodeProof(s string) (proof, error) {
+type rootProofItem struct {
+	Hash  hash.Hash
+	Proof proof
+}
+
+type rootProof []rootProofItem
+
+func decodeRootProof(rawProof []*string) (rootProof, error) {
+	if len(rawProof) == 0 {
+		return nil, nil
+	}
+	proof := make(rootProof, 0, len(rawProof))
+	for _, rawItem := range rawProof {
+		root, membershipProof, err := splitConsistencyProof(pangea.StringValue(rawItem))
+		if err != nil {
+			return nil, err
+		}
+		_, decodedRoot, err := hashFromHashProof(root)
+		if err != nil {
+			return nil, err
+		}
+		decodedMembershipProof, err := decodeProof(membershipProof)
+		if err != nil {
+			return nil, err
+		}
+		proof = append(proof, rootProofItem{
+			Hash:  decodedRoot,
+			Proof: decodedMembershipProof,
+		})
+	}
+	return proof, nil
+}
+
+func decodeProof(s string) (proof, error) {
 	items := strings.Split(s, ",")
 	if len(items) == 0 {
 		return nil, nil
@@ -65,7 +98,7 @@ func VerifyMembershipProof(root Root, auditOutput AuditRecord, required bool) (b
 	if err != nil {
 		return false, err
 	}
-	proof, err := DecodeProof(membershipProof)
+	proof, err := decodeProof(membershipProof)
 	if err != nil {
 		return false, err
 	}
@@ -181,4 +214,37 @@ func treeSizes(root *Root, records AuditRecords) []string {
 		sizes = append(sizes, strconv.Itoa(size))
 	}
 	return sizes
+}
+
+func hashFromHashProof(proof string) (string, hash.Hash, error) {
+	label, rawHash, err := splitHashProof(proof)
+	if err != nil {
+		return "", nil, err
+	}
+	h, err := hash.Decode(rawHash)
+	if err != nil {
+		return "", nil, fmt.Errorf("audit: invalid hash in hash proof: %w", err)
+	}
+	return label, h, nil
+}
+
+// splitConsistencyProof splits a consistency proof into the root hash and the membership proof.
+// the proof has the format "x:<root-hash>,l:<left-hash>,r:<right-hash>".
+// the result should be
+func splitConsistencyProof(proof string) (root, membershipProof string, err error) {
+	root, membershipProof, ok := strings.Cut(proof, ",")
+	if !ok {
+		return "", "", fmt.Errorf("audit: invalid format: expected `,` in: %v", proof)
+	}
+	return root, membershipProof, nil
+}
+
+// splitHashProof splits a hash proof into it's label and the hash.
+// the expected format is "<label>:<hash>".
+func splitHashProof(proof string) (label, rawHash string, err error) {
+	label, rawHash, ok := strings.Cut(proof, ":")
+	if !ok {
+		return "", "", fmt.Errorf("audit: invalid format: expected `:` in: %v", proof)
+	}
+	return label, rawHash, nil
 }

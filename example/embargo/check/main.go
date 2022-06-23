@@ -1,8 +1,3 @@
-# go-pangea
-
-
-# Usage 
-```go
 // embargo check is an example of how to use the check method
 package main
 
@@ -42,4 +37,3 @@ func main() {
 
 	fmt.Println(checkOutput.String())
 }
-```
