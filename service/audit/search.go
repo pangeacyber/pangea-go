@@ -2,11 +2,8 @@ package audit
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/pangea/hash"
 )
 
 type SerarchInput struct {
@@ -51,7 +48,7 @@ type SearchOutput struct {
 	Root *Root `json:"root"`
 
 	// A list of matching audit records.
-	Audits []*AuditRecord `json:"audits"`
+	Audits AuditRecords `json:"audits"`
 
 	// An opaque identifier that can be used to fetch the next page of the results.
 	Last string `json:"last"`
@@ -67,6 +64,27 @@ type AuditRecord struct {
 
 	// The hash of the log.
 	Hash *string `json:"hash"`
+
+	// The index of the leaf in the log.
+	LeafIndex *int `json:"leaf_index"`
+}
+
+// IsVerifiable checks if a record can be verfiable with the published proof
+func (record *AuditRecord) IsVerifiable() bool {
+	return record.LeafIndex != nil
+}
+
+type AuditRecords []*AuditRecord
+
+// VerifiableRecords retuns a slice of records that can be verifiable by the published proof
+func (records AuditRecords) VerifiableRecords() AuditRecords {
+	r := make(AuditRecords, 0)
+	for _, record := range records {
+		if record.IsVerifiable() {
+			r = append(r, record)
+		}
+	}
+	return r
 }
 
 func (a *Audit) Search(ctx context.Context, input *SerarchInput) (*SearchOutput, *pangea.Response, error) {
@@ -83,83 +101,4 @@ func (a *Audit) Search(ctx context.Context, input *SerarchInput) (*SearchOutput,
 		return nil, resp, err
 	}
 	return &out, resp, nil
-}
-
-type ProofSide uint
-
-const (
-	Left ProofSide = iota
-	Right
-)
-
-type ProofItem struct {
-	Side ProofSide
-	Hash hash.Hash
-}
-
-type Proof []ProofItem
-
-func DecodeProof(s string) (Proof, error) {
-	items := strings.Split(s, ",")
-	if len(items) == 0 {
-		return nil, nil
-	}
-
-	proof := make(Proof, 0, len(items))
-	for _, item := range items {
-		parts := strings.Split(item, ":")
-		if len(parts) != 2 {
-			return nil, fmt.Errorf("audit: inconsistent proof item with no separation: %v", item)
-		}
-		h, err := hash.Decode(parts[1])
-		if err != nil {
-			return nil, fmt.Errorf("audit: invalid hash in proof item: %w", err)
-		}
-		proofItem := ProofItem{
-			Hash: h,
-		}
-		switch parts[0] {
-		case "l":
-			proofItem.Side = Left
-		case "r":
-			proofItem.Side = Right
-		default:
-			return nil, fmt.Errorf("audit: inconsistent proof item with no side declaration: side: %v hash: %v", parts[0], parts[1])
-		}
-		proof = append(proof, proofItem)
-	}
-	return proof, nil
-}
-
-func VerifyMembershipProof(root *Root, auditOutput *AuditRecord, required bool) (bool, error) {
-	membershipProof := pangea.StringValue(auditOutput.MembershipProof)
-	if membershipProof == "" {
-		return !required, nil
-	}
-	targetHash, err := hash.Decode(pangea.StringValue(auditOutput.Hash))
-	if err != nil {
-		return false, err
-	}
-	rootHash, err := hash.Decode(pangea.StringValue(root.RootHash))
-	if err != nil {
-		return false, err
-	}
-	proof, err := DecodeProof(membershipProof)
-	if err != nil {
-		return false, err
-	}
-	return verifyLogProof(targetHash, rootHash, proof), nil
-}
-
-func verifyLogProof(target, root hash.Hash, proof Proof) bool {
-	h := target
-	for _, proofItem := range proof {
-		switch proofItem.Side {
-		case Left:
-			h = hash.Pair(proofItem.Hash).With(h)
-		case Right:
-			h = hash.Pair(h).With(proofItem.Hash)
-		}
-	}
-	return root.Equal(h)
 }

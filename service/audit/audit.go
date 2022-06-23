@@ -7,8 +7,9 @@ import (
 )
 
 type Client interface {
-	Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error)
-	Search(ctx context.Context, input *SerarchInput) (*SearchOutput, *pangea.Response, error)
+	Log(context.Context, *LogInput) (*LogOutput, *pangea.Response, error)
+	Search(context.Context, *SerarchInput) (*SearchOutput, *pangea.Response, error)
+	Root(context.Context, *RootInput) (*RootOutput, *pangea.Response, error)
 }
 
 type Audit struct {
