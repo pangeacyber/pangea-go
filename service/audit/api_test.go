@@ -7,10 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pangeacyber/go-pangea/internal/pangeatesting"
 	"github.com/pangeacyber/go-pangea/pangea"
 	"github.com/pangeacyber/go-pangea/service/audit"
-
-	"github.com/pangeacyber/go-pangea/internal/pangeatesting"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -252,13 +251,15 @@ func TestRoot(t *testing.T) {
 				"status_code": 200,
 				"status": "success",
 				"result": {
-					"published_at": "%v",
-					"root_hash": "3a2563b40abe941f21c2ea929f2be92606fd2545762d3fa755ecec2942f5d452",
-					"size": 11,
-					"consistency_proof": [
-						"x:68810d719dc9dccee268d17a6c5baf3bf12d7ffad5673b763e06338121ed4e46,r:4a291c09b0bed8303d3e7f91315bd47da3df422151e642ded4208f46342a12f6",
-						"x:82eba5aa211af097d22ecf215be386212c192d7068a02aeb4280905e4d200ff9,r:03c513b31ev80f4c871dbcd07b069fd369482529984f0770008f6c7777813026"
-					]
+					"data":  {
+						"published_at": "%v",
+						"root_hash": "3a2563b40abe941f21c2ea929f2be92606fd2545762d3fa755ecec2942f5d452",
+						"size": 11,
+						"consistency_proof": [
+							"x:68810d719dc9dccee268d17a6c5baf3bf12d7ffad5673b763e06338121ed4e46,r:4a291c09b0bed8303d3e7f91315bd47da3df422151e642ded4208f46342a12f6",
+							"x:82eba5aa211af097d22ecf215be386212c192d7068a02aeb4280905e4d200ff9,r:03c513b31ev80f4c871dbcd07b069fd369482529984f0770008f6c7777813026"
+						]
+					}
 				},
 				"summary": "success"
 			}`, t1.Format(time.RFC3339))
@@ -273,14 +274,17 @@ func TestRoot(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	want := &audit.Root{
-		PublishedAt: &t1,
-		RootHash:    pangea.String("3a2563b40abe941f21c2ea929f2be92606fd2545762d3fa755ecec2942f5d452"),
-		Size:        pangea.Int(11),
-		ConsistencyProof: []*string{
-			pangea.String("x:68810d719dc9dccee268d17a6c5baf3bf12d7ffad5673b763e06338121ed4e46,r:4a291c09b0bed8303d3e7f91315bd47da3df422151e642ded4208f46342a12f6"),
-			pangea.String("x:82eba5aa211af097d22ecf215be386212c192d7068a02aeb4280905e4d200ff9,r:03c513b31ev80f4c871dbcd07b069fd369482529984f0770008f6c7777813026"),
+	want := &audit.RootOutput{
+		Data: &audit.Root{
+			PublishedAt: &t1,
+			RootHash:    pangea.String("3a2563b40abe941f21c2ea929f2be92606fd2545762d3fa755ecec2942f5d452"),
+			Size:        pangea.Int(11),
+			ConsistencyProof: []*string{
+				pangea.String("x:68810d719dc9dccee268d17a6c5baf3bf12d7ffad5673b763e06338121ed4e46,r:4a291c09b0bed8303d3e7f91315bd47da3df422151e642ded4208f46342a12f6"),
+				pangea.String("x:82eba5aa211af097d22ecf215be386212c192d7068a02aeb4280905e4d200ff9,r:03c513b31ev80f4c871dbcd07b069fd369482529984f0770008f6c7777813026"),
+			},
 		},
 	}
+
 	assert.Equal(t, want, got)
 }

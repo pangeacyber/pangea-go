@@ -17,7 +17,7 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	embargocli := embargo.New(pangea.Config{
+	embargocli := embargo.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",

@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	redactcli := redact.New(pangea.Config{
+	redactcli := redact.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",

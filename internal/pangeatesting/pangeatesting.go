@@ -36,8 +36,8 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 	return mux, url.String(), server.Close
 }
 
-func TestConfig(url string) pangea.Config {
-	return pangea.Config{
+func TestConfig(url string) *pangea.Config {
+	return &pangea.Config{
 		Token:    "TestToken",
 		Endpoint: url,
 	}

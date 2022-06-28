@@ -15,7 +15,7 @@ import (
 
 func testClient(t *testing.T, url string) *pangea.Client {
 	t.Helper()
-	return pangea.NewClient(pangea.Config{Token: "TestToken", Endpoint: url})
+	return pangea.NewClient(&pangea.Config{Token: "TestToken", Endpoint: url})
 }
 
 func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {

@@ -27,11 +27,14 @@ type EndpointConfig struct {
 }
 
 type Config struct {
-	// The Berarer token used to authenticate requests.
+	// The Bearer token used to authenticate requests.
 	Token string
 
+	// The Config ID token of the service.
+	CfgToken string
+
 	// The HTTP client to be used by the client.
-	//  It defaults to http.DefaultClient
+	//  It defaults to defaults.HTTPClient
 	HTTPClient *http.Client
 
 	// EndpointConfig is the configuration for the endpoint.
@@ -53,16 +56,20 @@ type Client struct {
 	Token string
 
 	// The client's config.
-	Config Config
+	Config *Config
 
 	// User agent used when communicating with the Pangea API.
 	UserAgent string
 }
 
-func NewClient(cfg Config) *Client {
+func NewClient(baseCfg *Config, additionalConfigs ...*Config) *Client {
+	cfg := baseCfg.Copy()
+	cfg.MergeIn(additionalConfigs...)
+
 	c := &Client{
 		Token: cfg.Token,
 	}
+
 	if cfg.HTTPClient == nil {
 		cfg.HTTPClient = defaults.HTTPClient()
 	}
@@ -125,6 +132,7 @@ func (c *Client) NewRequest(method, service, urlStr string, body interface{}) (*
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
+	req.Header.Set(configHeaderName(service), c.Config.CfgToken)
 	mergeHeaders(req, c.Config.AdditionalHeaders)
 	return req, nil
 }
@@ -215,4 +223,54 @@ func CheckResponse(r *Response) error {
 		ResponseMetadata: &r.ResponseMetadata,
 		Result:           r.Result,
 	}
+}
+
+func configHeaderName(key string) string {
+	return fmt.Sprintf("x-pangea-%v-config-id", key)
+}
+
+// MergeIn merges the passed in configs into the existing config object.
+func (c *Config) MergeIn(cfgs ...*Config) {
+	for _, other := range cfgs {
+		mergeInConfig(c, other)
+	}
+}
+
+func mergeInConfig(dst *Config, other *Config) {
+	if other == nil {
+		return
+	}
+
+	if other.Token != "" {
+		dst.Token = other.Token
+	}
+
+	if other.CfgToken != "" {
+		dst.CfgToken = other.CfgToken
+	}
+
+	if other.Endpoint != "" {
+		dst.Endpoint = other.Endpoint
+	}
+
+	if other.EndpointConfig != nil {
+		dst.EndpointConfig = other.EndpointConfig
+	}
+
+	if other.AdditionalHeaders != nil {
+		dst.AdditionalHeaders = other.AdditionalHeaders
+	}
+}
+
+// Copy will return a shallow copy of the Config object. If any additional
+// configurations are provided they will be merged into the new config returned.
+func (c *Config) Copy(cfgs ...*Config) *Config {
+	dst := &Config{}
+	dst.MergeIn(c)
+
+	for _, cfg := range cfgs {
+		dst.MergeIn(cfg)
+	}
+
+	return dst
 }

@@ -52,12 +52,12 @@ func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*Se
 }
 
 // Root returns current root hash and consistency proof.
-func (a *Audit) Root(ctx context.Context, input *RootInput) (*Root, *pangea.Response, error) {
+func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "audit", "v1/root", input)
 	if err != nil {
 		return nil, nil, err
 	}
-	var out Root
+	var out RootOutput
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, resp, err
@@ -396,7 +396,7 @@ type SeachResultOutput struct {
 
 type RootInput struct {
 	// The size of the tree (the number of records)
-	TreeSize *int `json:"tree_size"`
+	TreeSize *int `json:"tree_size,omitempty"`
 }
 
 type Root struct {
@@ -418,4 +418,8 @@ type Root struct {
 
 	// Consistency proof to verify that this root is a continuation of the previous one
 	ConsistencyProof []*string `json:"consistency_proof"`
+}
+
+type RootOutput struct {
+	Data *Root `json:"data"`
 }

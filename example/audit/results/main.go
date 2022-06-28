@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	auditcli := audit.New(pangea.Config{
+	auditcli := audit.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
