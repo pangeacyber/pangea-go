@@ -3,7 +3,6 @@ package redact
 import (
 	"context"
 
-	"github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
@@ -20,19 +19,11 @@ type TextInput struct {
 	Debug *bool `json:"debug,omitempty"`
 }
 
-func (t TextInput) String() string {
-	return pangeautil.Stringify(t)
-}
-
 type TextOutput struct {
 	// The redacted text.
 	Text *string `json:"text"`
 
 	Report *bool `json:"report"`
-}
-
-func (t TextOutput) String() string {
-	return pangeautil.Stringify(t)
 }
 
 func (r *Redact) Redact(ctx context.Context, input *TextInput) (*TextOutput, *pangea.Response, error) {
@@ -58,10 +49,6 @@ type StructuredInput struct {
 	Debug  *bool   `json:"debug"`
 }
 
-func (s StructuredInput) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type RecognizerResult struct {
 	FieldType *string `json:"field_type"`
 	Score     *int    `json:"score"`
@@ -72,26 +59,14 @@ type RecognizerResult struct {
 	DataKey   *string `json:"data_key"`
 }
 
-func (r RecognizerResult) String() string {
-	return pangeautil.Stringify(r)
-}
-
 type StructuredReportOutput struct {
 	SummaryCounts     *string             `json:"summary_counts"`
 	RecognizerResults []*RecognizerResult `json:"recognizer_results"`
 }
 
-func (s StructuredReportOutput) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type StructuredOutput struct {
 	RedactedData *string                 `json:"redacted_data"`
 	Report       *StructuredReportOutput `json:"report"`
-}
-
-func (s StructuredOutput) String() string {
-	return pangeautil.Stringify(s)
 }
 
 func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*StructuredOutput, *pangea.Response, error) {

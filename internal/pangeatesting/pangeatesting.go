@@ -1,12 +1,17 @@
 package pangeatesting
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
+	"testing"
+
+	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-const baseURLPath = "/api/v1"
+const baseURLPath = "/api"
 
 // SetupServer sets up a test HTTP server
 //
@@ -29,4 +34,29 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 	url, _ := url.Parse(server.URL + baseURLPath + "/")
 
 	return mux, url.String(), server.Close
+}
+
+func TestConfig(url string) pangea.Config {
+	return pangea.Config{
+		Token:    "TestToken",
+		Endpoint: url,
+	}
+}
+
+func TestMethod(t *testing.T, r *http.Request, want string) {
+	t.Helper()
+	if got := r.Method; got != want {
+		t.Errorf("Request method: %v, want %v", got, want)
+	}
+}
+
+func TestBody(t *testing.T, r *http.Request, want string) {
+	t.Helper()
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		t.Errorf("Error reading request body: %v", err)
+	}
+	if got := strings.Trim(string(b), "\n"); got != want {
+		t.Errorf("request Body is %s, want %s", got, want)
+	}
 }

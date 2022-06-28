@@ -1,5 +1,10 @@
 package pangea
 
+import (
+	"encoding/json"
+	"strings"
+)
+
 // Bool is a helper routine that allocates a new bool value
 // to store v and returns a pointer to it.
 func Bool(v bool) *bool { return &v }
@@ -34,4 +39,13 @@ func BoolValue(v *bool) bool {
 		return false
 	}
 	return *v
+}
+
+// Stringify returns the string representation of a json object.
+func Stringify(obj interface{}) string {
+	b := new(strings.Builder)
+	if err := json.NewEncoder(b).Encode(obj); err != nil {
+		return ""
+	}
+	return b.String()
 }

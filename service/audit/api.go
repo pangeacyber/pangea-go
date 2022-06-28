@@ -4,16 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
 // Log creates a log entry in the Secure Audit Log.
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error) {
-	if input == nil {
-		input = &LogInput{}
-	}
-	req, err := a.Client.NewRequest("POST", "audit", "v1/audit/log", input)
+	req, err := a.Client.NewRequest("POST", "audit", "v1/log", input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -29,9 +25,6 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 
 // Search the Secure Audit Log
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, *pangea.Response, error) {
-	if input == nil {
-		input = &SearchInput{}
-	}
 	req, err := a.Client.NewRequest("POST", "audit", "v2/search", input)
 	if err != nil {
 		return nil, nil, err
@@ -46,9 +39,6 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, 
 
 // SearchResults is used to page through results from a previous search.
 func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*SeachResultOutput, *pangea.Response, error) {
-	if input == nil {
-		input = &SeachResultInput{}
-	}
 	req, err := a.Client.NewRequest("POST", "audit", "v2/results", input)
 	if err != nil {
 		return nil, nil, err
@@ -63,9 +53,6 @@ func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*Se
 
 // Root returns current root hash and consistency proof.
 func (a *Audit) Root(ctx context.Context, input *RootInput) (*Root, *pangea.Response, error) {
-	if input == nil {
-		input = &RootInput{}
-	}
 	req, err := a.Client.NewRequest("POST", "audit", "v1/root", input)
 	if err != nil {
 		return nil, nil, err
@@ -88,10 +75,6 @@ type LogInput struct {
 	// If true, be verbose in the response; include canonical events, create time, hashes, etc.
 	// default: false
 	Verbose *bool `json:"verbose"`
-}
-
-func (l LogInput) String() string {
-	return pangeautil.Stringify(l)
 }
 
 type LogEventInput struct {
@@ -147,10 +130,6 @@ type LogEventInput struct {
 	Timestamp *string `json:"timestamp,omitempty"`
 }
 
-func (l LogEventInput) String() string {
-	return pangeautil.Stringify(l)
-}
-
 type LogOutput struct {
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -160,11 +139,7 @@ type LogOutput struct {
 	Event *LogEventOutput `json:"event"`
 
 	// A base64 encoded canonical JSON form of the event, used for hashing.
-	CanonicalEvent *string `json:"canonical_event"`
-}
-
-func (l LogOutput) String() string {
-	return pangeautil.Stringify(l)
+	CanonicalEventBase64 *string `json:"canonical_event_base64"`
 }
 
 type LogEventOutput struct {
@@ -218,10 +193,8 @@ type LogEventOutput struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *string `json:"timestamp,omitempty"`
-}
 
-func (l LogEventOutput) String() string {
-	return pangeautil.Stringify(l)
+	ReceivedAt *time.Time `json:"received_at,omitempty"`
 }
 
 type SearchInput struct {
@@ -277,10 +250,6 @@ type SearchInput struct {
 	SearchRestriction *SearchRestriction `json:"search_restriction,omitempty"`
 }
 
-func (s SearchInput) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type SearchRestriction struct {
 	// A list of actors to restrict the search to.
 	Actor []*string `json:"actor,omitempty"`
@@ -290,10 +259,6 @@ type SearchRestriction struct {
 
 	// A list of targets to restrict the search to.
 	Target []*string `json:"target,omitempty"`
-}
-
-func (s SearchRestriction) String() string {
-	return pangeautil.Stringify(s)
 }
 
 type SearchOutput struct {
@@ -317,15 +282,7 @@ type SearchOutput struct {
 	Events Events `json:"events"`
 }
 
-func (s SearchOutput) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type Events []*EventEnvelope
-
-func (e Events) String() string {
-	return pangeautil.Stringify(e)
-}
 
 // VerifiableRecords retuns a slice of records that can be verifiable by the published proof
 func (events Events) VerifiableRecords() Events {
@@ -358,10 +315,6 @@ type EventEnvelope struct {
 // IsVerifiable checks if a record can be verfiable with the published proof
 func (event *EventEnvelope) IsVerifiable() bool {
 	return event.LeafIndex != nil
-}
-
-func (e EventEnvelope) String() string {
-	return pangeautil.Stringify(e)
 }
 
 type Record struct {
@@ -403,10 +356,8 @@ type Record struct {
 	// An identifier for what the audit record is about.
 	// max len of 128 bytes
 	Target *string `json:"target,omitempty"`
-}
 
-func (r Record) String() string {
-	return pangeautil.Stringify(r)
+	ReceivedAt *time.Time `json:"received_at,omitempty"`
 }
 
 type SeachResultInput struct {
@@ -430,10 +381,6 @@ type SeachResultInput struct {
 	Offset *int `json:"offset,omitempty"`
 }
 
-func (s SeachResultInput) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type SeachResultOutput struct {
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
@@ -447,17 +394,9 @@ type SeachResultOutput struct {
 	Root *Root `json:"root"`
 }
 
-func (s SeachResultOutput) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type RootInput struct {
 	// The size of the tree (the number of records)
 	TreeSize *int `json:"tree_size"`
-}
-
-func (r RootInput) String() string {
-	return pangeautil.Stringify(r)
 }
 
 type Root struct {
@@ -479,8 +418,4 @@ type Root struct {
 
 	// Consistency proof to verify that this root is a continuation of the previous one
 	ConsistencyProof []*string `json:"consistency_proof"`
-}
-
-func (r Root) String() string {
-	return pangeautil.Stringify(r)
 }

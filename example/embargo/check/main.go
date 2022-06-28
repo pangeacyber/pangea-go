@@ -35,5 +35,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(checkOutput.String())
+	fmt.Println(pangea.Stringify(checkOutput))
 }

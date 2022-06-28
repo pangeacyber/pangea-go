@@ -3,17 +3,12 @@ package embargo
 import (
 	"context"
 
-	"github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
 type CheckInput struct {
 	IP      *string `json:"ip,omitempty"`
 	ISOCode *string `json:"iso_code,omitempty"`
-}
-
-func (c CheckInput) String() string {
-	return pangeautil.Stringify(c)
 }
 
 type Saction struct {
@@ -23,17 +18,9 @@ type Saction struct {
 	IssuingCountry          *string `json:"issuing_country"`
 }
 
-func (s Saction) String() string {
-	return pangeautil.Stringify(s)
-}
-
 type CheckOutput struct {
 	Count     *int       `json:"count"`
 	Sanctions []*Saction `json:"sanctions"`
-}
-
-func (c CheckOutput) String() string {
-	return pangeautil.Stringify(c)
 }
 
 func (e *Embargo) Check(ctx context.Context, input *CheckInput) (*CheckOutput, *pangea.Response, error) {
