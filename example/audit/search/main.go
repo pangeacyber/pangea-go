@@ -25,7 +25,7 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &audit.SerarchInput{
+	input := &audit.SearchInput{
 		Query:                  pangea.String("message:log-123"),
 		IncludeMembershipProof: pangea.Bool(true),
 	}
@@ -35,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, searchOutput, true)
+	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, searchOutput.Root, searchOutput.Events.VerifiableRecords(), true)
 	if err != nil {
 		log.Fatal(err)
 	}

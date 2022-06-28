@@ -26,9 +26,10 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.LogInput{
-		Data: &audit.Record{
+		Event: &audit.LogEventInput{
 			Message: pangea.String("some important message."),
 		},
+		ReturnHash: pangea.Bool(true),
 	}
 
 	logOutput, _, err := auditcli.Log(ctx, input)

@@ -85,12 +85,12 @@ func decodeProof(s string) (proof, error) {
 	return p, nil
 }
 
-func VerifyMembershipProof(root Root, auditOutput AuditRecord, required bool) (bool, error) {
-	membershipProof := pangea.StringValue(auditOutput.MembershipProof)
+func VerifyMembershipProof(root Root, event EventEnvelope, required bool) (bool, error) {
+	membershipProof := pangea.StringValue(event.MembershipProof)
 	if membershipProof == "" {
 		return !required, nil
 	}
-	targetHash, err := hash.Decode(pangea.StringValue(auditOutput.Hash))
+	targetHash, err := hash.Decode(pangea.StringValue(event.Hash))
 	if err != nil {
 		return false, err
 	}
@@ -118,11 +118,11 @@ func verifyLogProof(target, root hash.Hash, p proof) bool {
 	return root.Equal(h)
 }
 
-func VerifyConsistencyProof(publishedRoots map[int]Root, record AuditRecord, required bool) bool {
-	if record.LeafIndex == nil {
+func VerifyConsistencyProof(publishedRoots map[int]Root, event EventEnvelope, required bool) bool {
+	if event.LeafIndex == nil {
 		return !required
 	}
-	idx := *record.LeafIndex
+	idx := *event.LeafIndex
 	if idx <= 1 {
 		return !required
 	}
@@ -172,38 +172,35 @@ func verifyConsistencyProof(old, new Root) (bool, error) {
 	return true, nil
 }
 
-// leaf index no existe no se valida
-// devolver una lista de los audits que no se validaron
-// devolver un root
-func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, records AuditRecords, required bool) (bool, error) {
-	if root == nil || len(records) == 0 {
-		return false, fmt.Errorf("audit: empty root or records")
+func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, events Events, required bool) (bool, error) {
+	if root == nil || len(events) == 0 {
+		return false, fmt.Errorf("audit: empty root or events")
 	}
 
-	treeSizes := treeSizes(root, records)
+	treeSizes := treeSizes(root, events)
 	roots, err := rp.Roots(ctx, treeSizes)
 	if err != nil {
 		return false, err
 	}
 
-	for _, record := range records {
-		if !VerifyConsistencyProof(roots, *record, required) {
-			return false, fmt.Errorf("audit: consistency proof failed for record %v", *record)
+	for _, event := range events {
+		if !VerifyConsistencyProof(roots, *event, required) {
+			return false, fmt.Errorf("audit: consistency proof failed for event %v", *event)
 		}
 	}
 	return true, nil
 }
 
-func VerifyAuditRecordsWithArweave(ctx context.Context, searchOutput *SearchOutput, required bool) (bool, error) {
-	arweavecli := NewArweaveRootsProvider(*searchOutput.Root.TreeName)
-	return VerifyAuditRecords(ctx, arweavecli, searchOutput.Root, searchOutput.Audits, required)
+func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events Events, required bool) (bool, error) {
+	arweavecli := NewArweaveRootsProvider(*root.TreeName)
+	return VerifyAuditRecords(ctx, arweavecli, root, events, required)
 }
 
-func treeSizes(root *Root, records AuditRecords) []string {
+func treeSizes(root *Root, events Events) []string {
 	treeSizes := make(map[int]struct{}, 0)
 	treeSizes[*root.Size] = struct{}{}
-	for _, record := range records {
-		leafIdx := *record.LeafIndex
+	for _, event := range events {
+		leafIdx := *event.LeafIndex
 		treeSizes[leafIdx] = struct{}{}
 		if leafIdx > 1 {
 			treeSizes[leafIdx-1] = struct{}{}

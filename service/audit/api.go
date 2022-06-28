@@ -2,66 +2,13 @@ package audit
 
 import (
 	"context"
+	"time"
 
 	"github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-type LogInput struct {
-	// A structured record describing that <actor> did <action> on <target>
-	// changing it from <old> to <new> and the operation was <status>, and/or a free-form <message>.
-	Data *Record `json:"data"`
-
-	// If the response should include the hash.
-	ReturnHash *bool `json:"return_hash"`
-}
-
-func (l LogInput) String() string {
-	return pangeautil.Stringify(l)
-}
-
-type Record struct {
-	// An identifier for _who_ the audit record is about.
-	Actor *string `json:"actor,omitempty"`
-
-	// What action was performed on a record.
-	// eg: "created", "deleted", "updated"
-	Action *string `json:"action,omitempty"`
-
-	// A free form text field describing the event.
-	// Message is a required field.
-	Message *string `json:"message"`
-
-	// The value of a record _after_ it was changed.
-	New *string `json:"new,omitempty"`
-
-	// The value of a record _before_ it was changed.
-	Old *string `json:"old,omitempty"`
-
-	// The source of a record. Can be used to hard-split logged and searched data.
-	Source *string `json:"source,omitempty"`
-
-	// The status or result of the event
-	// eg: "failure", "success"
-	Status *string `json:"status,omitempty"`
-
-	// An identifier for what the audit record is about.
-	Target *string `json:"target,omitempty"`
-}
-
-func (r Record) String() string {
-	return pangeautil.Stringify(r)
-}
-
-type LogOutput struct {
-	// The hash of the log.
-	Hash *string `json:"hash"`
-}
-
-func (l LogOutput) String() string {
-	return pangeautil.Stringify(l)
-}
-
+// Log creates a log entry in the Secure Audit Log.
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error) {
 	if input == nil {
 		input = &LogInput{}
@@ -80,106 +27,10 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 	return &out, resp, nil
 }
 
-type SerarchInput struct {
-	// Natural search string; list of keywords with optional `<option>:<value>` qualifiers.
-	//
-	// Query is a required field.
-	//
-	// The following optional qualifiers are supported:
-	//	* action:
-	//	* actor:
-	//	* message:
-	//	* new:
-	//	* old:
-	//	* status:
-	//	* target:
-	//
-	// Some examples:
-	//		actor:root target:/etc/shadow
-	//		viewed x-ray
-	Query *string `json:"query"`
-
-	// Specify the sort order of the response. "asc" or "desc"
-	Order *string `json:"order,omitempty"`
-
-	// If set, the last value from the response to fetch the next page from.
-	Last *string `json:"last,omitempty"`
-
-	// The start of the time range to perform the search on.
-	Start *string `json:"start,omitempty"`
-
-	// The end of the time range to perform the search on. All records up to the latest if left out.
-	End *string `json:"end,omitempty"`
-
-	// A list of sources that the search can apply to. If empty or not provided, matches only the default source.
-	Sources []*string `json:"sources,omitempty"`
-
-	// If the response should include the memebership proof.
-	IncludeMembershipProof *bool `json:"include_membership_proof,omitempty"`
-}
-
-func (s SerarchInput) String() string {
-	return pangeautil.Stringify(s)
-}
-
-type SearchOutput struct {
-	Root *Root `json:"root"`
-
-	// A list of matching audit records.
-	Audits AuditRecords `json:"audits"`
-
-	// An opaque identifier that can be used to fetch the next page of the results.
-	Last string `json:"last"`
-}
-
-func (s SearchOutput) String() string {
-	return pangeautil.Stringify(s)
-}
-
-type AuditRecord struct {
-	// A structured record describing that <actor> did <action> on <target>
-	// changing it from <old> to <new> and the operation was <status>, and/or a free-form <message>.
-	Data *Record `json:"data"`
-
-	// A list of hashes that prove the membership of the log with the root hash.
-	MembershipProof *string `json:"membership_proof"`
-
-	// The hash of the log.
-	Hash *string `json:"hash"`
-
-	// The index of the leaf in the log.
-	LeafIndex *int `json:"leaf_index"`
-}
-
-func (a AuditRecord) String() string {
-	return pangeautil.Stringify(a)
-}
-
-// IsVerifiable checks if a record can be verfiable with the published proof
-func (record *AuditRecord) IsVerifiable() bool {
-	return record.LeafIndex != nil
-}
-
-type AuditRecords []*AuditRecord
-
-func (a AuditRecords) String() string {
-	return pangeautil.Stringify(a)
-}
-
-// VerifiableRecords retuns a slice of records that can be verifiable by the published proof
-func (records AuditRecords) VerifiableRecords() AuditRecords {
-	r := make(AuditRecords, 0)
-	for _, record := range records {
-		if record.IsVerifiable() {
-			r = append(r, record)
-		}
-	}
-	return r
-}
-
-func (a *Audit) Search(ctx context.Context, input *SerarchInput) (*SearchOutput, *pangea.Response, error) {
+// Search the Secure Audit Log
+func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, *pangea.Response, error) {
 	if input == nil {
-		input = &SerarchInput{}
+		input = &SearchInput{}
 	}
 	req, err := a.Client.NewRequest("POST", "audit", "v1/search", input)
 	if err != nil {
@@ -193,36 +44,25 @@ func (a *Audit) Search(ctx context.Context, input *SerarchInput) (*SearchOutput,
 	return &out, resp, nil
 }
 
-type Root struct {
-	TreeName         *string   `json:"tree_name"`
-	Size             *int      `json:"size"`
-	RootHash         *string   `json:"root_hash"`
-	URL              *string   `json:"url"`
-	PublishedAt      *string   `json:"published_at"`
-	ConsistencyProof []*string `json:"consistency_proof"`
+// SearchResults is used to page through results from a previous search.
+func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*SeachResultOutput, *pangea.Response, error) {
+	if input == nil {
+		input = &SeachResultInput{}
+	}
+	req, err := a.Client.NewRequest("POST", "audit", "v1/search", input)
+	if err != nil {
+		return nil, nil, err
+	}
+	out := SeachResultOutput{}
+	resp, err := a.Client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return &out, resp, nil
 }
 
-func (r Root) String() string {
-	return pangeautil.Stringify(r)
-}
-
-type RootInput struct {
-	TreeSize *int `json:"tree_size"`
-}
-
-func (r RootInput) String() string {
-	return pangeautil.Stringify(r)
-}
-
-type RootOutput struct {
-	Data *Root `json:"data"`
-}
-
-func (r RootOutput) String() string {
-	return pangeautil.Stringify(r)
-}
-
-func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pangea.Response, error) {
+// Root returns current root hash and consistency proof.
+func (a *Audit) Root(ctx context.Context, input *RootInput) (*Root, *pangea.Response, error) {
 	if input == nil {
 		input = &RootInput{}
 	}
@@ -230,10 +70,417 @@ func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pange
 	if err != nil {
 		return nil, nil, err
 	}
-	var out RootOutput
+	var out Root
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, resp, err
 	}
 	return &out, resp, nil
+}
+
+type LogInput struct {
+	// A structured event describing an auditable activity.
+	Event *LogEventInput `json:"event"`
+
+	// Return the event's hash with response.
+	ReturnHash *bool `json:"return_hash"`
+
+	// If true, be verbose in the response; include canonical events, create time, hashes, etc.
+	// default: false
+	Verbose *bool `json:"verbose"`
+}
+
+func (l LogInput) String() string {
+	return pangeautil.Stringify(l)
+}
+
+type LogEventInput struct {
+	// Record who performed the auditable activity.
+	// max len is 128 bytes
+	// examples:
+	// 	John Doe
+	//  user-id
+	//  DennisNedry@InGen.com
+	Actor *string `json:"actor,omitempty"`
+
+	// The auditable action that occurred."
+	// examples:
+	// 	created
+	//  deleted
+	//  updated
+	Action *string `json:"action,omitempty"`
+
+	// A message describing a detailed account of what happened.
+	// This can be recorded as free-form text or as a JSON-formatted string.
+	// Message is a required field.
+	// max len of 65536 bytes
+	Message *string `json:"message"`
+
+	// The value of a record after it was changed.
+	// max len of 65536 bytes
+	New *string `json:"new,omitempty"`
+
+	// The value of a record before it was changed.
+	// max len of 65536 bytes
+	Old *string `json:"old,omitempty"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// Used to record the location from where an activity occurred.
+	// max len of 128 bytes
+	Source *string `json:"source,omitempty"`
+
+	// Record whether or not the activity was successful.
+	// examples:
+	//  failure
+	//  success
+	// max len of 32 bytes
+	Status *string `json:"status,omitempty"`
+
+	// Used to record the specific record that was targeted by the auditable activity.
+	// max len of 128 bytes
+	Target *string `json:"target,omitempty"`
+
+	// An optional client-supplied timestamp.
+	Timestamp *string `json:"timestamp,omitempty"`
+}
+
+func (l LogEventInput) String() string {
+	return pangeautil.Stringify(l)
+}
+
+type LogOutput struct {
+	// The hash of the event data.
+	// max len of 64 bytes
+	Hash *string `json:"hash"`
+
+	// The event that was logged. Includes additional server-added timestamps.
+	Event *LogEventOutput `json:"event"`
+
+	// A base64 encoded canonical JSON form of the event, used for hashing.
+	CanonicalEvent *string `json:"canonical_event"`
+}
+
+func (l LogOutput) String() string {
+	return pangeautil.Stringify(l)
+}
+
+type LogEventOutput struct {
+	// Record who performed the auditable activity.
+	// max len is 128 bytes
+	// examples:
+	// 	John Doe
+	//  user-id
+	//  DennisNedry@InGen.com
+	Actor *string `json:"actor,omitempty"`
+
+	// The auditable action that occurred."
+	// examples:
+	// 	created
+	//  deleted
+	//  updated
+	Action *string `json:"action,omitempty"`
+
+	// A message describing a detailed account of what happened.
+	// This can be recorded as free-form text or as a JSON-formatted string.
+	// Message is a required field.
+	// max len of 65536 bytes
+	Message *string `json:"message"`
+
+	// The value of a record after it was changed.
+	// max len of 65536 bytes
+	New *string `json:"new,omitempty"`
+
+	// The value of a record before it was changed.
+	// max len of 65536 bytes
+	Old *string `json:"old,omitempty"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// Used to record the location from where an activity occurred.
+	// max len of 128 bytes
+	Source *string `json:"source,omitempty"`
+
+	// Record whether or not the activity was successful.
+	// examples:
+	//  failure
+	//  success
+	// max len of 32 bytes
+	Status *string `json:"status,omitempty"`
+
+	// Used to record the specific record that was targeted by the auditable activity.
+	// max len of 128 bytes
+	Target *string `json:"target,omitempty"`
+
+	// An optional client-supplied timestamp.
+	Timestamp *string `json:"timestamp,omitempty"`
+}
+
+func (l LogEventOutput) String() string {
+	return pangeautil.Stringify(l)
+}
+
+type SearchInput struct {
+	// Natural search string; list of keywords with optional `<option>:<value>` qualifiers.
+	//
+	// Query is a required field.
+	//
+	// The following optional qualifiers are supported:
+	//	* action:
+	//	* actor:
+	//	* message:
+	//	* new:
+	//	* old:
+	//	* status:
+	//	* target:
+	//
+	// examples:
+	//		actor:root target:/etc/shadow
+	Query *string `json:"query"`
+
+	// Specify the sort order of the response. "asc" or "desc"
+	Order *string `json:"order,omitempty"`
+
+	// Name of column to sort the results by.
+	OrderBy *string `json:"order_by,omitempty"`
+
+	// If set, the last value from the response to fetch the next page from.
+	Last *string `json:"last,omitempty"`
+
+	// The start of the time range to perform the search on.
+	Start *string `json:"start,omitempty"`
+
+	// The end of the time range to perform the search on. All records up to the latest if left out.
+	End *string `json:"end,omitempty"`
+
+	// Number of audit records to include from the first page of the results.
+	Limit *int `json:"limit,omitempty"`
+
+	// Maximum number of results to return.
+	// min 1 max 10000
+	MaxResults *int `json:"max_results,omitempty"`
+
+	// If true, include membership proofs for each record in the first page.
+	IncludeMembershipProof *bool `json:"include_membership_proof,omitempty"`
+
+	// If true, include hashes for each record in the first page.
+	IncludeHash *bool `json:"include_hash,omitempty"`
+
+	// If true, include the Merkle root hash of the tree in the first page.
+	IncludeRoot *bool `json:"include_root,omitempty"`
+
+	// A list of keys to restrict the search results to. Useful for partitioning data available to the query string.
+	SearchRestriction *SearchRestriction `json:"search_restriction,omitempty"`
+}
+
+func (s SearchInput) String() string {
+	return pangeautil.Stringify(s)
+}
+
+type SearchRestriction struct {
+	// A list of actors to restrict the search to.
+	Actor []*string `json:"actor,omitempty"`
+
+	// A list of sources to restrict the search to.
+	Source []*string `json:"source,omitempty"`
+
+	// A list of targets to restrict the search to.
+	Target []*string `json:"target,omitempty"`
+}
+
+func (s SearchRestriction) String() string {
+	return pangeautil.Stringify(s)
+}
+
+type SearchOutput struct {
+	// Identifier to supply to search_results API to fetch/paginate through search results.
+	// ID is always populated on a successful response.
+	ID *string `json:"id"`
+
+	// The time when the results will no longer be available to page through via the results API.
+	// ExpiresAt is always populated on a successful response.
+	ExpiresAt *time.Time `json:"expires_at"`
+
+	// The total number of results that were returned by the search.
+	// Count is always populated on a successful response.
+	Count *int `json:"count"`
+
+	// A root of a Merkle Tree
+	Root *Root `json:"root"`
+
+	// A list of matching audit records.
+	// Events is always populated on a successful response.
+	Events Events `json:"events"`
+}
+
+func (s SearchOutput) String() string {
+	return pangeautil.Stringify(s)
+}
+
+type Events []*EventEnvelope
+
+func (e Events) String() string {
+	return pangeautil.Stringify(e)
+}
+
+// VerifiableRecords retuns a slice of records that can be verifiable by the published proof
+func (events Events) VerifiableRecords() Events {
+	evs := make(Events, 0)
+	for _, event := range events {
+		if event.IsVerifiable() {
+			evs = append(evs, event)
+		}
+	}
+	return evs
+}
+
+type EventEnvelope struct {
+	// A structured record describing that <actor> did <action> on <target>
+	// changing it from <old> to <new> and the operation was <status>,
+	// and/or a free-form <message>.
+	Record *Record `json:"event"`
+
+	// A cryptographic proof that the record has been persisted in the log.
+	MembershipProof *string `json:"membership_proof"`
+
+	// The record's hash
+	// len of 64 bytes
+	Hash *string `json:"hash"`
+
+	// The index of the leaf of the Merkle Tree where this record was inserted.
+	LeafIndex *int `json:"leaf_index"`
+}
+
+// IsVerifiable checks if a record can be verfiable with the published proof
+func (event *EventEnvelope) IsVerifiable() bool {
+	return event.LeafIndex != nil
+}
+
+func (e EventEnvelope) String() string {
+	return pangeautil.Stringify(e)
+}
+
+type Record struct {
+	// An identifier for _who_ the audit record is about.
+	Actor *string `json:"actor,omitempty"`
+
+	// What action was performed on a record.
+	// examples:
+	// 	created
+	//  deleted
+	//  updated
+	Action *string `json:"action,omitempty"`
+
+	// A free form text field describing the event.
+	// Message is always populated on a successful response.
+	Message *string `json:"message"`
+
+	// The value of a record _after_ it was changed.
+	New *string `json:"new,omitempty"`
+
+	// The value of a record _before_ it was changed.
+	Old *string `json:"old,omitempty"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// The source of a record. Can be used to hard-split logged and searched data.
+	// max len of 128 bytes
+	Source *string `json:"source,omitempty"`
+
+	// The status or result of the event
+	// examples:
+	//  failure
+	//  success
+	// max len of 32 bytes
+	Status *string `json:"status,omitempty"`
+
+	// An identifier for what the audit record is about.
+	// max len of 128 bytes
+	Target *string `json:"target,omitempty"`
+}
+
+func (r Record) String() string {
+	return pangeautil.Stringify(r)
+}
+
+type SeachResultInput struct {
+	// A search results identifier returned by the search call
+	// ID is a required field
+	ID *string `json:"id"`
+
+	// If true, include membership proofs for each record in the first page.
+	IncludeMembershipProof *bool `json:"include_membership_proof,omitempty"`
+
+	// If true, include hashes for each record in the first page.
+	IncludeHash *bool `json:"include_hash,omitempty"`
+
+	// If true, include the Merkle root hash of the tree in the first page.
+	IncludeRoot *bool `json:"include_root,omitempty"`
+
+	// Number of audit records to include from the first page of the results.
+	Limit *int `json:"limit,omitempty"`
+
+	// Offset from the start of the result set to start returning results from.
+	Offset *int `json:"offset,omitempty"`
+}
+
+func (s SeachResultInput) String() string {
+	return pangeautil.Stringify(s)
+}
+
+type SeachResultOutput struct {
+	// The total number of results that were returned by the search.
+	// Count is always populated on a successful response.
+	Count *int `json:"count"`
+
+	// A list of matching audit records.
+	// Events is always populated on a successful response.
+	Events Events `json:"events"`
+
+	// A root of a Merkle Tree
+	Root *Root `json:"root"`
+}
+
+func (s SeachResultOutput) String() string {
+	return pangeautil.Stringify(s)
+}
+
+type RootInput struct {
+	// The size of the tree (the number of records)
+	TreeSize *int `json:"tree_size"`
+}
+
+func (r RootInput) String() string {
+	return pangeautil.Stringify(r)
+}
+
+type Root struct {
+	// The name of the Merkle Tree
+	TreeName *string `json:"tree_name"`
+
+	// The size of the tree (the number of records)
+	Size *int `json:"size"`
+
+	// The root hash
+	// max len of 64 bytes
+	RootHash *string `json:"root_hash"`
+
+	// The URL where this root has been published
+	URL *string `json:"url"`
+
+	// The date/time when this root was published
+	PublishedAt *time.Time `json:"published_at"`
+
+	// Consistency proof to verify that this root is a continuation of the previous one
+	ConsistencyProof []*string `json:"consistency_proof"`
+}
+
+func (r Root) String() string {
+	return pangeautil.Stringify(r)
 }
