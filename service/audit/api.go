@@ -32,7 +32,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, 
 	if input == nil {
 		input = &SearchInput{}
 	}
-	req, err := a.Client.NewRequest("POST", "audit", "v1/search", input)
+	req, err := a.Client.NewRequest("POST", "audit", "v2/search", input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,7 +49,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*Se
 	if input == nil {
 		input = &SeachResultInput{}
 	}
-	req, err := a.Client.NewRequest("POST", "audit", "v1/search", input)
+	req, err := a.Client.NewRequest("POST", "audit", "v2/results", input)
 	if err != nil {
 		return nil, nil, err
 	}
