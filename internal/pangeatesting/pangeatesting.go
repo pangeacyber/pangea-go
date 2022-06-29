@@ -60,3 +60,19 @@ func TestBody(t *testing.T, r *http.Request, want string) {
 		t.Errorf("request Body is %s, want %s", got, want)
 	}
 }
+
+func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.Config) error) {
+	t.Helper()
+
+	emptyEndpointCfg := &pangea.Config{Endpoint: ""}
+	doErr := f(emptyEndpointCfg)
+	if doErr == nil {
+		t.Fatalf("call to method %v with empty Enpoint got nil err, want error", method)
+	}
+
+	badUrlCfg := &pangea.Config{Endpoint: "htt://   "}
+	newRequestErr := f(badUrlCfg)
+	if newRequestErr == nil {
+		t.Fatalf("call to method %v with bad Endpoint got nil err, want error", method)
+	}
+}

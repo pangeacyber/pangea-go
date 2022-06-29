@@ -288,3 +288,35 @@ func TestRoot(t *testing.T) {
 
 	assert.Equal(t, want, got)
 }
+
+func TestLogError(t *testing.T) {
+	f := func(cfg *pangea.Config) error {
+		_, _, err := audit.New(cfg).Log(context.Background(), nil)
+		return err
+	}
+	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Log", f)
+}
+
+func TestSearchError(t *testing.T) {
+	f := func(cfg *pangea.Config) error {
+		_, _, err := audit.New(cfg).Search(context.Background(), nil)
+		return err
+	}
+	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Search", f)
+}
+
+func TestSearchResultsError(t *testing.T) {
+	f := func(cfg *pangea.Config) error {
+		_, _, err := audit.New(cfg).SearchResults(context.Background(), nil)
+		return err
+	}
+	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.SearchResults", f)
+}
+
+func TestRootError(t *testing.T) {
+	f := func(cfg *pangea.Config) error {
+		_, _, err := audit.New(cfg).Root(context.Background(), nil)
+		return err
+	}
+	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Root", f)
+}
