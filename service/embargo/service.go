@@ -16,6 +16,6 @@ type Embargo struct {
 
 func New(cfg *pangea.Config, optionalCfg ...*pangea.Config) *Embargo {
 	return &Embargo{
-		Client: pangea.NewClient(cfg),
+		Client: pangea.NewClient(cfg, optionalCfg...),
 	}
 }

@@ -19,7 +19,7 @@ type Audit struct {
 
 func New(cfg *pangea.Config, optionalCfg ...*pangea.Config) *Audit {
 	cli := &Audit{
-		Client: pangea.NewClient(cfg),
+		Client: pangea.NewClient(cfg, optionalCfg...),
 	}
 	return cli
 }
