@@ -11,6 +11,13 @@ The App simulates an HR application that allows a user to upload resumes, retrie
 - github.com/gorilla/mux
 - github.com/mattn/go-sqlite3
 
+### Environment Setup
+Set the following environment variables:
+- `PANGEA_TOKEN`
+- `EMBARGO_CONFIG_ID`
+- `REDACT_CONFIG_ID`
+- `AUDIT_CONFIG_ID`
+
 ### Main App Startup
 ```
 go run .
