@@ -59,9 +59,9 @@ func (a *Arweave) TransactionConnectionByTags(ctx context.Context, tags TagFilte
 		transactions(tags: %v) {
 			edges {
 				node {
-					id 
+					id
 					tags {
-						name 
+						name
 						value
 					}
 				}

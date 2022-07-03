@@ -1,13 +1,12 @@
 package main
 
 import (
-    "os"
+	"os"
 )
 
 func main() {
-    app := App{}
-    app.Initialize(
-            os.Getenv("PANGEA_TOKEN"))
-    app.Run(":8080")
+	app := App{}
+	app.Initialize(
+		os.Getenv("PANGEA_TOKEN"))
+	app.Run(":8080")
 }
-
