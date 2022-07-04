@@ -25,7 +25,7 @@ func TestRedact(t *testing.T) {
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
 				"status_code": 200,
-				"status": "success", 
+				"status": "success",
 				"result":{
 					"redacted_text": "My phone number is: <PHONE_NUMBER>"
 				},
@@ -61,7 +61,7 @@ func TestRedactStructured(t *testing.T) {
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
 				"status_code": 200,
-				"status": "success", 
+				"status": "success",
 				"result": {
 					"redacted_data": {
 					  "one": { "secret": "<PHONE_NUMBER>" }

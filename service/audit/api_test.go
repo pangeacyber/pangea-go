@@ -27,7 +27,7 @@ func TestLog(t *testing.T) {
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
 				"status_code": 200,
-				"status": "success", 
+				"status": "success",
 				"result": {
 					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"event": {
