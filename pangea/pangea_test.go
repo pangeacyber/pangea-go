@@ -15,7 +15,7 @@ import (
 
 func testClient(t *testing.T, url string) *pangea.Client {
 	t.Helper()
-	return pangea.NewClient(&pangea.Config{Token: "TestToken", Endpoint: url})
+	return pangea.NewClient("service", &pangea.Config{Token: "TestToken", Endpoint: url})
 }
 
 func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
@@ -24,7 +24,7 @@ func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
 
 	client := testClient(t, url)
 
-	req, _ := client.NewRequest("GET", ".", ".", nil)
+	req, _ := client.NewRequest("GET", ".", nil)
 	_, err := client.Do(nil, req, nil)
 
 	if err == nil {
@@ -55,7 +55,7 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", ".", "test", nil)
+	req, _ := client.NewRequest("POST", "test", nil)
 	_, err := client.Do(context.Background(), req, nil)
 
 	if err == nil {
@@ -96,7 +96,7 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", ".", "test", nil)
+	req, _ := client.NewRequest("POST", "test", nil)
 	_, err := client.Do(context.Background(), req, nil)
 
 	if err == nil {
@@ -137,7 +137,7 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", ".", "test", nil)
+	req, _ := client.NewRequest("POST", "test", nil)
 	body := &struct {
 		Key *string `json:"key"`
 	}{}
@@ -174,7 +174,7 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	}
 
 	reqBody := reqbody{Key: pangea.String("value")}
-	req, _ := client.NewRequest("POST", ".", "test", reqBody)
+	req, _ := client.NewRequest("POST", "test", reqBody)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		body := &reqbody{}
@@ -216,7 +216,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_It_Returns_UnMarshalError(t 
 
 	client := testClient(t, url)
 
-	req, _ := client.NewRequest("POST", ".", "test", nil)
+	req, _ := client.NewRequest("POST", "test", nil)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -241,7 +241,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 
 	client := testClient(t, url)
 
-	req, _ := client.NewRequest("POST", ".", "test", nil)
+	req, _ := client.NewRequest("POST", "test", nil)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

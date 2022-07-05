@@ -27,7 +27,7 @@ type Audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	cli := &Audit{
-		Client: pangea.NewClient(cfg),
+		Client: pangea.NewClient("audit", cfg),
 	}
 	for _, opt := range opts {
 		err := opt(cli)

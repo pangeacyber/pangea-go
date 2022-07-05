@@ -16,7 +16,7 @@ type Embargo struct {
 
 func New(cfg *pangea.Config, opts ...Option) (*Embargo, error) {
 	cli := &Embargo{
-		Client: pangea.NewClient(cfg),
+		Client: pangea.NewClient("embargo", cfg),
 	}
 	for _, opt := range opts {
 		err := opt(cli)

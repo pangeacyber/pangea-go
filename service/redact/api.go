@@ -9,7 +9,7 @@ import (
 
 // Redact sensitive information from provided text.
 func (r *Redact) Redact(ctx context.Context, input *TextInput) (*TextOutput, *pangea.Response, error) {
-	req, err := r.Client.NewRequest("POST", "redact", "v1/redact", input)
+	req, err := r.Client.NewRequest("POST", "v1/redact", input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -27,7 +27,7 @@ func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (
 	if input == nil {
 		input = &StructuredInput{}
 	}
-	req, err := r.Client.NewRequest("POST", "redact", "v1/redact_structured", input)
+	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
 	if err != nil {
 		return nil, nil, err
 	}

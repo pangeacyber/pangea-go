@@ -60,14 +60,18 @@ type Client struct {
 
 	// User agent used when communicating with the Pangea API.
 	UserAgent string
+
+	// The identifier for the service
+	ServiceName string
 }
 
-func NewClient(baseCfg *Config, additionalConfigs ...*Config) *Client {
+func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 
 	c := &Client{
-		Token: cfg.Token,
+		ServiceName: service,
+		Token:       cfg.Token,
 	}
 
 	if cfg.HTTPClient == nil {
@@ -105,8 +109,8 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, service, urlStr string, body interface{}) (*http.Request, error) {
-	u, err := c.serviceUrl(service, urlStr)
+func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+	u, err := c.serviceUrl(c.ServiceName, urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +137,7 @@ func (c *Client) NewRequest(method, service, urlStr string, body interface{}) (*
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 	if c.Config.CfgToken != "" {
-		req.Header.Set(configHeaderName(service), c.Config.CfgToken)
+		req.Header.Set(configHeaderName(c.ServiceName), c.Config.CfgToken)
 	}
 	mergeHeaders(req, c.Config.AdditionalHeaders)
 	return req, nil

@@ -7,7 +7,7 @@ import (
 )
 
 func (e *Embargo) Check(ctx context.Context, input *CheckInput) (*CheckOutput, *pangea.Response, error) {
-	req, err := e.Client.NewRequest("POST", "embargo", "v1/check", input)
+	req, err := e.Client.NewRequest("POST", "v1/check", input)
 	if err != nil {
 		return nil, nil, err
 	}
