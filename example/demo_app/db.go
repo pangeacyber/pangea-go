@@ -128,7 +128,6 @@ func (d *DB) lookupEmployee(email string) (*employee, error) {
 	err := row.Scan(&emp.FirstName, &emp.LastName, &emp.CompanyEmail, &emp.PersonalEmail,
 		&emp.DateOfBirth, &emp.StartDate, &emp.TermDate, &emp.Department,
 		&emp.ManagerId, &emp.Salary, &emp.Medical, &emp.SSN, &emp.Status, &emp.ID)
-
 	if err != nil {
 		log.Println("[DB.lookupEmployee] failed")
 		return nil, err

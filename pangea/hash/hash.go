@@ -9,6 +9,11 @@ import (
 
 type Hash []byte
 
+func Encode(d []byte) Hash {
+	b := sha256.Sum256(d)
+	return Hash(b[:])
+}
+
 func Decode(hash string) (Hash, error) {
 	decoded, err := hex.DecodeString(hash)
 	if err != nil {

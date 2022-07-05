@@ -25,7 +25,7 @@ func main() {
 		log.Fatal("Configuration: No config ID present")
 	}
 
-	redactcli := redact.New(&pangea.Config{
+	redactcli, err := redact.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -33,6 +33,9 @@ func main() {
 		},
 		CfgToken: configID,
 	})
+	if err != nil {
+		log.Fatal("failed to create redact client")
+	}
 
 	ctx := context.Background()
 

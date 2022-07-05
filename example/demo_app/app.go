@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	"log"
-	"os"
-
 	"encoding/json"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -34,6 +33,7 @@ type resp struct {
 }
 
 func (a *App) Initialize(pangea_token string) {
+	var err error
 	a.pangea_token = pangea_token
 
 	a.Router = mux.NewRouter()
@@ -46,7 +46,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	embargoConfigID := os.Getenv("EMBARGO_CONFIG_ID")
 
-	a.pangea_embargo = embargo.New(&pangea.Config{
+	a.pangea_embargo, err = embargo.New(&pangea.Config{
 		Token: a.pangea_token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -54,10 +54,13 @@ func (a *App) Initialize(pangea_token string) {
 		},
 		CfgToken: embargoConfigID,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	auditConfigID := os.Getenv("AUDIT_CONFIG_ID")
 
-	a.pangea_audit = audit.New(&pangea.Config{
+	a.pangea_audit, err = audit.New(&pangea.Config{
 		Token: a.pangea_token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -65,10 +68,13 @@ func (a *App) Initialize(pangea_token string) {
 		},
 		CfgToken: auditConfigID,
 	})
+	if err != nil {
+		panic(err)
+	}
 
 	redactConfigID := os.Getenv("REDACT_CONFIG_ID")
 
-	a.pangea_redact = redact.New(&pangea.Config{
+	a.pangea_redact, err = redact.New(&pangea.Config{
 		Token: a.pangea_token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -76,6 +82,9 @@ func (a *App) Initialize(pangea_token string) {
 		},
 		CfgToken: redactConfigID,
 	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (a *App) Run(addr string) {
@@ -114,7 +123,6 @@ func (a *App) setup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, resp)
-	return
 }
 
 func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
@@ -164,7 +172,8 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 				Target:  pangea.String(emp.PersonalEmail),
 				Status:  pangea.String("error"),
 				Message: pangea.String("Resume denied - sanctioned country from " + client_ip),
-				Source:  pangea.String("web")},
+				Source:  pangea.String("web"),
+			},
 			ReturnHash: pangea.Bool(true),
 			Verbose:    pangea.Bool(false),
 		}
@@ -184,16 +193,11 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 	emp.Status = StatusCandidate
 
 	// Redact
-	out, err := json.Marshal(emp)
-	if err != nil {
-		log.Println("[App.uploadResume] failed to marshal emp to JSON")
-	}
-
 	redinput := &redact.StructuredInput{
-		Data:   pangea.String(string(out)),
 		Format: pangea.String("json"),
 		Debug:  pangea.Bool(false),
 	}
+	redinput.SetData(emp)
 
 	redactOutput, _, err := a.pangea_redact.RedactStructured(ctx, redinput)
 	redacted := ""
@@ -201,8 +205,9 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 		log.Println("[App.uploadResume] redact error: ", err.Error())
 	} else {
 		log.Println(pangea.Stringify(redactOutput.RedactedData))
-		redacted = *redactOutput.RedactedData
-		log.Println(redacted)
+		var redactedEmployee employee
+		redactOutput.GetRedactedData(&redactedEmployee)
+		log.Printf("%+v", redactedEmployee)
 	}
 
 	// Finally store to DB
@@ -215,7 +220,8 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 				Target:  pangea.String(emp.PersonalEmail),
 				Status:  pangea.String("error"),
 				Message: pangea.String("Resume denied"),
-				Source:  pangea.String("web")},
+				Source:  pangea.String("web"),
+			},
 			ReturnHash: pangea.Bool(true),
 			Verbose:    pangea.Bool(false),
 		}
@@ -245,7 +251,8 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 			Status:  pangea.String("success"),
 			Message: pangea.String("Resume accepted"),
 			New:     pangea.String(redacted),
-			Source:  pangea.String("web")},
+			Source:  pangea.String("web"),
+		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(false),
 	}
@@ -288,7 +295,8 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 				Target:  pangea.String(email),
 				Status:  pangea.String("error"),
 				Message: pangea.String("Requested employee record"),
-				Source:  pangea.String("web")},
+				Source:  pangea.String("web"),
+			},
 			ReturnHash: pangea.Bool(true),
 			Verbose:    pangea.Bool(false),
 		}
@@ -313,7 +321,8 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 			Target:  pangea.String(emp.PersonalEmail),
 			Status:  pangea.String("success"),
 			Message: pangea.String("Requested employee record"),
-			Source:  pangea.String("web")},
+			Source:  pangea.String("web"),
+		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(false),
 	}
@@ -351,7 +360,6 @@ func (a *App) updateEmployee(w http.ResponseWriter, r *http.Request) {
 
 	// fetch employee record
 	oldemp, err := a.store.lookupEmployee(input.PersonalEmail)
-
 	if err != nil {
 		log.Println("[App.updateEmployee] Employee not found ", input.PersonalEmail, ", ", err.Error())
 		respondWithError(w, http.StatusNotFound, "Employee not found")
@@ -403,7 +411,8 @@ func (a *App) updateEmployee(w http.ResponseWriter, r *http.Request) {
 			Message: pangea.String("Updated employee record"),
 			Old:     pangea.String(string(outold)),
 			New:     pangea.String(string(outnew)),
-			Source:  pangea.String("web")},
+			Source:  pangea.String("web"),
+		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(false),
 	}

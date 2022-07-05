@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -54,10 +55,10 @@ func TestBody(t *testing.T, r *http.Request, want string) {
 	t.Helper()
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		t.Errorf("Error reading request body: %v", err)
+		t.Fatalf("Error reading request body: %v", err)
 	}
 	if got := strings.Trim(string(b), "\n"); got != want {
-		t.Errorf("request Body is %s, want %s", got, want)
+		t.Fatalf("request Body is %s, want %s", got, want)
 	}
 }
 
@@ -75,4 +76,15 @@ func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.
 	if newRequestErr == nil {
 		t.Fatalf("call to method %v with bad Endpoint got nil err, want error", method)
 	}
+}
+
+func CreateFile(t *testing.T, contents []byte) *os.File {
+	t.Helper()
+	tmpdir := t.TempDir()
+	file, err := ioutil.TempFile(tmpdir, "*")
+	if err != nil {
+		t.Fatal("failed to creat temp file")
+	}
+	file.Write(contents)
+	return file
 }

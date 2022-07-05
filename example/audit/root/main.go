@@ -21,7 +21,7 @@ func main() {
 		log.Fatal("Configuration: No config ID present")
 	}
 
-	auditcli := audit.New(&pangea.Config{
+	auditcli, err := audit.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -29,6 +29,9 @@ func main() {
 		},
 		CfgToken: configID,
 	})
+	if err != nil {
+		log.Fatal("failed to create audit client")
+	}
 
 	ctx := context.Background()
 	input := &audit.RootInput{

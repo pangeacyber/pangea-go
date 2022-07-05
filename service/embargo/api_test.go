@@ -48,7 +48,7 @@ func TestCheck(t *testing.T) {
 			}`)
 	})
 
-	client := embargo.New(pangeatesting.TestConfig(url))
+	client, _ := embargo.New(pangeatesting.TestConfig(url))
 	input := &embargo.CheckInput{
 		ISOCode: pangea.String("CU"),
 	}
@@ -79,7 +79,8 @@ func TestCheck(t *testing.T) {
 
 func TestCheckError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		_, _, err := embargo.New(cfg).Check(context.Background(), nil)
+		client, _ := embargo.New(cfg)
+		_, _, err := client.Check(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Embargo.Check", f)

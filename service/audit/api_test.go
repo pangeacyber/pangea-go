@@ -17,11 +17,10 @@ func TestLog(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
 
-	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
 	mux.HandleFunc("/v1/log", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
 		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"return_hash":true,"verbose":true}`)
-		fmt.Fprintf(w,
+		fmt.Fprint(w,
 			`{
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
@@ -31,16 +30,15 @@ func TestLog(t *testing.T) {
 				"result": {
 					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"event": {
-						"message": "test",
-						"received_at": "%v"
+						"message": "test"
 					},
 					"hash": "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"
 				},
 				"summary": "Logged 1 record(s)"
-			}`, t1.Format(time.RFC3339))
+			}`)
 	})
 
-	client := audit.New(pangeatesting.TestConfig(url))
+	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.LogInput{
 		Event: &audit.LogEventInput{
 			Message: pangea.String("test"),
@@ -57,8 +55,7 @@ func TestLog(t *testing.T) {
 		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
 		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
 		Event: &audit.LogEventOutput{
-			Message:    pangea.String("test"),
-			ReceivedAt: &t1,
+			Message: pangea.String("test"),
 		},
 	}
 	assert.Equal(t, want, got)
@@ -106,7 +103,7 @@ func TestSearch(t *testing.T) {
 			}`, t1.Format(time.RFC3339))
 	})
 
-	client := audit.New(pangeatesting.TestConfig(url))
+	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.SearchInput{
 		Query:                  pangea.String("message:test"),
 		IncludeMembershipProof: pangea.Bool(true),
@@ -123,16 +120,14 @@ func TestSearch(t *testing.T) {
 		Events: audit.Events{
 			{
 				Record: &audit.Record{
-					Message:    pangea.String("test_2"),
-					ReceivedAt: &t1,
+					Message: pangea.String("test_2"),
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
 				Record: &audit.Record{
-					Message:    pangea.String("test_1"),
-					ReceivedAt: &t1,
+					Message: pangea.String("test_1"),
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -191,7 +186,7 @@ func TestSearchResults(t *testing.T) {
 			}`, t1.Format(time.RFC3339))
 	})
 
-	client := audit.New(pangeatesting.TestConfig(url))
+	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.SeachResultInput{
 		ID:                     pangea.String("some-id"),
 		IncludeMembershipProof: pangea.Bool(true),
@@ -207,16 +202,14 @@ func TestSearchResults(t *testing.T) {
 		Events: audit.Events{
 			{
 				Record: &audit.Record{
-					Message:    pangea.String("test_2"),
-					ReceivedAt: &t1,
+					Message: pangea.String("test_2"),
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
 				Record: &audit.Record{
-					Message:    pangea.String("test_1"),
-					ReceivedAt: &t1,
+					Message: pangea.String("test_1"),
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -265,7 +258,7 @@ func TestRoot(t *testing.T) {
 			}`, t1.Format(time.RFC3339))
 	})
 
-	client := audit.New(pangeatesting.TestConfig(url))
+	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.RootInput{
 		TreeSize: pangea.Int(11),
 	}
@@ -291,7 +284,8 @@ func TestRoot(t *testing.T) {
 
 func TestLogError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		_, _, err := audit.New(cfg).Log(context.Background(), nil)
+		client, _ := audit.New(cfg)
+		_, _, err := client.Log(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Log", f)
@@ -299,7 +293,8 @@ func TestLogError(t *testing.T) {
 
 func TestSearchError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		_, _, err := audit.New(cfg).Search(context.Background(), nil)
+		client, _ := audit.New(cfg)
+		_, _, err := client.Search(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Search", f)
@@ -307,7 +302,8 @@ func TestSearchError(t *testing.T) {
 
 func TestSearchResultsError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		_, _, err := audit.New(cfg).SearchResults(context.Background(), nil)
+		client, _ := audit.New(cfg)
+		_, _, err := client.SearchResults(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.SearchResults", f)
@@ -315,8 +311,23 @@ func TestSearchResultsError(t *testing.T) {
 
 func TestRootError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		_, _, err := audit.New(cfg).Root(context.Background(), nil)
+		client, _ := audit.New(cfg)
+		_, _, err := client.Root(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Root", f)
+}
+
+func TestFailedOptions(t *testing.T) {
+	_, err := audit.New(
+		pangeatesting.TestConfig("url"),
+		audit.WithLogSigningEnabled("bad file name"),
+	)
+	assert.Error(t, err)
+
+	_, err = audit.New(
+		pangeatesting.TestConfig("url"),
+		audit.WithLogSignatureVerificationEnabled("bad file name"),
+	)
+	assert.Error(t, err)
 }

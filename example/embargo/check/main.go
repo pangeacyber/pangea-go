@@ -22,7 +22,7 @@ func main() {
 		log.Fatal("Configuration: No config ID present")
 	}
 
-	embargocli := embargo.New(&pangea.Config{
+	embargocli, err := embargo.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
@@ -30,6 +30,9 @@ func main() {
 		},
 		CfgToken: configID,
 	})
+	if err != nil {
+		log.Fatal("failed to create embargo client")
+	}
 
 	ctx := context.Background()
 	input := &embargo.CheckInput{

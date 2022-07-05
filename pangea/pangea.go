@@ -132,7 +132,9 @@ func (c *Client) NewRequest(method, service, urlStr string, body interface{}) (*
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
-	req.Header.Set(configHeaderName(service), c.Config.CfgToken)
+	if c.Config.CfgToken != "" {
+		req.Header.Set(configHeaderName(service), c.Config.CfgToken)
+	}
 	mergeHeaders(req, c.Config.AdditionalHeaders)
 	return req, nil
 }

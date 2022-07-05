@@ -15,8 +15,17 @@ type Redact struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config, optionalCfg ...*pangea.Config) *Redact {
-	return &Redact{
-		Client: pangea.NewClient(cfg, optionalCfg...),
+func New(cfg *pangea.Config, opts ...Option) (*Redact, error) {
+	cli := &Redact{
+		Client: pangea.NewClient(cfg),
 	}
+	for _, opt := range opts {
+		err := opt(cli)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cli, nil
 }
+
+type Option func(*Redact) error

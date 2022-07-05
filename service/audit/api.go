@@ -2,13 +2,23 @@ package audit
 
 import (
 	"context"
+	"encoding/hex"
+	"fmt"
 	"time"
 
+	"github.com/pangeacyber/go-pangea/internal/pangeautil"
+	"github.com/pangeacyber/go-pangea/internal/signer"
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
 // Log creates a log entry in the Secure Audit Log.
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error) {
+	if a.SignLogs {
+		err := input.Event.Sign(a.Signer)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
 	req, err := a.Client.NewRequest("POST", "audit", "v1/log", input)
 	if err != nil {
 		return nil, nil, err
@@ -34,6 +44,10 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, 
 	if err != nil {
 		return nil, resp, err
 	}
+	err = a.verifyRecords(out.Events)
+	if err != nil {
+		return nil, nil, err
+	}
 	return &out, resp, nil
 }
 
@@ -46,7 +60,11 @@ func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*Se
 	out := SeachResultOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
-		return nil, resp, err
+		return nil, nil, err
+	}
+	err = a.verifyRecords(out.Events)
+	if err != nil {
+		return nil, nil, err
 	}
 	return &out, resp, nil
 }
@@ -63,6 +81,18 @@ func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pange
 		return nil, resp, err
 	}
 	return &out, resp, nil
+}
+
+func (a *Audit) verifyRecords(events Events) error {
+	if a.VerifyRecords {
+		for idx, event := range events {
+			verified := event.Record.VerifySignature(a.Verifier)
+			if !verified {
+				return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
+			}
+		}
+	}
+	return nil
 }
 
 type LogInput struct {
@@ -130,6 +160,20 @@ type LogEventInput struct {
 	Timestamp *string `json:"timestamp,omitempty"`
 }
 
+func (i *LogEventInput) Sign(s signer.Signer) error {
+	b, err := newsSignedMessageFromRecord(i.Actor, i.Action, i.Message, i.New,
+		i.Old, i.Source, i.Status, i.Target, i.Timestamp)
+	if err != nil {
+		return err
+	}
+	signature, err := s.Sign(b)
+	if err != nil {
+		return err
+	}
+	i.Signature = pangea.String(hex.EncodeToString(signature))
+	return nil
+}
+
 type LogOutput struct {
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -193,8 +237,6 @@ type LogEventOutput struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *string `json:"timestamp,omitempty"`
-
-	ReceivedAt *time.Time `json:"received_at,omitempty"`
 }
 
 type SearchInput struct {
@@ -357,7 +399,17 @@ type Record struct {
 	// max len of 128 bytes
 	Target *string `json:"target,omitempty"`
 
-	ReceivedAt *time.Time `json:"received_at,omitempty"`
+	Timestamp *string `json:"timestamp"`
+}
+
+func (r *Record) VerifySignature(verifier signer.Verifier) bool {
+	b, err := newsSignedMessageFromRecord(r.Actor, r.Action, r.Message, r.New,
+		r.Old, r.Source, r.Status, r.Target, r.Timestamp)
+	if err != nil {
+		return false
+	}
+	sig, _ := hex.DecodeString(pangea.StringValue(r.Signature))
+	return verifier.Verify(b, sig)
 }
 
 type SeachResultInput struct {
@@ -422,4 +474,32 @@ type Root struct {
 
 type RootOutput struct {
 	Data *Root `json:"data"`
+}
+
+type signedMessage struct {
+	Actor     *string `json:"actor"`
+	Action    *string `json:"action"`
+	Message   *string `json:"message"`
+	New       *string `json:"new"`
+	Old       *string `json:"old"`
+	Source    *string `json:"source"`
+	Status    *string `json:"status"`
+	Target    *string `json:"target"`
+	Timestamp *string `json:"timestamp"`
+}
+
+func newsSignedMessageFromRecord(actor, action, message, new, old, source, status, target, timestamp *string) ([]byte, error) {
+	return pangeautil.CanonicalizeJSONMarshall(
+		signedMessage{
+			Actor:     actor,
+			Action:    action,
+			Message:   message,
+			New:       new,
+			Old:       old,
+			Source:    source,
+			Status:    status,
+			Target:    target,
+			Timestamp: timestamp,
+		},
+	)
 }

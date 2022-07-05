@@ -25,5 +25,5 @@ type employee struct {
 	ProfilePicture string `json:"profile_pic"`
 	DLPicture      string `json:"dl_pic"`
 	SSN            string `json:"ssn"`
-	Status         int    `json:status"`
+	Status         int    `json:"status"`
 }
