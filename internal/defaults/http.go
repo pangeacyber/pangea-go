@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // HTTPTransport returns a new http.Transport with similar default values to
@@ -52,4 +54,19 @@ func HTTPPooledClient() *http.Client {
 	return &http.Client{
 		Transport: HTTPPooledTransport(),
 	}
+}
+
+// HTTPClientWithRetries returns a new http.Client with similar default values to
+// http.Client, but with a non-shared Transport, idle connections disabled, and
+// keepalives disabled and retries.
+func HTTPClientWithRetries() *http.Client {
+	cli := &retryablehttp.Client{
+		HTTPClient:   HTTPPooledClient(),
+		RetryWaitMin: 1 * time.Second,
+		RetryWaitMax: 30 * time.Second,
+		RetryMax:     4,
+		CheckRetry:   retryablehttp.DefaultRetryPolicy,
+		Backoff:      retryablehttp.DefaultBackoff,
+	}
+	return cli.StandardClient()
 }

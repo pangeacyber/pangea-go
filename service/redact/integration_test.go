@@ -13,12 +13,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Integration_Check(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+func Test_Integration_Redact(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	cfg := &pangea.Config{
 		CfgToken: os.Getenv("REDACT_INTEGRATION_CONFIG_TOKEN"),
+		Retry:    true,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig)
 	client, _ := redact.New(cfg)

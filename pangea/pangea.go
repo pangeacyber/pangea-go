@@ -10,7 +10,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pangeacyber/go-pangea/internal/defaults"
 )
 
@@ -24,6 +26,12 @@ type EndpointConfig struct {
 	Scheme string
 	Region string
 	CSP    string
+}
+
+type RetryConfig struct {
+	RetryWaitMin time.Duration // Minimum time to wait
+	RetryWaitMax time.Duration // Maximum time to wait
+	RetryMax     int           // Maximum number of retries
 }
 
 type Config struct {
@@ -48,6 +56,13 @@ type Config struct {
 
 	// AdditionalHeaders is a map of additional headers to be sent with the request.
 	AdditionalHeaders map[string]string
+
+	// if it should retry request
+	// if HTTPClient is set in the config this value won't take effect
+	Retry bool
+
+	// Retry config defaults to a base retry option
+	RetryConfig *RetryConfig
 }
 
 // A Client manages communication with the Pangea API.
@@ -68,18 +83,30 @@ type Client struct {
 func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
-
-	c := &Client{
+	cfg.HTTPClient = chooseHTTPClient(cfg)
+	return &Client{
 		ServiceName: service,
 		Token:       cfg.Token,
+		Config:      cfg,
+		UserAgent:   userAgent,
 	}
+}
 
-	if cfg.HTTPClient == nil {
-		cfg.HTTPClient = defaults.HTTPClient()
+func chooseHTTPClient(cfg *Config) *http.Client {
+	if cfg.HTTPClient != nil {
+		return cfg.HTTPClient
 	}
-	c.Config = cfg
-	c.UserAgent = userAgent
-	return c
+	if cfg.Retry {
+		if cfg.RetryConfig != nil {
+			cli := retryablehttp.NewClient()
+			cli.RetryMax = cfg.RetryConfig.RetryMax
+			cli.RetryWaitMin = cfg.RetryConfig.RetryWaitMin
+			cli.RetryWaitMax = cfg.RetryConfig.RetryWaitMax
+			return cli.StandardClient()
+		}
+		return defaults.HTTPClientWithRetries()
+	}
+	return defaults.HTTPClient()
 }
 
 func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
@@ -265,6 +292,14 @@ func mergeInConfig(dst *Config, other *Config) {
 
 	if other.AdditionalHeaders != nil {
 		dst.AdditionalHeaders = other.AdditionalHeaders
+	}
+
+	if other.Retry {
+		dst.Retry = other.Retry
+	}
+
+	if other.RetryConfig != nil {
+		dst.RetryConfig = other.RetryConfig
 	}
 }
 

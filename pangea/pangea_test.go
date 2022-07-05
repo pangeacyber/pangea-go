@@ -64,7 +64,7 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 
 	pangeaErr, ok := err.(*pangea.APIError)
 	if !ok {
-		t.Fatalf("Expected pangea.ErrorResponse, got %T", err)
+		t.Fatalf("Expected pangea.APIError, got %T", err)
 	}
 	if pangeaErr.ResponseMetadata == nil {
 		t.Fatal("Expected ResponseMetadata to be non-nil")
@@ -105,7 +105,7 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 
 	pangeaErr, ok := err.(*pangea.APIError)
 	if !ok {
-		t.Fatalf("Expected pangea.ErrorResponse, got %v", err)
+		t.Fatalf("Expected pangea.APIError, got %v", err)
 	}
 	if pangeaErr.ResponseMetadata == nil {
 		t.Fatal("Expected ResponseMetadata to be non-nil")
@@ -267,5 +267,89 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 	_, ok := err.(*pangea.UnMarshalError)
 	if !ok {
 		t.Errorf("Expected pangea.UnMarshalError, got %T", err)
+	}
+}
+
+func TestDo_With_Retries_Success(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	client := pangea.NewClient("service", &pangea.Config{
+		Token:    "TestToken",
+		Endpoint: url,
+		Retry:    true,
+		RetryConfig: &pangea.RetryConfig{
+			RetryMax: 1,
+		},
+	},
+	)
+
+	req, _ := client.NewRequest("POST", "test", nil)
+
+	handler := func() func(w http.ResponseWriter, r *http.Request) {
+		var reqCount int
+		return func(w http.ResponseWriter, r *http.Request) {
+			if reqCount == 1 {
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, `{
+					"request_id": "some-id",
+					"request_time": "1970-01-01T00:00:00Z",
+					"response_time": "1970-01-01T00:00:10Z",
+					"status_code": 200,
+					"status": "ok",
+					"summary": "ok"
+				}`)
+			} else {
+				reqCount++
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}
+	}
+	mux.HandleFunc("/test", handler())
+
+	resp, err := client.Do(context.Background(), req, nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	if resp == nil {
+		t.Fatal("Expected non-nil response")
+	}
+
+	if resp.StatusCode == nil || *resp.StatusCode != http.StatusOK {
+		t.Error("Expected status code 200")
+	}
+}
+
+func TestDo_With_Retries_Error(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	client := pangea.NewClient("service", &pangea.Config{
+		Token:    "TestToken",
+		Endpoint: url,
+		Retry:    true,
+		RetryConfig: &pangea.RetryConfig{
+			RetryMax: 1,
+		},
+	},
+	)
+
+	req, _ := client.NewRequest("POST", "test", nil)
+
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+
+	_, err := client.Do(context.Background(), req, nil)
+
+	if err == nil {
+		t.Fatal("Expected HTTP 500 error, got no error.")
+	}
+
+	_, ok := err.(*pangea.APIError)
+	if !ok {
+		t.Fatalf("Expected pangea.APIError, got %T", err)
 	}
 }
