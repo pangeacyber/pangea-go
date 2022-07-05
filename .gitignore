@@ -11,3 +11,4 @@ vendor/
 
 # goenv local version. See https://github.com/syndbg/goenv/blob/master/COMMANDS.md#goenv-local for more info.
 .go-version
+*.env
