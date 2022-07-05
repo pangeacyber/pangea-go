@@ -2,7 +2,7 @@ package audit
 
 import (
 	"context"
-	"encoding/hex"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -170,7 +170,7 @@ func (i *LogEventInput) Sign(s signer.Signer) error {
 	if err != nil {
 		return err
 	}
-	i.Signature = pangea.String(hex.EncodeToString(signature))
+	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
 	return nil
 }
 
@@ -408,7 +408,10 @@ func (r *Record) VerifySignature(verifier signer.Verifier) bool {
 	if err != nil {
 		return false
 	}
-	sig, _ := hex.DecodeString(pangea.StringValue(r.Signature))
+	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(r.Signature))
+	if err != nil {
+		return false
+	}
 	return verifier.Verify(b, sig)
 }
 
