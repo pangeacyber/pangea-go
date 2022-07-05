@@ -21,13 +21,22 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	embargocli := embargo.New(pangea.Config{
+	configID := os.Getenv("EMBARGO_CONFIG_ID")
+	if token == "" {
+		log.Fatal("Configuration: No config ID present")
+	}
+
+	embargocli, err := embargo.New(&pangea.Config{
 		Token: token,
 		EndpointConfig: &pangea.EndpointConfig{
 			Scheme: "https",
 			CSP:    "aws",
 		},
+		CfgToken: configID,
 	})
+	if err != nil {
+		log.Fatal("failed to create embargo client")
+	}
 
 	ctx := context.Background()
 	input := &embargo.CheckInput{
@@ -39,7 +48,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(checkOutput.String())
+	fmt.Println(pangea.Stringify(checkOutput))
 }
 ```
 
