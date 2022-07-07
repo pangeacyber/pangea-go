@@ -35,7 +35,7 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 
 // Search the Secure Audit Log
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, *pangea.Response, error) {
-	req, err := a.Client.NewRequest("POST", "v2/search", input)
+	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -53,7 +53,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, 
 
 // SearchResults is used to page through results from a previous search.
 func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*SeachResultOutput, *pangea.Response, error) {
-	req, err := a.Client.NewRequest("POST", "v2/results", input)
+	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, nil, err
 	}
