@@ -1,0 +1,29 @@
+image: golang-1.17
+
+cache:
+  paths:
+    - /apt-cache
+    - /go/src/github.com
+    - /go/src/golang.org
+    - /go/src/google.golang.org
+    - /go/src/gopkg.in
+
+stages:
+  - lint
+  - unit_tests
+  - integration_tests
+
+lint:
+  stage: lint
+  script:
+    - make verify
+
+testing:
+  stage: unit_tests
+  script:
+    - make unit
+
+integration:
+  stage: integration_tests
+  script:
+    - make integration
