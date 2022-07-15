@@ -88,3 +88,12 @@ func CreateFile(t *testing.T, contents []byte) *os.File {
 	file.Write(contents)
 	return file
 }
+
+func GetEnvVarOrSkip(t *testing.T, varname string) string {
+	t.Helper()
+	envVar := os.Getenv(varname)
+	if envVar == "" {
+		t.Skipf("set %v env variable to run this test", varname)
+	}
+	return envVar
+}

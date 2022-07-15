@@ -3,6 +3,7 @@ package pangea
 import (
 	"encoding/json"
 	"strings"
+	"time"
 )
 
 // Bool is a helper routine that allocates a new bool value
@@ -48,4 +49,10 @@ func Stringify(obj interface{}) string {
 		return ""
 	}
 	return b.String()
+}
+
+// Time is a helper routine that allocates a new time.Time value
+// to store v and returns a pointer to it.
+func Time(v time.Time) *time.Time {
+	return &v
 }

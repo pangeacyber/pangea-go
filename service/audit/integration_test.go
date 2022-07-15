@@ -1,9 +1,8 @@
-// go:build integration
+// go:build integration && !unit
 package audit_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -13,14 +12,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func auditIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "AUDIT_INTEGRATION_CONFIG_TOKEN")
+	cfg := &pangea.Config{
+		CfgToken: cfgToken,
+	}
+	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+}
+
 func Test_Integration_Root(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfg := &pangea.Config{
-		CfgToken: os.Getenv("AUDIT_INTEGRATION_CONFIG_TOKEN"),
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig)
+	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
 	input := &audit.RootInput{}
@@ -43,10 +48,7 @@ func Test_Integration_Search(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfg := &pangea.Config{
-		CfgToken: os.Getenv("AUDIT_INTEGRATION_CONFIG_TOKEN"),
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig)
+	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
 	input := &audit.SearchInput{
@@ -69,10 +71,7 @@ func Test_Integration_SearchResults(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 7*time.Second)
 	defer cancelFn()
 
-	cfg := &pangea.Config{
-		CfgToken: os.Getenv("AUDIT_INTEGRATION_CONFIG_TOKEN"),
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig)
+	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	searchInput := &audit.SearchInput{
 		Query: pangea.String("message:test"),
