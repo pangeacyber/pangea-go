@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -124,7 +125,15 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 		}
 		return fmt.Sprintf("%s://%s.%s.pangea.cloud/%s", cfg.EndpointConfig.Scheme, service, cfg.EndpointConfig.CSP, path), nil
 	}
-	u, err := url.Parse(cfg.Endpoint + path)
+
+	// support Endpoint in the format of `dev.pangea.cloud/`, for pipelines
+	endpoint := fmt.Sprintf("https://%s.%s%s", service, cfg.Endpoint, path)
+
+	// use Endpoint as-is, if it begins with http, for local testing
+	if strings.HasPrefix(cfg.Endpoint, "http") {
+		endpoint = cfg.Endpoint + path
+	}
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return "", err
 	}
