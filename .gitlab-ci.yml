@@ -1,5 +1,9 @@
 image: golang:1.18-bullseye
 
+default:
+  tags:
+    - pangea-internal
+
 cache:
   paths:
     - /apt-cache
