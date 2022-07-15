@@ -83,6 +83,32 @@ func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pange
 	return &out, resp, nil
 }
 
+// SearchAll is a helper function to return all the search results for a search with pages
+func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, Events, error) {
+	out, _, err := client.Search(ctx, input)
+	if err != nil {
+		return nil, nil, err
+	}
+	events := make(Events, 0, *out.Count)
+	events = append(events, out.Events...)
+	for pangea.IntValue(out.Count) > len(events) {
+		s := SeachResultInput{
+			ID:                     out.ID,
+			IncludeMembershipProof: input.IncludeMembershipProof,
+			IncludeHash:            input.IncludeHash,
+		}
+		sOut, _, err := client.SearchResults(ctx, &s)
+		if err != nil {
+			return nil, nil, err
+		}
+		if len(sOut.Events) == 0 {
+			break
+		}
+		events = append(events, sOut.Events...)
+	}
+	return out.Root, events, nil
+}
+
 func (a *Audit) verifyRecords(events Events) error {
 	if a.VerifyRecords {
 		for idx, event := range events {
@@ -267,10 +293,10 @@ type SearchInput struct {
 	Last *string `json:"last,omitempty"`
 
 	// The start of the time range to perform the search on.
-	Start *string `json:"start,omitempty"`
+	Start *time.Time `json:"start,omitempty"`
 
 	// The end of the time range to perform the search on. All records up to the latest if left out.
-	End *string `json:"end,omitempty"`
+	End *time.Time `json:"end,omitempty"`
 
 	// Number of audit records to include from the first page of the results.
 	Limit *int `json:"limit,omitempty"`
@@ -399,12 +425,16 @@ type Record struct {
 	// max len of 128 bytes
 	Target *string `json:"target,omitempty"`
 
-	Timestamp *string `json:"timestamp"`
+	Timestamp *time.Time `json:"timestamp"`
 }
 
 func (r *Record) VerifySignature(verifier signer.Verifier) bool {
+	var timestamp string
+	if r.Timestamp != nil {
+		timestamp = r.Timestamp.Format(time.RFC3339)
+	}
 	b, err := newsSignedMessageFromRecord(r.Actor, r.Action, r.Message, r.New,
-		r.Old, r.Source, r.Status, r.Target, r.Timestamp)
+		r.Old, r.Source, r.Status, r.Target, &timestamp)
 	if err != nil {
 		return false
 	}
