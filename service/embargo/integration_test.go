@@ -3,7 +3,6 @@ package embargo_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -17,10 +16,11 @@ func Test_Integration_Check(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
+	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "EMBARGO_INTEGRATION_CONFIG_TOKEN")
 	cfg := &pangea.Config{
-		CfgToken: os.Getenv("EMBARGO_INTEGRATION_CONFIG_TOKEN"),
+		CfgToken: cfgToken,
 	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig)
+	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	client, _ := embargo.New(cfg)
 
 	input := &embargo.CheckInput{

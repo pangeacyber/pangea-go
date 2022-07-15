@@ -1,9 +1,8 @@
-// go:build integration
+// go:build unit
 package redact_test
 
 import (
 	"context"
-	"os"
 	"testing"
 	"time"
 
@@ -17,11 +16,12 @@ func Test_Integration_Redact(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
+	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "REDACT_INTEGRATION_CONFIG_TOKEN")
 	cfg := &pangea.Config{
-		CfgToken: os.Getenv("REDACT_INTEGRATION_CONFIG_TOKEN"),
+		CfgToken: cfgToken,
 		Retry:    true,
 	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig)
+	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	client, _ := redact.New(cfg)
 
 	input := &redact.TextInput{

@@ -66,7 +66,7 @@ func TestSearch(t *testing.T) {
 	defer teardown()
 
 	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
-	mux.HandleFunc("/v2/search", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
 		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true}`)
 		fmt.Fprintf(w,
@@ -142,7 +142,7 @@ func TestSearchResults(t *testing.T) {
 	defer teardown()
 
 	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
-	mux.HandleFunc("/v2/results", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/v1/results", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
 		pangeatesting.TestBody(t, r, `{"id":"some-id","include_membership_proof":true,"limit":50}`)
 		fmt.Fprintf(w,
