@@ -7,7 +7,8 @@ import (
 )
 
 type Client interface {
-	Check(ctx context.Context, input *CheckInput) (*CheckOutput, *pangea.Response, error)
+	IPCheck(ctx context.Context, input *IPCheckInput) (*CheckOutput, *pangea.Response, error)
+	ISOCheck(ctx context.Context, input *ISOCheckInput) (*CheckOutput, *pangea.Response, error)
 }
 
 type Embargo struct {
