@@ -1,0 +1,49 @@
+// embargo check is an example of how to use the check method
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/service/embargo"
+)
+
+func main() {
+	token := os.Getenv("PANGEA_AUTH_TOKEN")
+	if token == "" {
+		log.Fatal("Unauthorized: No token present")
+	}
+
+	configID := os.Getenv("EMBARGO_CONFIG_ID")
+	if token == "" {
+		log.Fatal("Configuration: No config ID present")
+	}
+
+	embargocli, err := embargo.New(&pangea.Config{
+		Token:    token,
+		Endpoint: "dev.pangea.cloud/",
+		EndpointConfig: &pangea.EndpointConfig{
+			Scheme: "https",
+			CSP:    "aws",
+		},
+		CfgToken: configID,
+	})
+	if err != nil {
+		log.Fatal("failed to create embargo client")
+	}
+
+	ctx := context.Background()
+	input := &embargo.ISOCheckInput{
+		ISOCode: pangea.String("CU"),
+	}
+
+	checkOutput, _, err := embargocli.ISOCheck(ctx, input)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(pangea.Stringify(checkOutput))
+}

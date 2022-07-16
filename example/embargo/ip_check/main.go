@@ -35,11 +35,11 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &embargo.CheckInput{
-		ISOCode: pangea.String("CU"),
+	input := &embargo.IPCheckInput{
+		IP: pangea.String("213.24.238.26"),
 	}
 
-	checkOutput, _, err := embargocli.Check(ctx, input)
+	checkOutput, _, err := embargocli.IPCheck(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
