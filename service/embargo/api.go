@@ -6,8 +6,8 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-func (e *Embargo) Check(ctx context.Context, input *CheckInput) (*CheckOutput, *pangea.Response, error) {
-	req, err := e.Client.NewRequest("POST", "v1/check", input)
+func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*CheckOutput, *pangea.Response, error) {
+	req, err := e.Client.NewRequest("POST", "v1/ip/check", input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -19,8 +19,24 @@ func (e *Embargo) Check(ctx context.Context, input *CheckInput) (*CheckOutput, *
 	return &out, resp, nil
 }
 
-type CheckInput struct {
-	IP      *string `json:"ip,omitempty"`
+func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*CheckOutput, *pangea.Response, error) {
+	req, err := e.Client.NewRequest("POST", "v1/iso/check", input)
+	if err != nil {
+		return nil, nil, err
+	}
+	out := CheckOutput{}
+	resp, err := e.Client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, resp, err
+	}
+	return &out, resp, nil
+}
+
+type IPCheckInput struct {
+	IP *string `json:"ip,omitempty"`
+}
+
+type ISOCheckInput struct {
 	ISOCode *string `json:"iso_code,omitempty"`
 }
 

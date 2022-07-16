@@ -150,11 +150,11 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 
 	// Check Embargo
 	ctx := context.Background()
-	eminput := &embargo.CheckInput{
+	eminput := &embargo.IPCheckInput{
 		IP: pangea.String(client_ip),
 	}
 
-	checkOutput, _, err := a.pangea_embargo.Check(ctx, eminput)
+	checkOutput, _, err := a.pangea_embargo.IPCheck(ctx, eminput)
 	if err != nil {
 		log.Println("[App.uploadResume] embargo check error: ", err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())
