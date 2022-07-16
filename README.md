@@ -39,11 +39,11 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &embargo.CheckInput{
+	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),
 	}
 
-	checkOutput, _, err := embargocli.Check(ctx, input)
+	checkOutput, _, err := embargocli.ISOCheck(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
