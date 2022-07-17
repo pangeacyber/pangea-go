@@ -83,7 +83,7 @@ func TestIPCheck(t *testing.T) {
 
 	mux.HandleFunc("/v1/ip/check", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"iso_code":"CU"}`)
+		pangeatesting.TestBody(t, r, `{"ip":"200.0.16.2"}`)
 		fmt.Fprint(w,
 			`{
 				"request_id": "some-id",
@@ -115,7 +115,7 @@ func TestIPCheck(t *testing.T) {
 
 	client, _ := embargo.New(pangeatesting.TestConfig(url))
 	input := &embargo.IPCheckInput{
-		IP: pangea.String("200.0.16.24"),
+		IP: pangea.String("200.0.16.2"),
 	}
 	ctx := context.Background()
 	got, _, err := client.IPCheck(ctx, input)

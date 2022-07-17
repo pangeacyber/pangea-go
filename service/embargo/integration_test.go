@@ -23,10 +23,10 @@ func Test_Integration_Check(t *testing.T) {
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	client, _ := embargo.New(cfg)
 
-	input := &embargo.CheckInput{
+	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),
 	}
-	out, _, err := client.Check(ctx, input)
+	out, _, err := client.ISOCheck(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
