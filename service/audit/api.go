@@ -167,6 +167,9 @@ type LogEventInput struct {
 	// max len of 256 bytes
 	Signature *string `json:"signature,omitempty"`
 
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
+
 	// Used to record the location from where an activity occurred.
 	// max len of 128 bytes
 	Source *string `json:"source,omitempty"`
@@ -197,6 +200,7 @@ func (i *LogEventInput) Sign(s signer.Signer) error {
 		return err
 	}
 	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
+	i.PublicKey = pangea.String(s.PublicKey())
 	return nil
 }
 
