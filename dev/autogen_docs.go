@@ -147,7 +147,7 @@ type DocumentedType struct {
 type DocumentedFunc struct {
 	Name        string       `json:"name"`
 	Doc         string       `json:"doc"`
-	Declaration string       `json:"Declaration"`
+	Declaration string       `json:"declaration"`
 	Level       int          `json:"level"`
 	Type        *AstFuncType `json:"type"`
 }
@@ -155,7 +155,7 @@ type DocumentedFunc struct {
 type DocumentedValue struct {
 	Doc     string   `json:"doc"`
 	Names   []string `json:"names"`
-	Comment string   `json:"comment",omitempty`
+	Comment string   `json:"comment"`
 }
 
 type DocumentedConst struct {
