@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 type Signer interface {
 	Sign(msg []byte) ([]byte, error)
+	PublicKey() string
 }
 
 type Verifier interface {
@@ -59,4 +61,8 @@ func (k *PrivateKey) Sign(msg []byte) ([]byte, error) {
 
 func (k *PrivateKey) Verify(msg, sig []byte) bool {
 	return ed25519.Verify(k.pub, msg, sig)
+}
+
+func (k *PrivateKey) PublicKey() string {
+	return base64.StdEncoding.EncodeToString(k.pub)
 }
