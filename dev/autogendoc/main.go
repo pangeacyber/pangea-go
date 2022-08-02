@@ -14,6 +14,73 @@ import (
 	"path/filepath"
 )
 
+type Document struct {
+	Package string `json:"package"`
+	Doc     string `json:"doc"`
+
+	Types  []*DocumentedType  `json:"types"`
+	Consts []*DocumentedConst `json:"consts"`
+	Funcs  []*DocumentedFunc  `json:"funcs"`
+}
+
+type DocumentedType struct {
+	Name        string `json:"name"`
+	Doc         string `json:"doc"`
+	Declaration string `json:"declaration"`
+
+	Funcs   []*DocumentedFunc `json:"funcs"`
+	Methods []*DocumentedFunc `json:"methods"`
+
+	Consts []*DocumentedValue `json:"consts"`
+	Vars   []*DocumentedValue `json:"vars"`
+
+	AstFields []*AstField `json:"astFields"`
+}
+
+type DocumentedFunc struct {
+	Name        string               `json:"name"`
+	Doc         string               `json:"doc"`
+	Declaration string               `json:"declaration"`
+	Level       int                  `json:"level"`
+	Type        *AstFuncType         `json:"type"`
+	Examples    []*DocumentedExample `json:"examples"`
+}
+
+type DocumentedExample struct {
+	Name        string `json:"name"`
+	Suffix      string `json:"suffix"`
+	Doc         string `json:"doc"`
+	Output      string `json:"output"`
+	Unordered   bool   `json:"unordered"`
+	EmptyOutput bool   `json:"emptyOutput"`
+	Order       int    `json:"order"`
+}
+
+type DocumentedValue struct {
+	Doc     string   `json:"doc"`
+	Names   []string `json:"names"`
+	Comment string   `json:"comment"`
+}
+
+type DocumentedConst struct {
+	Name string `json:"name"`
+	Doc  string `json:"doc"`
+}
+
+type AstFuncType struct {
+	TypeParams []*AstField `json:"typeParams"`
+	Params     []*AstField `json:"params"`
+	Results    []*AstField `json:"results"`
+}
+
+type AstField struct {
+	Doc     string   `json:"doc"`
+	Comment string   `json:"comment"`
+	Names   []string `json:"names"`
+	Type    string   `json:"type"`
+	Tag     string   `json:"tag"`
+}
+
 func main() {
 	DIRECTORIES := []string{
 		"./service",
@@ -110,7 +177,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf(string(resultJson))
+	fmt.Println(string(resultJson))
 }
 
 func mustParse(fset *token.FileSet, filename string) *ast.File {
@@ -119,48 +186,6 @@ func mustParse(fset *token.FileSet, filename string) *ast.File {
 		log.Fatal(err)
 	}
 	return f
-}
-
-type Document struct {
-	Package string `json:"package"`
-	Doc     string `json:"doc"`
-
-	Types  []*DocumentedType  `json:"types"`
-	Consts []*DocumentedConst `json:"consts"`
-	Funcs  []*DocumentedFunc  `json:"funcs"`
-}
-
-type DocumentedType struct {
-	Name        string `json:"name"`
-	Doc         string `json:"doc"`
-	Declaration string `json:"declaration"`
-
-	Funcs   []*DocumentedFunc `json:"funcs"`
-	Methods []*DocumentedFunc `json:"methods"`
-
-	Consts []*DocumentedValue `json:"consts"`
-	Vars   []*DocumentedValue `json:"vars"`
-
-	AstFields []*AstField `json:"astFields"`
-}
-
-type DocumentedFunc struct {
-	Name        string       `json:"name"`
-	Doc         string       `json:"doc"`
-	Declaration string       `json:"declaration"`
-	Level       int          `json:"level"`
-	Type        *AstFuncType `json:"type"`
-}
-
-type DocumentedValue struct {
-	Doc     string   `json:"doc"`
-	Names   []string `json:"names"`
-	Comment string   `json:"comment"`
-}
-
-type DocumentedConst struct {
-	Name string `json:"name"`
-	Doc  string `json:"doc"`
 }
 
 func gatherTypes(docTypes []*doc.Type, fs *token.FileSet) []*DocumentedType {
@@ -217,24 +242,30 @@ func gatherFuncs(docFuncs []*doc.Func, fs *token.FileSet) []*DocumentedFunc {
 			Declaration: prettify(f.Decl, fs),
 			Level:       f.Level,
 			Type:        gatherAstFuncType(f.Decl.Type, fs),
+			Examples:    gatherExamples(f.Examples, fs),
 		})
 	}
 
 	return funcs
 }
 
-type AstFuncType struct {
-	TypeParams []*AstField `json:"typeParams"`
-	Params     []*AstField `json:"params"`
-	Results    []*AstField `json:"results"`
-}
+// Gather examples from *_test.go files
+func gatherExamples(examples []*doc.Example, fs *token.FileSet) []*DocumentedExample {
+	ex := []*DocumentedExample{}
 
-type AstField struct {
-	Doc     string   `json:"doc"`
-	Comment string   `json:"comment"`
-	Names   []string `json:"names"`
-	Type    string   `json:"type"`
-	Tag     string   `json:"tag"`
+	for _, e := range examples {
+		ex = append(ex, &DocumentedExample{
+			Name:        e.Name,
+			Suffix:      e.Suffix,
+			Doc:         e.Doc,
+			Output:      e.Output,
+			EmptyOutput: e.EmptyOutput,
+			Unordered:   e.Unordered,
+			Order:       e.Order,
+		})
+	}
+
+	return ex
 }
 
 func gatherAstFuncType(astType *ast.FuncType, fs *token.FileSet) *AstFuncType {

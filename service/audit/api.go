@@ -11,7 +11,21 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-// Log creates a log entry in the Secure Audit Log.
+// Log an entry
+//
+// Create a log entry in the Secure Audit Log.
+//
+// Example:
+//
+//  input := &audit.LogInput{
+//  	Event: &audit.LogEventInput{
+//  		Message: pangea.String("some important message."),
+//  	},
+//  	ReturnHash: pangea.Bool(true),
+//  }
+//
+//  logOutput, _, err := auditcli.Log(ctx, input)
+//
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error) {
 	if a.SignLogs {
 		err := input.Event.Sign(a.Signer)
@@ -33,7 +47,19 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 	return &out, resp, nil
 }
 
-// Search the Secure Audit Log
+// Search for events
+//
+// Search for events that match the provided search criteria.
+//
+// Example:
+//
+//  input := &audit.SearchInput{
+//  	Query:                  pangea.String("message:log-123"),
+//  	IncludeMembershipProof: pangea.Bool(true),
+//  }
+//
+//  searchOutput, _, err := auditcli.Search(ctx, input)
+//
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
@@ -69,7 +95,18 @@ func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*Se
 	return &out, resp, nil
 }
 
+// Retrieve tamperproof verification
+//
 // Root returns current root hash and consistency proof.
+//
+// Example:
+//
+//  input := &audit.RootInput{
+//  	TreeSize: pangea.Int(10),
+//  }
+//
+//  rootOutput, _, err := auditcli.Root(ctx, input)
+//
 func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "v1/root", input)
 	if err != nil {
