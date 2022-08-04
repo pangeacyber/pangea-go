@@ -78,12 +78,12 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, 
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*SeachResultOutput, *pangea.Response, error) {
+func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*SearchResultOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, nil, err
 	}
-	out := SeachResultOutput{}
+	out := SearchResultOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, nil, err
@@ -129,7 +129,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, E
 	events := make(Events, 0, *out.Count)
 	events = append(events, out.Events...)
 	for pangea.IntValue(out.Count) > len(events) {
-		s := SeachResultInput{
+		s := SearchResultInput{
 			ID:                     out.ID,
 			IncludeMembershipProof: input.IncludeMembershipProof,
 			IncludeHash:            input.IncludeHash,
@@ -486,7 +486,7 @@ func (r *Record) VerifySignature(verifier signer.Verifier) bool {
 	return verifier.Verify(b, sig)
 }
 
-type SeachResultInput struct {
+type SearchResultInput struct {
 	// A search results identifier returned by the search call
 	// ID is a required field
 	ID *string `json:"id"`
@@ -507,7 +507,7 @@ type SeachResultInput struct {
 	Offset *int `json:"offset,omitempty"`
 }
 
-type SeachResultOutput struct {
+type SearchResultOutput struct {
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
 	Count *int `json:"count"`

@@ -187,7 +187,7 @@ func TestSearchResults(t *testing.T) {
 	})
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
-	input := &audit.SeachResultInput{
+	input := &audit.SearchResultInput{
 		ID:                     pangea.String("some-id"),
 		IncludeMembershipProof: pangea.Bool(true),
 		Limit:                  pangea.Int(50),
@@ -197,7 +197,7 @@ func TestSearchResults(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	want := &audit.SeachResultOutput{
+	want := &audit.SearchResultOutput{
 		Count: pangea.Int(2),
 		Events: audit.Events{
 			{
