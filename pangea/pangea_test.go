@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/pangeacyber/go-pangea/internal/pangeatesting"
 )
@@ -352,4 +353,82 @@ func TestDo_With_Retries_Error(t *testing.T) {
 	if !ok {
 		t.Fatalf("Expected pangea.APIError, got %T", err)
 	}
+}
+
+func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	client := testClient(t, url)
+
+	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		fmt.Fprint(w, `{
+			"request_id": "some-id",
+			"request_time": "1970-01-01T00:00:00Z",
+			"response_time": "1970-01-01T00:00:10Z",
+			"status_code": 202,
+			"status": "error",
+			"result": null,
+			"summary": "Accepted"
+		}`)
+	})
+
+	req, _ := client.NewRequest("POST", "test", nil)
+	_, err := client.Do(context.Background(), req, nil)
+
+	if err == nil {
+		t.Fatal("Expected error")
+	}
+
+	pangeaErr, ok := err.(*pangea.AcceptedError)
+	if !ok {
+		t.Fatalf("Expected pangea.AcceptedError, got %T", err)
+	}
+	if pangeaErr.ResponseMetadata.StatusCode == nil {
+		t.Fatal("Expected non-nil status code")
+	}
+	if *pangeaErr.ResponseMetadata.StatusCode != http.StatusAccepted {
+		t.Errorf("Expected status code %d, got %d", http.StatusAccepted, *pangeaErr.ResponseMetadata.StatusCode)
+	}
+}
+
+func TestFetchAcceptedResponse_When_Server_Returns_200_It_JSON_Marshals_Payload(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	client := testClient(t, url)
+
+	mux.HandleFunc("/request/id", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "GET")
+		pangeatesting.TestBody(t, r, "")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, `{
+			"request_id": "some-id",
+			"request_time": "1970-01-01T00:00:00Z",
+			"response_time": "1970-01-01T00:00:10Z",
+			"status_code": 200,
+			"status": "error",
+			"result": {
+				"key": "value"
+			},
+			"summary": "Accepted"
+		}`)
+	})
+
+	type Payload struct {
+		Key *string `json:"key"`
+	}
+
+	var payload *Payload
+	_, err := client.FetchAcceptedResponse(context.Background(), "id", &payload)
+
+	if err != nil {
+		t.Fatalf("Expected no error got %v", err)
+	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, payload)
+	assert.NotNil(t, payload.Key)
+	assert.Equal(t, "value", *payload.Key)
 }
