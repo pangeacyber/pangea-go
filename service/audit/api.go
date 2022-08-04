@@ -109,6 +109,19 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, E
 	return out.Root, events, nil
 }
 
+// SearchAll is a helper function to return all the search results for a search with pages and valitade membership proof and consitency proof
+func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput, r RootsProvider) (*Root, ValidateEvents, error) {
+	root, events, err := SearchAll(ctx, client, input)
+	if err != nil {
+		return nil, nil, err
+	}
+	vEvents, err := VerifyAuditRecords(ctx, r, root, events, true)
+	if err != nil {
+		return nil, nil, err
+	}
+	return root, vEvents, nil
+}
+
 func (a *Audit) verifyRecords(events Events) error {
 	if a.VerifyRecords {
 		for idx, event := range events {

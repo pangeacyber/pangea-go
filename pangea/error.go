@@ -95,7 +95,7 @@ type AcceptedError struct {
 }
 
 func (e *AcceptedError) Error() string {
-	return fmt.Sprintf("request scheduled on Pangea side: please check the status of the request %v later", e.ResponseMetadata.RequestID)
+	return fmt.Sprintf("request scheduled on Pangea side: please check the status of the request %v later", e.ReqID())
 }
 
 // Is returns whether the provided error equals this error.
@@ -105,4 +105,9 @@ func (e *AcceptedError) Is(target error) bool {
 		return false
 	}
 	return v.RequestID == e.RequestID
+}
+
+// ReqID is a helper function to get the request ID
+func (e *AcceptedError) ReqID() string {
+	return StringValue(e.RequestID)
 }

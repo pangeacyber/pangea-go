@@ -324,3 +324,16 @@ func (c *Config) Copy(cfgs ...*Config) *Config {
 
 	return dst
 }
+
+// FetchAcceptedResponse retries the
+func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v interface{}) (*Response, error) {
+	req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", reqID), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.Do(ctx, req, v)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}

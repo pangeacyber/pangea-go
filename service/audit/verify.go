@@ -172,26 +172,36 @@ func verifyConsistencyProof(old, new Root) (bool, error) {
 	return true, nil
 }
 
-func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, events Events, required bool) (bool, error) {
+func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, events Events, required bool) (ValidateEvents, error) {
 	if root == nil || len(events) == 0 {
-		return false, fmt.Errorf("audit: empty root or events")
+		return nil, fmt.Errorf("audit: empty root or events")
 	}
 
 	treeSizes := treeSizes(root, events)
 	roots, err := rp.Roots(ctx, treeSizes)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-
+	validatedEvents := make(ValidateEvents, 0, len(events))
 	for _, event := range events {
-		if !VerifyConsistencyProof(roots, *event, required) {
-			return false, fmt.Errorf("audit: consistency proof failed for event %v", *event)
+		validatedEvent := &ValidatedEvent{
+			Event: event,
 		}
+		if event.LeafIndex == nil {
+			continue
+		}
+		validatedEvent.ConsistencyProofStatus = pangea.Bool(VerifyConsistencyProof(roots, *event, required))
+		mStatus, err := VerifyMembershipProof(*root, *event, required)
+		if err != nil {
+			return nil, err
+		}
+		validatedEvent.MembershipProofStatus = pangea.Bool(mStatus)
+		validatedEvents = append(validatedEvents, validatedEvent)
 	}
-	return true, nil
+	return validatedEvents, nil
 }
 
-func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events Events, required bool) (bool, error) {
+func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events Events, required bool) (ValidateEvents, error) {
 	arweavecli := NewArweaveRootsProvider(*root.TreeName)
 	return VerifyAuditRecords(ctx, arweavecli, root, events, required)
 }
@@ -245,3 +255,16 @@ func splitHashProof(proof string) (label, rawHash string, err error) {
 	}
 	return label, rawHash, nil
 }
+
+type ValidatedEvent struct {
+	// the event that was validated
+	Event *EventEnvelope
+
+	// True if the event was successfully validated nil if there is no membership to validate
+	MembershipProofStatus *bool
+
+	// True if the event was successfully validated nil if there is no hash to validate
+	ConsistencyProofStatus *bool
+}
+
+type ValidateEvents []*ValidatedEvent
