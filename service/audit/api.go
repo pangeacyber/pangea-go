@@ -11,7 +11,21 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-// Log creates a log entry in the Secure Audit Log.
+// Log an entry
+//
+// Create a log entry in the Secure Audit Log.
+//
+// Example:
+//
+//  input := &audit.LogInput{
+//  	Event: &audit.LogEventInput{
+//  		Message: pangea.String("some important message."),
+//  	},
+//  	ReturnHash: pangea.Bool(true),
+//  }
+//
+//  logOutput, _, err := auditcli.Log(ctx, input)
+//
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error) {
 	if a.SignLogs {
 		err := input.Event.Sign(a.Signer)
@@ -33,7 +47,19 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 	return &out, resp, nil
 }
 
-// Search the Secure Audit Log
+// Search for events
+//
+// Search for events that match the provided search criteria.
+//
+// Example:
+//
+//  input := &audit.SearchInput{
+//  	Query:                  pangea.String("message:log-123"),
+//  	IncludeMembershipProof: pangea.Bool(true),
+//  }
+//
+//  searchOutput, _, err := auditcli.Search(ctx, input)
+//
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
@@ -52,12 +78,12 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, 
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*SeachResultOutput, *pangea.Response, error) {
+func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*SearchResultOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, nil, err
 	}
-	out := SeachResultOutput{}
+	out := SearchResultOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, nil, err
@@ -69,7 +95,18 @@ func (a *Audit) SearchResults(ctx context.Context, input *SeachResultInput) (*Se
 	return &out, resp, nil
 }
 
+// Retrieve tamperproof verification
+//
 // Root returns current root hash and consistency proof.
+//
+// Example:
+//
+//  input := &audit.RootInput{
+//  	TreeSize: pangea.Int(10),
+//  }
+//
+//  rootOutput, _, err := auditcli.Root(ctx, input)
+//
 func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pangea.Response, error) {
 	req, err := a.Client.NewRequest("POST", "v1/root", input)
 	if err != nil {
@@ -92,7 +129,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, E
 	events := make(Events, 0, *out.Count)
 	events = append(events, out.Events...)
 	for pangea.IntValue(out.Count) > len(events) {
-		s := SeachResultInput{
+		s := SearchResultInput{
 			ID:                     out.ID,
 			IncludeMembershipProof: input.IncludeMembershipProof,
 			IncludeHash:            input.IncludeHash,
@@ -462,7 +499,7 @@ func (r *Record) VerifySignature(verifier signer.Verifier) bool {
 	return verifier.Verify(b, sig)
 }
 
-type SeachResultInput struct {
+type SearchResultInput struct {
 	// A search results identifier returned by the search call
 	// ID is a required field
 	ID *string `json:"id"`
@@ -483,7 +520,7 @@ type SeachResultInput struct {
 	Offset *int `json:"offset,omitempty"`
 }
 
-type SeachResultOutput struct {
+type SearchResultOutput struct {
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
 	Count *int `json:"count"`

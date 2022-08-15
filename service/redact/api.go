@@ -7,7 +7,18 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-// Redact sensitive information from provided text.
+// Redact
+//
+// Redacts the content of a single text string.
+//
+// Example:
+//
+//  input := &redact.TextInput{
+//  	Text: pangea.String("my phone number is 123-456-7890"),
+//  }
+//
+//  redactOutput, _, err := redactcli.Redact(ctx, input)
+//
 func (r *Redact) Redact(ctx context.Context, input *TextInput) (*TextOutput, *pangea.Response, error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact", input)
 	if err != nil {
@@ -22,7 +33,28 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*TextOutput, *pa
 	return &out, resp, nil
 }
 
-// RedactStructured redacts sensitive infromation from structured data (e.g., JSON).
+// Redact structured
+//
+// Redacts text within a structured object.
+//
+// Example:
+//
+//  type yourCustomDataStruct struct {
+//  	Secret string `json:"secret"`
+//  }
+//
+//  input := &redact.StructuredInput{
+//  	JSONP: []*string{
+//  		pangea.String("$.secret"),
+//  	},
+//  }
+//  rawData := yourCustomDataStruct{
+//  	Secret: "My social security number is 0303456",
+//  }
+//  input.SetData(rawData)
+//
+//  redactOutput, _, err := redactcli.RedactStructured(ctx, input)
+//
 func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*StructuredOutput, *pangea.Response, error) {
 	if input == nil {
 		input = &StructuredInput{}

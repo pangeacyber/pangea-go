@@ -6,6 +6,18 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
+// Check IP
+//
+// Check this IP against known sanction and trade embargo lists.
+//
+// Example:
+//
+//  input := &embargo.IPCheckInput{
+//  	IP: pangea.String("213.24.238.26"),
+//  }
+//
+//  checkOutput, _, err := embargocli.IPCheck(ctx, input)
+//
 func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*CheckOutput, *pangea.Response, error) {
 	req, err := e.Client.NewRequest("POST", "v1/ip/check", input)
 	if err != nil {
@@ -19,6 +31,18 @@ func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*CheckOutpu
 	return &out, resp, nil
 }
 
+// ISO Code Check
+//
+// Check this country against known sanction and trade embargo lists.
+//
+// Example:
+//
+//  input := &embargo.ISOCheckInput{
+//  	ISOCode: pangea.String("CU"),
+//  }
+//
+//  checkOutput, _, err := embargocli.ISOCheck(ctx, input)
+//
 func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*CheckOutput, *pangea.Response, error) {
 	req, err := e.Client.NewRequest("POST", "v1/iso/check", input)
 	if err != nil {
@@ -33,10 +57,13 @@ func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*CheckOut
 }
 
 type IPCheckInput struct {
+	// Check this IP against the enabled embargo lists.
+	// Accepts both IPV4 and IPV6 strings.
 	IP *string `json:"ip,omitempty"`
 }
 
 type ISOCheckInput struct {
+	// Check this two character country ISO-code against the enabled embargo lists.
 	ISOCode *string `json:"iso_code,omitempty"`
 }
 

@@ -85,7 +85,7 @@ func Test_Integration_SearchResults(t *testing.T) {
 	assert.NotNil(t, searchOut)
 	assert.NotNil(t, searchOut.ID)
 
-	searchResultInput := &audit.SeachResultInput{
+	searchResultInput := &audit.SearchResultInput{
 		ID: searchOut.ID,
 	}
 	out, _, err := client.SearchResults(ctx, searchResultInput)
