@@ -121,7 +121,7 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 	cfg := c.Config
 	if cfg.EndpointConfig != nil {
 		if cfg.EndpointConfig.Region != "" {
-			return fmt.Sprintf("%s://%s.%s.%s.pangea.cloud/%s", cfg.EndpointConfig.Scheme, service, cfg.EndpointConfig.Region, cfg.EndpointConfig.CSP, path), nil
+			return fmt.Sprintf("%s://%s.%s.%s.pangea.cloud/%s", cfg.EndpointConfig.Scheme, service, cfg.EndpointConfig.CSP, cfg.EndpointConfig.Region, path), nil
 		}
 		return fmt.Sprintf("%s://%s.%s.pangea.cloud/%s", cfg.EndpointConfig.Scheme, service, cfg.EndpointConfig.CSP, path), nil
 	}
