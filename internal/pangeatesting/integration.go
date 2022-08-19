@@ -24,12 +24,12 @@ var (
 
 func initConfig() {
 	integrationConfig.Token = os.Getenv("PANGEA_TEST_INTEGRATION_TOKEN")
-	integrationConfig.Endpoint = os.Getenv("PANGEA_TEST_INTEGRATION_ENDPOINT")
+	integrationConfig.Domain = os.Getenv("PANGEA_TEST_INTEGRATION_ENDPOINT")
 }
 
 func IntegrationConfig(t *testing.T) *pangea.Config {
 	onceInit.Do(initConfig)
-	if integrationConfig.Token == "" || integrationConfig.Endpoint == "" {
+	if integrationConfig.Token == "" || integrationConfig.Domain == "" {
 		t.Skip("set PANGEA_TEST_INTEGRATION_TOKEN and PANGEA_TEST_INTEGRATION_ENDPOINT env variables to run this test")
 	}
 	return integrationConfig

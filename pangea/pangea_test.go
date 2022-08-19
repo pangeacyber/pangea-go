@@ -16,7 +16,7 @@ import (
 
 func testClient(t *testing.T, url string) *pangea.Client {
 	t.Helper()
-	return pangea.NewClient("service", &pangea.Config{Token: "TestToken", Endpoint: url})
+	return pangea.NewClient("service", pangeatesting.TestConfig(url))
 }
 
 func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
@@ -274,17 +274,13 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 func TestDo_With_Retries_Success(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
+	cfg := pangeatesting.TestConfig(url)
+	cfg.Retry = true
+	cfg.RetryConfig = &pangea.RetryConfig{
+		RetryMax: 1,
+	}
 
-	client := pangea.NewClient("service", &pangea.Config{
-		Token:    "TestToken",
-		Endpoint: url,
-		Retry:    true,
-		RetryConfig: &pangea.RetryConfig{
-			RetryMax: 1,
-		},
-	},
-	)
-
+	client := pangea.NewClient("service", cfg)
 	req, _ := client.NewRequest("POST", "test", nil)
 
 	handler := func() func(w http.ResponseWriter, r *http.Request) {
@@ -326,16 +322,13 @@ func TestDo_With_Retries_Success(t *testing.T) {
 func TestDo_With_Retries_Error(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
+	cfg := pangeatesting.TestConfig(url)
+	cfg.Retry = true
+	cfg.RetryConfig = &pangea.RetryConfig{
+		RetryMax: 1,
+	}
 
-	client := pangea.NewClient("service", &pangea.Config{
-		Token:    "TestToken",
-		Endpoint: url,
-		Retry:    true,
-		RetryConfig: &pangea.RetryConfig{
-			RetryMax: 1,
-		},
-	},
-	)
+	client := pangea.NewClient("service", cfg)
 
 	req, _ := client.NewRequest("POST", "test", nil)
 

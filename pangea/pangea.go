@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -22,12 +21,6 @@ const (
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
-
-type EndpointConfig struct {
-	Scheme string
-	Region string
-	CSP    string
-}
 
 type RetryConfig struct {
 	RetryWaitMin time.Duration // Minimum time to wait
@@ -46,14 +39,15 @@ type Config struct {
 	//  It defaults to defaults.HTTPClient
 	HTTPClient *http.Client
 
-	// EndpointConfig is the configuration for the endpoint.
-	//  It overrides the Endpoint field if non-nil.
-	EndpointConfig *EndpointConfig
+	// Base domain for API requests.
+	// 	Domain should always be specified with a trailing slash.
+	Domain string
 
-	// Base URL for API requests.
-	// 	BaseURL should always be specified with a trailing slash.
-	//  Used for testing.
-	Endpoint string
+	// Set to true to use plain http
+	Insecure bool
+
+	// Set to "local" for testing locally
+	Enviroment string
 
 	// AdditionalHeaders is a map of additional headers to be sent with the request.
 	AdditionalHeaders map[string]string
@@ -119,19 +113,19 @@ func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
 // Path should be absolute and start with a slash.
 func (c *Client) serviceUrl(service, path string) (string, error) {
 	cfg := c.Config
-	if cfg.EndpointConfig != nil {
-		if cfg.EndpointConfig.Region != "" {
-			return fmt.Sprintf("%s://%s.%s.%s.pangea.cloud/%s", cfg.EndpointConfig.Scheme, service, cfg.EndpointConfig.Region, cfg.EndpointConfig.CSP, path), nil
-		}
-		return fmt.Sprintf("%s://%s.%s.pangea.cloud/%s", cfg.EndpointConfig.Scheme, service, cfg.EndpointConfig.CSP, path), nil
+	scheme := ""
+	endpoint := ""
+
+	if cfg.Insecure == false {
+		scheme = "https://"
+	} else {
+		scheme = "http://"
 	}
 
-	// support Endpoint in the format of `dev.pangea.cloud/`, for pipelines
-	endpoint := fmt.Sprintf("https://%s.%s%s", service, cfg.Endpoint, path)
-
-	// use Endpoint as-is, if it begins with http, for local testing
-	if strings.HasPrefix(cfg.Endpoint, "http") {
-		endpoint = cfg.Endpoint + path
+	if cfg.Enviroment == "local" {
+		endpoint = fmt.Sprintf("%s%s%s", scheme, cfg.Domain, path)
+	} else {
+		endpoint = fmt.Sprintf("%s%s.%s%s", scheme, service, cfg.Domain, path)
 	}
 	u, err := url.Parse(endpoint)
 	if err != nil {
@@ -141,7 +135,7 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr,
-// in which case it is resolved relative to the Endpoint or EndpointConfig of the Client.
+// in which case it is resolved relative to the Domain of the Client.
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
@@ -204,8 +198,9 @@ func newResponse(r *http.Response) (*Response, error) {
 }
 
 // BareDo sends an API request and lets you handle the api response.
+//
 //	If an error or API Error occurs, the error will contain more information. Otherwise you
-// 	are supposed to read and close the response's Body.
+//	are supposed to read and close the response's Body.
 func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 	resp, err := c.Config.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
@@ -291,13 +286,15 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.CfgToken = other.CfgToken
 	}
 
-	if other.Endpoint != "" {
-		dst.Endpoint = other.Endpoint
+	if other.Domain != "" {
+		dst.Domain = other.Domain
 	}
 
-	if other.EndpointConfig != nil {
-		dst.EndpointConfig = other.EndpointConfig
+	if other.Enviroment != "" {
+		dst.Enviroment = other.Enviroment
 	}
+
+	dst.Insecure = other.Insecure
 
 	if other.AdditionalHeaders != nil {
 		dst.AdditionalHeaders = other.AdditionalHeaders

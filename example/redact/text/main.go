@@ -22,11 +22,9 @@ func main() {
 	}
 
 	redactcli, err := redact.New(&pangea.Config{
-		Token: token,
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    "aws",
-		},
+		Token:    token,
+		Domain:   "dev.pangea.cloud/",
+		Insecure: false,
 		CfgToken: configID,
 	})
 	if err != nil {
