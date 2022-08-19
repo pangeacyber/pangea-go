@@ -38,9 +38,19 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 }
 
 func TestConfig(url string) *pangea.Config {
+	// Clean scheme. It will be adden after decide if it should be secure o insecure
+	// It only happens on testing because of local server
+	if strings.HasPrefix(url, "https://") {
+		url = strings.TrimPrefix(url, "https://")
+	} else if strings.HasPrefix(url, "http://") {
+		url = strings.TrimPrefix(url, "http://")
+	}
+
 	return &pangea.Config{
-		Token:    "TestToken",
-		Endpoint: url,
+		Token:      "TestToken",
+		Domain:     url,
+		Insecure:   true,
+		Enviroment: "local",
 	}
 }
 
@@ -65,16 +75,16 @@ func TestBody(t *testing.T, r *http.Request, want string) {
 func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.Config) error) {
 	t.Helper()
 
-	emptyEndpointCfg := &pangea.Config{Endpoint: ""}
-	doErr := f(emptyEndpointCfg)
+	emptyDomainCfg := &pangea.Config{Domain: ""}
+	doErr := f(emptyDomainCfg)
 	if doErr == nil {
 		t.Fatalf("call to method %v with empty Enpoint got nil err, want error", method)
 	}
 
-	badUrlCfg := &pangea.Config{Endpoint: "htt://   "}
+	badUrlCfg := &pangea.Config{Domain: "htt://   "}
 	newRequestErr := f(badUrlCfg)
 	if newRequestErr == nil {
-		t.Fatalf("call to method %v with bad Endpoint got nil err, want error", method)
+		t.Fatalf("call to method %v with bad Domain got nil err, want error", method)
 	}
 }
 

@@ -47,11 +47,9 @@ func (a *App) Initialize(pangea_token string) {
 	embargoConfigID := os.Getenv("EMBARGO_CONFIG_ID")
 
 	a.pangea_embargo, err = embargo.New(&pangea.Config{
-		Token: a.pangea_token,
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    csp,
-		},
+		Token:    a.pangea_token,
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
+		Insecure: false,
 		CfgToken: embargoConfigID,
 	})
 	if err != nil {
@@ -61,11 +59,9 @@ func (a *App) Initialize(pangea_token string) {
 	auditConfigID := os.Getenv("AUDIT_CONFIG_ID")
 
 	a.pangea_audit, err = audit.New(&pangea.Config{
-		Token: a.pangea_token,
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    csp,
-		},
+		Token:    a.pangea_token,
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
+		Insecure: false,
 		CfgToken: auditConfigID,
 	})
 	if err != nil {
@@ -75,11 +71,9 @@ func (a *App) Initialize(pangea_token string) {
 	redactConfigID := os.Getenv("REDACT_CONFIG_ID")
 
 	a.pangea_redact, err = redact.New(&pangea.Config{
-		Token: a.pangea_token,
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    csp,
-		},
+		Token:    a.pangea_token,
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
+		Insecure: false,
 		CfgToken: redactConfigID,
 	})
 	if err != nil {

@@ -27,12 +27,10 @@ func main() {
 	}
 
 	embargocli, err := embargo.New(&pangea.Config{
-		Token: token,
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    "aws",
-		},
-		CfgToken: configID,
+		Token: 		token,
+		Domain: 	os.Getenv("PANGEA_DOMAIN"),
+		Insecure: 	false,
+		CfgToken: 	configID,
 	})
 	if err != nil {
 		log.Fatal("failed to create embargo client")

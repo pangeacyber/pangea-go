@@ -22,12 +22,9 @@ func main() {
 	}
 
 	auditcli, err := audit.New(&pangea.Config{
-		Token: token,
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    "aws",
-			Region: "us",
-		},
+		Token:    token,
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
+		Insecure: false,
 		CfgToken: configID,
 	})
 	if err != nil {
@@ -40,7 +37,7 @@ func main() {
 			Message: pangea.String("some important message."),
 		},
 		ReturnHash: pangea.Bool(true),
-		Verbose: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
 	}
 
 	logOutput, _, err := auditcli.Log(ctx, input)

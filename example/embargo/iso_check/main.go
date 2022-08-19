@@ -24,11 +24,8 @@ func main() {
 
 	embargocli, err := embargo.New(&pangea.Config{
 		Token:    token,
-		Endpoint: "dev.pangea.cloud/",
-		EndpointConfig: &pangea.EndpointConfig{
-			Scheme: "https",
-			CSP:    "aws",
-		},
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
+		Insecure: false,
 		CfgToken: configID,
 	})
 	if err != nil {
