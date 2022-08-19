@@ -27,7 +27,7 @@ func main() {
 
 	redactcli, err := redact.New(&pangea.Config{
 		Token:    token,
-		Domain:   "dev.pangea.cloud/",
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
 		CfgToken: configID,
 	})

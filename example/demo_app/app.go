@@ -48,7 +48,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	a.pangea_embargo, err = embargo.New(&pangea.Config{
 		Token:    a.pangea_token,
-		Domain:   "dev.pangea.cloud/",
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
 		CfgToken: embargoConfigID,
 	})
@@ -60,7 +60,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	a.pangea_audit, err = audit.New(&pangea.Config{
 		Token:    a.pangea_token,
-		Domain:   "dev.pangea.cloud/",
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
 		CfgToken: auditConfigID,
 	})
@@ -72,7 +72,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	a.pangea_redact, err = redact.New(&pangea.Config{
 		Token:    a.pangea_token,
-		Domain:   "dev.pangea.cloud/",
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
 		CfgToken: redactConfigID,
 	})
