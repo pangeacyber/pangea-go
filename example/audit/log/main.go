@@ -37,6 +37,7 @@ func main() {
 			Message: pangea.String("some important message."),
 		},
 		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
 	}
 
 	logOutput, _, err := auditcli.Log(ctx, input)
