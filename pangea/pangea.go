@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -40,7 +41,6 @@ type Config struct {
 	HTTPClient *http.Client
 
 	// Base domain for API requests.
-	// 	Domain should always be specified with a trailing slash.
 	Domain string
 
 	// Set to true to use plain http
@@ -110,23 +110,26 @@ func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
 	}
 }
 
-// Path should be absolute and start with a slash.
 func (c *Client) serviceUrl(service, path string) (string, error) {
 	cfg := c.Config
-	scheme := ""
 	endpoint := ""
 
-	if cfg.Insecure == false {
-		scheme = "https://"
-	} else {
+	scheme := "https://"
+	if cfg.Insecure == true {
 		scheme = "http://"
 	}
 
+	// Remove slashes, just in case
+	path = strings.TrimPrefix(path, "/")
+	domain := strings.TrimSuffix(cfg.Domain, "/")
+
 	if cfg.Enviroment == "local" {
-		endpoint = fmt.Sprintf("%s%s%s", scheme, cfg.Domain, path)
+		// If we are testing locally do not use service
+		endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
 	} else {
-		endpoint = fmt.Sprintf("%s%s.%s%s", scheme, service, cfg.Domain, path)
+		endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, service, domain, path)
 	}
+
 	u, err := url.Parse(endpoint)
 	if err != nil {
 		return "", err
