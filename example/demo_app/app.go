@@ -73,7 +73,6 @@ func (a *App) Initialize(pangea_token string) {
 	a.pangea_redact, err = redact.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		Insecure: false,
 		CfgToken: redactConfigID,
 	})
 	if err != nil {
