@@ -32,7 +32,7 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 	// server is a test HTTP server used to provide mock API responses.
 	server := httptest.NewServer(apiHandler)
 
-	url, _ := url.Parse(server.URL + baseURLPath + "/")
+	url, _ := url.Parse(server.URL + baseURLPath)
 
 	return mux, url.String(), server.Close
 }

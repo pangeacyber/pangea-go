@@ -61,6 +61,56 @@ func TestLog(t *testing.T) {
 	assert.Equal(t, want, got)
 }
 
+func TestDomainTrailingSlash(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/log", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"return_hash":true,"verbose":true}`)
+		fmt.Fprint(w,
+			`{
+				"request_id": "some-id",
+				"request_time": "1970-01-01T00:00:00Z",
+				"response_time": "1970-01-01T00:00:10Z",
+				"status_code": 200,
+				"status": "success",
+				"result": {
+					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
+					"event": {
+						"message": "test"
+					},
+					"hash": "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"
+				},
+				"summary": "Logged 1 record(s)"
+			}`)
+	})
+
+	url = url + "/" // Add trailing slash to domain
+
+	client, _ := audit.New(pangeatesting.TestConfig(url))
+	input := &audit.LogInput{
+		Event: &audit.LogEventInput{
+			Message: pangea.String("test"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+	ctx := context.Background()
+	got, _, err := client.Log(ctx, input)
+
+	assert.NoError(t, err)
+
+	want := &audit.LogOutput{
+		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
+		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
+		Event: &audit.LogEventOutput{
+			Message: pangea.String("test"),
+		},
+	}
+	assert.Equal(t, want, got)
+}
+
 func TestSearch(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
