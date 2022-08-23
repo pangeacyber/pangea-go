@@ -25,7 +25,6 @@ func main() {
 	embargocli, err := embargo.New(&pangea.Config{
 		Token:    token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		Insecure: false,
 		CfgToken: configID,
 	})
 	if err != nil {
