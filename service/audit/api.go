@@ -17,34 +17,39 @@ import (
 //
 // Example:
 //
-//  input := &audit.LogInput{
-//  	Event: &audit.LogEventInput{
-//  		Message: pangea.String("some important message."),
-//  	},
-//  	ReturnHash: pangea.Bool(true),
-//  }
+//	input := &audit.LogInput{
+//		Event: &audit.LogEventInput{
+//			Message: pangea.String("some important message."),
+//		},
+//		ReturnHash: pangea.Bool(true),
+//	}
 //
-//  logOutput, _, err := auditcli.Log(ctx, input)
-//
-func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.Response, error) {
+//	logResponse, err := auditcli.Log(ctx, input)
+func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaResponse[LogOutput], error) {
 	if a.SignLogs {
 		err := input.Event.Sign(a.Signer)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 	req, err := a.Client.NewRequest("POST", "v1/log", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	var out LogOutput
 	resp, err := a.Client.Do(ctx, req, &out)
+
 	if err != nil {
-		return nil, resp, err
+		return nil, err
 	}
 
-	return &out, resp, nil
+	panresp := pangea.PangeaResponse[LogOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
 }
 
 // Search for events
@@ -53,46 +58,58 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*LogOutput, *pangea.R
 //
 // Example:
 //
-//  input := &audit.SearchInput{
-//  	Query:                  pangea.String("message:log-123"),
-//  	IncludeMembershipProof: pangea.Bool(true),
-//  }
+//	input := &audit.SearchInput{
+//		Query:                  pangea.String("message:log-123"),
+//		IncludeMembershipProof: pangea.Bool(true),
+//	}
 //
-//  searchOutput, _, err := auditcli.Search(ctx, input)
-//
-func (a *Audit) Search(ctx context.Context, input *SearchInput) (*SearchOutput, *pangea.Response, error) {
+//	searchResponse, err := auditcli.Search(ctx, input)
+func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := SearchOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
+
 	if err != nil {
-		return nil, resp, err
+		return nil, err
 	}
+
 	err = a.verifyRecords(out.Events)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[SearchOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+	return &panresp, nil
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*SearchResultOutput, *pangea.Response, error) {
+func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := SearchResultOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	err = a.verifyRecords(out.Events)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[SearchResultOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
 }
 
 // Retrieve tamperproof verification
@@ -101,49 +118,54 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*S
 //
 // Example:
 //
-//  input := &audit.RootInput{
-//  	TreeSize: pangea.Int(10),
-//  }
+//	input := &audit.RootInput{
+//		TreeSize: pangea.Int(10),
+//	}
 //
-//  rootOutput, _, err := auditcli.Root(ctx, input)
-//
-func (a *Audit) Root(ctx context.Context, input *RootInput) (*RootOutput, *pangea.Response, error) {
+//	rootResponse, err := auditcli.Root(ctx, input)
+func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/root", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	var out RootOutput
 	resp, err := a.Client.Do(ctx, req, &out)
+
 	if err != nil {
-		return nil, resp, err
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[RootOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+	return &panresp, nil
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages
 func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, Events, error) {
-	out, _, err := client.Search(ctx, input)
+	resp, err := client.Search(ctx, input)
 	if err != nil {
 		return nil, nil, err
 	}
-	events := make(Events, 0, *out.Count)
-	events = append(events, out.Events...)
-	for pangea.IntValue(out.Count) > len(events) {
+	events := make(Events, 0, *resp.Result.Count)
+	events = append(events, resp.Result.Events...)
+	for pangea.IntValue(resp.Result.Count) > len(events) {
 		s := SearchResultInput{
-			ID:                     out.ID,
+			ID:                     resp.Result.ID,
 			IncludeMembershipProof: input.IncludeMembershipProof,
 			IncludeHash:            input.IncludeHash,
 		}
-		sOut, _, err := client.SearchResults(ctx, &s)
+		sOut, err := client.SearchResults(ctx, &s)
 		if err != nil {
 			return nil, nil, err
 		}
-		if len(sOut.Events) == 0 {
+		if len(sOut.Result.Events) == 0 {
 			break
 		}
-		events = append(events, sOut.Events...)
+		events = append(events, sOut.Result.Events...)
 	}
-	return out.Root, events, nil
+	return resp.Result.Root, events, nil
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages and valitade membership proof and consitency proof

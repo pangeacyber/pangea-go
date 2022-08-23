@@ -37,12 +37,12 @@ func main() {
 		IncludeMembershipProof: pangea.Bool(true),
 	}
 
-	searchOutput, _, err := auditcli.Search(ctx, input)
+	searchResponse, err := auditcli.Search(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, searchOutput.Root, searchOutput.Events.VerifiableRecords(), true)
+	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, searchResponse.Result.Root, searchResponse.Result.Events.VerifiableRecords(), true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,5 +51,5 @@ func main() {
 		log.Fatal("failed validation of audit records")
 	}
 
-	fmt.Println(pangea.Stringify(searchOutput))
+	fmt.Println(pangea.Stringify(searchResponse.Result))
 }

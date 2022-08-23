@@ -47,13 +47,13 @@ func main() {
 	}
 	input.SetData(rawData)
 
-	redactOutput, _, err := redactcli.RedactStructured(ctx, input)
+	redactResponse, err := redactcli.RedactStructured(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var redactedData yourCustomDataStruct
-	redactOutput.GetRedactedData(&redactedData)
+	redactResponse.Result.GetRedactedData(&redactedData)
 
 	fmt.Println(pangea.Stringify(redactedData))
 }

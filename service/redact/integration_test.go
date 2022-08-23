@@ -27,10 +27,10 @@ func Test_Integration_Redact(t *testing.T) {
 	input := &redact.TextInput{
 		Text: pangea.String("My Phone number is 110045638"),
 	}
-	out, _, err := client.Redact(ctx, input)
+	out, err := client.Redact(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
+	assert.NotNil(t, out.Response)
 }

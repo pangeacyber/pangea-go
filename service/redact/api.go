@@ -13,24 +13,28 @@ import (
 //
 // Example:
 //
-//  input := &redact.TextInput{
-//  	Text: pangea.String("my phone number is 123-456-7890"),
-//  }
+//	input := &redact.TextInput{
+//		Text: pangea.String("my phone number is 123-456-7890"),
+//	}
 //
-//  redactOutput, _, err := redactcli.Redact(ctx, input)
-//
-func (r *Redact) Redact(ctx context.Context, input *TextInput) (*TextOutput, *pangea.Response, error) {
+//	redactResponse, err := redactcli.Redact(ctx, input)
+func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaResponse[TextOutput], error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := TextOutput{}
 	resp, err := r.Client.Do(ctx, req, &out)
+
 	if err != nil {
-		return nil, resp, err
+		return nil, err
+	}
+	panresp := pangea.PangeaResponse[TextOutput]{
+		Response: *resp,
+		Result:   &out,
 	}
 
-	return &out, resp, nil
+	return &panresp, nil
 }
 
 // Redact structured
@@ -39,36 +43,42 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*TextOutput, *pa
 //
 // Example:
 //
-//  type yourCustomDataStruct struct {
-//  	Secret string `json:"secret"`
-//  }
+//	type yourCustomDataStruct struct {
+//		Secret string `json:"secret"`
+//	}
 //
-//  input := &redact.StructuredInput{
-//  	JSONP: []*string{
-//  		pangea.String("$.secret"),
-//  	},
-//  }
-//  rawData := yourCustomDataStruct{
-//  	Secret: "My social security number is 0303456",
-//  }
-//  input.SetData(rawData)
+//	input := &redact.StructuredInput{
+//		JSONP: []*string{
+//			pangea.String("$.secret"),
+//		},
+//	}
+//	rawData := yourCustomDataStruct{
+//		Secret: "My social security number is 0303456",
+//	}
+//	input.SetData(rawData)
 //
-//  redactOutput, _, err := redactcli.RedactStructured(ctx, input)
-//
-func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*StructuredOutput, *pangea.Response, error) {
+//	redactResponse, err := redactcli.RedactStructured(ctx, input)
+func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error) {
 	if input == nil {
 		input = &StructuredInput{}
 	}
 	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := StructuredOutput{}
 	resp, err := r.Client.Do(ctx, req, &out)
+
 	if err != nil {
-		return nil, resp, err
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[StructuredOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
 }
 
 type TextInput struct {

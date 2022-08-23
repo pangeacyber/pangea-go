@@ -7,8 +7,8 @@ import (
 )
 
 type Client interface {
-	RedactText(ctx context.Context, input *TextInput) (*TextOutput, *pangea.Response, error)
-	RedactStructured(ctx context.Context, input *StructuredInput) (*StructuredOutput, *pangea.Response, error)
+	RedactText(ctx context.Context, input *TextInput) (*pangea.PangeaResponse[TextOutput], error)
+	RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error)
 }
 
 type Redact struct {

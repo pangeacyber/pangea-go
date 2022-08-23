@@ -37,10 +37,10 @@ func main() {
 		IP: pangea.String("213.24.238.26"),
 	}
 
-	checkOutput, _, err := embargocli.IPCheck(ctx, input)
+	checkResponse, err := embargocli.IPCheck(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(checkOutput))
+	fmt.Println(pangea.Stringify(checkResponse.Result))
 }

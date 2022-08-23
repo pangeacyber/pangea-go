@@ -12,23 +12,26 @@ import (
 //
 // Example:
 //
-//  input := &embargo.IPCheckInput{
-//  	IP: pangea.String("213.24.238.26"),
-//  }
+//	input := &embargo.IPCheckInput{
+//		IP: pangea.String("213.24.238.26"),
+//	}
 //
-//  checkOutput, _, err := embargocli.IPCheck(ctx, input)
-//
-func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*CheckOutput, *pangea.Response, error) {
+//	checkResponse, err := embargocli.IPCheck(ctx, input)
+func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*pangea.PangeaResponse[CheckOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/ip/check", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := CheckOutput{}
 	resp, err := e.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, resp, err
+	panresp := pangea.PangeaResponse[CheckOutput]{
+		Response: *resp,
+		Result:   &out,
 	}
-	return &out, resp, nil
+	if err != nil {
+		return &panresp, err
+	}
+	return &panresp, nil
 }
 
 // ISO Code Check
@@ -37,23 +40,29 @@ func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*CheckOutpu
 //
 // Example:
 //
-//  input := &embargo.ISOCheckInput{
-//  	ISOCode: pangea.String("CU"),
-//  }
+//	input := &embargo.ISOCheckInput{
+//		ISOCode: pangea.String("CU"),
+//	}
 //
-//  checkOutput, _, err := embargocli.ISOCheck(ctx, input)
-//
-func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*CheckOutput, *pangea.Response, error) {
+//	checkResponse, err := embargocli.ISOCheck(ctx, input)
+func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*pangea.PangeaResponse[CheckOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/iso/check", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := CheckOutput{}
 	resp, err := e.Client.Do(ctx, req, &out)
+
 	if err != nil {
-		return nil, resp, err
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[CheckOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
 }
 
 type IPCheckInput struct {

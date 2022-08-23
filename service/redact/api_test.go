@@ -38,14 +38,14 @@ func TestRedact(t *testing.T) {
 		Text: pangea.String("My phone number is: 110303456"),
 	}
 	ctx := context.Background()
-	got, _, err := client.Redact(ctx, input)
+	got, err := client.Redact(ctx, input)
 
 	assert.NoError(t, err)
 
 	want := &redact.TextOutput{
 		RedactedText: pangea.String("My phone number is: <PHONE_NUMBER>"),
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestRedactStructured(t *testing.T) {
@@ -89,21 +89,21 @@ func TestRedactStructured(t *testing.T) {
 	}
 	input.SetData(Payload{One: innerType{Secret: "(555)-555-5555"}})
 	ctx := context.Background()
-	response, _, err := client.RedactStructured(ctx, input)
+	response, err := client.RedactStructured(ctx, input)
 
 	assert.NoError(t, err)
-	assert.NotEmpty(t, response.RedactedData)
+	assert.NotEmpty(t, response.Result.RedactedData)
 
 	var got Payload
 	want := Payload{One: innerType{Secret: "<PHONE_NUMBER>"}}
-	assert.NoError(t, response.GetRedactedData(&got))
+	assert.NoError(t, response.Result.GetRedactedData(&got))
 	assert.Equal(t, want, got)
 }
 
 func TestRedactError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := redact.New(cfg)
-		_, _, err := client.Redact(context.Background(), nil)
+		_, err := client.Redact(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Redact.Redact", f)
@@ -112,7 +112,7 @@ func TestRedactError(t *testing.T) {
 func TestRedactStructuredError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := redact.New(cfg)
-		_, _, err := client.RedactStructured(context.Background(), nil)
+		_, err := client.RedactStructured(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Redact.RedactStructured", f)

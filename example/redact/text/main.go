@@ -36,10 +36,10 @@ func main() {
 		Text: pangea.String("my phone number is 123-456-7890"),
 	}
 
-	redactOutput, _, err := redactcli.Redact(ctx, input)
+	redactResponse, err := redactcli.Redact(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(redactOutput))
+	fmt.Println(pangea.Stringify(redactResponse.Result))
 }

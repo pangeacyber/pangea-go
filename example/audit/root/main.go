@@ -36,10 +36,10 @@ func main() {
 		TreeSize: pangea.Int(10),
 	}
 
-	rootOutput, _, err := auditcli.Root(ctx, input)
+	rootResponse, err := auditcli.Root(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(rootOutput))
+	fmt.Println(pangea.Stringify(rootResponse.Result))
 }

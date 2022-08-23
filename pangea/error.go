@@ -11,9 +11,10 @@ type APIError struct {
 	// the HTTP response
 	HTTPResponse *http.Response
 
-	// the reponse metadata of the request if any
-	ResponseMetadata *ResponseMetadata
+	// the reponse header of the request if any
+	ResponseHeader *ResponseHeader
 
+	// FIXME: Maybe we should call it RawResult
 	// the result of the request
 	Result json.RawMessage
 
@@ -21,11 +22,11 @@ type APIError struct {
 	Err error
 }
 
-func NewAPIError(err error, r *http.Response, metadata *ResponseMetadata) *APIError {
+func NewAPIError(err error, r *http.Response, header *ResponseHeader) *APIError {
 	return &APIError{
-		Err:              err,
-		HTTPResponse:     r,
-		ResponseMetadata: metadata,
+		Err:            err,
+		HTTPResponse:   r,
+		ResponseHeader: header,
 	}
 }
 
@@ -34,8 +35,8 @@ func (e *APIError) Error() string {
 	if e.HTTPResponse != nil {
 		b.WriteString(fmt.Sprintf("pangea: %v %v", e.HTTPResponse.Request.Method, e.HTTPResponse.Request.URL))
 		pad(b, ": ")
-		if e.ResponseMetadata != nil {
-			b.WriteString(fmt.Sprintf("%v", e.ResponseMetadata.String()))
+		if e.ResponseHeader != nil {
+			b.WriteString(fmt.Sprintf("%v", e.ResponseHeader.String()))
 		} else {
 			b.WriteString(fmt.Sprintf("%v", e.HTTPResponse.StatusCode))
 		}
@@ -56,12 +57,12 @@ type UnMarshalError struct {
 	Bytes []byte
 }
 
-func NewUnMarshalError(err error, bytes []byte, r *http.Response, metadata *ResponseMetadata) *UnMarshalError {
+func NewUnMarshalError(err error, bytes []byte, r *http.Response, header *ResponseHeader) *UnMarshalError {
 	return &UnMarshalError{
 		APIError: APIError{
-			Err:              err,
-			HTTPResponse:     r,
-			ResponseMetadata: metadata,
+			Err:            err,
+			HTTPResponse:   r,
+			ResponseHeader: header,
 		},
 		Bytes: bytes,
 	}
@@ -91,7 +92,7 @@ func pad(b *bytes.Buffer, str string) {
 }
 
 type AcceptedError struct {
-	ResponseMetadata
+	ResponseHeader
 }
 
 func (e *AcceptedError) Error() string {

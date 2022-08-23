@@ -9,10 +9,10 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, *LogInput) (*LogOutput, *pangea.Response, error)
-	Search(context.Context, *SearchInput) (*SearchOutput, *pangea.Response, error)
-	SearchResults(context.Context, *SearchResultInput) (*SearchResultOutput, *pangea.Response, error)
-	Root(context.Context, *RootInput) (*RootOutput, *pangea.Response, error)
+	Log(context.Context, *LogInput) (*pangea.PangeaResponse[LogOutput], error)
+	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
+	SearchResults(context.Context, *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error)
+	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 }
 
 type Audit struct {
