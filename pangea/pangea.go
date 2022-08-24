@@ -176,14 +176,13 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	return req, nil
 }
 
-type Response struct {
-	HTTPResponse *http.Response
-	ResponseMetadata
-	Result json.RawMessage `json:"result"`
+type PangeaResponse[T any] struct {
+	Response
+	Result *T
 }
 
 func (r *Response) UnMarshalResult(target interface{}) error {
-	return json.Unmarshal(r.Result, target)
+	return json.Unmarshal(r.RawResult, target)
 }
 
 // newResponse takes a http.Response and tries to parse the body into a base pangea API response.
@@ -220,7 +219,7 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response,
 //
 // The provided ctx must be non-nil, if it is nil an error is returned. If it is
 // canceled or times out, ctx.Err() will be returned.
-func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, error) {
 	if ctx == nil {
 		return nil, errNonNilContext
 	}
@@ -245,7 +244,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 	default:
 		err = response.UnMarshalResult(v)
 		if err != nil {
-			return nil, NewUnMarshalError(err, response.Result, response.HTTPResponse, &response.ResponseMetadata)
+			return nil, NewUnMarshalError(err, response.RawResult, response.HTTPResponse, &response.ResponseHeader)
 		}
 	}
 	return response, nil
@@ -253,15 +252,15 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 
 func CheckResponse(r *Response) error {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted {
-		return &AcceptedError{ResponseMetadata: r.ResponseMetadata}
+		return &AcceptedError{ResponseHeader: r.ResponseHeader}
 	}
 	if r.HTTPResponse.StatusCode <= http.StatusOK {
 		return nil
 	}
 	return &APIError{
-		HTTPResponse:     r.HTTPResponse,
-		ResponseMetadata: &r.ResponseMetadata,
-		Result:           r.Result,
+		HTTPResponse:   r.HTTPResponse,
+		ResponseHeader: &r.ResponseHeader,
+		Result:         r.RawResult,
 	}
 }
 

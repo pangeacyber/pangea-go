@@ -171,17 +171,18 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 			Verbose:    pangea.Bool(false),
 		}
 
-		logOutput, _, err := a.pangea_audit.Log(ctx, audinput)
+		logResponse, err := a.pangea_audit.Log(ctx, audinput)
 		if err != nil {
 			log.Println("[App.uploadResume] audit log error: ", err.Error())
 		} else {
-			log.Println(pangea.Stringify(logOutput))
+			log.Println(pangea.Stringify(logResponse.Result))
 		}
 
 		respondWithError(w, http.StatusForbidden, "Submissions from sanctioned country not allowed")
 		return
 	}
 
+	// FIXME: What is StatusCandidate? Should we remove it?
 	// set status to CANDIDATE
 	emp.Status = StatusCandidate
 
@@ -192,14 +193,15 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 	}
 	redinput.SetData(emp)
 
-	redactOutput, _, err := a.pangea_redact.RedactStructured(ctx, redinput)
+	redactResponse, err := a.pangea_redact.RedactStructured(ctx, redinput)
 	redacted := ""
 	if err != nil {
 		log.Println("[App.uploadResume] redact error: ", err.Error())
 	} else {
-		log.Println(pangea.Stringify(redactOutput.RedactedData))
+		log.Println(pangea.Stringify(redactResponse.Result.RedactedData))
+		// FIXME: What about employee?
 		var redactedEmployee employee
-		redactOutput.GetRedactedData(&redactedEmployee)
+		redactResponse.Result.GetRedactedData(&redactedEmployee)
 		log.Printf("%+v", redactedEmployee)
 	}
 
@@ -219,11 +221,11 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 			Verbose:    pangea.Bool(false),
 		}
 
-		logOutput, _, err1 := a.pangea_audit.Log(ctx, audinput)
+		logResponse, err1 := a.pangea_audit.Log(ctx, audinput)
 		if err1 != nil {
 			log.Println("[App.uploadResume] audit log error: ", err1.Error())
 		} else {
-			log.Println(pangea.Stringify(logOutput))
+			log.Println(pangea.Stringify(logResponse.Result))
 		}
 
 		log.Println("[App.uploadResume] datastore error: ", err.Error())
@@ -250,11 +252,11 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 		Verbose:    pangea.Bool(false),
 	}
 
-	logOutput, _, err := a.pangea_audit.Log(ctx, audinput)
+	logResponse, err := a.pangea_audit.Log(ctx, audinput)
 	if err != nil {
 		log.Println("[App.uploadResume] audit log error: ", err.Error())
 	} else {
-		log.Println(pangea.Stringify(logOutput))
+		log.Println(pangea.Stringify(logResponse.Result))
 	}
 
 	respondWithJSON(w, http.StatusCreated, resp)
@@ -294,11 +296,11 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 			Verbose:    pangea.Bool(false),
 		}
 
-		logOutput, _, err1 := a.pangea_audit.Log(ctx, audinput)
+		logResponse, err1 := a.pangea_audit.Log(ctx, audinput)
 		if err1 != nil {
 			log.Println("[App.fetchEmployeeRecord] audit log error: ", err1.Error())
 		} else {
-			log.Println(pangea.Stringify(logOutput))
+			log.Println(pangea.Stringify(logResponse.Result))
 		}
 
 		log.Println("[App.fetchEmployeeRecord] datastore error: ", err.Error())
@@ -320,11 +322,11 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 		Verbose:    pangea.Bool(false),
 	}
 
-	logOutput, _, err := a.pangea_audit.Log(ctx, audinput)
+	logResponse, err := a.pangea_audit.Log(ctx, audinput)
 	if err != nil {
 		log.Println("[App.fetchEmployeeRecord] audit log error: ", err.Error())
 	} else {
-		log.Println(pangea.Stringify(logOutput))
+		log.Println(pangea.Stringify(logResponse.Result))
 	}
 
 	respondWithJSON(w, http.StatusOK, emp)
@@ -410,11 +412,11 @@ func (a *App) updateEmployee(w http.ResponseWriter, r *http.Request) {
 		Verbose:    pangea.Bool(false),
 	}
 
-	logOutput, _, err := a.pangea_audit.Log(ctx, audinput)
+	logResponse, err := a.pangea_audit.Log(ctx, audinput)
 	if err != nil {
 		log.Println("[App.fetchEmployeeRecord] audit log error: ", err.Error())
 	} else {
-		log.Println(pangea.Stringify(logOutput))
+		log.Println(pangea.Stringify(logResponse.Result))
 	}
 
 	respondWithJSON(w, http.StatusOK, resp)

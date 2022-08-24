@@ -29,18 +29,18 @@ func Test_Integration_Root(t *testing.T) {
 	client, _ := audit.New(cfg)
 
 	input := &audit.RootInput{}
-	out, _, err := client.Root(ctx, input)
+	out, err := client.Root(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Data)
-	assert.NotNil(t, out.Data.RootHash)
-	assert.NotEmpty(t, *out.Data.RootHash)
-	assert.NotNil(t, out.Data.TreeName)
-	assert.NotEmpty(t, *out.Data.TreeName)
-	assert.NotNil(t, out.Data.Size)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.NotNil(t, out.Result.Data.RootHash)
+	assert.NotEmpty(t, *out.Result.Data.RootHash)
+	assert.NotNil(t, out.Result.Data.TreeName)
+	assert.NotEmpty(t, *out.Result.Data.TreeName)
+	assert.NotNil(t, out.Result.Data.Size)
 	// TODO: Fix test
 	// assert.NotNil(t, out.Data.ConsistencyProof)
 }
@@ -55,17 +55,17 @@ func Test_Integration_Search(t *testing.T) {
 	input := &audit.SearchInput{
 		Query: pangea.String("message:test"),
 	}
-	out, _, err := client.Search(ctx, input)
+	out, err := client.Search(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.ID)
-	assert.NotEmpty(t, out.ID)
-	assert.NotNil(t, out.ExpiresAt)
-	assert.NotNil(t, out.Count)
-	assert.NotNil(t, out.Events)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.ID)
+	assert.NotEmpty(t, out.Result.ID)
+	assert.NotNil(t, out.Result.ExpiresAt)
+	assert.NotNil(t, out.Result.Count)
+	assert.NotNil(t, out.Result.Events)
 }
 
 func Test_Integration_SearchResults(t *testing.T) {
@@ -77,22 +77,22 @@ func Test_Integration_SearchResults(t *testing.T) {
 	searchInput := &audit.SearchInput{
 		Query: pangea.String("message:test"),
 	}
-	searchOut, _, err := client.Search(ctx, searchInput)
+	searchOut, err := client.Search(ctx, searchInput)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, searchOut)
-	assert.NotNil(t, searchOut.ID)
+	assert.NotNil(t, searchOut.Result)
+	assert.NotNil(t, searchOut.Result.ID)
 
 	searchResultInput := &audit.SearchResultInput{
-		ID: searchOut.ID,
+		ID: searchOut.Result.ID,
 	}
-	out, _, err := client.SearchResults(ctx, searchResultInput)
+	out, err := client.SearchResults(ctx, searchResultInput)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out.Events)
-	assert.NotNil(t, out.Count)
+	assert.NotNil(t, out.Result.Events)
+	assert.NotNil(t, out.Result.Count)
 }

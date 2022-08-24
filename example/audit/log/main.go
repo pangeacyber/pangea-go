@@ -39,10 +39,10 @@ func main() {
 		Verbose:    pangea.Bool(true),
 	}
 
-	logOutput, _, err := auditcli.Log(ctx, input)
+	logResponse, err := auditcli.Log(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(logOutput))
+	fmt.Println(pangea.Stringify(logResponse.Result))
 }

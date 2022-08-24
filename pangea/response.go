@@ -1,10 +1,12 @@
 package pangea
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
-type ResponseMetadata struct {
+type ResponseHeader struct {
 	// The request ID
 	RequestID *string `json:"request_id"`
 
@@ -24,7 +26,14 @@ type ResponseMetadata struct {
 	Summary *string `json:"summary"`
 }
 
-func (r *ResponseMetadata) String() string {
+type Response struct {
+	ResponseHeader
+	HTTPResponse *http.Response
+	// Query raw result
+	RawResult json.RawMessage `json:"result"`
+}
+
+func (r *ResponseHeader) String() string {
 	if r == nil {
 		return ""
 	}

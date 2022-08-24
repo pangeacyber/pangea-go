@@ -36,10 +36,10 @@ func main() {
 		ISOCode: pangea.String("CU"),
 	}
 
-	checkOutput, _, err := embargocli.ISOCheck(ctx, input)
+	checkResponse, err := embargocli.ISOCheck(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(checkOutput))
+	fmt.Println(pangea.Stringify(checkResponse.Result))
 }

@@ -26,12 +26,12 @@ func Test_Integration_Check(t *testing.T) {
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),
 	}
-	out, _, err := client.ISOCheck(ctx, input)
+	out, err := client.ISOCheck(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Count)
-	assert.NotZero(t, *out.Count)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Count)
+	assert.NotZero(t, *out.Result.Count)
 }

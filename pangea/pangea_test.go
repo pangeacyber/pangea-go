@@ -67,14 +67,14 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 	if !ok {
 		t.Fatalf("Expected pangea.APIError, got %T", err)
 	}
-	if pangeaErr.ResponseMetadata == nil {
+	if pangeaErr.ResponseHeader == nil {
 		t.Fatal("Expected ResponseMetadata to be non-nil")
 	}
-	if pangeaErr.ResponseMetadata.StatusCode == nil {
+	if pangeaErr.ResponseHeader.StatusCode == nil {
 		t.Fatal("Expected non-nil status code")
 	}
-	if *pangeaErr.ResponseMetadata.StatusCode != http.StatusBadRequest {
-		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, *pangeaErr.ResponseMetadata.StatusCode)
+	if *pangeaErr.ResponseHeader.StatusCode != http.StatusBadRequest {
+		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, *pangeaErr.ResponseHeader.StatusCode)
 	}
 }
 
@@ -108,14 +108,14 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 	if !ok {
 		t.Fatalf("Expected pangea.APIError, got %v", err)
 	}
-	if pangeaErr.ResponseMetadata == nil {
+	if pangeaErr.ResponseHeader == nil {
 		t.Fatal("Expected ResponseMetadata to be non-nil")
 	}
-	if pangeaErr.ResponseMetadata.StatusCode == nil {
+	if pangeaErr.ResponseHeader.StatusCode == nil {
 		t.Fatal("Expected non-nil status code")
 	}
-	if *pangeaErr.ResponseMetadata.StatusCode != http.StatusInternalServerError {
-		t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, *pangeaErr.ResponseMetadata.StatusCode)
+	if *pangeaErr.ResponseHeader.StatusCode != http.StatusInternalServerError {
+		t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, *pangeaErr.ResponseHeader.StatusCode)
 	}
 }
 
@@ -378,11 +378,11 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 	if !ok {
 		t.Fatalf("Expected pangea.AcceptedError, got %T", err)
 	}
-	if pangeaErr.ResponseMetadata.StatusCode == nil {
+	if pangeaErr.ResponseHeader.StatusCode == nil {
 		t.Fatal("Expected non-nil status code")
 	}
-	if *pangeaErr.ResponseMetadata.StatusCode != http.StatusAccepted {
-		t.Errorf("Expected status code %d, got %d", http.StatusAccepted, *pangeaErr.ResponseMetadata.StatusCode)
+	if *pangeaErr.ResponseHeader.StatusCode != http.StatusAccepted {
+		t.Errorf("Expected status code %d, got %d", http.StatusAccepted, *pangeaErr.ResponseHeader.StatusCode)
 	}
 }
 

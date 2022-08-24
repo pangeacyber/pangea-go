@@ -47,7 +47,7 @@ func TestLog(t *testing.T) {
 		Verbose:    pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, _, err := client.Log(ctx, input)
+	got, err := client.Log(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -58,7 +58,7 @@ func TestLog(t *testing.T) {
 			Message: pangea.String("test"),
 		},
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestDomainTrailingSlash(t *testing.T) {
@@ -159,7 +159,7 @@ func TestSearch(t *testing.T) {
 		IncludeMembershipProof: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, _, err := client.Search(ctx, input)
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -184,7 +184,7 @@ func TestSearch(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestSearchResults(t *testing.T) {
@@ -243,7 +243,7 @@ func TestSearchResults(t *testing.T) {
 		Limit:                  pangea.Int(50),
 	}
 	ctx := context.Background()
-	got, _, err := client.SearchResults(ctx, input)
+	got, err := client.SearchResults(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -275,7 +275,7 @@ func TestSearchResults(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestRoot(t *testing.T) {
@@ -313,7 +313,7 @@ func TestRoot(t *testing.T) {
 		TreeSize: pangea.Int(11),
 	}
 	ctx := context.Background()
-	got, _, err := client.Root(ctx, input)
+	got, err := client.Root(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -329,13 +329,13 @@ func TestRoot(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestLogError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, _, err := client.Log(context.Background(), nil)
+		_, err := client.Log(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Log", f)
@@ -344,7 +344,7 @@ func TestLogError(t *testing.T) {
 func TestSearchError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, _, err := client.Search(context.Background(), nil)
+		_, err := client.Search(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Search", f)
@@ -353,7 +353,7 @@ func TestSearchError(t *testing.T) {
 func TestSearchResultsError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, _, err := client.SearchResults(context.Background(), nil)
+		_, err := client.SearchResults(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.SearchResults", f)
@@ -362,7 +362,7 @@ func TestSearchResultsError(t *testing.T) {
 func TestRootError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, _, err := client.Root(context.Background(), nil)
+		_, err := client.Root(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Root", f)
