@@ -11,14 +11,15 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_AUTH_TOKEN")
-	if token == "" {
-		log.Fatal("Unauthorized: No token present")
-	}
 
 	configID := os.Getenv("AUDIT_CONFIG_ID")
-	if token == "" {
+	if configID == "" {
 		log.Fatal("Configuration: No config ID present")
+	}
+
+	token := os.Getenv("AUDIT_AUTH_TOKEN")
+	if token == "" {
+		log.Fatal("Unauthorized: No token present")
 	}
 
 	auditcli, err := audit.New(&pangea.Config{
@@ -33,16 +34,18 @@ func main() {
 	ctx := context.Background()
 	input := &audit.LogInput{
 		Event: &audit.LogEventInput{
-			Message: pangea.String("some important message."),
+			Message: pangea.String("Hello, World!"),
 		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(true),
 	}
+
+	fmt.Printf("Logging: %s\n", *input.Event.Message)
 
 	logResponse, err := auditcli.Log(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(logResponse.Result))
+	fmt.Printf("Response: %s", pangea.Stringify(logResponse.Result))
 }

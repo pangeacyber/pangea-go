@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_AUTH_TOKEN")
+	token := os.Getenv("EMBARGO_AUTH_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -36,10 +36,12 @@ func main() {
 		ISOCode: pangea.String("CU"),
 	}
 
+	fmt.Printf("Checking Embargo ISO code: '%s'\n", *input.ISOCode)
+
 	checkResponse, err := embargocli.ISOCheck(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(checkResponse.Result))
+	fmt.Printf("Response: %s", pangea.Stringify(checkResponse.Result))
 }
