@@ -37,7 +37,7 @@ func main() {
 			Message: pangea.String("Hello, World!"),
 		},
 		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+		Verbose:    pangea.Bool(false),
 	}
 
 	fmt.Printf("Logging: %s\n", *input.Event.Message)
