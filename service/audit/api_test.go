@@ -97,7 +97,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 		Verbose:    pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, _, err := client.Log(ctx, input)
+	got, err := client.Log(ctx, input)
 
 	assert.NoError(t, err)
 
