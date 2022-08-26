@@ -97,7 +97,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 		Verbose:    pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, _, err := client.Log(ctx, input)
+	got, err := client.Log(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -108,7 +108,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 			Message: pangea.String("test"),
 		},
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestSearch(t *testing.T) {
