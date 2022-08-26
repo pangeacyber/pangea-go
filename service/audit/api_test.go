@@ -108,7 +108,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 			Message: pangea.String("test"),
 		},
 	}
-	assert.Equal(t, want, got)
+	assert.Equal(t, want, got.Result)
 }
 
 func TestSearch(t *testing.T) {
