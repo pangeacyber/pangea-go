@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_AUTH_TOKEN")
+	token := os.Getenv("REDACT_AUTH_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -30,9 +30,13 @@ func main() {
 		log.Fatal("failed to create redact client")
 	}
 
+	var text =  "Hello, my phone number is 123-456-7890"
+
+	fmt.Printf("Redacting PII from: '%s'\n", text)
+
 	ctx := context.Background()
 	input := &redact.TextInput{
-		Text: pangea.String("my phone number is 123-456-7890"),
+		Text: pangea.String(text),
 	}
 
 	redactResponse, err := redactcli.Redact(ctx, input)
@@ -40,5 +44,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(redactResponse.Result))
+	fmt.Printf("Response: %s", pangea.Stringify(redactResponse.Result))
 }
