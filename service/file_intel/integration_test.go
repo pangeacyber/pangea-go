@@ -32,7 +32,7 @@ func Test_Integration_FileLookup(t *testing.T) {
 		},
 		Provider: "reversinglabs",
 	}
-	out, resp, err := fileintel.Lookup(ctx, input)
+	out, _, err := fileintel.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
