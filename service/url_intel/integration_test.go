@@ -24,11 +24,9 @@ func Test_Integration_UrlLookup(t *testing.T) {
 	urlintel, _ := url_intel.New(cfg)
 
 	input := &url_intel.UrlLookupInput{
-		Parameters: url_intel.UrlLookupParameters{
-			Url:     "http://113.235.101.11:54384",
-			Raw:     true,
-			Verbose: true,
-		},
+        Url:     "http://113.235.101.11:54384",
+        Raw:     true,
+        Verbose: true,
 		Provider: "crowdstrike",
 	}
 	out, _, err := urlintel.Lookup(ctx, input)

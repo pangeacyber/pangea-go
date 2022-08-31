@@ -24,12 +24,10 @@ func Test_Integration_FileLookup(t *testing.T) {
 	fileintel, _ := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
-		Parameters: file_intel.FileLookupParameters{
-			Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
-			HashType: "sha256",
-			Raw:      true,
-			Verbose:  true,
-		},
+        Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
+        HashType: "sha256",
+        Raw:      true,
+        Verbose:  true,
 		Provider: "reversinglabs",
 	}
 	out, _, err := fileintel.Lookup(ctx, input)

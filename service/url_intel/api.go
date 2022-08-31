@@ -13,11 +13,9 @@ import (
 // Example:
 //
 //  input := &url_intel.UrlLookupInput{
-//      Parameters: UrlLookupParameters {
-//      	Url: "http://113.235.101.11:54384",
-//      	Raw: true,
-//      	Verbose: true,
-//      },
+//      Url: "http://113.235.101.11:54384",
+//      Raw: true,
+//      Verbose: true,
 //      Provider: "crowdstrike",
 //  }
 //
@@ -36,14 +34,10 @@ func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupInput) (*UrlLooku
 	return &out, resp, nil
 }
 
-type UrlLookupParameters struct {
+type UrlLookupInput struct {
 	Url     string `json:"url"`
 	Verbose bool   `json:"verbose,omitempty"`
 	Raw     bool   `json:"raw,omitempty"`
-}
-
-type UrlLookupInput struct {
-	Parameters UrlLookupParameters `json:"parameters"`
 	Provider   string              `json:"provider,omitempty"`
 }
 
@@ -55,6 +49,6 @@ type LookupData struct {
 
 type UrlLookupOutput struct {
 	Data      LookupData  `json:"data"`
-	Parameter interface{} `json:"parameter,omitempty"`
+	Parameters interface{} `json:"parameters,omitempty"`
 	RawData   interface{} `json:"raw_data,omitempty"`
 }
