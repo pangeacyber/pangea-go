@@ -27,7 +27,7 @@ type SignerVerifier interface {
 
 type KeyPair struct {
 	priv ed25519.PrivateKey
-	pub  crypto.PublicKey
+	pub  ed25519.PublicKey
 }
 
 // NewKeyPairFromFile
@@ -36,38 +36,23 @@ func NewKeyPairFromFile(name string) (*KeyPair, error) {
 	if err != nil {
 		return nil, fmt.Errorf("signer: cannot read file %v: %w", name, err)
 	}
-	fmt.Println(string(b))
-	// pemBlock, _ := pem.Decode(b)
-	// if pemBlock == nil {
-	// 	return nil, fmt.Errorf("signer: cannot decode file as PEM encoding")
-	// }
 
 	rawPrivateKey, err := ssh.ParseRawPrivateKey(b)
 	if err != nil {
-		fmt.Println("cannot parse raw private key")
 		return nil, fmt.Errorf("signer: cannot parse private key: %w", err)
-	} else {
-		fmt.Println("Parse OK")
 	}
 
-	fmt.Println(rawPrivateKey.(*ed25519.PrivateKey))
-
-	privateKey, ok := rawPrivateKey.(*ed25519.PrivateKey)
+	privateKey, ok := rawPrivateKey.(ed25519.PrivateKey)
 	if ok != true {
 		return nil, fmt.Errorf("signer: cannot convert to ED25519 key")
 	}
 
-	realPrivateKey := ed25519.NewKeyFromSeed([]byte(*privateKey))
-
-	fmt.Println(realPrivateKey)
-
-	fmt.Println(privateKey)
+	publicKey := privateKey.Public().(ed25519.PublicKey)
 	return &KeyPair{
-		priv: *privateKey,
-		pub:  realPrivateKey.Public(),
+		priv: privateKey,
+		pub:  publicKey,
 	}, nil
 
-	return nil, nil
 }
 
 func (k *KeyPair) Sign(msg []byte) ([]byte, error) {
