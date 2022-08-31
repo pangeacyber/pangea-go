@@ -21,6 +21,66 @@ func auditIntegrationCfg(t *testing.T) *pangea.Config {
 	return cfg.Copy(pangeatesting.IntegrationConfig(t))
 }
 
+func Test_Integration_Log(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+
+	out, err := client.Log(ctx, input)
+
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Hash)
+	assert.NotNil(t, out.Result.Event)
+	assert.NotNil(t, out.Result.CanonicalEventBase64)
+	assert.NotEmpty(t, *out.Result.Hash)
+	// assert.NotEmpty(t, *out.Result.Event)
+	assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
+}
+
+func Test_Integration_LogWithSignature(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+
+	out, err := client.Log(ctx, input)
+
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Hash)
+	assert.NotNil(t, out.Result.Event)
+	assert.NotNil(t, out.Result.CanonicalEventBase64)
+	assert.NotEmpty(t, *out.Result.Hash)
+	// assert.NotEmpty(t, *out.Result.Event)
+	assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
+}
+
 func Test_Integration_Root(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
