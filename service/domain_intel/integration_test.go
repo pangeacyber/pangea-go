@@ -24,11 +24,9 @@ func Test_Integration_DomainLookup(t *testing.T) {
 	domainintel, _ := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
-		Parameters: domain_intel.DomainLookupParameters{
-			Domain:  "teoghehofuuxo.su",
-			Raw:     true,
-			Verbose: true,
-		},
+        Domain:  "teoghehofuuxo.su",
+        Raw:     true,
+        Verbose: true,
 		Provider: "crowdstrike",
 	}
 	out, _, err := domainintel.Lookup(ctx, input)

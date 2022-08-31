@@ -13,11 +13,9 @@ import (
 // Example:
 //
 //  input := &ip_intel.IpLookupInput{
-//      Parameters: IpLookupParameters {
-//      	Ip: "93.231.182.110",
-//      	Raw: true,
-//      	Verbose: true,
-//      },
+//      Ip: "93.231.182.110",
+//      Raw: true,
+//      Verbose: true,
 //      Provider: "crowdstrike",
 //  }
 //
@@ -36,14 +34,10 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupInput) (*IpLookupOu
 	return &out, resp, nil
 }
 
-type IpLookupParameters struct {
+type IpLookupInput struct {
 	Ip      string `json:"ip"`
 	Verbose bool   `json:"verbose,omitempty"`
 	Raw     bool   `json:"raw,omitempty"`
-}
-
-type IpLookupInput struct {
-	Parameters IpLookupParameters `json:"parameters"`
 	Provider   string             `json:"provider,omitempty"`
 }
 
@@ -55,6 +49,6 @@ type LookupData struct {
 
 type IpLookupOutput struct {
 	Data      LookupData  `json:"data"`
-	Parameter interface{} `json:"parameter,omitempty"`
+	Parameters interface{} `json:"parameters,omitempty"`
 	RawData   interface{} `json:"raw_data,omitempty"`
 }

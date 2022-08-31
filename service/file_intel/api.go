@@ -13,27 +13,21 @@ import (
 // Example:
 //
 //  input := &file_intel.FileLookupInput{
-//      Parameters: FileLookupParameters {
-//      	Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
-//      	HashType: "sha256",
-//      	Raw: true,
-//      	Verbose: true,
-//      },
+//      Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
+//      HashType: "sha256",
+//      Raw: true,
+//      Verbose: true,
 //      Provider: "reversinglabs",
 //  }
 //
 //  checkOutput, _, err := fileintel.Lookup(ctx, input)
 //
 
-type FileLookupParameters struct {
+type FileLookupInput struct {
 	Hash     string `json:"hash"`
 	HashType string `json:"hash_type"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
-}
-
-type FileLookupInput struct {
-	Parameters FileLookupParameters `json:"parameters"`
 	Provider   string               `json:"provider,omitempty"`
 }
 
@@ -45,7 +39,7 @@ type LookupData struct {
 
 type FileLookupOutput struct {
 	Data      LookupData  `json:"data"`
-	Parameter interface{} `json:"parameter,omitempty"`
+	Parameters interface{} `json:"parameters,omitempty"`
 	RawData   interface{} `json:"raw_data,omitempty"`
 }
 

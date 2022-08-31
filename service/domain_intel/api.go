@@ -13,11 +13,9 @@ import (
 // Example:
 //
 //  input := &domain_intel.DomainLookupInput{
-//      Parameters: DomainLookupParameters {
 //      	Domain: "teoghehofuuxo.su",
 //      	Raw: true,
 //      	Verbose: true,
-//      },
 //      Provider: "crowdstrike",
 //  }
 //
@@ -36,14 +34,10 @@ func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*Do
 	return &out, resp, nil
 }
 
-type DomainLookupParameters struct {
+type DomainLookupInput struct {
 	Domain  string `json:"domain"`
 	Verbose bool   `json:"verbose,omitempty"`
 	Raw     bool   `json:"raw,omitempty"`
-}
-
-type DomainLookupInput struct {
-	Parameters DomainLookupParameters `json:"parameters"`
 	Provider   string                 `json:"provider,omitempty"`
 }
 
@@ -55,6 +49,6 @@ type LookupData struct {
 
 type DomainLookupOutput struct {
 	Data      LookupData  `json:"data"`
-	Parameter interface{} `json:"parameter,omitempty"`
+	Parameters interface{} `json:"parameters,omitempty"`
 	RawData   interface{} `json:"raw_data,omitempty"`
 }
