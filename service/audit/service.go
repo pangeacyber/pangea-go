@@ -43,7 +43,7 @@ type Option func(*Audit) error
 func WithLogSignatureVerificationEnabled(filename string) Option {
 	return func(a *Audit) error {
 		a.VerifyRecords = true
-		v, err := signer.NewPrivateKeyFromFile(filename)
+		v, err := signer.NewKeyPairFromFile(filename)
 		if err != nil {
 			return fmt.Errorf("audit: failed verifier creation: %w", err)
 		}
@@ -55,7 +55,7 @@ func WithLogSignatureVerificationEnabled(filename string) Option {
 func WithLogSigningEnabled(filename string) Option {
 	return func(a *Audit) error {
 		a.SignLogs = true
-		s, err := signer.NewPrivateKeyFromFile(filename)
+		s, err := signer.NewKeyPairFromFile(filename)
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}

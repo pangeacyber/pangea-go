@@ -25,13 +25,13 @@ type SignerVerifier interface {
 	Verifier
 }
 
-type PrivateKey struct {
+type KeyPair struct {
 	priv ed25519.PrivateKey
 	pub  ed25519.PublicKey
 }
 
-// NewPrivateKeyFromFile
-func NewPrivateKeyFromFile(name string) (*PrivateKey, error) {
+// NewKeyPairFromFile
+func NewKeyPairFromFile(name string) (*KeyPair, error) {
 	b, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("signer: cannot read file %v: %w", name, err)
@@ -49,20 +49,20 @@ func NewPrivateKeyFromFile(name string) (*PrivateKey, error) {
 	if !ok {
 		return nil, fmt.Errorf("signer: cannot use private key of type %T as ed25519", rawPrivateKey)
 	}
-	return &PrivateKey{
+	return &KeyPair{
 		priv: privateKey,
 		pub:  privateKey.Public().(ed25519.PublicKey),
 	}, nil
 }
 
-func (k *PrivateKey) Sign(msg []byte) ([]byte, error) {
+func (k *KeyPair) Sign(msg []byte) ([]byte, error) {
 	return k.priv.Sign(rand.Reader, msg, crypto.Hash(0))
 }
 
-func (k *PrivateKey) Verify(msg, sig []byte) bool {
+func (k *KeyPair) Verify(msg, sig []byte) bool {
 	return ed25519.Verify(k.pub, msg, sig)
 }
 
-func (k *PrivateKey) PublicKey() string {
+func (k *KeyPair) PublicKey() string {
 	return base64.StdEncoding.EncodeToString(k.pub)
 }
