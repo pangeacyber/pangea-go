@@ -40,7 +40,7 @@ func TestLog(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.LogInput{
-		Event: &audit.LogEventInput{
+		Event: &audit.Event{
 			Message: pangea.String("test"),
 		},
 		ReturnHash: pangea.Bool(true),
@@ -55,7 +55,9 @@ func TestLog(t *testing.T) {
 		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
 		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
 		Event: &audit.LogEventOutput{
-			Message: pangea.String("test"),
+			Event: audit.Event{
+				Message: pangea.String("test"),
+			},
 		},
 	}
 	assert.Equal(t, want, got.Result)
@@ -90,7 +92,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.LogInput{
-		Event: &audit.LogEventInput{
+		Event: &audit.Event{
 			Message: pangea.String("test"),
 		},
 		ReturnHash: pangea.Bool(true),
@@ -105,7 +107,9 @@ func TestDomainTrailingSlash(t *testing.T) {
 		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
 		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
 		Event: &audit.LogEventOutput{
-			Message: pangea.String("test"),
+			Event: audit.Event{
+				Message: pangea.String("test"),
+			},
 		},
 	}
 	assert.Equal(t, want, got.Result)
@@ -169,14 +173,14 @@ func TestSearch(t *testing.T) {
 		ID:        pangea.String("some-id"),
 		Events: audit.Events{
 			{
-				Record: &audit.Record{
+				Event: &audit.Event{
 					Message: pangea.String("test_2"),
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
-				Record: &audit.Record{
+				Event: &audit.Event{
 					Message: pangea.String("test_1"),
 				},
 				LeafIndex:       pangea.Int(3),
@@ -251,14 +255,14 @@ func TestSearchResults(t *testing.T) {
 		Count: pangea.Int(2),
 		Events: audit.Events{
 			{
-				Record: &audit.Record{
+				Event: &audit.Event{
 					Message: pangea.String("test_2"),
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
-				Record: &audit.Record{
+				Event: &audit.Event{
 					Message: pangea.String("test_1"),
 				},
 				LeafIndex:       pangea.Int(3),

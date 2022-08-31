@@ -27,7 +27,7 @@ import (
 //	logResponse, err := auditcli.Log(ctx, input)
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaResponse[LogOutput], error) {
 	if a.SignLogs {
-		err := input.Event.Sign(a.Signer)
+		err := input.Sign(a.Signer)
 		if err != nil {
 			return nil, err
 		}
@@ -184,7 +184,7 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 func (a *Audit) verifyRecords(events Events) error {
 	if a.VerifyRecords {
 		for idx, event := range events {
-			verified := event.Record.VerifySignature(a.Verifier)
+			verified := event.VerifySignature(a.Verifier)
 			if !verified {
 				return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
 			}
@@ -195,7 +195,7 @@ func (a *Audit) verifyRecords(events Events) error {
 
 type LogInput struct {
 	// A structured event describing an auditable activity.
-	Event *LogEventInput `json:"event"`
+	Event *Event `json:"event"`
 
 	// Return the event's hash with response.
 	ReturnHash *bool `json:"return_hash"`
@@ -212,7 +212,7 @@ type LogInput struct {
 	PublicKey *string `json:"public_key,omitempty"`
 }
 
-type LogEventInput struct {
+type Event struct {
 	// Record who performed the auditable activity.
 	// max len is 128 bytes
 	// examples:
@@ -262,8 +262,8 @@ type LogEventInput struct {
 }
 
 func (i *LogInput) Sign(s signer.Signer) error {
-	b, err := newsSignedMessageFromRecord(i.Actor, i.Action, i.Message, i.New,
-		i.Old, i.Source, i.Status, i.Target, i.Timestamp)
+	b, err := newsSignedMessageFromRecord(i.Event.Actor, i.Event.Action, i.Event.Message, i.Event.New,
+		i.Event.Old, i.Event.Source, i.Event.Status, i.Event.Target, i.Event.Timestamp)
 	if err != nil {
 		return err
 	}
@@ -296,7 +296,7 @@ type LogOutput struct {
 }
 
 type LogEventOutput struct {
-	LogEventInput
+	Event
 
 	// A server-supplied timestamp.
 	ReceivedAt *string `json:"received_at,omitempty"`
@@ -404,7 +404,7 @@ type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Record *Record `json:"event"`
+	Event *Event `json:"event"`
 
 	// A cryptographic proof that the record has been persisted in the log.
 	MembershipProof *string `json:"membership_proof"`
@@ -415,6 +415,13 @@ type EventEnvelope struct {
 
 	// The index of the leaf of the Merkle Tree where this record was inserted.
 	LeafIndex *int `json:"leaf_index"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
 }
 
 // IsVerifiable checks if a record can be verfiable with the published proof
@@ -422,21 +429,13 @@ func (event *EventEnvelope) IsVerifiable() bool {
 	return event.LeafIndex != nil
 }
 
-type Record struct {
-	LogInput
-}
-
-func (r *Record) VerifySignature(verifier signer.Verifier) bool {
-	var timestamp string
-	if r.Timestamp != nil {
-		timestamp = r.Timestamp.Format(time.RFC3339)
-	}
-	b, err := newsSignedMessageFromRecord(r.Actor, r.Action, r.Message, r.New,
-		r.Old, r.Source, r.Status, r.Target, &timestamp)
+func (ee *EventEnvelope) VerifySignature(verifier signer.Verifier) bool {
+	b, err := newsSignedMessageFromRecord(ee.Event.Actor, ee.Event.Action, ee.Event.Message, ee.Event.New,
+		ee.Event.Old, ee.Event.Source, ee.Event.Status, ee.Event.Target, ee.Event.Timestamp)
 	if err != nil {
 		return false
 	}
-	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(r.Signature))
+	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.Signature))
 	if err != nil {
 		return false
 	}
