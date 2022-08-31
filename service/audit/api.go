@@ -203,6 +203,13 @@ type LogInput struct {
 	// If true, be verbose in the response; include canonical events, create time, hashes, etc.
 	// default: false
 	Verbose *bool `json:"verbose"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
 }
 
 type LogEventInput struct {
@@ -235,13 +242,6 @@ type LogEventInput struct {
 	// max len of 65536 bytes
 	Old *string `json:"old,omitempty"`
 
-	// An optional client-side signature for forgery protection.
-	// max len of 256 bytes
-	Signature *string `json:"signature,omitempty"`
-
-	// The base64-encoded ed25519 public key used for the signature, if one is provided
-	PublicKey *string `json:"public_key,omitempty"`
-
 	// Used to record the location from where an activity occurred.
 	// max len of 128 bytes
 	Source *string `json:"source,omitempty"`
@@ -261,7 +261,7 @@ type LogEventInput struct {
 	Timestamp *string `json:"timestamp,omitempty"`
 }
 
-func (i *LogEventInput) Sign(s signer.Signer) error {
+func (i *LogInput) Sign(s signer.Signer) error {
 	b, err := newsSignedMessageFromRecord(i.Actor, i.Action, i.Message, i.New,
 		i.Old, i.Source, i.Status, i.Target, i.Timestamp)
 	if err != nil {
@@ -286,59 +286,20 @@ type LogOutput struct {
 
 	// A base64 encoded canonical JSON form of the event, used for hashing.
 	CanonicalEventBase64 *string `json:"canonical_event_base64"`
-}
-
-type LogEventOutput struct {
-	// Record who performed the auditable activity.
-	// max len is 128 bytes
-	// examples:
-	// 	John Doe
-	//  user-id
-	//  DennisNedry@InGen.com
-	Actor *string `json:"actor,omitempty"`
-
-	// The auditable action that occurred."
-	// examples:
-	// 	created
-	//  deleted
-	//  updated
-	Action *string `json:"action,omitempty"`
-
-	// A message describing a detailed account of what happened.
-	// This can be recorded as free-form text or as a JSON-formatted string.
-	// Message is a required field.
-	// max len of 65536 bytes
-	Message *string `json:"message"`
-
-	// The value of a record after it was changed.
-	// max len of 65536 bytes
-	New *string `json:"new,omitempty"`
-
-	// The value of a record before it was changed.
-	// max len of 65536 bytes
-	Old *string `json:"old,omitempty"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
 	Signature *string `json:"signature,omitempty"`
 
-	// Used to record the location from where an activity occurred.
-	// max len of 128 bytes
-	Source *string `json:"source,omitempty"`
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
+}
 
-	// Record whether or not the activity was successful.
-	// examples:
-	//  failure
-	//  success
-	// max len of 32 bytes
-	Status *string `json:"status,omitempty"`
+type LogEventOutput struct {
+	LogEventInput
 
-	// Used to record the specific record that was targeted by the auditable activity.
-	// max len of 128 bytes
-	Target *string `json:"target,omitempty"`
-
-	// An optional client-supplied timestamp.
-	Timestamp *string `json:"timestamp,omitempty"`
+	// A server-supplied timestamp.
+	ReceivedAt *string `json:"received_at,omitempty"`
 }
 
 type SearchInput struct {
@@ -462,46 +423,7 @@ func (event *EventEnvelope) IsVerifiable() bool {
 }
 
 type Record struct {
-	// An identifier for _who_ the audit record is about.
-	Actor *string `json:"actor,omitempty"`
-
-	// What action was performed on a record.
-	// examples:
-	// 	created
-	//  deleted
-	//  updated
-	Action *string `json:"action,omitempty"`
-
-	// A free form text field describing the event.
-	// Message is always populated on a successful response.
-	Message *string `json:"message"`
-
-	// The value of a record _after_ it was changed.
-	New *string `json:"new,omitempty"`
-
-	// The value of a record _before_ it was changed.
-	Old *string `json:"old,omitempty"`
-
-	// An optional client-side signature for forgery protection.
-	// max len of 256 bytes
-	Signature *string `json:"signature,omitempty"`
-
-	// The source of a record. Can be used to hard-split logged and searched data.
-	// max len of 128 bytes
-	Source *string `json:"source,omitempty"`
-
-	// The status or result of the event
-	// examples:
-	//  failure
-	//  success
-	// max len of 32 bytes
-	Status *string `json:"status,omitempty"`
-
-	// An identifier for what the audit record is about.
-	// max len of 128 bytes
-	Target *string `json:"target,omitempty"`
-
-	Timestamp *time.Time `json:"timestamp"`
+	LogInput
 }
 
 func (r *Record) VerifySignature(verifier signer.Verifier) bool {
