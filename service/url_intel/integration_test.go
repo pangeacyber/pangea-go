@@ -24,17 +24,18 @@ func Test_Integration_UrlLookup(t *testing.T) {
 	urlintel, _ := url_intel.New(cfg)
 
 	input := &url_intel.UrlLookupInput{
-        Url:     "http://113.235.101.11:54384",
-        Raw:     true,
-        Verbose: true,
+		Url:      "http://113.235.101.11:54384",
+		Raw:      true,
+		Verbose:  true,
 		Provider: "crowdstrike",
 	}
-	out, _, err := urlintel.Lookup(ctx, input)
+	out, err := urlintel.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
 	assert.NotNil(t, out)
-	assert.NotNil(t, out.Data)
-	assert.Equal(t, out.Data.Verdict, "malicious")
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, out.Result.Data.Verdict, "malicious")
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Lookup(ctx context.Context, input *FileLookupInput) (*FileLookupOutput, *pangea.Response, error)
+	Lookup(ctx context.Context, input *FileLookupInput) (*pangea.PangeaResponse[FileLookupOutput], error)
 }
 
 type FileIntel struct {

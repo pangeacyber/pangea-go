@@ -12,33 +12,41 @@ import (
 //
 // Example:
 //
-//  input := &domain_intel.DomainLookupInput{
-//      	Domain: "teoghehofuuxo.su",
-//      	Raw: true,
-//      	Verbose: true,
-//      Provider: "crowdstrike",
-//  }
+//	input := &domain_intel.DomainLookupInput{
+//	    Parameters: DomainLookupParameters {
+//	    	Domain: "teoghehofuuxo.su",
+//	    	Raw: true,
+//	    	Verbose: true,
+//	    },
+//	    Provider: "crowdstrike",
+//	}
 //
-//  checkOutput, _, err := domainintel.Lookup(ctx, input)
-//
-func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*DomainLookupOutput, *pangea.Response, error) {
+//	checkResponse, err := domainintel.Lookup(ctx, input)
+func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := DomainLookupOutput{}
 	resp, err := e.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, resp, err
+
+	if resp == nil {
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[DomainLookupOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
 }
 
 type DomainLookupInput struct {
-	Domain  string `json:"domain"`
-	Verbose bool   `json:"verbose,omitempty"`
-	Raw     bool   `json:"raw,omitempty"`
-	Provider   string                 `json:"provider,omitempty"`
+	Domain   string `json:"domain"`
+	Verbose  bool   `json:"verbose,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+	Provider string `json:"provider,omitempty"`
 }
 
 type LookupData struct {
@@ -48,7 +56,7 @@ type LookupData struct {
 }
 
 type DomainLookupOutput struct {
-	Data      LookupData  `json:"data"`
+	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
-	RawData   interface{} `json:"raw_data,omitempty"`
+	RawData    interface{} `json:"raw_data,omitempty"`
 }

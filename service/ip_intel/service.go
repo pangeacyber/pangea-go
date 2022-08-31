@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Lookup(ctx context.Context, input *IpLookupInput) (*IpLookupOutput, *pangea.Response, error)
+	Lookup(ctx context.Context, input *IpLookupInput) (*pangea.PangeaResponse[IpLookupOutput], error)
 }
 
 type IpIntel struct {
