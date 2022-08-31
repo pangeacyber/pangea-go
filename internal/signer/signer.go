@@ -4,11 +4,11 @@ import (
 	"crypto"
 	"crypto/ed25519"
 	"crypto/rand"
-	"crypto/x509"
 	"encoding/base64"
-	"encoding/pem"
 	"fmt"
 	"os"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type Signer interface {
@@ -27,7 +27,7 @@ type SignerVerifier interface {
 
 type KeyPair struct {
 	priv ed25519.PrivateKey
-	pub  ed25519.PublicKey
+	pub  crypto.PublicKey
 }
 
 // NewKeyPairFromFile
@@ -36,23 +36,38 @@ func NewKeyPairFromFile(name string) (*KeyPair, error) {
 	if err != nil {
 		return nil, fmt.Errorf("signer: cannot read file %v: %w", name, err)
 	}
-	pemBlock, _ := pem.Decode(b)
-	if pemBlock == nil {
-		return nil, fmt.Errorf("signer: cannot decode file as PEM encoding")
+	fmt.Println(string(b))
+	// pemBlock, _ := pem.Decode(b)
+	// if pemBlock == nil {
+	// 	return nil, fmt.Errorf("signer: cannot decode file as PEM encoding")
+	// }
+
+	rawPrivateKey, err := ssh.ParseRawPrivateKey(b)
+	if err != nil {
+		fmt.Println("cannot parse raw private key")
+		return nil, fmt.Errorf("signer: cannot parse private key: %w", err)
+	} else {
+		fmt.Println("Parse OK")
 	}
 
-	rawPrivateKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("signer: cannot decode PKCS8 format in pem file: %w", err)
+	fmt.Println(rawPrivateKey.(*ed25519.PrivateKey))
+
+	privateKey, ok := rawPrivateKey.(*ed25519.PrivateKey)
+	if ok != true {
+		return nil, fmt.Errorf("signer: cannot convert to ED25519 key")
 	}
-	privateKey, ok := rawPrivateKey.(ed25519.PrivateKey)
-	if !ok {
-		return nil, fmt.Errorf("signer: cannot use private key of type %T as ed25519", rawPrivateKey)
-	}
+
+	realPrivateKey := ed25519.NewKeyFromSeed([]byte(*privateKey))
+
+	fmt.Println(realPrivateKey)
+
+	fmt.Println(privateKey)
 	return &KeyPair{
-		priv: privateKey,
-		pub:  privateKey.Public().(ed25519.PublicKey),
+		priv: *privateKey,
+		pub:  realPrivateKey.Public(),
 	}, nil
+
+	return nil, nil
 }
 
 func (k *KeyPair) Sign(msg []byte) ([]byte, error) {
