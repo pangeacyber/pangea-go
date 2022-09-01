@@ -12,16 +12,14 @@ import (
 //
 // Example:
 //
-//	input := &ip_intel.IpLookupInput{
-//	    Parameters: IpLookupParameters {
-//	    	Ip: "93.231.182.110",
-//	    	Raw: true,
-//	    	Verbose: true,
-//	    },
-//	    Provider: "crowdstrike",
-//	}
+//	 input := &ip_intel.IpLookupInput{
+//	     Ip: "93.231.182.110",
+//	     Raw: true,
+//	     Verbose: true,
+//	     Provider: "crowdstrike",
+//	 }
 //
-//	checkOutput, _, err := ipintel.Lookup(ctx, input)
+//		checkOutput, _, err := ipintel.Lookup(ctx, input)
 func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupInput) (*pangea.PangeaResponse[IpLookupOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {

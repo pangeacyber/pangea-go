@@ -12,16 +12,14 @@ import (
 //
 // Example:
 //
-//	input := &domain_intel.DomainLookupInput{
-//	    Parameters: DomainLookupParameters {
-//	    	Domain: "teoghehofuuxo.su",
-//	    	Raw: true,
-//	    	Verbose: true,
-//	    },
-//	    Provider: "crowdstrike",
-//	}
+//	 input := &domain_intel.DomainLookupInput{
+//	     	Domain: "teoghehofuuxo.su",
+//	     	Raw: true,
+//	     	Verbose: true,
+//	     Provider: "crowdstrike",
+//	 }
 //
-//	checkResponse, err := domainintel.Lookup(ctx, input)
+//		checkResponse, err := domainintel.Lookup(ctx, input)
 func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
