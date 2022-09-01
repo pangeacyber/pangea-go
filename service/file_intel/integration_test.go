@@ -24,18 +24,19 @@ func Test_Integration_FileLookup(t *testing.T) {
 	fileintel, _ := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
-        Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
-        HashType: "sha256",
-        Raw:      true,
-        Verbose:  true,
+		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
+		HashType: "sha256",
+		Raw:      true,
+		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, _, err := fileintel.Lookup(ctx, input)
+	out, err := fileintel.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
 	assert.NotNil(t, out)
-	assert.NotNil(t, out.Data)
-	assert.Equal(t, "malicious", out.Data.Verdict)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, "malicious", out.Result.Data.Verdict)
 }

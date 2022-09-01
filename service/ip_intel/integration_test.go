@@ -24,17 +24,18 @@ func Test_Integration_IpLookup(t *testing.T) {
 	ipintel, _ := ip_intel.New(cfg)
 
 	input := &ip_intel.IpLookupInput{
-        Ip:      "93.231.182.110",
-        Raw:     true,
-        Verbose: true,
+		Ip:       "93.231.182.110",
+		Raw:      true,
+		Verbose:  true,
 		Provider: "crowdstrike",
 	}
-	out, _, err := ipintel.Lookup(ctx, input)
+	out, err := ipintel.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
 	assert.NotNil(t, out)
-	assert.NotNil(t, out.Data)
-	assert.Equal(t, out.Data.Verdict, "malicious")
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, out.Result.Data.Verdict, "malicious")
 }

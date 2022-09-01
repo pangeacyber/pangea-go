@@ -28,7 +28,7 @@ type FileLookupInput struct {
 	HashType string `json:"hash_type"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
-	Provider   string               `json:"provider,omitempty"`
+	Provider string `json:"provider,omitempty"`
 }
 
 type LookupData struct {
@@ -38,20 +38,27 @@ type LookupData struct {
 }
 
 type FileLookupOutput struct {
-	Data      LookupData  `json:"data"`
+	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
-	RawData   interface{} `json:"raw_data,omitempty"`
+	RawData    interface{} `json:"raw_data,omitempty"`
 }
 
-func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*FileLookupOutput, *pangea.Response, error) {
+func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea.PangeaResponse[FileLookupOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := FileLookupOutput{}
 	resp, err := e.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, resp, err
+
+	if resp == nil {
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[FileLookupOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
 }

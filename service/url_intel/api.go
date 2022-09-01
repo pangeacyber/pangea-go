@@ -12,33 +12,39 @@ import (
 //
 // Example:
 //
-//  input := &url_intel.UrlLookupInput{
-//      Url: "http://113.235.101.11:54384",
-//      Raw: true,
-//      Verbose: true,
-//      Provider: "crowdstrike",
-//  }
+//	 input := &url_intel.UrlLookupInput{
+//	     Url: "http://113.235.101.11:54384",
+//	     Raw: true,
+//	     Verbose: true,
+//	     Provider: "crowdstrike",
+//	 }
 //
-//  checkOutput, _, err := urlintel.Lookup(ctx, input)
-//
-func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupInput) (*UrlLookupOutput, *pangea.Response, error) {
+//		checkOutput, _, err := urlintel.Lookup(ctx, input)
+func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupInput) (*pangea.PangeaResponse[UrlLookupOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	out := UrlLookupOutput{}
 	resp, err := e.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, resp, err
+
+	if resp == nil {
+		return nil, err
 	}
-	return &out, resp, nil
+
+	panresp := pangea.PangeaResponse[UrlLookupOutput]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
 }
 
 type UrlLookupInput struct {
-	Url     string `json:"url"`
-	Verbose bool   `json:"verbose,omitempty"`
-	Raw     bool   `json:"raw,omitempty"`
-	Provider   string              `json:"provider,omitempty"`
+	Url      string `json:"url"`
+	Verbose  bool   `json:"verbose,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+	Provider string `json:"provider,omitempty"`
 }
 
 type LookupData struct {
@@ -48,7 +54,7 @@ type LookupData struct {
 }
 
 type UrlLookupOutput struct {
-	Data      LookupData  `json:"data"`
+	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
-	RawData   interface{} `json:"raw_data,omitempty"`
+	RawData    interface{} `json:"raw_data,omitempty"`
 }
