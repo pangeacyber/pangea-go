@@ -57,13 +57,17 @@ func Test_Integration_LogWithSignature(t *testing.T) {
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg,
-		audit.WithLogSigningEnabled("privkey"),
+		audit.WithLogSigningEnabled("./testdata/privkey"),
 		audit.WithLogSignatureVerificationEnabled(),
 	)
 
+	// This is to send a different msg each time, due to we need to search in order to test
+	tm := time.Now()
+	msg := "sigtest" + tm.String()
+
 	logInput := &audit.LogInput{
 		Event: &audit.Event{
-			Message: pangea.String("sigtest99"),
+			Message: pangea.String(msg),
 		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(true),
@@ -75,7 +79,7 @@ func Test_Integration_LogWithSignature(t *testing.T) {
 	}
 
 	searchInput := &audit.SearchInput{
-		Query: pangea.String("message:sigtest99"),
+		Query: pangea.String("message:" + msg),
 	}
 	// signature verification is done inside search
 	_, err = client.Search(ctx, searchInput)
@@ -104,8 +108,7 @@ func Test_Integration_Root(t *testing.T) {
 	assert.NotNil(t, out.Result.Data.TreeName)
 	assert.NotEmpty(t, *out.Result.Data.TreeName)
 	assert.NotNil(t, out.Result.Data.Size)
-	// TODO: Fix test
-	// assert.NotNil(t, out.Data.ConsistencyProof)
+
 }
 
 func Test_Integration_Search(t *testing.T) {

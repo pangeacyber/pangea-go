@@ -8,11 +8,11 @@ import (
 )
 
 func TestSigner(t *testing.T) {
-	_, err := signer.NewKeyPairFromFile("../../utils/privkey")
+	_, err := signer.NewSignerFromPrivateKeyFile("./testdata/privkey")
 	assert.NoError(t, err)
 }
 
 func TestSigner_BadFile(t *testing.T) {
-	_, err := signer.NewKeyPairFromFile("Not a file")
+	_, err := signer.NewSignerFromPrivateKeyFile("Not a file")
 	assert.Error(t, err)
 }

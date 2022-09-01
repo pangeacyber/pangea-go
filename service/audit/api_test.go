@@ -381,7 +381,7 @@ func TestFailedOptions(t *testing.T) {
 
 	_, err = audit.New(
 		pangeatesting.TestConfig("url"),
-		audit.WithLogSignatureVerificationEnabled("bad file name"),
+		audit.WithLogSignatureVerificationEnabled(),
 	)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }

@@ -50,8 +50,8 @@ func (s signer) PublicKey() string {
 	return base64.StdEncoding.EncodeToString((ed25519.PrivateKey)(s).Public().(ed25519.PublicKey))
 }
 
-func NewVerifierFromBytes(data []byte) Verifier {
-	return (verifier)(data)
+func NewVerifierFromPubKey(pubkey []byte) Verifier {
+	return (verifier)(pubkey)
 }
 
 func (v verifier) Verify(msg, sig []byte) bool {

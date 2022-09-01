@@ -445,7 +445,7 @@ func (ee *EventEnvelope) VerifySignature() bool {
 		return false
 	}
 
-	v := signer.NewVerifierFromBytes(pubKey)
+	v := signer.NewVerifierFromPubKey(pubKey)
 	return v.Verify(b, sig)
 }
 
