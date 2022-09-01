@@ -20,18 +20,10 @@ type Verifier interface {
 	Verify(msg, sig []byte) bool
 }
 
-type SignerVerifier interface {
-	Signer
-	Verifier
-}
+type signer ed25519.PrivateKey
+type verifier ed25519.PublicKey
 
-type KeyPair struct {
-	priv ed25519.PrivateKey
-	pub  ed25519.PublicKey
-}
-
-// NewKeyPairFromFile
-func NewKeyPairFromFile(name string) (*KeyPair, error) {
+func NewSignerFromPrivateKeyFile(name string) (signer, error) {
 	b, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("signer: cannot read file %v: %w", name, err)
@@ -43,26 +35,25 @@ func NewKeyPairFromFile(name string) (*KeyPair, error) {
 	}
 
 	privateKey, ok := rawPrivateKey.(ed25519.PrivateKey)
-	if ok != true {
+	if !ok {
 		return nil, fmt.Errorf("signer: cannot convert to ED25519 key")
 	}
 
-	publicKey := privateKey.Public().(ed25519.PublicKey)
-	return &KeyPair{
-		priv: privateKey,
-		pub:  publicKey,
-	}, nil
-
+	return (signer)(privateKey), nil
 }
 
-func (k *KeyPair) Sign(msg []byte) ([]byte, error) {
-	return k.priv.Sign(rand.Reader, msg, crypto.Hash(0))
+func (s signer) Sign(msg []byte) ([]byte, error) {
+	return (ed25519.PrivateKey)(s).Sign(rand.Reader, msg, crypto.Hash(0))
 }
 
-func (k *KeyPair) Verify(msg, sig []byte) bool {
-	return ed25519.Verify(k.pub, msg, sig)
+func (s signer) PublicKey() string {
+	return base64.StdEncoding.EncodeToString((ed25519.PrivateKey)(s).Public().(ed25519.PublicKey))
 }
 
-func (k *KeyPair) PublicKey() string {
-	return base64.StdEncoding.EncodeToString(k.pub)
+func NewVerifierFromBytes(data []byte) Verifier {
+	return (verifier)(data)
+}
+
+func (v verifier) Verify(msg, sig []byte) bool {
+	return ed25519.Verify((ed25519.PublicKey)(v), msg, sig)
 }

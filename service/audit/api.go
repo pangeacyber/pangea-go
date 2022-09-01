@@ -184,7 +184,7 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 func (a *Audit) verifyRecords(events Events) error {
 	if a.VerifyRecords {
 		for idx, event := range events {
-			verified := event.VerifySignature(a.Verifier)
+			verified := event.VerifySignature()
 			if !verified {
 				return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
 			}
@@ -429,7 +429,7 @@ func (event *EventEnvelope) IsVerifiable() bool {
 	return event.LeafIndex != nil
 }
 
-func (ee *EventEnvelope) VerifySignature(verifier signer.Verifier) bool {
+func (ee *EventEnvelope) VerifySignature() bool {
 	b, err := newsSignedMessageFromRecord(ee.Event.Actor, ee.Event.Action, ee.Event.Message, ee.Event.New,
 		ee.Event.Old, ee.Event.Source, ee.Event.Status, ee.Event.Target, ee.Event.Timestamp)
 	if err != nil {
@@ -439,7 +439,14 @@ func (ee *EventEnvelope) VerifySignature(verifier signer.Verifier) bool {
 	if err != nil {
 		return false
 	}
-	return verifier.Verify(b, sig)
+
+	pubKey, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.PublicKey))
+	if err != nil {
+		return false
+	}
+
+	v := signer.NewVerifierFromBytes(pubKey)
+	return v.Verify(b, sig)
 }
 
 type SearchResultInput struct {

@@ -56,29 +56,32 @@ func Test_Integration_LogWithSignature(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
-	client, _ := audit.New(cfg)
+	client, _ := audit.New(cfg,
+		audit.WithLogSigningEnabled("privkey"),
+		audit.WithLogSignatureVerificationEnabled(),
+	)
 
-	input := &audit.LogInput{
+	logInput := &audit.LogInput{
 		Event: &audit.Event{
-			Message: pangea.String("Integration test msg"),
+			Message: pangea.String("sigtest99"),
 		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(true),
 	}
 
-	out, err := client.Log(ctx, input)
-
+	_, err := client.Log(ctx, logInput)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.Hash)
-	assert.NotNil(t, out.Result.Event)
-	assert.NotNil(t, out.Result.CanonicalEventBase64)
-	assert.NotEmpty(t, *out.Result.Hash)
-	// assert.NotEmpty(t, *out.Result.Event)
-	assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
+	searchInput := &audit.SearchInput{
+		Query: pangea.String("message:sigtest99"),
+	}
+	// signature verification is done inside search
+	_, err = client.Search(ctx, searchInput)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
 }
 
 func Test_Integration_Root(t *testing.T) {
