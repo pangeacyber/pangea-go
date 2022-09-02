@@ -29,8 +29,10 @@ func TestLog(t *testing.T) {
 				"status": "success",
 				"result": {
 					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
-					"event": {
-						"message": "test"
+					"envelope": {
+						"event": {
+							"message": "test"
+						}
 					},
 					"hash": "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"
 				},
@@ -54,8 +56,8 @@ func TestLog(t *testing.T) {
 	want := &audit.LogOutput{
 		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
 		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
-		Event: &audit.LogEventOutput{
-			Event: audit.Event{
+		EventEnvelope: &audit.EventEnvelope{
+			Event: &audit.Event{
 				Message: pangea.String("test"),
 			},
 		},
@@ -79,8 +81,10 @@ func TestDomainTrailingSlash(t *testing.T) {
 				"status": "success",
 				"result": {
 					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
-					"event": {
-						"message": "test"
+					"envelope": {
+						"event": {
+							"message": "test"
+						}
 					},
 					"hash": "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"
 				},
@@ -106,8 +110,8 @@ func TestDomainTrailingSlash(t *testing.T) {
 	want := &audit.LogOutput{
 		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
 		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
-		Event: &audit.LogEventOutput{
-			Event: audit.Event{
+		EventEnvelope: &audit.EventEnvelope{
+			Event: &audit.Event{
 				Message: pangea.String("test"),
 			},
 		},
@@ -134,18 +138,22 @@ func TestSearch(t *testing.T) {
 					"count": 2,
 					"events": [
 						{
-							"event": {
-								"message": "test_2",
-								"received_at": "%[1]v"
+							"envelope": {
+								"event": {
+									"message": "test_2"
+								}
 							},
+							"received_at": "%[1]v",
 							"leaf_index": 2,
 							"membership_proof": "some-proof"
 						},
 						{
-							"event": {
-								"message": "test_1",
-								"received_at": "%[1]v"
+							"envelope": {
+								"event": {
+									"message": "test_1"
+								}
 							},
+							"received_at": "%[1]v",
 							"leaf_index": 3,
 							"membership_proof": "some-proof"
 						}
@@ -171,19 +179,23 @@ func TestSearch(t *testing.T) {
 		Count:     pangea.Int(2),
 		ExpiresAt: &t1,
 		ID:        pangea.String("some-id"),
-		Events: audit.Events{
+		Events: audit.SearchEvents{
 			{
-				Event: &audit.Event{
-					Message:    pangea.String("test_2"),
-					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
+				EventEnvelope: audit.EventEnvelope{
+					Event: &audit.Event{
+						Message: pangea.String("test_2"),
+					},
+					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
-				Event: &audit.Event{
-					Message:    pangea.String("test_1"),
-					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
+				EventEnvelope: audit.EventEnvelope{
+					Event: &audit.Event{
+						Message: pangea.String("test_1"),
+					},
+					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -212,18 +224,22 @@ func TestSearchResults(t *testing.T) {
 					"count": 2,
 					"events": [
 						{
-							"event": {
-								"message": "test_2",
-								"received_at": "%[1]v"
+							"envelope": {
+								"event": {
+									"message": "test_2"
+								}
 							},
+							"received_at": "%[1]v",
 							"leaf_index": 2,
 							"membership_proof": "some-proof"
 						},
 						{
-							"event": {
-								"message": "test_1",
-								"received_at": "%[1]v"
+							"envelope": {
+								"event": {
+									"message": "test_1"
+								}
 							},
+							"received_at": "%[1]v",
 							"leaf_index": 3,
 							"membership_proof": "some-proof"
 						}
@@ -255,19 +271,23 @@ func TestSearchResults(t *testing.T) {
 
 	want := &audit.SearchResultOutput{
 		Count: pangea.Int(2),
-		Events: audit.Events{
+		Events: audit.SearchEvents{
 			{
-				Event: &audit.Event{
-					Message:    pangea.String("test_2"),
-					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
+				EventEnvelope: audit.EventEnvelope{
+					Event: &audit.Event{
+						Message: pangea.String("test_2"),
+					},
+					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
-				Event: &audit.Event{
-					Message:    pangea.String("test_1"),
-					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
+				EventEnvelope: audit.EventEnvelope{
+					Event: &audit.Event{
+						Message: pangea.String("test_1"),
+					},
+					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),

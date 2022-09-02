@@ -85,7 +85,7 @@ func decodeProof(s string) (proof, error) {
 	return p, nil
 }
 
-func VerifyMembershipProof(root Root, event EventEnvelope, required bool) (bool, error) {
+func VerifyMembershipProof(root Root, event SearchEvent, required bool) (bool, error) {
 	membershipProof := pangea.StringValue(event.MembershipProof)
 	if membershipProof == "" {
 		return !required, nil
@@ -118,7 +118,7 @@ func verifyLogProof(target, root hash.Hash, p proof) bool {
 	return root.Equal(h)
 }
 
-func VerifyConsistencyProof(publishedRoots map[int]Root, event EventEnvelope, required bool) bool {
+func VerifyConsistencyProof(publishedRoots map[int]Root, event SearchEvent, required bool) bool {
 	if event.LeafIndex == nil {
 		return !required
 	}
@@ -172,7 +172,7 @@ func verifyConsistencyProof(old, new Root) (bool, error) {
 	return true, nil
 }
 
-func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, events Events, required bool) (ValidateEvents, error) {
+func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, events SearchEvents, required bool) (ValidateEvents, error) {
 	if root == nil || len(events) == 0 {
 		return nil, fmt.Errorf("audit: empty root or events")
 	}
@@ -185,7 +185,7 @@ func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, event
 	validatedEvents := make(ValidateEvents, 0, len(events))
 	for _, event := range events {
 		validatedEvent := &ValidatedEvent{
-			Event: event,
+			Event: &event.EventEnvelope,
 		}
 		if event.LeafIndex == nil {
 			continue
@@ -201,12 +201,12 @@ func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, event
 	return validatedEvents, nil
 }
 
-func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events Events, required bool) (ValidateEvents, error) {
+func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events SearchEvents, required bool) (ValidateEvents, error) {
 	arweavecli := NewArweaveRootsProvider(*root.TreeName)
 	return VerifyAuditRecords(ctx, arweavecli, root, events, required)
 }
 
-func treeSizes(root *Root, events Events) []string {
+func treeSizes(root *Root, events SearchEvents) []string {
 	treeSizes := make(map[int]struct{}, 0)
 	treeSizes[*root.Size] = struct{}{}
 	for _, event := range events {
