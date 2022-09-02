@@ -147,12 +147,12 @@ func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaRespo
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages
-func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, Events, error) {
+func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, SearchEvents, error) {
 	resp, err := client.Search(ctx, input)
 	if err != nil {
 		return nil, nil, err
 	}
-	events := make(Events, 0, *resp.Result.Count)
+	events := make(SearchEvents, 0, *resp.Result.Count)
 	events = append(events, resp.Result.Events...)
 	for pangea.IntValue(resp.Result.Count) > len(events) {
 		s := SearchResultInput{
@@ -185,7 +185,7 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 	return root, vEvents, nil
 }
 
-func (a *Audit) verifyRecords(events Events, root *Root) error {
+func (a *Audit) verifyRecords(events SearchEvents, root *Root) error {
 	for idx, event := range events {
 		if a.VerifyProofs && !event.VerifyHash() {
 			return fmt.Errorf("audit: cannot verify hash of record [%v]", idx)
@@ -195,7 +195,7 @@ func (a *Audit) verifyRecords(events Events, root *Root) error {
 			return fmt.Errorf("audit: cannot verify membership proof of record [%v]", idx)
 		}
 
-		if a.VerifySignature && !event.VerifySignature() {
+		if a.VerifySignature && !event.EventEnvelope.VerifySignature() {
 			return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
 		}
 	}
@@ -219,6 +219,21 @@ type LogInput struct {
 
 	// The base64-encoded ed25519 public key used for the signature, if one is provided
 	PublicKey *string `json:"public_key,omitempty"`
+}
+
+func (i *LogInput) Sign(s signer.Signer) error {
+	b, err := newsSignedMessageFromRecord(i.Event.Actor, i.Event.Action, i.Event.Message, i.Event.New,
+		i.Event.Old, i.Event.Source, i.Event.Status, i.Event.Target, i.Event.Timestamp)
+	if err != nil {
+		return err
+	}
+	signature, err := s.Sign(b)
+	if err != nil {
+		return err
+	}
+	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
+	i.PublicKey = pangea.String(s.PublicKey())
+	return nil
 }
 
 type Event struct {
@@ -273,31 +288,11 @@ type Event struct {
 	ReceivedAt *string `json:"received_at,omitempty"`
 }
 
-func (i *LogInput) Sign(s signer.Signer) error {
-	b, err := newsSignedMessageFromRecord(i.Event.Actor, i.Event.Action, i.Event.Message, i.Event.New,
-		i.Event.Old, i.Event.Source, i.Event.Status, i.Event.Target, i.Event.Timestamp)
-	if err != nil {
-		return err
-	}
-	signature, err := s.Sign(b)
-	if err != nil {
-		return err
-	}
-	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
-	i.PublicKey = pangea.String(s.PublicKey())
-	return nil
-}
-
-type LogOutput struct {
-	// The hash of the event data.
-	// max len of 64 bytes
-	Hash *string `json:"hash"`
-
-	// The event that was logged. Includes additional server-added timestamps.
-	Event *LogEventOutput `json:"event"`
-
-	// A base64 encoded canonical JSON form of the event, used for hashing.
-	CanonicalEventBase64 *string `json:"canonical_event_base64"`
+type EventEnvelope struct {
+	// A structured record describing that <actor> did <action> on <target>
+	// changing it from <old> to <new> and the operation was <status>,
+	// and/or a free-form <message>.
+	Event *Event `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -305,13 +300,20 @@ type LogOutput struct {
 
 	// The base64-encoded ed25519 public key used for the signature, if one is provided
 	PublicKey *string `json:"public_key,omitempty"`
-}
-
-type LogEventOutput struct {
-	Event
 
 	// A server-supplied timestamp.
 	ReceivedAt *string `json:"received_at,omitempty"`
+}
+
+type LogOutput struct {
+	EventEnvelope *EventEnvelope `json:"envelope"`
+
+	// The hash of the event data.
+	// max len of 64 bytes
+	Hash *string `json:"hash"`
+
+	// A base64 encoded canonical JSON form of the event, used for hashing.
+	CanonicalEventBase64 *string `json:"canonical_envelope_base64"`
 }
 
 type SearchInput struct {
@@ -396,14 +398,14 @@ type SearchOutput struct {
 
 	// A list of matching audit records.
 	// Events is always populated on a successful response.
-	Events Events `json:"events"`
+	Events SearchEvents `json:"events"`
 }
 
-type Events []*EventEnvelope
+type SearchEvents []*SearchEvent
 
 // VerifiableRecords retuns a slice of records that can be verifiable by the published proof
-func (events Events) VerifiableRecords() Events {
-	evs := make(Events, 0)
+func (events SearchEvents) VerifiableRecords() SearchEvents {
+	evs := make(SearchEvents, 0)
 	for _, event := range events {
 		if event.IsVerifiable() {
 			evs = append(evs, event)
@@ -412,14 +414,9 @@ func (events Events) VerifiableRecords() Events {
 	return evs
 }
 
-type EventEnvelope struct {
-	// A structured record describing that <actor> did <action> on <target>
-	// changing it from <old> to <new> and the operation was <status>,
-	// and/or a free-form <message>.
-	Event *Event `json:"event"`
-
-	// A cryptographic proof that the record has been persisted in the log.
-	MembershipProof *string `json:"membership_proof"`
+type SearchEvent struct {
+	// Include Event data and security information
+	EventEnvelope EventEnvelope `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes
@@ -428,25 +425,22 @@ type EventEnvelope struct {
 	// The index of the leaf of the Merkle Tree where this record was inserted.
 	LeafIndex *int `json:"leaf_index"`
 
-	// An optional client-side signature for forgery protection.
-	// max len of 256 bytes
-	Signature *string `json:"signature,omitempty"`
-
-	// The base64-encoded ed25519 public key used for the signature, if one is provided
-	PublicKey *string `json:"public_key,omitempty"`
+	// A cryptographic proof that the record has been persisted in the log.
+	MembershipProof *string `json:"membership_proof"`
 }
 
 // IsVerifiable checks if a record can be verfiable with the published proof
-func (event *EventEnvelope) IsVerifiable() bool {
+func (event *SearchEvent) IsVerifiable() bool {
 	return event.LeafIndex != nil
 }
 
-func (ee *EventEnvelope) VerifyHash() bool {
+func (ee *SearchEvent) VerifyHash() bool {
 	if ee.Hash == nil {
+		// FIXME: Why?
 		return true
 	}
 
-	eventCanon, err := pangeautil.CanonicalizeJSONMarshall((ee.Event))
+	eventCanon, err := pangeautil.CanonicalizeJSONMarshall((ee.EventEnvelope))
 	if err != nil {
 		return false
 	}
@@ -458,7 +452,7 @@ func (ee *EventEnvelope) VerifyHash() bool {
 	return pangea.StringValue(ee.Hash) == eventHash.String()
 }
 
-func (ee *EventEnvelope) VerifyMembershipProof(root *Root) bool {
+func (ee *SearchEvent) VerifyMembershipProof(root *Root) bool {
 	if root == nil || ee.MembershipProof == nil {
 		return true
 	}
@@ -523,7 +517,7 @@ type SearchResultOutput struct {
 
 	// A list of matching audit records.
 	// Events is always populated on a successful response.
-	Events Events `json:"events"`
+	Events SearchEvents `json:"events"`
 
 	// A root of a Merkle Tree
 	Root *Root `json:"root"`

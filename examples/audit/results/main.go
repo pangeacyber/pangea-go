@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_AUTH_TOKEN")
+	token := os.Getenv("AUDIT_AUTH_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -32,8 +32,7 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.SearchInput{
-		Query:                  pangea.String("message:log-123"),
-		IncludeMembershipProof: pangea.Bool(true),
+		Query: pangea.String("message:Hello, World"),
 	}
 
 	searchResponse, err := auditcli.Search(ctx, input)
@@ -46,10 +45,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println(pangea.Stringify(searchResponse.Result))
+
 	// FIXME: Should we check if this verified is empty?
-	if !verified {
+	if len(verified) == 0 {
 		log.Fatal("failed validation of audit records")
 	}
-
-	fmt.Println(pangea.Stringify(searchResponse.Result))
 }

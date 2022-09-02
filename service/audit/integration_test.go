@@ -42,11 +42,12 @@ func Test_Integration_Log(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Hash)
-	assert.NotNil(t, out.Result.Event)
-	assert.NotNil(t, out.Result.CanonicalEventBase64)
+	assert.NotNil(t, out.Result.EventEnvelope)
+	assert.NotNil(t, out.Result.EventEnvelope.Event)
+	assert.NotNil(t, out.Result.EventEnvelope.Event.Message)
 	assert.NotEmpty(t, *out.Result.Hash)
-	// assert.NotEmpty(t, *out.Result.Event)
-	assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
+	// assert.NotNil(t, out.Result.CanonicalEventBase64)
+	// assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
 }
 
 func Test_Integration_Signatures(t *testing.T) {
@@ -84,8 +85,8 @@ func Test_Integration_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result.Count)
 	assert.Equal(t, 1, pangea.IntValue(out.Result.Count))
 	assert.Equal(t, len(out.Result.Events), 1)
-	assert.NotNil(t, out.Result.Events[0].Signature)
-	assert.NotNil(t, out.Result.Events[0].PublicKey)
+	assert.NotNil(t, out.Result.Events[0].EventEnvelope.Signature)
+	assert.NotNil(t, out.Result.Events[0].EventEnvelope.PublicKey)
 }
 
 func Test_Integration_Root(t *testing.T) {
@@ -116,7 +117,7 @@ func Test_Integration_Proof(t *testing.T) {
 	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
 
 	maxResults := 20
-	limit := 10
+	limit := 2
 
 	input := &audit.SearchInput{
 		IncludeHash:            pangea.Bool(true),
@@ -128,6 +129,7 @@ func Test_Integration_Proof(t *testing.T) {
 	}
 	out, err := client.Search(ctx, input)
 	assert.NoError(t, err)
+	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.ID)
 	assert.NotEmpty(t, out.Result.ID)
