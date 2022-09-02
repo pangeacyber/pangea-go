@@ -21,7 +21,8 @@ type Audit struct {
 	SignLogs bool
 	Signer   signer.Signer
 
-	VerifyRecords bool
+	VerifyProofs    bool
+	VerifySignature bool
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
@@ -39,9 +40,16 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 
 type Option func(*Audit) error
 
+func WithLogProofVerificationEnabled() Option {
+	return func(a *Audit) error {
+		a.VerifyProofs = true
+		return nil
+	}
+}
+
 func WithLogSignatureVerificationEnabled() Option {
 	return func(a *Audit) error {
-		a.VerifyRecords = true
+		a.VerifySignature = true
 		return nil
 	}
 }

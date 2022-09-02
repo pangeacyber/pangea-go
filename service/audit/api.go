@@ -9,6 +9,7 @@ import (
 	"github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/internal/signer"
 	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/pangea/hash"
 )
 
 // Log an entry
@@ -65,6 +66,9 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaRespons
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
+	if a.VerifyProofs && (!pangea.BoolValue(input.IncludeHash) || !pangea.BoolValue(input.IncludeMembershipProof) || !pangea.BoolValue(input.IncludeRoot)) {
+		return nil, fmt.Errorf("audit: should include hash, membership_proof and root if VerifyProofs is true")
+	}
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
 		return nil, err
@@ -76,7 +80,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		return nil, err
 	}
 
-	err = a.verifyRecords(out.Events)
+	err = a.verifyRecords(out.Events, out.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +103,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	if err != nil {
 		return nil, err
 	}
-	err = a.verifyRecords(out.Events)
+	err = a.verifyRecords(out.Events, out.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -181,13 +185,18 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 	return root, vEvents, nil
 }
 
-func (a *Audit) verifyRecords(events Events) error {
-	if a.VerifyRecords {
-		for idx, event := range events {
-			verified := event.VerifySignature()
-			if !verified {
-				return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
-			}
+func (a *Audit) verifyRecords(events Events, root *Root) error {
+	for idx, event := range events {
+		if a.VerifyProofs && !event.VerifyHash() {
+			return fmt.Errorf("audit: cannot verify hash of record [%v]", idx)
+		}
+
+		if a.VerifyProofs && !event.VerifyMembershipProof(root) {
+			return fmt.Errorf("audit: cannot verify membership proof of record [%v]", idx)
+		}
+
+		if a.VerifySignature && !event.VerifySignature() {
+			return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
 		}
 	}
 	return nil
@@ -259,6 +268,9 @@ type Event struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *string `json:"timestamp,omitempty"`
+
+	// Timestamp set by the server
+	ReceivedAt *string `json:"received_at,omitempty"`
 }
 
 func (i *LogInput) Sign(s signer.Signer) error {
@@ -429,12 +441,46 @@ func (event *EventEnvelope) IsVerifiable() bool {
 	return event.LeafIndex != nil
 }
 
+func (ee *EventEnvelope) VerifyHash() bool {
+	if ee.Hash == nil {
+		return true
+	}
+
+	eventCanon, err := pangeautil.CanonicalizeJSONMarshall((ee.Event))
+	if err != nil {
+		return false
+	}
+	eventHash := hash.Encode(eventCanon)
+	if err != nil {
+		return false
+	}
+
+	return pangea.StringValue(ee.Hash) == eventHash.String()
+}
+
+func (ee *EventEnvelope) VerifyMembershipProof(root *Root) bool {
+	if root == nil || ee.MembershipProof == nil {
+		return true
+	}
+
+	b, err := VerifyMembershipProof(*root, *ee, false)
+	if err != nil {
+		return false
+	}
+	return b
+}
+
 func (ee *EventEnvelope) VerifySignature() bool {
+	if ee.Signature == nil {
+		return true
+	}
+
 	b, err := newsSignedMessageFromRecord(ee.Event.Actor, ee.Event.Action, ee.Event.Message, ee.Event.New,
 		ee.Event.Old, ee.Event.Source, ee.Event.Status, ee.Event.Target, ee.Event.Timestamp)
 	if err != nil {
 		return false
 	}
+
 	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.Signature))
 	if err != nil {
 		return false

@@ -36,6 +36,10 @@ func canonicalizeJSONMarshall(v reflect.Value, buf *bytes.Buffer) {
 			}
 			if tag := field.Tag.Get("json"); tag != "" {
 				name, _, _ := strings.Cut(tag, ",")
+				val := v.FieldByName(field.Name)
+				if val.IsNil() {
+					continue
+				}
 				jsonTags = append(jsonTags, name)
 				tagKeyRealtion[name] = field.Name
 			} else {
@@ -45,6 +49,9 @@ func canonicalizeJSONMarshall(v reflect.Value, buf *bytes.Buffer) {
 		sort.Strings(jsonTags)
 		for i, n := range jsonTags {
 			val := v.FieldByName(tagKeyRealtion[n])
+			if val.IsNil() {
+				continue
+			}
 			fmt.Fprintf(buf, `"%v":`, n)
 			canonicalizeJSONMarshall(val, buf)
 			if i < len(jsonTags)-1 {

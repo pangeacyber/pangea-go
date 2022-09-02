@@ -3,6 +3,9 @@ package audit_test
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,11 +40,7 @@ func Test_Integration_Log(t *testing.T) {
 	}
 
 	out, err := client.Log(ctx, input)
-
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
+	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.Event)
@@ -51,7 +50,7 @@ func Test_Integration_Log(t *testing.T) {
 	assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
 }
 
-func Test_Integration_LogWithSignature(t *testing.T) {
+func Test_Integration_Signatures(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
@@ -61,10 +60,7 @@ func Test_Integration_LogWithSignature(t *testing.T) {
 		audit.WithLogSignatureVerificationEnabled(),
 	)
 
-	// This is to send a different msg each time, due to we need to search in order to test
-	tm := time.Now()
-	msg := "sigtest" + tm.String()
-
+	msg := "sigtest" + RandStringBytes(5)
 	logInput := &audit.LogInput{
 		Event: &audit.Event{
 			Message: pangea.String(msg),
@@ -74,18 +70,18 @@ func Test_Integration_LogWithSignature(t *testing.T) {
 	}
 
 	_, err := client.Log(ctx, logInput)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
+	assert.NoError(t, err)
 
 	searchInput := &audit.SearchInput{
-		Query: pangea.String("message:" + msg),
+		Query:      pangea.String(fmt.Sprintf("message:%s", strings.ToLower(msg))),
+		MaxResults: pangea.Int(1),
 	}
 	// signature verification is done inside search
-	_, err = client.Search(ctx, searchInput)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
+	out, err := client.Search(ctx, searchInput)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, pangea.IntValue(out.Result.Count))
+	assert.NotNil(t, out.Result.Events[0].Signature)
+	assert.NotNil(t, out.Result.Events[0].PublicKey)
 }
 
 func Test_Integration_Root(t *testing.T) {
@@ -97,9 +93,7 @@ func Test_Integration_Root(t *testing.T) {
 
 	input := &audit.RootInput{}
 	out, err := client.Root(ctx, input)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
+	assert.NoError(t, err)
 
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Data)
@@ -108,7 +102,38 @@ func Test_Integration_Root(t *testing.T) {
 	assert.NotNil(t, out.Result.Data.TreeName)
 	assert.NotEmpty(t, *out.Result.Data.TreeName)
 	assert.NotNil(t, out.Result.Data.Size)
+}
 
+func Test_Integration_Proof(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
+
+	maxResults := 20
+	limit := 10
+
+	input := &audit.SearchInput{
+		IncludeHash:            pangea.Bool(true),
+		IncludeMembershipProof: pangea.Bool(true),
+		IncludeRoot:            pangea.Bool(true),
+		MaxResults:             pangea.Int(maxResults),
+		Limit:                  pangea.Int(limit),
+		Query:                  pangea.String(""),
+	}
+	out, err := client.Search(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.ID)
+	assert.NotEmpty(t, out.Result.ID)
+	assert.NotNil(t, out.Result.ExpiresAt)
+	assert.Equal(t, maxResults, pangea.IntValue(out.Result.Count))
+	assert.NotNil(t, out.Result.Root)
+	assert.Equal(t, limit, len(out.Result.Events))
+	for _, event := range out.Result.Events {
+		assert.NotNil(t, event.Hash)
+	}
 }
 
 func Test_Integration_Search(t *testing.T) {
@@ -118,20 +143,22 @@ func Test_Integration_Search(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
+	maxResults := 20
+	limit := 10
+
 	input := &audit.SearchInput{
-		Query: pangea.String("message:test"),
+		MaxResults: pangea.Int(maxResults),
+		Limit:      pangea.Int(limit),
+		Query:      pangea.String(""),
 	}
 	out, err := client.Search(ctx, input)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
+	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.ID)
 	assert.NotEmpty(t, out.Result.ID)
 	assert.NotNil(t, out.Result.ExpiresAt)
-	assert.NotNil(t, out.Result.Count)
-	assert.NotNil(t, out.Result.Events)
+	assert.Equal(t, maxResults, pangea.IntValue(out.Result.Count))
+	assert.Equal(t, limit, len(out.Result.Events))
 }
 
 func Test_Integration_SearchResults(t *testing.T) {
@@ -144,10 +171,7 @@ func Test_Integration_SearchResults(t *testing.T) {
 		Query: pangea.String("message:test"),
 	}
 	searchOut, err := client.Search(ctx, searchInput)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
+	assert.NoError(t, err)
 	assert.NotNil(t, searchOut.Result)
 	assert.NotNil(t, searchOut.Result.ID)
 
@@ -155,10 +179,17 @@ func Test_Integration_SearchResults(t *testing.T) {
 		ID: searchOut.Result.ID,
 	}
 	out, err := client.SearchResults(ctx, searchResultInput)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
+	assert.NoError(t, err)
 	assert.NotNil(t, out.Result.Events)
 	assert.NotNil(t, out.Result.Count)
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
