@@ -78,8 +78,13 @@ func Test_Integration_Signatures(t *testing.T) {
 	}
 	// signature verification is done inside search
 	out, err := client.Search(ctx, searchInput)
+
 	assert.NoError(t, err)
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Count)
 	assert.Equal(t, 1, pangea.IntValue(out.Result.Count))
+	assert.Equal(t, len(out.Result.Events), 1)
 	assert.NotNil(t, out.Result.Events[0].Signature)
 	assert.NotNil(t, out.Result.Events[0].PublicKey)
 }
