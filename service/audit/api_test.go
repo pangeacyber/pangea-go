@@ -174,14 +174,16 @@ func TestSearch(t *testing.T) {
 		Events: audit.Events{
 			{
 				Event: &audit.Event{
-					Message: pangea.String("test_2"),
+					Message:    pangea.String("test_2"),
+					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
 				Event: &audit.Event{
-					Message: pangea.String("test_1"),
+					Message:    pangea.String("test_1"),
+					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -256,14 +258,16 @@ func TestSearchResults(t *testing.T) {
 		Events: audit.Events{
 			{
 				Event: &audit.Event{
-					Message: pangea.String("test_2"),
+					Message:    pangea.String("test_2"),
+					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
 			},
 			{
 				Event: &audit.Event{
-					Message: pangea.String("test_1"),
+					Message:    pangea.String("test_1"),
+					ReceivedAt: got.Result.Events[1].Event.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
