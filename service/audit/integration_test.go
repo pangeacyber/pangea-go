@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strings"
 	"testing"
 	"time"
 
@@ -73,7 +72,7 @@ func Test_Integration_Signatures(t *testing.T) {
 	assert.NoError(t, err)
 
 	searchInput := &audit.SearchInput{
-		Query:      pangea.String(fmt.Sprintf("message:%s", strings.ToLower(msg))),
+		Query:      pangea.String(fmt.Sprintf("message:%s", msg)),
 		MaxResults: pangea.Int(1),
 	}
 	// signature verification is done inside search
