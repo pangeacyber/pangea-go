@@ -33,11 +33,11 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.LogInput{
-		Event: &audit.LogEventInput{
+		Event: &audit.Event{
 			Message: pangea.String("Hello, World!"),
 		},
 		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(false),
+		Verbose:    pangea.Bool(true),
 	}
 
 	fmt.Printf("Logging: %s\n", *input.Event.Message)

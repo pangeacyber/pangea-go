@@ -202,6 +202,9 @@ func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, event
 }
 
 func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events SearchEvents, required bool) (ValidateEvents, error) {
+	if root == nil {
+		return ValidateEvents{}, nil
+	}
 	arweavecli := NewArweaveRootsProvider(*root.TreeName)
 	return VerifyAuditRecords(ctx, arweavecli, root, events, required)
 }
