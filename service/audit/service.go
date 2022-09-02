@@ -21,8 +21,8 @@ type Audit struct {
 	SignLogs bool
 	Signer   signer.Signer
 
-	VerifyRecords bool
-	Verifier      signer.Verifier
+	VerifyProofs    bool
+	VerifySignature bool
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
@@ -40,14 +40,16 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 
 type Option func(*Audit) error
 
-func WithLogSignatureVerificationEnabled(filename string) Option {
+func WithLogProofVerificationEnabled() Option {
 	return func(a *Audit) error {
-		a.VerifyRecords = true
-		v, err := signer.NewPrivateKeyFromFile(filename)
-		if err != nil {
-			return fmt.Errorf("audit: failed verifier creation: %w", err)
-		}
-		a.Verifier = v
+		a.VerifyProofs = true
+		return nil
+	}
+}
+
+func WithLogSignatureVerificationEnabled() Option {
+	return func(a *Audit) error {
+		a.VerifySignature = true
 		return nil
 	}
 }
@@ -55,7 +57,7 @@ func WithLogSignatureVerificationEnabled(filename string) Option {
 func WithLogSigningEnabled(filename string) Option {
 	return func(a *Audit) error {
 		a.SignLogs = true
-		s, err := signer.NewPrivateKeyFromFile(filename)
+		s, err := signer.NewSignerFromPrivateKeyFile(filename)
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}

@@ -9,6 +9,7 @@ import (
 	"github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/internal/signer"
 	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/go-pangea/pangea/hash"
 )
 
 // Log an entry
@@ -27,7 +28,7 @@ import (
 //	logResponse, err := auditcli.Log(ctx, input)
 func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaResponse[LogOutput], error) {
 	if a.SignLogs {
-		err := input.Event.Sign(a.Signer)
+		err := input.Sign(a.Signer)
 		if err != nil {
 			return nil, err
 		}
@@ -65,6 +66,9 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaRespons
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
+	if a.VerifyProofs && (!pangea.BoolValue(input.IncludeHash) || !pangea.BoolValue(input.IncludeMembershipProof) || !pangea.BoolValue(input.IncludeRoot)) {
+		return nil, fmt.Errorf("audit: should include hash, membership_proof and root if VerifyProofs is true")
+	}
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
 		return nil, err
@@ -76,7 +80,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		return nil, err
 	}
 
-	err = a.verifyRecords(out.Events)
+	err = a.verifyRecords(out.Events, out.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +103,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	if err != nil {
 		return nil, err
 	}
-	err = a.verifyRecords(out.Events)
+	err = a.verifyRecords(out.Events, out.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -181,13 +185,18 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 	return root, vEvents, nil
 }
 
-func (a *Audit) verifyRecords(events Events) error {
-	if a.VerifyRecords {
-		for idx, event := range events {
-			verified := event.Record.VerifySignature(a.Verifier)
-			if !verified {
-				return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
-			}
+func (a *Audit) verifyRecords(events Events, root *Root) error {
+	for idx, event := range events {
+		if a.VerifyProofs && !event.VerifyHash() {
+			return fmt.Errorf("audit: cannot verify hash of record [%v]", idx)
+		}
+
+		if a.VerifyProofs && !event.VerifyMembershipProof(root) {
+			return fmt.Errorf("audit: cannot verify membership proof of record [%v]", idx)
+		}
+
+		if a.VerifySignature && !event.VerifySignature() {
+			return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
 		}
 	}
 	return nil
@@ -195,7 +204,7 @@ func (a *Audit) verifyRecords(events Events) error {
 
 type LogInput struct {
 	// A structured event describing an auditable activity.
-	Event *LogEventInput `json:"event"`
+	Event *Event `json:"event"`
 
 	// Return the event's hash with response.
 	ReturnHash *bool `json:"return_hash"`
@@ -203,9 +212,16 @@ type LogInput struct {
 	// If true, be verbose in the response; include canonical events, create time, hashes, etc.
 	// default: false
 	Verbose *bool `json:"verbose"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
 }
 
-type LogEventInput struct {
+type Event struct {
 	// Record who performed the auditable activity.
 	// max len is 128 bytes
 	// examples:
@@ -235,13 +251,6 @@ type LogEventInput struct {
 	// max len of 65536 bytes
 	Old *string `json:"old,omitempty"`
 
-	// An optional client-side signature for forgery protection.
-	// max len of 256 bytes
-	Signature *string `json:"signature,omitempty"`
-
-	// The base64-encoded ed25519 public key used for the signature, if one is provided
-	PublicKey *string `json:"public_key,omitempty"`
-
 	// Used to record the location from where an activity occurred.
 	// max len of 128 bytes
 	Source *string `json:"source,omitempty"`
@@ -259,11 +268,14 @@ type LogEventInput struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *string `json:"timestamp,omitempty"`
+
+	// Timestamp set by the server
+	ReceivedAt *string `json:"received_at,omitempty"`
 }
 
-func (i *LogEventInput) Sign(s signer.Signer) error {
-	b, err := newsSignedMessageFromRecord(i.Actor, i.Action, i.Message, i.New,
-		i.Old, i.Source, i.Status, i.Target, i.Timestamp)
+func (i *LogInput) Sign(s signer.Signer) error {
+	b, err := newsSignedMessageFromRecord(i.Event.Actor, i.Event.Action, i.Event.Message, i.Event.New,
+		i.Event.Old, i.Event.Source, i.Event.Status, i.Event.Target, i.Event.Timestamp)
 	if err != nil {
 		return err
 	}
@@ -286,59 +298,20 @@ type LogOutput struct {
 
 	// A base64 encoded canonical JSON form of the event, used for hashing.
 	CanonicalEventBase64 *string `json:"canonical_event_base64"`
-}
-
-type LogEventOutput struct {
-	// Record who performed the auditable activity.
-	// max len is 128 bytes
-	// examples:
-	// 	John Doe
-	//  user-id
-	//  DennisNedry@InGen.com
-	Actor *string `json:"actor,omitempty"`
-
-	// The auditable action that occurred."
-	// examples:
-	// 	created
-	//  deleted
-	//  updated
-	Action *string `json:"action,omitempty"`
-
-	// A message describing a detailed account of what happened.
-	// This can be recorded as free-form text or as a JSON-formatted string.
-	// Message is a required field.
-	// max len of 65536 bytes
-	Message *string `json:"message"`
-
-	// The value of a record after it was changed.
-	// max len of 65536 bytes
-	New *string `json:"new,omitempty"`
-
-	// The value of a record before it was changed.
-	// max len of 65536 bytes
-	Old *string `json:"old,omitempty"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
 	Signature *string `json:"signature,omitempty"`
 
-	// Used to record the location from where an activity occurred.
-	// max len of 128 bytes
-	Source *string `json:"source,omitempty"`
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
+}
 
-	// Record whether or not the activity was successful.
-	// examples:
-	//  failure
-	//  success
-	// max len of 32 bytes
-	Status *string `json:"status,omitempty"`
+type LogEventOutput struct {
+	Event
 
-	// Used to record the specific record that was targeted by the auditable activity.
-	// max len of 128 bytes
-	Target *string `json:"target,omitempty"`
-
-	// An optional client-supplied timestamp.
-	Timestamp *string `json:"timestamp,omitempty"`
+	// A server-supplied timestamp.
+	ReceivedAt *string `json:"received_at,omitempty"`
 }
 
 type SearchInput struct {
@@ -443,7 +416,7 @@ type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Record *Record `json:"event"`
+	Event *Event `json:"event"`
 
 	// A cryptographic proof that the record has been persisted in the log.
 	MembershipProof *string `json:"membership_proof"`
@@ -454,6 +427,13 @@ type EventEnvelope struct {
 
 	// The index of the leaf of the Merkle Tree where this record was inserted.
 	LeafIndex *int `json:"leaf_index"`
+
+	// An optional client-side signature for forgery protection.
+	// max len of 256 bytes
+	Signature *string `json:"signature,omitempty"`
+
+	// The base64-encoded ed25519 public key used for the signature, if one is provided
+	PublicKey *string `json:"public_key,omitempty"`
 }
 
 // IsVerifiable checks if a record can be verfiable with the published proof
@@ -461,64 +441,58 @@ func (event *EventEnvelope) IsVerifiable() bool {
 	return event.LeafIndex != nil
 }
 
-type Record struct {
-	// An identifier for _who_ the audit record is about.
-	Actor *string `json:"actor,omitempty"`
+func (ee *EventEnvelope) VerifyHash() bool {
+	if ee.Hash == nil {
+		return true
+	}
 
-	// What action was performed on a record.
-	// examples:
-	// 	created
-	//  deleted
-	//  updated
-	Action *string `json:"action,omitempty"`
+	eventCanon, err := pangeautil.CanonicalizeJSONMarshall((ee.Event))
+	if err != nil {
+		return false
+	}
+	eventHash := hash.Encode(eventCanon)
+	if err != nil {
+		return false
+	}
 
-	// A free form text field describing the event.
-	// Message is always populated on a successful response.
-	Message *string `json:"message"`
-
-	// The value of a record _after_ it was changed.
-	New *string `json:"new,omitempty"`
-
-	// The value of a record _before_ it was changed.
-	Old *string `json:"old,omitempty"`
-
-	// An optional client-side signature for forgery protection.
-	// max len of 256 bytes
-	Signature *string `json:"signature,omitempty"`
-
-	// The source of a record. Can be used to hard-split logged and searched data.
-	// max len of 128 bytes
-	Source *string `json:"source,omitempty"`
-
-	// The status or result of the event
-	// examples:
-	//  failure
-	//  success
-	// max len of 32 bytes
-	Status *string `json:"status,omitempty"`
-
-	// An identifier for what the audit record is about.
-	// max len of 128 bytes
-	Target *string `json:"target,omitempty"`
-
-	Timestamp *time.Time `json:"timestamp"`
+	return pangea.StringValue(ee.Hash) == eventHash.String()
 }
 
-func (r *Record) VerifySignature(verifier signer.Verifier) bool {
-	var timestamp string
-	if r.Timestamp != nil {
-		timestamp = r.Timestamp.Format(time.RFC3339)
+func (ee *EventEnvelope) VerifyMembershipProof(root *Root) bool {
+	if root == nil || ee.MembershipProof == nil {
+		return true
 	}
-	b, err := newsSignedMessageFromRecord(r.Actor, r.Action, r.Message, r.New,
-		r.Old, r.Source, r.Status, r.Target, &timestamp)
+
+	b, err := VerifyMembershipProof(*root, *ee, false)
 	if err != nil {
 		return false
 	}
-	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(r.Signature))
+	return b
+}
+
+func (ee *EventEnvelope) VerifySignature() bool {
+	if ee.Signature == nil {
+		return true
+	}
+
+	b, err := newsSignedMessageFromRecord(ee.Event.Actor, ee.Event.Action, ee.Event.Message, ee.Event.New,
+		ee.Event.Old, ee.Event.Source, ee.Event.Status, ee.Event.Target, ee.Event.Timestamp)
 	if err != nil {
 		return false
 	}
-	return verifier.Verify(b, sig)
+
+	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.Signature))
+	if err != nil {
+		return false
+	}
+
+	pubKey, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.PublicKey))
+	if err != nil {
+		return false
+	}
+
+	v := signer.NewVerifierFromPubKey(pubKey)
+	return v.Verify(b, sig)
 }
 
 type SearchResultInput struct {

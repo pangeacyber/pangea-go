@@ -9,6 +9,19 @@ import (
 
 func TestCanonicalizeJSONMarshall_Given_Unsorted_Struct_Fields_Returns_Json_With_Keys_SortedBy_Json_Tags(t *testing.T) {
 	input := struct {
+		A string `json:"b"`
+		B string `json:"a"`
+	}{
+		A: "some-string",
+		B: "another-string",
+	}
+
+	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
+	assert.Equal(t, `{"a":"another-string","b":"some-string"}`, string(b))
+}
+
+func TestCanonicalizeJSONMarshall_Given_Unsorted_Struct_Fields_Returns_Json_With_Keys_SortedBy_Json_Tags_2(t *testing.T) {
+	input := struct {
 		A string  `json:"b"`
 		B *string `json:"a"`
 	}{
@@ -17,7 +30,7 @@ func TestCanonicalizeJSONMarshall_Given_Unsorted_Struct_Fields_Returns_Json_With
 	}
 
 	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
-	assert.Equal(t, `{"a":null,"b":"some-string"}`, string(b))
+	assert.Equal(t, `{"b":"some-string"}`, string(b))
 }
 
 func TestCanonicalizeJSONMarshall_Given_StrPtr_With_Value_It_Returns_Value(t *testing.T) {
@@ -40,7 +53,7 @@ func TestCanonicalizeJSONMarshall_Given_NilStrPtr_With_Value_It_Returns_Value(t 
 	}
 
 	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
-	assert.Equal(t, `{"a":null}`, string(b))
+	assert.Equal(t, `{}`, string(b))
 }
 
 func TestCanonicalizeJSONMarshall_Given_EmptyStruct_It_Returns_Empty_Json(t *testing.T) {
