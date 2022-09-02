@@ -28,7 +28,7 @@ func TestLog(t *testing.T) {
 				"status_code": 200,
 				"status": "success",
 				"result": {
-					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
+					"canonical_envelope_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"envelope": {
 						"event": {
 							"message": "test"
@@ -80,7 +80,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 				"status_code": 200,
 				"status": "success",
 				"result": {
-					"canonical_event_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
+					"canonical_envelope_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"envelope": {
 						"event": {
 							"message": "test"
