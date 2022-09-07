@@ -283,9 +283,6 @@ type Event struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *string `json:"timestamp,omitempty"`
-
-	// Timestamp set by the server
-	ReceivedAt *string `json:"received_at,omitempty"`
 }
 
 type EventEnvelope struct {

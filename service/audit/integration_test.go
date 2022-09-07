@@ -51,7 +51,7 @@ func Test_Integration_Log(t *testing.T) {
 }
 
 func Test_Integration_Signatures(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
@@ -60,17 +60,27 @@ func Test_Integration_Signatures(t *testing.T) {
 		audit.WithLogSignatureVerificationEnabled(),
 	)
 
-	msg := "sigtest" + RandStringBytes(5)
+	msg := "sigtest" + "100"
 	logInput := &audit.LogInput{
 		Event: &audit.Event{
 			Message: pangea.String(msg),
+			Source:  pangea.String("Source"),
+			Status:  pangea.String("Status"),
+			Target:  pangea.String("Target"),
+			Actor:   pangea.String("Actor"),
+			Action:  pangea.String("Action"),
+			New:     pangea.String("New"),
+			Old:     pangea.String("Old"),
 		},
 		ReturnHash: pangea.Bool(true),
 		Verbose:    pangea.Bool(true),
 	}
 
-	_, err := client.Log(ctx, logInput)
+	outLog, err := client.Log(ctx, logInput)
 	assert.NoError(t, err)
+
+	fmt.Println("Event signature: ", *outLog.Result.EventEnvelope.Signature)
+	fmt.Println("Encoded public key: ", *outLog.Result.EventEnvelope.PublicKey)
 
 	searchInput := &audit.SearchInput{
 		Query:      pangea.String(fmt.Sprintf("message:%s", msg)),
