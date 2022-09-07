@@ -25,8 +25,7 @@ func TestLog(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result": {
 					"canonical_envelope_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"envelope": {
@@ -77,8 +76,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result": {
 					"canonical_envelope_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"envelope": {
@@ -132,8 +130,7 @@ func TestSearch(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result": {
 					"count": 2,
 					"events": [
@@ -218,8 +215,7 @@ func TestSearchResults(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result": {
 					"count": 2,
 					"events": [
@@ -319,8 +315,7 @@ func TestRoot(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result": {
 					"data":  {
 						"published_at": "%v",

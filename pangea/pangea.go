@@ -254,7 +254,8 @@ func CheckResponse(r *Response) error {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted {
 		return &AcceptedError{ResponseHeader: r.ResponseHeader}
 	}
-	if r.HTTPResponse.StatusCode <= http.StatusOK {
+
+	if r.HTTPResponse.StatusCode == http.StatusOK && *r.ResponseHeader.Status == "Success" {
 		return nil
 	}
 	return &APIError{
