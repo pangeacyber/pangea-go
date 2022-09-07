@@ -185,7 +185,7 @@ func TestSearch(t *testing.T) {
 					Event: &audit.Event{
 						Message: pangea.String("test_2"),
 					},
-					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
+					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
@@ -195,7 +195,7 @@ func TestSearch(t *testing.T) {
 					Event: &audit.Event{
 						Message: pangea.String("test_1"),
 					},
-					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
+					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -277,7 +277,7 @@ func TestSearchResults(t *testing.T) {
 					Event: &audit.Event{
 						Message: pangea.String("test_2"),
 					},
-					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
+					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
@@ -287,7 +287,7 @@ func TestSearchResults(t *testing.T) {
 					Event: &audit.Event{
 						Message: pangea.String("test_1"),
 					},
-					ReceivedAt: got.Result.Events[1].EventEnvelope.Event.ReceivedAt,
+					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
