@@ -19,9 +19,6 @@ type ResponseHeader struct {
 	// The HTTP status code msg
 	Status *string `json:"status"`
 
-	// The HTTP status code
-	StatusCode *int `json:"status_code"`
-
 	// The summary of the response
 	Summary *string `json:"summary"`
 }
@@ -37,7 +34,7 @@ func (r *ResponseHeader) String() string {
 	if r == nil {
 		return ""
 	}
-	return fmt.Sprintf("request_id: %v, request_time: %v, response_time: %v, status_code: %v, status: %v, summary: %v",
-		StringValue(r.RequestID), StringValue(r.RequestTime), StringValue(r.ResponseTime), IntValue(r.StatusCode),
+	return fmt.Sprintf("request_id: %v, request_time: %v, response_time: %v, status: %v, summary: %v",
+		StringValue(r.RequestID), StringValue(r.RequestTime), StringValue(r.ResponseTime),
 		StringValue(r.Status), StringValue(r.Summary))
 }

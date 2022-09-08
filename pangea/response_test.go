@@ -10,7 +10,6 @@ func TestResponseHeader_String(t *testing.T) {
 	want := "request_id: some-id, " +
 		"request_time: 1970-01-01T00:00:00Z, " +
 		"response_time: 1970-01-01T00:00:10Z, " +
-		"status_code: 418, " +
 		"status: I'm a teapot, " +
 		"summary: I'm a teapot"
 
@@ -18,7 +17,6 @@ func TestResponseHeader_String(t *testing.T) {
 		RequestID:    pangea.String("some-id"),
 		RequestTime:  pangea.String("1970-01-01T00:00:00Z"),
 		ResponseTime: pangea.String("1970-01-01T00:00:10Z"),
-		StatusCode:   pangea.Int(418),
 		Status:       pangea.String("I'm a teapot"),
 		Summary:      pangea.String("I'm a teapot"),
 	}

@@ -24,8 +24,7 @@ func TestISOCheck(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result":{
 					"sanctions": [
 						{
@@ -89,8 +88,7 @@ func TestIPCheck(t *testing.T) {
 				"request_id": "some-id",
 				"request_time": "1970-01-01T00:00:00Z",
 				"response_time": "1970-01-01T00:00:10Z",
-				"status_code": 200,
-				"status": "success",
+				"status": "Success",
 				"result":{
 					"sanctions": [
 						{

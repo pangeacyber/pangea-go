@@ -28,13 +28,8 @@ func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
 	req, _ := client.NewRequest("GET", ".", nil)
 	_, err := client.Do(nil, req, nil)
 
-	if err == nil {
-		t.Errorf("Expected error")
-	}
-
-	if err.Error() != "context must be non-nil" {
-		t.Errorf("Expected error message to be 'context must be non-nil', got %s", err.Error())
-	}
+	assert.Error(t, err)
+	assert.Equal(t, "context must be non-nil", err.Error())
 }
 
 func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
@@ -44,14 +39,13 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 	client := testClient(t, url)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{
 			"request_id": "some-id",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 400,
-			"status": "error",
-			"result": null,
+			"status": "ValidationError",
+			"result": {"errors": []},
 			"summary": "bad request"
 		}`)
 	})
@@ -59,23 +53,12 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 	req, _ := client.NewRequest("POST", "test", nil)
 	_, err := client.Do(context.Background(), req, nil)
 
-	if err == nil {
-		t.Fatal("Expected HTTP 400 error, got no error.")
-	}
+	assert.Error(t, err)
 
 	pangeaErr, ok := err.(*pangea.APIError)
-	if !ok {
-		t.Fatalf("Expected pangea.APIError, got %T", err)
-	}
-	if pangeaErr.ResponseHeader == nil {
-		t.Fatal("Expected ResponseMetadata to be non-nil")
-	}
-	if pangeaErr.ResponseHeader.StatusCode == nil {
-		t.Fatal("Expected non-nil status code")
-	}
-	if *pangeaErr.ResponseHeader.StatusCode != http.StatusBadRequest {
-		t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, *pangeaErr.ResponseHeader.StatusCode)
-	}
+	assert.True(t, ok)
+	assert.NotNil(t, pangeaErr.ResponseHeader)
+	assert.Equal(t, "ValidationError", *pangeaErr.ResponseHeader.Status)
 }
 
 func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
@@ -90,8 +73,7 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 			"request_id": "some-id",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 500,
-			"status": "error",
+			"status": "InternalError",
 			"result": null,
 			"summary": "error"
 		}`)
@@ -99,24 +81,12 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 
 	req, _ := client.NewRequest("POST", "test", nil)
 	_, err := client.Do(context.Background(), req, nil)
-
-	if err == nil {
-		t.Fatal("Expected HTTP 500 error, got no error.")
-	}
-
+	assert.Error(t, err)
 	pangeaErr, ok := err.(*pangea.APIError)
-	if !ok {
-		t.Fatalf("Expected pangea.APIError, got %v", err)
-	}
-	if pangeaErr.ResponseHeader == nil {
-		t.Fatal("Expected ResponseMetadata to be non-nil")
-	}
-	if pangeaErr.ResponseHeader.StatusCode == nil {
-		t.Fatal("Expected non-nil status code")
-	}
-	if *pangeaErr.ResponseHeader.StatusCode != http.StatusInternalServerError {
-		t.Errorf("Expected status code %d, got %d", http.StatusInternalServerError, *pangeaErr.ResponseHeader.StatusCode)
-	}
+	assert.True(t, ok)
+	assert.NotNil(t, pangeaErr.ResponseHeader)
+	assert.NotNil(t, pangeaErr.ResponseHeader.Status)
+	assert.Equal(t, "InternalError", *pangeaErr.ResponseHeader.Status)
 }
 
 func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.T) {
@@ -131,8 +101,7 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 			"request_id": "some-id",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 200,
-			"status": "ok",
+			"status": "Success",
 			"result": {"key": "value"},
 			"summary": "ok"
 		}`)
@@ -147,21 +116,12 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 		t.Fatalf("Expected no error, got %v", err)
 	}
 
-	if resp == nil {
-		t.Fatal("Expected non-nil response")
-	}
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Status)
+	assert.Equal(t, "Success", *resp.Status)
 
-	if resp.StatusCode == nil || *resp.StatusCode != http.StatusOK {
-		t.Fatal("Expected status code 200")
-	}
-
-	if body.Key == nil {
-		t.Fatal("Expected body.Key to be non-nil")
-	}
-
-	if *body.Key != "value" {
-		t.Errorf("Expected body.Key to be 'value', got %v", *body.Key)
-	}
+	assert.NotNil(t, body.Key)
+	assert.Equal(t, "value", *body.Key)
 }
 
 func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
@@ -190,25 +150,17 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 			"request_id": "some-id",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 200,
-			"status": "ok",
+			"status": "Success",
 			"result": null,
 			"summary": "ok"
 		}`)
 	})
 
 	resp, err := client.Do(context.Background(), req, nil)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if resp == nil {
-		t.Fatal("Expected non-nil response")
-	}
-
-	if resp.StatusCode == nil || *resp.StatusCode != http.StatusOK {
-		t.Error("Expected status code 200")
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Status)
+	assert.Equal(t, *resp.Status, "Success")
 }
 
 func TestDo_When_Client_Can_Not_UnMarshall_Response_It_Returns_UnMarshalError(t *testing.T) {
@@ -226,14 +178,8 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_It_Returns_UnMarshalError(t 
 
 	_, err := client.Do(context.Background(), req, nil)
 
-	if err == nil {
-		t.Fatal("Expected an error")
-	}
-
-	_, ok := err.(*pangea.UnMarshalError)
-	if !ok {
-		t.Errorf("Expected pangea.UnMarshalError, got %T", err)
-	}
+	var v *pangea.UnMarshalError
+	assert.ErrorAs(t, err, &v)
 }
 
 func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_UnMarshalError(t *testing.T) {
@@ -250,8 +196,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 			"request_id": "some-id",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 200,
-			"status": "ok",
+			"status": "Success",
 			"summary": "ok"
 		}`)
 	})
@@ -261,14 +206,8 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 	}{}
 	_, err := client.Do(context.Background(), req, body)
 
-	if err == nil {
-		t.Fatal("Expected an error")
-	}
-
-	_, ok := err.(*pangea.UnMarshalError)
-	if !ok {
-		t.Errorf("Expected pangea.UnMarshalError, got %T", err)
-	}
+	var v *pangea.UnMarshalError
+	assert.ErrorAs(t, err, &v)
 }
 
 func TestDo_With_Retries_Success(t *testing.T) {
@@ -292,8 +231,7 @@ func TestDo_With_Retries_Success(t *testing.T) {
 					"request_id": "some-id",
 					"request_time": "1970-01-01T00:00:00Z",
 					"response_time": "1970-01-01T00:00:10Z",
-					"status_code": 200,
-					"status": "ok",
+					"status": "Success",
 					"summary": "ok"
 				}`)
 			} else {
@@ -306,17 +244,10 @@ func TestDo_With_Retries_Success(t *testing.T) {
 
 	resp, err := client.Do(context.Background(), req, nil)
 
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if resp == nil {
-		t.Fatal("Expected non-nil response")
-	}
-
-	if resp.StatusCode == nil || *resp.StatusCode != http.StatusOK {
-		t.Error("Expected status code 200")
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Status)
+	assert.Equal(t, "Success", *resp.Status)
 }
 
 func TestDo_With_Retries_Error(t *testing.T) {
@@ -338,14 +269,8 @@ func TestDo_With_Retries_Error(t *testing.T) {
 
 	_, err := client.Do(context.Background(), req, nil)
 
-	if err == nil {
-		t.Fatal("Expected HTTP 500 error, got no error.")
-	}
-
-	_, ok := err.(*pangea.APIError)
-	if !ok {
-		t.Fatalf("Expected pangea.APIError, got %T", err)
-	}
+	var v *pangea.APIError
+	assert.ErrorAs(t, err, &v)
 }
 
 func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
@@ -360,8 +285,7 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 			"request_id": "some-id",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 202,
-			"status": "error",
+			"status": "Accepted",
 			"result": null,
 			"summary": "Accepted"
 		}`)
@@ -374,54 +298,8 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 		t.Fatal("Expected error")
 	}
 
-	pangeaErr, ok := err.(*pangea.AcceptedError)
-	if !ok {
-		t.Fatalf("Expected pangea.AcceptedError, got %T", err)
-	}
-	if pangeaErr.ResponseHeader.StatusCode == nil {
-		t.Fatal("Expected non-nil status code")
-	}
-	if *pangeaErr.ResponseHeader.StatusCode != http.StatusAccepted {
-		t.Errorf("Expected status code %d, got %d", http.StatusAccepted, *pangeaErr.ResponseHeader.StatusCode)
-	}
-}
-
-func TestFetchAcceptedResponse_When_Server_Returns_200_It_JSON_Marshals_Payload(t *testing.T) {
-	mux, url, teardown := pangeatesting.SetupServer()
-	defer teardown()
-
-	client := testClient(t, url)
-
-	mux.HandleFunc("/request/id", func(w http.ResponseWriter, r *http.Request) {
-		pangeatesting.TestMethod(t, r, "GET")
-		pangeatesting.TestBody(t, r, "")
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `{
-			"request_id": "some-id",
-			"request_time": "1970-01-01T00:00:00Z",
-			"response_time": "1970-01-01T00:00:10Z",
-			"status_code": 200,
-			"status": "error",
-			"result": {
-				"key": "value"
-			},
-			"summary": "Accepted"
-		}`)
-	})
-
-	type Payload struct {
-		Key *string `json:"key"`
-	}
-
-	var payload *Payload
-	_, err := client.FetchAcceptedResponse(context.Background(), "id", &payload)
-
-	if err != nil {
-		t.Fatalf("Expected no error got %v", err)
-	}
-
-	assert.NoError(t, err)
-	assert.NotNil(t, payload)
-	assert.NotNil(t, payload.Key)
-	assert.Equal(t, "value", *payload.Key)
+	var v *pangea.AcceptedError
+	assert.ErrorAs(t, err, &v)
+	assert.NotNil(t, v.ResponseHeader.Status)
+	assert.Equal(t, "Accepted", *v.ResponseHeader.Status)
 }
