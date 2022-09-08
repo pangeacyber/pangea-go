@@ -117,6 +117,7 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 	}
 
 	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Status)
 	assert.NotNil(t, *resp.Status)
 	assert.Equal(t, "Success", *resp.Status)
 
