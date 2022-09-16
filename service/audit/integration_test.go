@@ -46,8 +46,83 @@ func Test_Integration_Log(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
 	assert.NotNil(t, out.Result.EventEnvelope.Event.Message)
 	assert.NotEmpty(t, *out.Result.Hash)
-	// assert.NotNil(t, out.Result.CanonicalEventBase64)
-	// assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
+	assert.NotNil(t, out.Result.CanonicalEnvelopeBase64)
+	assert.NotEmpty(t, *out.Result.CanonicalEnvelopeBase64)
+}
+
+func Test_Integration_Log_NoVerbose(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(false),
+	}
+
+	out, err := client.Log(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Hash)
+	assert.NotEmpty(t, *out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.CanonicalEnvelopeBase64)
+}
+
+func Test_Integration_Log_Silent(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(false),
+		Verbose:    pangea.Bool(false),
+	}
+
+	out, err := client.Log(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.Nil(t, out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.CanonicalEnvelopeBase64)
+}
+
+// Fails because empty message
+func Test_Integration_Log_Error(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String(""),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+
+	out, err := client.Log(ctx, input)
+
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	err = err.(*pangea.APIError)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
 }
 
 func Test_Integration_Signatures(t *testing.T) {
@@ -126,7 +201,7 @@ func Test_Integration_Proof(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
 
-	maxResults := 20
+	maxResults := 4
 	limit := 2
 
 	input := &audit.SearchInput{
@@ -159,8 +234,8 @@ func Test_Integration_Search(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	maxResults := 20
-	limit := 10
+	maxResults := 4
+	limit := 2
 
 	input := &audit.SearchInput{
 		MaxResults: pangea.Int(maxResults),

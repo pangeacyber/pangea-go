@@ -178,7 +178,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_It_Returns_UnMarshalError(t 
 
 	_, err := client.Do(context.Background(), req, nil)
 
-	var v *pangea.UnMarshalError
+	var v *pangea.UnmarshalError
 	assert.ErrorAs(t, err, &v)
 }
 
@@ -206,7 +206,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 	}{}
 	_, err := client.Do(context.Background(), req, body)
 
-	var v *pangea.UnMarshalError
+	var v *pangea.UnmarshalError
 	assert.ErrorAs(t, err, &v)
 }
 

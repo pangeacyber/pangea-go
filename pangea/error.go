@@ -7,27 +7,62 @@ import (
 	"net/http"
 )
 
-type APIError struct {
+type PangeaErrors struct {
+	Errors []ErrorField `json:"errors,omitempty"`
+}
+
+type ErrorField struct {
+	Code   string `json:"code"`
+	Detail string `json:"detail"`
+	Source string `json:"source"`
+	Path   string `json:"path,omitempty"`
+}
+
+type BaseError struct {
+	// The underlying error that triggered this one, if any.
+	Err error
+
 	// the HTTP response
 	HTTPResponse *http.Response
+}
+
+type APIError struct {
+	BaseError
 
 	// the reponse header of the request if any
 	ResponseHeader *ResponseHeader
 
-	// FIXME: Maybe we should call it RawResult
 	// the result of the request
-	Result json.RawMessage
+	RawResult json.RawMessage
 
-	// The underlying error that triggered this one, if any.
-	Err error
+	// error details
+	PangeaErrors PangeaErrors
 }
 
-func NewAPIError(err error, r *http.Response, header *ResponseHeader) *APIError {
-	return &APIError{
-		Err:            err,
-		HTTPResponse:   r,
-		ResponseHeader: header,
+func NewAPIError(err error, r *Response) *APIError {
+	var errRes error
+	var pa PangeaErrors
+	errUnm := r.UnmarshalResult(&pa)
+	if err != nil {
+		pa = PangeaErrors{}
+		errRes = fmt.Errorf("Error: %s. Unmarshall Error: %s.", err.Error(), errUnm.Error())
+	} else {
+		errRes = fmt.Errorf("Error: %s.", err.Error())
 	}
+
+	return &APIError{
+		BaseError: BaseError{
+			Err:          errRes,
+			HTTPResponse: r.HTTPResponse,
+		},
+		RawResult:      r.RawResult,
+		ResponseHeader: &r.ResponseHeader,
+		PangeaErrors:   pa,
+	}
+}
+
+func (e *BaseError) Error() string {
+	return e.Err.Error()
 }
 
 func (e *APIError) Error() string {
@@ -40,10 +75,6 @@ func (e *APIError) Error() string {
 		} else {
 			b.WriteString(fmt.Sprintf("%v", e.HTTPResponse.StatusCode))
 		}
-		if len(e.Result) > 0 {
-			pad(b, ": ")
-			b.WriteString(fmt.Sprintf("body: %s", e.Result))
-		}
 	}
 	if e.Err != nil {
 		pad(b, ": ")
@@ -52,30 +83,25 @@ func (e *APIError) Error() string {
 	return b.String()
 }
 
-type UnMarshalError struct {
-	APIError
+type UnmarshalError struct {
+	BaseError
+
 	Bytes []byte
 }
 
-func NewUnMarshalError(err error, bytes []byte, r *http.Response, header *ResponseHeader) *UnMarshalError {
-	return &UnMarshalError{
-		APIError: APIError{
-			Err:            err,
-			HTTPResponse:   r,
-			ResponseHeader: header,
+func NewUnmarshalError(err error, bytes []byte, r *http.Response) *UnmarshalError {
+	return &UnmarshalError{
+		BaseError: BaseError{
+			Err:          err,
+			HTTPResponse: r,
 		},
 		Bytes: bytes,
 	}
 }
 
-func (e *UnMarshalError) Error() string {
+func (e *UnmarshalError) Error() string {
 	b := new(bytes.Buffer)
-	b.WriteString("pangea: failed to unmarshall body")
-	errMsg := e.APIError.Error()
-	if errMsg != "" {
-		pad(b, ": ")
-		b.WriteString(errMsg)
-	}
+	b.WriteString("Failed to unmarshall body")
 	if len(e.Bytes) > 0 {
 		pad(b, ": ")
 		b.WriteString(fmt.Sprintf("body: %s", string(e.Bytes)))

@@ -310,7 +310,7 @@ type LogOutput struct {
 	Hash *string `json:"hash"`
 
 	// A base64 encoded canonical JSON form of the event, used for hashing.
-	CanonicalEventBase64 *string `json:"canonical_envelope_base64"`
+	CanonicalEnvelopeBase64 *string `json:"canonical_envelope_base64"`
 }
 
 type SearchInput struct {

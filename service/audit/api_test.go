@@ -53,8 +53,8 @@ func TestLog(t *testing.T) {
 	assert.NoError(t, err)
 
 	want := &audit.LogOutput{
-		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
-		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
+		CanonicalEnvelopeBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
+		Hash:                    pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
 		EventEnvelope: &audit.EventEnvelope{
 			Event: &audit.Event{
 				Message: pangea.String("test"),
@@ -106,8 +106,8 @@ func TestDomainTrailingSlash(t *testing.T) {
 	assert.NoError(t, err)
 
 	want := &audit.LogOutput{
-		CanonicalEventBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
-		Hash:                 pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
+		CanonicalEnvelopeBase64: pangea.String("eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0="),
+		Hash:                    pangea.String("b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"),
 		EventEnvelope: &audit.EventEnvelope{
 			Event: &audit.Event{
 				Message: pangea.String("test"),
