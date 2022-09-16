@@ -77,14 +77,14 @@ type ISOCheckInput struct {
 }
 
 type Sanction struct {
-	EmbargoedCountryISOCode *string                `json:"embargoed_country_iso_code"`
-	IssuingCountry          *string                `json:"issuing_country"`
-	ListName                *string                `json:"list_name"`
-	EmbargoedCountryName    *string                `json:"embargoed_country_name"`
+	EmbargoedCountryISOCode string                 `json:"embargoed_country_iso_code"`
+	IssuingCountry          string                 `json:"issuing_country"`
+	ListName                string                 `json:"list_name"`
+	EmbargoedCountryName    string                 `json:"embargoed_country_name"`
 	Annotations             map[string]interface{} `json:"annotations"`
 }
 
 type CheckOutput struct {
-	Count     *int        `json:"count"`
-	Sanctions []*Sanction `json:"sanctions"`
+	Count     int        `json:"count"`
+	Sanctions []Sanction `json:"sanctions"`
 }

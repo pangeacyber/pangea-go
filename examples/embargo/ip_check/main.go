@@ -25,7 +25,7 @@ func main() {
 	embargocli, err := embargo.New(&pangea.Config{
 		Token:    token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		CfgToken: configID,
+		ConfigID: configID,
 	})
 	if err != nil {
 		log.Fatal("failed to create embargo client")

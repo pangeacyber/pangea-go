@@ -56,11 +56,11 @@ func TestISOCheck(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	sanction := &embargo.Sanction{
-		ListName:                pangea.String("ITAR"),
-		EmbargoedCountryName:    pangea.String("Cuba"),
-		EmbargoedCountryISOCode: pangea.String("CU"),
-		IssuingCountry:          pangea.String("US"),
+	sanction := embargo.Sanction{
+		ListName:                "ITAR",
+		EmbargoedCountryName:    "Cuba",
+		EmbargoedCountryISOCode: "CU",
+		IssuingCountry:          "US",
 		Annotations: map[string]interface{}{
 			"reference": map[string]interface{}{
 				"paragraph":  "d1",
@@ -70,8 +70,8 @@ func TestISOCheck(t *testing.T) {
 		},
 	}
 	want := &embargo.CheckOutput{
-		Sanctions: []*embargo.Sanction{sanction},
-		Count:     pangea.Int(1),
+		Sanctions: []embargo.Sanction{sanction},
+		Count:     1,
 	}
 	assert.Equal(t, want, got.Result)
 }
@@ -120,11 +120,11 @@ func TestIPCheck(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	sanction := &embargo.Sanction{
-		ListName:                pangea.String("ITAR"),
-		EmbargoedCountryName:    pangea.String("Cuba"),
-		EmbargoedCountryISOCode: pangea.String("CU"),
-		IssuingCountry:          pangea.String("US"),
+	sanction := embargo.Sanction{
+		ListName:                "ITAR",
+		EmbargoedCountryName:    "Cuba",
+		EmbargoedCountryISOCode: "CU",
+		IssuingCountry:          "US",
 		Annotations: map[string]interface{}{
 			"reference": map[string]interface{}{
 				"paragraph":  "d1",
@@ -134,8 +134,8 @@ func TestIPCheck(t *testing.T) {
 		},
 	}
 	want := &embargo.CheckOutput{
-		Sanctions: []*embargo.Sanction{sanction},
-		Count:     pangea.Int(1),
+		Sanctions: []embargo.Sanction{sanction},
+		Count:     1,
 	}
 	assert.Equal(t, want, got.Result)
 }

@@ -34,7 +34,7 @@ type Config struct {
 	Token string
 
 	// The Config ID token of the service.
-	CfgToken string
+	ConfigID string
 
 	// The HTTP client to be used by the client.
 	//  It defaults to defaults.HTTPClient
@@ -169,8 +169,8 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
-	if c.Config.CfgToken != "" {
-		req.Header.Set(configHeaderName(c.ServiceName), c.Config.CfgToken)
+	if c.Config.ConfigID != "" {
+		req.Header.Set(configHeaderName(c.ServiceName), c.Config.ConfigID)
 	}
 	mergeHeaders(req, c.Config.AdditionalHeaders)
 	return req, nil
@@ -305,8 +305,8 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.Token = other.Token
 	}
 
-	if other.CfgToken != "" {
-		dst.CfgToken = other.CfgToken
+	if other.ConfigID != "" {
+		dst.ConfigID = other.ConfigID
 	}
 
 	if other.Domain != "" {

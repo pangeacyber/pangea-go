@@ -24,13 +24,13 @@ func main() {
 	redactcli, err := redact.New(&pangea.Config{
 		Token:    token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		CfgToken: configID,
+		ConfigID: configID,
 	})
 	if err != nil {
 		log.Fatal("failed to create redact client")
 	}
 
-	var text =  "Hello, my phone number is 123-456-7890"
+	var text = "Hello, my phone number is 123-456-7890"
 
 	fmt.Printf("Redacting PII from: '%s'\n", text)
 
