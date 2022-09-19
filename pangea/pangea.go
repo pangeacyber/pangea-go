@@ -34,7 +34,7 @@ type Config struct {
 	Token string
 
 	// The Config ID token of the service.
-	CfgToken string
+	ConfigID string
 
 	// The HTTP client to be used by the client.
 	//  It defaults to defaults.HTTPClient
@@ -169,8 +169,8 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
-	if c.Config.CfgToken != "" {
-		req.Header.Set(configHeaderName(c.ServiceName), c.Config.CfgToken)
+	if c.Config.ConfigID != "" {
+		req.Header.Set(configHeaderName(c.ServiceName), c.Config.ConfigID)
 	}
 	mergeHeaders(req, c.Config.AdditionalHeaders)
 	return req, nil
@@ -181,7 +181,7 @@ type PangeaResponse[T any] struct {
 	Result *T
 }
 
-func (r *Response) UnMarshalResult(target interface{}) error {
+func (r *Response) UnmarshalResult(target interface{}) error {
 	return json.Unmarshal(r.RawResult, target)
 }
 
@@ -191,10 +191,10 @@ func newResponse(r *http.Response) (*Response, error) {
 	defer r.Body.Close()
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return nil, NewAPIError(err, r, nil)
+		return nil, NewUnmarshalError(err, []byte{}, r)
 	}
 	if err := json.Unmarshal(data, response); err != nil {
-		return nil, NewUnMarshalError(err, data, r, nil)
+		return nil, NewUnmarshalError(err, data, r)
 	}
 	return response, nil
 }
@@ -206,7 +206,7 @@ func newResponse(r *http.Response) (*Response, error) {
 func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response, error) {
 	resp, err := c.Config.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, NewAPIError(err, resp, nil)
+		return nil, err
 	}
 	return resp, nil
 }
@@ -236,17 +236,21 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 
 	err = CheckResponse(response)
 	if err != nil {
+		// Return APIError
 		return nil, err
 	}
 
-	switch v := v.(type) {
+	switch v.(type) {
 	case nil:
+		// This should never be fired to user because Client is to internal use
+		return response, fmt.Errorf("Not initialized struct. Can't unmarshal result from response")
 	default:
-		err = response.UnMarshalResult(v)
+		err = response.UnmarshalResult(v)
 		if err != nil {
-			return nil, NewUnMarshalError(err, response.RawResult, response.HTTPResponse, &response.ResponseHeader)
+			return nil, NewAPIError(err, response)
 		}
 	}
+
 	return response, nil
 }
 
@@ -258,10 +262,26 @@ func CheckResponse(r *Response) error {
 	if r.HTTPResponse.StatusCode == http.StatusOK && *r.ResponseHeader.Status == "Success" {
 		return nil
 	}
+
+	var apiError error
+
+	var pa PangeaErrors
+	err := r.UnmarshalResult(&pa)
+	if err != nil {
+		pa = PangeaErrors{}
+		apiError = fmt.Errorf("API error: %s. Unmarshall Error: %s.", *r.ResponseHeader.Summary, err.Error())
+	} else {
+		apiError = fmt.Errorf("API error: %s.", *r.ResponseHeader.Summary)
+	}
+
 	return &APIError{
-		HTTPResponse:   r.HTTPResponse,
+		BaseError: BaseError{
+			Err:          apiError,
+			HTTPResponse: r.HTTPResponse,
+		},
 		ResponseHeader: &r.ResponseHeader,
-		Result:         r.RawResult,
+		RawResult:      r.RawResult,
+		PangeaErrors:   pa,
 	}
 }
 
@@ -285,8 +305,8 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.Token = other.Token
 	}
 
-	if other.CfgToken != "" {
-		dst.CfgToken = other.CfgToken
+	if other.ConfigID != "" {
+		dst.ConfigID = other.ConfigID
 	}
 
 	if other.Domain != "" {

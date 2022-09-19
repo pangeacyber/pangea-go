@@ -157,7 +157,8 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	})
 
 	resp, err := client.Do(context.Background(), req, nil)
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "Not initialized struct. Can't unmarshal result from response")
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Status)
 	assert.Equal(t, *resp.Status, "Success")
@@ -178,11 +179,11 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_It_Returns_UnMarshalError(t 
 
 	_, err := client.Do(context.Background(), req, nil)
 
-	var v *pangea.UnMarshalError
+	var v *pangea.UnmarshalError
 	assert.ErrorAs(t, err, &v)
 }
 
-func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_UnMarshalError(t *testing.T) {
+func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_APIError(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
 
@@ -206,7 +207,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 	}{}
 	_, err := client.Do(context.Background(), req, body)
 
-	var v *pangea.UnMarshalError
+	var v *pangea.APIError
 	assert.ErrorAs(t, err, &v)
 }
 
@@ -244,7 +245,8 @@ func TestDo_With_Retries_Success(t *testing.T) {
 
 	resp, err := client.Do(context.Background(), req, nil)
 
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Equal(t, err.Error(), "Not initialized struct. Can't unmarshal result from response")
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Status)
 	assert.Equal(t, "Success", *resp.Status)
@@ -269,8 +271,7 @@ func TestDo_With_Retries_Error(t *testing.T) {
 
 	_, err := client.Do(context.Background(), req, nil)
 
-	var v *pangea.APIError
-	assert.ErrorAs(t, err, &v)
+	assert.Error(t, err)
 }
 
 func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {

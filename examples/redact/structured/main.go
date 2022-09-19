@@ -28,7 +28,7 @@ func main() {
 	redactcli, err := redact.New(&pangea.Config{
 		Token:    token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		CfgToken: configID,
+		ConfigID: configID,
 	})
 	if err != nil {
 		log.Fatal("failed to create redact client")

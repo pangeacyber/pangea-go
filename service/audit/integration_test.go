@@ -18,7 +18,7 @@ func auditIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
 	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "AUDIT_INTEGRATION_CONFIG_TOKEN")
 	cfg := &pangea.Config{
-		CfgToken: cfgToken,
+		ConfigID: cfgToken,
 	}
 	return cfg.Copy(pangeatesting.IntegrationConfig(t))
 }
@@ -46,8 +46,129 @@ func Test_Integration_Log(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
 	assert.NotNil(t, out.Result.EventEnvelope.Event.Message)
 	assert.NotEmpty(t, *out.Result.Hash)
-	// assert.NotNil(t, out.Result.CanonicalEventBase64)
-	// assert.NotEmpty(t, *out.Result.CanonicalEventBase64)
+	assert.NotNil(t, out.Result.CanonicalEnvelopeBase64)
+	assert.NotEmpty(t, *out.Result.CanonicalEnvelopeBase64)
+}
+
+func Test_Integration_Log_NoVerbose(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(false),
+	}
+
+	out, err := client.Log(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Hash)
+	assert.NotEmpty(t, *out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.CanonicalEnvelopeBase64)
+}
+
+func Test_Integration_Log_Silent(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(false),
+		Verbose:    pangea.Bool(false),
+	}
+
+	out, err := client.Log(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.Nil(t, out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.CanonicalEnvelopeBase64)
+}
+
+func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	cfg.Token = "notavalidtoken"
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+
+	out, err := client.Log(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
+}
+
+// Not a valid config ID
+func Test_Integration_Log_Error_BadConfidID(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	cfg.ConfigID = "notavalidid"
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String("Integration test msg"),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+
+	out, err := client.Log(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, apiErr.Err.Error(), "API error: Missing Config ID, you can provide using the config header X-Pangea-audit-Config-Id or adding a token scope `service:audit:*:config:r`.")
+}
+
+// Fails because empty message
+func Test_Integration_Log_Error_EmptyMessage(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	input := &audit.LogInput{
+		Event: &audit.Event{
+			Message: pangea.String(""),
+		},
+		ReturnHash: pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+
+	out, err := client.Log(ctx, input)
+
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
 }
 
 func Test_Integration_Signatures(t *testing.T) {
@@ -126,7 +247,7 @@ func Test_Integration_Proof(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
 
-	maxResults := 20
+	maxResults := 4
 	limit := 2
 
 	input := &audit.SearchInput{
@@ -159,8 +280,8 @@ func Test_Integration_Search(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	maxResults := 20
-	limit := 10
+	maxResults := 4
+	limit := 2
 
 	input := &audit.SearchInput{
 		MaxResults: pangea.Int(maxResults),

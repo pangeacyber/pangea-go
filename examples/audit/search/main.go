@@ -24,7 +24,7 @@ func main() {
 	auditcli, err := audit.New(&pangea.Config{
 		Token:    token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		CfgToken: configID,
+		ConfigID: configID,
 	})
 	if err != nil {
 		log.Fatal("failed to create audit client")
