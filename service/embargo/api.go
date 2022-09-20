@@ -24,12 +24,13 @@ func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*pangea.Pan
 	}
 	out := CheckOutput{}
 	resp, err := e.Client.Do(ctx, req, &out)
+	if err != nil {
+		return nil, err
+	}
+
 	panresp := pangea.PangeaResponse[CheckOutput]{
 		Response: *resp,
 		Result:   &out,
-	}
-	if err != nil {
-		return &panresp, err
 	}
 	return &panresp, nil
 }

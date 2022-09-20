@@ -14,17 +14,9 @@ type IpIntel struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config, opts ...Option) (*IpIntel, error) {
+func New(cfg *pangea.Config) *IpIntel {
 	cli := &IpIntel{
 		Client: pangea.NewClient("ip-intel", cfg),
 	}
-	for _, opt := range opts {
-		err := opt(cli)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return cli, nil
+	return cli
 }
-
-type Option func(*IpIntel) error

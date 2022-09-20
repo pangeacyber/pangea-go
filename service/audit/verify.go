@@ -31,13 +31,13 @@ type rootProofItem struct {
 
 type rootProof []rootProofItem
 
-func decodeRootProof(rawProof []*string) (rootProof, error) {
+func decodeRootProof(rawProof []string) (rootProof, error) {
 	if len(rawProof) == 0 {
 		return nil, nil
 	}
 	proof := make(rootProof, 0, len(rawProof))
 	for _, rawItem := range rawProof {
-		root, membershipProof, err := splitConsistencyProof(pangea.StringValue(rawItem))
+		root, membershipProof, err := splitConsistencyProof(rawItem)
 		if err != nil {
 			return nil, err
 		}
@@ -86,15 +86,15 @@ func decodeProof(s string) (proof, error) {
 }
 
 func VerifyMembershipProof(root Root, event SearchEvent, required bool) (bool, error) {
-	membershipProof := pangea.StringValue(event.MembershipProof)
+	membershipProof := event.MembershipProof
 	if membershipProof == "" {
 		return !required, nil
 	}
-	targetHash, err := hash.Decode(pangea.StringValue(event.Hash))
+	targetHash, err := hash.Decode(event.Hash)
 	if err != nil {
 		return false, err
 	}
-	rootHash, err := hash.Decode(pangea.StringValue(root.RootHash))
+	rootHash, err := hash.Decode(root.RootHash)
 	if err != nil {
 		return false, err
 	}
@@ -119,10 +119,7 @@ func verifyLogProof(target, root hash.Hash, p proof) bool {
 }
 
 func VerifyConsistencyProof(publishedRoots map[int]Root, event SearchEvent, required bool) bool {
-	if event.LeafIndex == nil {
-		return !required
-	}
-	idx := *event.LeafIndex
+	idx := event.LeafIndex
 	if idx <= 1 {
 		return !required
 	}
@@ -142,11 +139,11 @@ func VerifyConsistencyProof(publishedRoots map[int]Root, event SearchEvent, requ
 }
 
 func verifyConsistencyProof(old, new Root) (bool, error) {
-	oldHash, err := hash.Decode(pangea.StringValue(old.RootHash))
+	oldHash, err := hash.Decode(old.RootHash)
 	if err != nil {
 		return false, err
 	}
-	newHash, err := hash.Decode(pangea.StringValue(new.RootHash))
+	newHash, err := hash.Decode(new.RootHash)
 	if err != nil {
 		return false, err
 	}
@@ -187,7 +184,7 @@ func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, event
 		validatedEvent := &ValidatedEvent{
 			Event: &event.EventEnvelope,
 		}
-		if event.LeafIndex == nil {
+		if event.LeafIndex == 0 {
 			continue
 		}
 		validatedEvent.ConsistencyProofStatus = pangea.Bool(VerifyConsistencyProof(roots, *event, required))
@@ -205,15 +202,15 @@ func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events Searc
 	if root == nil {
 		return ValidateEvents{}, nil
 	}
-	arweavecli := NewArweaveRootsProvider(*root.TreeName)
+	arweavecli := NewArweaveRootsProvider(root.TreeName)
 	return VerifyAuditRecords(ctx, arweavecli, root, events, required)
 }
 
 func treeSizes(root *Root, events SearchEvents) []string {
 	treeSizes := make(map[int]struct{}, 0)
-	treeSizes[*root.Size] = struct{}{}
+	treeSizes[root.Size] = struct{}{}
 	for _, event := range events {
-		leafIdx := *event.LeafIndex
+		leafIdx := event.LeafIndex
 		treeSizes[leafIdx] = struct{}{}
 		if leafIdx > 1 {
 			treeSizes[leafIdx-1] = struct{}{}

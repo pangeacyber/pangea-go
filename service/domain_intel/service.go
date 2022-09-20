@@ -14,17 +14,10 @@ type DomainIntel struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config, opts ...Option) (*DomainIntel, error) {
+func New(cfg *pangea.Config) *DomainIntel {
 	cli := &DomainIntel{
 		Client: pangea.NewClient("domain-intel", cfg),
 	}
-	for _, opt := range opts {
-		err := opt(cli)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return cli, nil
-}
 
-type Option func(*DomainIntel) error
+	return cli
+}

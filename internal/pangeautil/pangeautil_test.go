@@ -16,7 +16,7 @@ func TestCanonicalizeJSONMarshall_Given_Unsorted_Struct_Fields_Returns_Json_With
 		B: "another-string",
 	}
 
-	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
+	b := pangeautil.CanonicalizeJSONMarshall(input)
 	assert.Equal(t, `{"a":"another-string","b":"some-string"}`, string(b))
 }
 
@@ -29,7 +29,7 @@ func TestCanonicalizeJSONMarshall_Given_Unsorted_Struct_Fields_Returns_Json_With
 		B: nil,
 	}
 
-	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
+	b := pangeautil.CanonicalizeJSONMarshall(input)
 	assert.Equal(t, `{"b":"some-string"}`, string(b))
 }
 
@@ -41,7 +41,7 @@ func TestCanonicalizeJSONMarshall_Given_StrPtr_With_Value_It_Returns_Value(t *te
 		B: &str,
 	}
 
-	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
+	b := pangeautil.CanonicalizeJSONMarshall(input)
 	assert.Equal(t, `{"a":"some-string"}`, string(b))
 }
 
@@ -52,19 +52,19 @@ func TestCanonicalizeJSONMarshall_Given_NilStrPtr_With_Value_It_Returns_Value(t 
 		B: nil,
 	}
 
-	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
+	b := pangeautil.CanonicalizeJSONMarshall(input)
 	assert.Equal(t, `{}`, string(b))
 }
 
 func TestCanonicalizeJSONMarshall_Given_EmptyStruct_It_Returns_Empty_Json(t *testing.T) {
 	input := struct{}{}
-	b, _ := pangeautil.CanonicalizeJSONMarshall(input)
+	b := pangeautil.CanonicalizeJSONMarshall(input)
 	assert.Equal(t, `{}`, string(b))
 }
 
 func TestCanonicalizeJSONMarshall_Given_PtrEmptyStruct_It_Returns_Empty_Json(t *testing.T) {
 	input := struct{}{}
-	b, _ := pangeautil.CanonicalizeJSONMarshall(&input)
+	b := pangeautil.CanonicalizeJSONMarshall(&input)
 	assert.Equal(t, `{}`, string(b))
 }
 
@@ -74,6 +74,6 @@ func TestCanonicalizeJSONMarshall_Given_UnTagged_Struct_Fields_It_Returns_Empty_
 	}{
 		B: "other-string",
 	}
-	b, _ := pangeautil.CanonicalizeJSONMarshall(&input)
+	b := pangeautil.CanonicalizeJSONMarshall(&input)
 	assert.Equal(t, `{}`, string(b))
 }

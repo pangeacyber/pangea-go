@@ -22,7 +22,7 @@ func Test_Integration_DomainLookup(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	domainintel, _ := domain_intel.New(cfg)
+	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "teoghehofuuxo.su",
@@ -50,7 +50,7 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	domainintel, _ := domain_intel.New(cfg)
+	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "google.com",
@@ -79,7 +79,7 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	domainintel, _ := domain_intel.New(cfg)
+	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "",
@@ -112,7 +112,7 @@ func Test_Integration_DomainLookup_Error_BadAuthToken(t *testing.T) {
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	cfg.Token = "notavalidtoken"
-	domainintel, _ := domain_intel.New(cfg)
+	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "teoghehofuuxo.su",
@@ -138,7 +138,7 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	domainintel, _ := domain_intel.New(cfg)
+	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "",

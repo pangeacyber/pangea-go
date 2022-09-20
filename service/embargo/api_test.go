@@ -47,7 +47,7 @@ func TestISOCheck(t *testing.T) {
 			}`)
 	})
 
-	client, _ := embargo.New(pangeatesting.TestConfig(url))
+	client := embargo.New(pangeatesting.TestConfig(url))
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),
 	}
@@ -111,7 +111,7 @@ func TestIPCheck(t *testing.T) {
 			}`)
 	})
 
-	client, _ := embargo.New(pangeatesting.TestConfig(url))
+	client := embargo.New(pangeatesting.TestConfig(url))
 	input := &embargo.IPCheckInput{
 		IP: pangea.String("200.0.16.2"),
 	}
@@ -140,10 +140,19 @@ func TestIPCheck(t *testing.T) {
 	assert.Equal(t, want, got.Result)
 }
 
-func TestCheckError(t *testing.T) {
+func TestCheckISOError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		client, _ := embargo.New(cfg)
+		client := embargo.New(cfg)
 		_, err := client.ISOCheck(context.Background(), nil)
+		return err
+	}
+	pangeatesting.TestNewRequestAndDoFailure(t, "Embargo.Check", f)
+}
+
+func TestCheckIPError(t *testing.T) {
+	f := func(cfg *pangea.Config) error {
+		client := embargo.New(cfg)
+		_, err := client.IPCheck(context.Background(), nil)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Embargo.Check", f)

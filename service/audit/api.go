@@ -26,7 +26,13 @@ import (
 //	}
 //
 //	logResponse, err := auditcli.Log(ctx, input)
-func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaResponse[LogOutput], error) {
+func (a *Audit) Log(ctx context.Context, event Event, verbose, returnHash bool) (*pangea.PangeaResponse[LogOutput], error) {
+	input := LogInput{
+		Event:      event,
+		Verbose:    verbose,
+		ReturnHash: returnHash,
+	}
+
 	if a.SignLogs {
 		err := input.Sign(a.Signer)
 		if err != nil {
@@ -66,9 +72,13 @@ func (a *Audit) Log(ctx context.Context, input *LogInput) (*pangea.PangeaRespons
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
-	if a.VerifyProofs && (!pangea.BoolValue(input.IncludeHash) || !pangea.BoolValue(input.IncludeMembershipProof) || !pangea.BoolValue(input.IncludeRoot)) {
-		return nil, fmt.Errorf("audit: should include hash, membership_proof and root if VerifyProofs is true")
+	if a.VerifyProofs {
+		// Need this info to verify
+		input.IncludeHash = true
+		input.IncludeMembershipProof = true
+		input.IncludeRoot = true
 	}
+
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
 	if err != nil {
 		return nil, err
@@ -80,7 +90,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		return nil, err
 	}
 
-	err = a.verifyRecords(out.Events, out.Root)
+	err = a.verifyRecords(out.Events, &out.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +113,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	if err != nil {
 		return nil, err
 	}
-	err = a.verifyRecords(out.Events, out.Root)
+	err = a.verifyRecords(out.Events, &out.Root)
 	if err != nil {
 		return nil, err
 	}
@@ -152,9 +162,9 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	if err != nil {
 		return nil, nil, err
 	}
-	events := make(SearchEvents, 0, *resp.Result.Count)
+	events := make(SearchEvents, 0, resp.Result.Count)
 	events = append(events, resp.Result.Events...)
-	for pangea.IntValue(resp.Result.Count) > len(events) {
+	for resp.Result.Count > len(events) {
 		s := SearchResultInput{
 			ID:                     resp.Result.ID,
 			IncludeMembershipProof: input.IncludeMembershipProof,
@@ -169,16 +179,20 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 		}
 		events = append(events, sOut.Result.Events...)
 	}
-	return resp.Result.Root, events, nil
+	return &resp.Result.Root, events, nil
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages and valitade membership proof and consitency proof
-func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput, r RootsProvider) (*Root, ValidateEvents, error) {
+func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput) (*Root, ValidateEvents, error) {
+	input.IncludeRoot = true
 	root, events, err := SearchAll(ctx, client, input)
 	if err != nil {
 		return nil, nil, err
 	}
-	vEvents, err := VerifyAuditRecords(ctx, r, root, events, true)
+
+	rp := NewArweaveRootsProvider(root.TreeName)
+
+	vEvents, err := VerifyAuditRecords(ctx, rp, root, events, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -191,12 +205,12 @@ func (a *Audit) verifyRecords(events SearchEvents, root *Root) error {
 			return fmt.Errorf("audit: cannot verify hash of record [%v]", idx)
 		}
 
-		if a.VerifyProofs && !event.VerifyMembershipProof(root) {
-			return fmt.Errorf("audit: cannot verify membership proof of record [%v]", idx)
-		}
-
 		if a.VerifySignature && !event.EventEnvelope.VerifySignature() {
 			return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
+		}
+
+		if a.VerifyProofs && !event.VerifyMembershipProof(root) {
+			return fmt.Errorf("audit: cannot verify membership proof of record [%v]", idx)
 		}
 	}
 	return nil
@@ -204,14 +218,14 @@ func (a *Audit) verifyRecords(events SearchEvents, root *Root) error {
 
 type LogInput struct {
 	// A structured event describing an auditable activity.
-	Event *Event `json:"event"`
+	Event Event `json:"event"`
 
 	// Return the event's hash with response.
-	ReturnHash *bool `json:"return_hash"`
+	ReturnHash bool `json:"return_hash"`
 
 	// If true, be verbose in the response; include canonical events, create time, hashes, etc.
 	// default: false
-	Verbose *bool `json:"verbose"`
+	Verbose bool `json:"verbose"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -222,11 +236,8 @@ type LogInput struct {
 }
 
 func (i *LogInput) Sign(s signer.Signer) error {
-	b, err := newsSignedMessageFromRecord(i.Event.Actor, i.Event.Action, i.Event.Message, i.Event.New,
-		i.Event.Old, i.Event.Source, i.Event.Status, i.Event.Target, i.Event.Timestamp)
-	if err != nil {
-		return err
-	}
+	b := pangeautil.CanonicalizeStruct(&i.Event)
+
 	signature, err := s.Sign(b)
 	if err != nil {
 		return err
@@ -243,46 +254,46 @@ type Event struct {
 	// 	John Doe
 	//  user-id
 	//  DennisNedry@InGen.com
-	Actor *string `json:"actor,omitempty"`
+	Actor string `json:"actor,omitempty"`
 
 	// The auditable action that occurred."
 	// examples:
 	// 	created
 	//  deleted
 	//  updated
-	Action *string `json:"action,omitempty"`
+	Action string `json:"action,omitempty"`
 
 	// A message describing a detailed account of what happened.
 	// This can be recorded as free-form text or as a JSON-formatted string.
 	// Message is a required field.
 	// max len of 65536 bytes
-	Message *string `json:"message"`
+	Message string `json:"message"`
 
 	// The value of a record after it was changed.
 	// max len of 65536 bytes
-	New *string `json:"new,omitempty"`
+	New string `json:"new,omitempty"`
 
 	// The value of a record before it was changed.
 	// max len of 65536 bytes
-	Old *string `json:"old,omitempty"`
+	Old string `json:"old,omitempty"`
 
 	// Used to record the location from where an activity occurred.
 	// max len of 128 bytes
-	Source *string `json:"source,omitempty"`
+	Source string `json:"source,omitempty"`
 
 	// Record whether or not the activity was successful.
 	// examples:
 	//  failure
 	//  success
 	// max len of 32 bytes
-	Status *string `json:"status,omitempty"`
+	Status string `json:"status,omitempty"`
 
 	// Used to record the specific record that was targeted by the auditable activity.
 	// max len of 128 bytes
-	Target *string `json:"target,omitempty"`
+	Target string `json:"target,omitempty"`
 
 	// An optional client-supplied timestamp.
-	Timestamp *string `json:"timestamp,omitempty"`
+	Timestamp string `json:"timestamp,omitempty"`
 }
 
 type EventEnvelope struct {
@@ -293,13 +304,13 @@ type EventEnvelope struct {
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
-	Signature *string `json:"signature,omitempty"`
+	Signature string `json:"signature,omitempty"`
 
 	// The base64-encoded ed25519 public key used for the signature, if one is provided
-	PublicKey *string `json:"public_key,omitempty"`
+	PublicKey string `json:"public_key,omitempty"`
 
 	// A server-supplied timestamp.
-	ReceivedAt *string `json:"received_at,omitempty"`
+	ReceivedAt string `json:"received_at,omitempty"`
 }
 
 type LogOutput struct {
@@ -307,10 +318,10 @@ type LogOutput struct {
 
 	// The hash of the event data.
 	// max len of 64 bytes
-	Hash *string `json:"hash"`
+	Hash string `json:"hash"`
 
 	// A base64 encoded canonical JSON form of the event, used for hashing.
-	CanonicalEnvelopeBase64 *string `json:"canonical_envelope_base64"`
+	CanonicalEnvelopeBase64 string `json:"canonical_envelope_base64"`
 }
 
 type SearchInput struct {
@@ -329,16 +340,16 @@ type SearchInput struct {
 	//
 	// examples:
 	//		actor:root target:/etc/shadow
-	Query *string `json:"query"`
+	Query string `json:"query"`
 
 	// Specify the sort order of the response. "asc" or "desc"
-	Order *string `json:"order,omitempty"`
+	Order string `json:"order,omitempty"`
 
 	// Name of column to sort the results by.
-	OrderBy *string `json:"order_by,omitempty"`
+	OrderBy string `json:"order_by,omitempty"`
 
 	// If set, the last value from the response to fetch the next page from.
-	Last *string `json:"last,omitempty"`
+	Last string `json:"last,omitempty"`
 
 	// The start of the time range to perform the search on.
 	Start *time.Time `json:"start,omitempty"`
@@ -347,20 +358,20 @@ type SearchInput struct {
 	End *time.Time `json:"end,omitempty"`
 
 	// Number of audit records to include from the first page of the results.
-	Limit *int `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 
 	// Maximum number of results to return.
 	// min 1 max 10000
-	MaxResults *int `json:"max_results,omitempty"`
+	MaxResults int `json:"max_results,omitempty"`
 
 	// If true, include membership proofs for each record in the first page.
-	IncludeMembershipProof *bool `json:"include_membership_proof,omitempty"`
+	IncludeMembershipProof bool `json:"include_membership_proof,omitempty"`
 
 	// If true, include hashes for each record in the first page.
-	IncludeHash *bool `json:"include_hash,omitempty"`
+	IncludeHash bool `json:"include_hash,omitempty"`
 
 	// If true, include the Merkle root hash of the tree in the first page.
-	IncludeRoot *bool `json:"include_root,omitempty"`
+	IncludeRoot bool `json:"include_root,omitempty"`
 
 	// A list of keys to restrict the search results to. Useful for partitioning data available to the query string.
 	SearchRestriction *SearchRestriction `json:"search_restriction,omitempty"`
@@ -368,19 +379,19 @@ type SearchInput struct {
 
 type SearchRestriction struct {
 	// A list of actors to restrict the search to.
-	Actor []*string `json:"actor,omitempty"`
+	Actor []string `json:"actor,omitempty"`
 
 	// A list of sources to restrict the search to.
-	Source []*string `json:"source,omitempty"`
+	Source []string `json:"source,omitempty"`
 
 	// A list of targets to restrict the search to.
-	Target []*string `json:"target,omitempty"`
+	Target []string `json:"target,omitempty"`
 }
 
 type SearchOutput struct {
 	// Identifier to supply to search_results API to fetch/paginate through search results.
 	// ID is always populated on a successful response.
-	ID *string `json:"id"`
+	ID string `json:"id"`
 
 	// The time when the results will no longer be available to page through via the results API.
 	// ExpiresAt is always populated on a successful response.
@@ -388,10 +399,10 @@ type SearchOutput struct {
 
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
-	Count *int `json:"count"`
+	Count int `json:"count"`
 
 	// A root of a Merkle Tree
-	Root *Root `json:"root"`
+	Root Root `json:"root"`
 
 	// A list of matching audit records.
 	// Events is always populated on a successful response.
@@ -417,40 +428,33 @@ type SearchEvent struct {
 
 	// The record's hash
 	// len of 64 bytes
-	Hash *string `json:"hash"`
+	Hash string `json:"hash"`
 
 	// The index of the leaf of the Merkle Tree where this record was inserted.
-	LeafIndex *int `json:"leaf_index"`
+	LeafIndex int `json:"leaf_index"`
 
 	// A cryptographic proof that the record has been persisted in the log.
-	MembershipProof *string `json:"membership_proof"`
+	MembershipProof string `json:"membership_proof"`
 }
 
 // IsVerifiable checks if a record can be verfiable with the published proof
 func (event *SearchEvent) IsVerifiable() bool {
-	return event.LeafIndex != nil
+	return event.LeafIndex > 0
 }
 
 func (ee *SearchEvent) VerifyHash() bool {
-	if ee.Hash == nil {
-		// FIXME: Why?
-		return true
-	}
-
-	eventCanon, err := pangeautil.CanonicalizeJSONMarshall((ee.EventEnvelope))
-	if err != nil {
+	if ee.Hash == "" {
 		return false
 	}
+
+	eventCanon := pangeautil.CanonicalizeStruct((ee.EventEnvelope))
 	eventHash := hash.Encode(eventCanon)
-	if err != nil {
-		return false
-	}
 
-	return pangea.StringValue(ee.Hash) == eventHash.String()
+	return ee.Hash == eventHash.String()
 }
 
 func (ee *SearchEvent) VerifyMembershipProof(root *Root) bool {
-	if root == nil || ee.MembershipProof == nil {
+	if root == nil || ee.MembershipProof == "" {
 		return true
 	}
 
@@ -462,22 +466,18 @@ func (ee *SearchEvent) VerifyMembershipProof(root *Root) bool {
 }
 
 func (ee *EventEnvelope) VerifySignature() bool {
-	if ee.Signature == nil {
-		return true
+	if ee.Signature == "" {
+		return false
 	}
 
-	b, err := newsSignedMessageFromRecord(ee.Event.Actor, ee.Event.Action, ee.Event.Message, ee.Event.New,
-		ee.Event.Old, ee.Event.Source, ee.Event.Status, ee.Event.Target, ee.Event.Timestamp)
+	b := pangeautil.CanonicalizeStruct(ee.Event)
+
+	sig, err := base64.StdEncoding.DecodeString(ee.Signature)
 	if err != nil {
 		return false
 	}
 
-	sig, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.Signature))
-	if err != nil {
-		return false
-	}
-
-	pubKey, err := base64.StdEncoding.DecodeString(pangea.StringValue(ee.PublicKey))
+	pubKey, err := base64.StdEncoding.DecodeString(ee.PublicKey)
 	if err != nil {
 		return false
 	}
@@ -489,19 +489,19 @@ func (ee *EventEnvelope) VerifySignature() bool {
 type SearchResultInput struct {
 	// A search results identifier returned by the search call
 	// ID is a required field
-	ID *string `json:"id"`
+	ID string `json:"id"`
 
 	// If true, include membership proofs for each record in the first page.
-	IncludeMembershipProof *bool `json:"include_membership_proof,omitempty"`
+	IncludeMembershipProof bool `json:"include_membership_proof,omitempty"`
 
 	// If true, include hashes for each record in the first page.
-	IncludeHash *bool `json:"include_hash,omitempty"`
+	IncludeHash bool `json:"include_hash,omitempty"`
 
 	// If true, include the Merkle root hash of the tree in the first page.
-	IncludeRoot *bool `json:"include_root,omitempty"`
+	IncludeRoot bool `json:"include_root,omitempty"`
 
 	// Number of audit records to include from the first page of the results.
-	Limit *int `json:"limit,omitempty"`
+	Limit int `json:"limit,omitempty"`
 
 	// Offset from the start of the result set to start returning results from.
 	Offset *int `json:"offset,omitempty"`
@@ -510,70 +510,42 @@ type SearchResultInput struct {
 type SearchResultOutput struct {
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
-	Count *int `json:"count"`
+	Count int `json:"count"`
 
 	// A list of matching audit records.
 	// Events is always populated on a successful response.
 	Events SearchEvents `json:"events"`
 
 	// A root of a Merkle Tree
-	Root *Root `json:"root"`
+	Root Root `json:"root"`
 }
 
 type RootInput struct {
 	// The size of the tree (the number of records)
-	TreeSize *int `json:"tree_size,omitempty"`
+	TreeSize int `json:"tree_size,omitempty"`
 }
 
 type Root struct {
 	// The name of the Merkle Tree
-	TreeName *string `json:"tree_name"`
+	TreeName string `json:"tree_name"`
 
 	// The size of the tree (the number of records)
-	Size *int `json:"size"`
+	Size int `json:"size"`
 
 	// The root hash
 	// max len of 64 bytes
-	RootHash *string `json:"root_hash"`
+	RootHash string `json:"root_hash"`
 
 	// The URL where this root has been published
-	URL *string `json:"url"`
+	URL string `json:"url"`
 
 	// The date/time when this root was published
 	PublishedAt *time.Time `json:"published_at"`
 
 	// Consistency proof to verify that this root is a continuation of the previous one
-	ConsistencyProof []*string `json:"consistency_proof"`
+	ConsistencyProof []string `json:"consistency_proof"`
 }
 
 type RootOutput struct {
-	Data *Root `json:"data"`
-}
-
-type signedMessage struct {
-	Actor     *string `json:"actor"`
-	Action    *string `json:"action"`
-	Message   *string `json:"message"`
-	New       *string `json:"new"`
-	Old       *string `json:"old"`
-	Source    *string `json:"source"`
-	Status    *string `json:"status"`
-	Target    *string `json:"target"`
-	Timestamp *string `json:"timestamp"`
-}
-
-func newsSignedMessageFromRecord(actor, action, message, new, old, source, status, target, timestamp *string) ([]byte, error) {
-	return pangeautil.CanonicalizeJSONMarshall(
-		signedMessage{
-			Actor:     actor,
-			Action:    action,
-			Message:   message,
-			New:       new,
-			Old:       old,
-			Source:    source,
-			Status:    status,
-			Target:    target,
-			Timestamp: timestamp,
-		},
-	)
+	Data Root `json:"data"`
 }

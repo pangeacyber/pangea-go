@@ -14,17 +14,9 @@ type FileIntel struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config, opts ...Option) (*FileIntel, error) {
+func New(cfg *pangea.Config) *FileIntel {
 	cli := &FileIntel{
 		Client: pangea.NewClient("file-intel", cfg),
 	}
-	for _, opt := range opts {
-		err := opt(cli)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return cli, nil
+	return cli
 }
-
-type Option func(*FileIntel) error

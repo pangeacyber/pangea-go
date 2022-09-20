@@ -21,7 +21,7 @@ func Test_Integration_IpLookup(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	ipintel, _ := ip_intel.New(cfg)
+	ipintel := ip_intel.New(cfg)
 
 	input := &ip_intel.IpLookupInput{
 		Ip:       "93.231.182.110",
@@ -50,10 +50,10 @@ func Test_Integration_IpLookup_2(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	ipintel, _ := ip_intel.New(cfg)
+	ipintel := ip_intel.New(cfg)
 
 	input := &ip_intel.IpLookupInput{
-		Ip:       "4.4.8.8",
+		Ip:       "8.8.4.4",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "crowdstrike",
@@ -66,7 +66,7 @@ func Test_Integration_IpLookup_2(t *testing.T) {
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Verdict, "malicious")
+	assert.Equal(t, out.Result.Data.Verdict, "unknown")
 }
 
 func Test_Integration_IpLookup_Error_BadIPFormat_1(t *testing.T) {
@@ -78,7 +78,7 @@ func Test_Integration_IpLookup_Error_BadIPFormat_1(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	ipintel, _ := ip_intel.New(cfg)
+	ipintel := ip_intel.New(cfg)
 
 	input := &ip_intel.IpLookupInput{
 		Ip:       "93.231.182.300",
@@ -107,7 +107,7 @@ func Test_Integration_IpLookup_Error_BadIPFormat_2(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	ipintel, _ := ip_intel.New(cfg)
+	ipintel := ip_intel.New(cfg)
 
 	input := &ip_intel.IpLookupInput{
 		Ip:       "notanip",
@@ -138,7 +138,7 @@ func Test_Integration_IpLookup_Error_BadToken(t *testing.T) {
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	cfg.Token = "notarealtoken"
-	ipintel, _ := ip_intel.New(cfg)
+	ipintel := ip_intel.New(cfg)
 
 	input := &ip_intel.IpLookupInput{
 		Ip:       "93.231.182.110",

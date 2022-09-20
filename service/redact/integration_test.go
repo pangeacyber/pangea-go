@@ -22,7 +22,7 @@ func Test_Integration_Redact(t *testing.T) {
 		Retry:    true,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	client, _ := redact.New(cfg)
+	client := redact.New(cfg)
 
 	input := &redact.TextInput{
 		Text: pangea.String("My Phone number is 110045638"),
@@ -45,7 +45,7 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 		Retry:    true,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	client, _ := redact.New(cfg)
+	client := redact.New(cfg)
 
 	input := &redact.TextInput{
 		Text: pangea.String("My Phone number is 110045638"),
@@ -69,7 +69,7 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	cfg.Token = "notarealtoken"
-	client, _ := redact.New(cfg)
+	client := redact.New(cfg)
 
 	input := &redact.TextInput{
 		Text: pangea.String(""),
@@ -92,7 +92,7 @@ func Test_Integration_Redact_Error_BadConfigID(t *testing.T) {
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	cfg.ConfigID = "notarealconfigid"
-	client, _ := redact.New(cfg)
+	client := redact.New(cfg)
 
 	input := &redact.TextInput{
 		Text: pangea.String(""),
