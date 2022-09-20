@@ -32,17 +32,13 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String("Hello, World!"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+	event := audit.Event{
+		Message: "Hello, World!",
 	}
 
-	fmt.Printf("Logging: %s\n", *input.Event.Message)
+	fmt.Printf("Logging: %s\n", event.Message)
 
-	logResponse, err := auditcli.Log(ctx, input)
+	logResponse, err := auditcli.Log(ctx, event, true, true)
 	if err != nil {
 		log.Fatal(err)
 	}

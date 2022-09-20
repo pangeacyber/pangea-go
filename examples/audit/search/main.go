@@ -32,7 +32,7 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.SearchInput{
-		Query: pangea.String("message: Hello, World!"),
+		Query: "message: Hello, World!",
 	}
 
 	searchResponse, err := auditcli.Search(ctx, input)
@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, searchResponse.Result.Root, searchResponse.Result.Events.VerifiableRecords(), true)
+	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, &searchResponse.Result.Root, searchResponse.Result.Events.VerifiableRecords(), true)
 	if err != nil {
 		log.Fatal(err)
 	}

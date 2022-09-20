@@ -32,7 +32,7 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.RootInput{
-		TreeSize: pangea.Int(10),
+		TreeSize: 10,
 	}
 
 	rootResponse, err := auditcli.Root(ctx, input)
