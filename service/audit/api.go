@@ -293,7 +293,7 @@ type Event struct {
 	Target string `json:"target,omitempty"`
 
 	// An optional client-supplied timestamp.
-	Timestamp string `json:"timestamp,omitempty"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
 type EventEnvelope struct {
@@ -310,7 +310,7 @@ type EventEnvelope struct {
 	PublicKey string `json:"public_key,omitempty"`
 
 	// A server-supplied timestamp.
-	ReceivedAt string `json:"received_at,omitempty"`
+	ReceivedAt *time.Time `json:"received_at,omitempty"`
 }
 
 type LogOutput struct {
