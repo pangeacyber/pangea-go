@@ -431,7 +431,7 @@ type SearchEvent struct {
 	Hash string `json:"hash"`
 
 	// The index of the leaf of the Merkle Tree where this record was inserted.
-	LeafIndex int `json:"leaf_index"`
+	LeafIndex *int `json:"leaf_index"`
 
 	// A cryptographic proof that the record has been persisted in the log.
 	MembershipProof string `json:"membership_proof"`
@@ -439,7 +439,7 @@ type SearchEvent struct {
 
 // IsVerifiable checks if a record can be verfiable with the published proof
 func (event *SearchEvent) IsVerifiable() bool {
-	return event.LeafIndex > 0
+	return event.LeafIndex != nil && *event.LeafIndex >= 0
 }
 
 func (ee *SearchEvent) VerifyHash() bool {

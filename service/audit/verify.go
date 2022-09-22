@@ -119,7 +119,10 @@ func verifyLogProof(target, root hash.Hash, p proof) bool {
 }
 
 func VerifyConsistencyProof(publishedRoots map[int]Root, event SearchEvent, required bool) bool {
-	idx := event.LeafIndex
+	if event.LeafIndex == nil {
+		return !required
+	}
+	idx := *event.LeafIndex
 	if idx <= 1 {
 		return !required
 	}
@@ -184,7 +187,7 @@ func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, event
 		validatedEvent := &ValidatedEvent{
 			Event: &event.EventEnvelope,
 		}
-		if event.LeafIndex == 0 {
+		if event.LeafIndex == nil {
 			continue
 		}
 		validatedEvent.ConsistencyProofStatus = pangea.Bool(VerifyConsistencyProof(roots, *event, required))
@@ -210,10 +213,12 @@ func treeSizes(root *Root, events SearchEvents) []string {
 	treeSizes := make(map[int]struct{}, 0)
 	treeSizes[root.Size] = struct{}{}
 	for _, event := range events {
-		leafIdx := event.LeafIndex
-		treeSizes[leafIdx] = struct{}{}
-		if leafIdx > 1 {
-			treeSizes[leafIdx-1] = struct{}{}
+		if event.LeafIndex != nil {
+			leafIdx := *event.LeafIndex
+			treeSizes[leafIdx] = struct{}{}
+			if leafIdx > 1 {
+				treeSizes[leafIdx-1] = struct{}{}
+			}
 		}
 	}
 	sizes := make([]string, 0, len(treeSizes))

@@ -90,15 +90,14 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 
 	out, err := domainintel.Lookup(ctx, input)
 
-	// FIXME: This should fail
-	assert.NoError(t, err)
-	assert.NotNil(t, out)
-	// err = err.(*pangea.APIError)
-	// apiErr := err.(*pangea.APIError)
-	// assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	err = err.(*pangea.APIError)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BadFormatHostname")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'domain' must be a valid RFC1123 hostname")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/domain")
 }
 
 // Bad auth token
@@ -141,7 +140,7 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
-		Domain:   "",
+		Domain:   "teoghehofuuxo.su",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "notaprovider",

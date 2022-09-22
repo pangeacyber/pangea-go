@@ -88,14 +88,13 @@ func Test_Integration_IpLookup_Error_BadIPFormat_1(t *testing.T) {
 	}
 	out, err := ipintel.Lookup(ctx, input)
 
-	// FIXME: This should crash, uncomment and fix once enpoint is fixed
-	assert.NoError(t, err)
-	assert.NotNil(t, out)
-	// apiErr := err.(*pangea.APIError)
-	// assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BadFormatIPAddress")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'ip' must be a valid IPv4 or IPv6 address")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/ip")
 }
 
 func Test_Integration_IpLookup_Error_BadIPFormat_2(t *testing.T) {
@@ -117,15 +116,13 @@ func Test_Integration_IpLookup_Error_BadIPFormat_2(t *testing.T) {
 	}
 	out, err := ipintel.Lookup(ctx, input)
 
-	// FIXME: This should crash, uncomment once service is fixed
-	assert.NoError(t, err)
-	assert.NotNil(t, out)
-
-	// apiErr := err.(*pangea.APIError)
-	// assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BadFormatIPAddress")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'ip' must be a valid IPv4 or IPv6 address")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/ip")
 }
 
 func Test_Integration_IpLookup_Error_BadToken(t *testing.T) {

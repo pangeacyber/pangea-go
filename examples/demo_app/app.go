@@ -23,9 +23,9 @@ type App struct {
 	store *DB
 
 	// Pangea
-	pangea_embargo *embargo.Embargo
-	pangea_audit   *audit.Audit
-	pangea_redact  *redact.Redact
+	embargo *embargo.Embargo
+	audit   *audit.Audit
+	redact  *redact.Redact
 }
 
 type resp struct {
@@ -44,7 +44,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	embargoConfigID := os.Getenv("EMBARGO_CONFIG_ID")
 
-	a.pangea_embargo = embargo.New(&pangea.Config{
+	a.embargo = embargo.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
@@ -53,7 +53,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	auditConfigID := os.Getenv("AUDIT_CONFIG_ID")
 
-	a.pangea_audit, err = audit.New(&pangea.Config{
+	a.audit, err = audit.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
@@ -65,7 +65,7 @@ func (a *App) Initialize(pangea_token string) {
 
 	redactConfigID := os.Getenv("REDACT_CONFIG_ID")
 
-	a.pangea_redact = redact.New(&pangea.Config{
+	a.redact = redact.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		ConfigID: redactConfigID,
@@ -140,7 +140,7 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 		IP: pangea.String(client_ip),
 	}
 
-	checkOutput, err := a.pangea_embargo.IPCheck(ctx, eminput)
+	checkOutput, err := a.embargo.IPCheck(ctx, eminput)
 	if err != nil {
 		log.Println("[App.uploadResume] embargo check error: ", err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())
@@ -160,7 +160,7 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 			Source:  "web",
 		}
 
-		logResponse, err := a.pangea_audit.Log(ctx, event, true, true)
+		logResponse, err := a.audit.Log(ctx, event, true, true)
 		if err != nil {
 			log.Println("[App.uploadResume] audit log error: ", err.Error())
 		} else {
@@ -182,7 +182,7 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 	}
 	redinput.SetData(emp)
 
-	redactResponse, err := a.pangea_redact.RedactStructured(ctx, redinput)
+	redactResponse, err := a.redact.RedactStructured(ctx, redinput)
 	redacted := ""
 	if err != nil {
 		log.Println("[App.uploadResume] redact error: ", err.Error())
@@ -206,7 +206,7 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 			Source:  "web",
 		}
 
-		logResponse, err1 := a.pangea_audit.Log(ctx, event, true, true)
+		logResponse, err1 := a.audit.Log(ctx, event, true, true)
 		if err1 != nil {
 			log.Println("[App.uploadResume] audit log error: ", err1.Error())
 		} else {
@@ -233,7 +233,7 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 		Source:  "web",
 	}
 
-	logResponse, err := a.pangea_audit.Log(ctx, event, true, true)
+	logResponse, err := a.audit.Log(ctx, event, true, true)
 	if err != nil {
 		log.Println("[App.uploadResume] audit log error: ", err.Error())
 	} else {
@@ -273,7 +273,7 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 			Source:  "web",
 		}
 
-		logResponse, err1 := a.pangea_audit.Log(ctx, event, true, true)
+		logResponse, err1 := a.audit.Log(ctx, event, true, true)
 		if err1 != nil {
 			log.Println("[App.fetchEmployeeRecord] audit log error: ", err1.Error())
 		} else {
@@ -295,7 +295,7 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 		Source:  "web",
 	}
 
-	logResponse, err := a.pangea_audit.Log(ctx, event, true, true)
+	logResponse, err := a.audit.Log(ctx, event, true, true)
 	if err != nil {
 		log.Println("[App.fetchEmployeeRecord] audit log error: ", err.Error())
 	} else {
@@ -381,7 +381,7 @@ func (a *App) updateEmployee(w http.ResponseWriter, r *http.Request) {
 		Source:  "web",
 	}
 
-	logResponse, err := a.pangea_audit.Log(ctx, event, true, true)
+	logResponse, err := a.audit.Log(ctx, event, true, true)
 	if err != nil {
 		log.Println("[App.fetchEmployeeRecord] audit log error: ", err.Error())
 	} else {

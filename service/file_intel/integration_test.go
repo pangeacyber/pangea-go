@@ -91,14 +91,13 @@ func Test_Integration_FileLookup_ErrorBadHash(t *testing.T) {
 	}
 	out, err := fileintel.Lookup(ctx, input)
 
-	// FIXME: This should crash, uncomment and fix once enpoint is fixed
-	assert.NoError(t, err)
-	assert.NotNil(t, out)
-	// apiErr := err.(*pangea.APIError)
-	// assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
-	// assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	apiErr := err.(*pangea.APIError)
+	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'hash' cannot have less than 32 characters")
+	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/hash")
 }
 
 func Test_Integration_FileLookup_ErrorBadHashType(t *testing.T) {
