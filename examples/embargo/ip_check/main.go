@@ -22,14 +22,11 @@ func main() {
 		log.Fatal("Configuration: No config ID present")
 	}
 
-	embargocli, err := embargo.New(&pangea.Config{
+	embargocli := embargo.New(&pangea.Config{
 		Token:    token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		ConfigID: configID,
 	})
-	if err != nil {
-		log.Fatal("failed to create embargo client")
-	}
 
 	ctx := context.Background()
 	input := &embargo.IPCheckInput{

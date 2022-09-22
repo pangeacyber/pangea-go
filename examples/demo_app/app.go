@@ -23,9 +23,9 @@ type App struct {
 	store *DB
 
 	// Pangea
-	pangea_embargo *embargo.Embargo
-	pangea_audit   *audit.Audit
-	pangea_redact  *redact.Redact
+	embargo *embargo.Embargo
+	audit   *audit.Audit
+	redact  *redact.Redact
 }
 
 type resp struct {
@@ -42,27 +42,22 @@ func (a *App) Initialize(pangea_token string) {
 
 	a.store = NewDB()
 
-	csp := os.Getenv("PANGEA_CSP")
-
 	embargoConfigID := os.Getenv("EMBARGO_CONFIG_ID")
 
-	a.pangea_embargo, err = embargo.New(&pangea.Config{
+	a.embargo = embargo.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
-		CfgToken: embargoConfigID,
+		ConfigID: embargoConfigID,
 	})
-	if err != nil {
-		panic(err)
-	}
 
 	auditConfigID := os.Getenv("AUDIT_CONFIG_ID")
 
-	a.pangea_audit, err = audit.New(&pangea.Config{
+	a.audit, err = audit.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
-		CfgToken: auditConfigID,
+		ConfigID: auditConfigID,
 	})
 	if err != nil {
 		panic(err)
@@ -70,14 +65,12 @@ func (a *App) Initialize(pangea_token string) {
 
 	redactConfigID := os.Getenv("REDACT_CONFIG_ID")
 
-	a.pangea_redact, err = redact.New(&pangea.Config{
+	a.redact = redact.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		CfgToken: redactConfigID,
+		ConfigID: redactConfigID,
 	})
-	if err != nil {
-		panic(err)
-	}
+
 }
 
 func (a *App) Run(addr string) {
@@ -147,31 +140,27 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 		IP: pangea.String(client_ip),
 	}
 
-	checkOutput, _, err := a.pangea_embargo.IPCheck(ctx, eminput)
+	checkOutput, err := a.embargo.IPCheck(ctx, eminput)
 	if err != nil {
 		log.Println("[App.uploadResume] embargo check error: ", err.Error())
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	if *checkOutput.Count > 0 {
+	if checkOutput.Result.Count > 0 {
 		log.Println("[App.uploadResume] embargo check result positive: ", pangea.Stringify(checkOutput))
 
 		// Audit log
-		audinput := &audit.LogInput{
-			Event: &audit.LogEventInput{
-				Action:  pangea.String("add_employee"),
-				Actor:   pangea.String(user),
-				Target:  pangea.String(emp.PersonalEmail),
-				Status:  pangea.String("error"),
-				Message: pangea.String("Resume denied - sanctioned country from " + client_ip),
-				Source:  pangea.String("web"),
-			},
-			ReturnHash: pangea.Bool(true),
-			Verbose:    pangea.Bool(false),
+		event := audit.Event{
+			Action:  "add_employee",
+			Actor:   user,
+			Target:  emp.PersonalEmail,
+			Status:  "error",
+			Message: "Resume denied - sanctioned country from " + client_ip,
+			Source:  "web",
 		}
 
-		logResponse, err := a.pangea_audit.Log(ctx, audinput)
+		logResponse, err := a.audit.Log(ctx, event, true, true)
 		if err != nil {
 			log.Println("[App.uploadResume] audit log error: ", err.Error())
 		} else {
@@ -193,7 +182,7 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 	}
 	redinput.SetData(emp)
 
-	redactResponse, err := a.pangea_redact.RedactStructured(ctx, redinput)
+	redactResponse, err := a.redact.RedactStructured(ctx, redinput)
 	redacted := ""
 	if err != nil {
 		log.Println("[App.uploadResume] redact error: ", err.Error())
@@ -208,20 +197,16 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 	// Finally store to DB
 	if err := a.store.addEmployee(emp); err != nil {
 		// Audit log
-		audinput := &audit.LogInput{
-			Event: &audit.LogEventInput{
-				Action:  pangea.String("add_employee"),
-				Actor:   pangea.String(user),
-				Target:  pangea.String(emp.PersonalEmail),
-				Status:  pangea.String("error"),
-				Message: pangea.String("Resume denied"),
-				Source:  pangea.String("web"),
-			},
-			ReturnHash: pangea.Bool(true),
-			Verbose:    pangea.Bool(false),
+		event := audit.Event{
+			Action:  "add_employee",
+			Actor:   user,
+			Target:  emp.PersonalEmail,
+			Status:  "error",
+			Message: "Resume denied",
+			Source:  "web",
 		}
 
-		logResponse, err1 := a.pangea_audit.Log(ctx, audinput)
+		logResponse, err1 := a.audit.Log(ctx, event, true, true)
 		if err1 != nil {
 			log.Println("[App.uploadResume] audit log error: ", err1.Error())
 		} else {
@@ -238,21 +223,17 @@ func (a *App) uploadResume(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Audit log
-	audinput := &audit.LogInput{
-		Event: &audit.LogEventInput{
-			Action:  pangea.String("add_employee"),
-			Actor:   pangea.String(user),
-			Target:  pangea.String(emp.PersonalEmail),
-			Status:  pangea.String("success"),
-			Message: pangea.String("Resume accepted"),
-			New:     pangea.String(redacted),
-			Source:  pangea.String("web"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(false),
+	event := audit.Event{
+		Action:  "add_employee",
+		Actor:   user,
+		Target:  emp.PersonalEmail,
+		Status:  "success",
+		Message: "Resume accepted",
+		New:     redacted,
+		Source:  "web",
 	}
 
-	logResponse, err := a.pangea_audit.Log(ctx, audinput)
+	logResponse, err := a.audit.Log(ctx, event, true, true)
 	if err != nil {
 		log.Println("[App.uploadResume] audit log error: ", err.Error())
 	} else {
@@ -283,20 +264,16 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 	emp, err := a.store.lookupEmployee(email)
 	if err != nil {
 		// Audit log
-		audinput := &audit.LogInput{
-			Event: &audit.LogEventInput{
-				Action:  pangea.String("lookup_employee"),
-				Actor:   pangea.String(user),
-				Target:  pangea.String(email),
-				Status:  pangea.String("error"),
-				Message: pangea.String("Requested employee record"),
-				Source:  pangea.String("web"),
-			},
-			ReturnHash: pangea.Bool(true),
-			Verbose:    pangea.Bool(false),
+		event := audit.Event{
+			Action:  "lookup_employee",
+			Actor:   user,
+			Target:  email,
+			Status:  "error",
+			Message: "Requested employee record",
+			Source:  "web",
 		}
 
-		logResponse, err1 := a.pangea_audit.Log(ctx, audinput)
+		logResponse, err1 := a.audit.Log(ctx, event, true, true)
 		if err1 != nil {
 			log.Println("[App.fetchEmployeeRecord] audit log error: ", err1.Error())
 		} else {
@@ -309,20 +286,16 @@ func (a *App) fetchEmployeeRecord(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Audit log
-	audinput := &audit.LogInput{
-		Event: &audit.LogEventInput{
-			Action:  pangea.String("lookup_employee"),
-			Actor:   pangea.String(user),
-			Target:  pangea.String(emp.PersonalEmail),
-			Status:  pangea.String("success"),
-			Message: pangea.String("Requested employee record"),
-			Source:  pangea.String("web"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(false),
+	event := audit.Event{
+		Action:  "lookup_employee",
+		Actor:   user,
+		Target:  emp.PersonalEmail,
+		Status:  "success",
+		Message: "Requested employee record",
+		Source:  "web",
 	}
 
-	logResponse, err := a.pangea_audit.Log(ctx, audinput)
+	logResponse, err := a.audit.Log(ctx, event, true, true)
 	if err != nil {
 		log.Println("[App.fetchEmployeeRecord] audit log error: ", err.Error())
 	} else {
@@ -397,22 +370,18 @@ func (a *App) updateEmployee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Audit log
-	audinput := &audit.LogInput{
-		Event: &audit.LogEventInput{
-			Action:  pangea.String("update_employee"),
-			Actor:   pangea.String(user),
-			Target:  pangea.String(input.PersonalEmail),
-			Status:  pangea.String("success"),
-			Message: pangea.String("Updated employee record"),
-			Old:     pangea.String(string(outold)),
-			New:     pangea.String(string(outnew)),
-			Source:  pangea.String("web"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(false),
+	event := audit.Event{
+		Action:  "update_employee",
+		Actor:   user,
+		Target:  input.PersonalEmail,
+		Status:  "success",
+		Message: "Updated employee record",
+		Old:     string(outold),
+		New:     string(outnew),
+		Source:  "web",
 	}
 
-	logResponse, err := a.pangea_audit.Log(ctx, audinput)
+	logResponse, err := a.audit.Log(ctx, event, true, true)
 	if err != nil {
 		log.Println("[App.fetchEmployeeRecord] audit log error: ", err.Error())
 	} else {

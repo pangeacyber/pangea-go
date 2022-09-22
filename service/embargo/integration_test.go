@@ -22,7 +22,7 @@ func Test_Integration_Check(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	client, _ := embargo.New(cfg)
+	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),
@@ -48,7 +48,7 @@ func Test_Integration_Check_2(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	client, _ := embargo.New(cfg)
+	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("AR"),
@@ -71,7 +71,7 @@ func Test_Integration_Check_Error_BadISO(t *testing.T) {
 		ConfigID: cfgToken,
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	client, _ := embargo.New(cfg)
+	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("NotAnISOcode"),
@@ -97,7 +97,7 @@ func Test_Integration_Check_Error_BadToken(t *testing.T) {
 	}
 	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
 	cfg.Token = "notatoken"
-	client, _ := embargo.New(cfg)
+	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),

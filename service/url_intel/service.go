@@ -14,17 +14,9 @@ type UrlIntel struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config, opts ...Option) (*UrlIntel, error) {
+func New(cfg *pangea.Config) *UrlIntel {
 	cli := &UrlIntel{
 		Client: pangea.NewClient("url-intel", cfg),
 	}
-	for _, opt := range opts {
-		err := opt(cli)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return cli, nil
+	return cli
 }
-
-type Option func(*UrlIntel) error

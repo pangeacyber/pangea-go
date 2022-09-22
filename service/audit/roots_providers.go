@@ -77,5 +77,9 @@ func (s *ArweaveRootsProvider) fetchTransaction(ctx context.Context, txID string
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(resp, target)
+	if len(resp) > 0 {
+		return json.Unmarshal(resp, target)
+	} else {
+		return nil
+	}
 }

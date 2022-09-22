@@ -32,7 +32,7 @@ func TestRedact(t *testing.T) {
 			}`)
 	})
 
-	client, _ := redact.New(pangeatesting.TestConfig(url))
+	client := redact.New(pangeatesting.TestConfig(url))
 	input := &redact.TextInput{
 		Text: pangea.String("My phone number is: 110303456"),
 	}
@@ -69,7 +69,7 @@ func TestRedactStructured(t *testing.T) {
 			}`)
 	})
 
-	client, _ := redact.New(pangeatesting.TestConfig(url))
+	client := redact.New(pangeatesting.TestConfig(url))
 
 	type (
 		innerType struct {
@@ -100,7 +100,7 @@ func TestRedactStructured(t *testing.T) {
 
 func TestRedactError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		client, _ := redact.New(cfg)
+		client := redact.New(cfg)
 		_, err := client.Redact(context.Background(), nil)
 		return err
 	}
@@ -109,7 +109,7 @@ func TestRedactError(t *testing.T) {
 
 func TestRedactStructuredError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
-		client, _ := redact.New(cfg)
+		client := redact.New(cfg)
 		_, err := client.RedactStructured(context.Background(), nil)
 		return err
 	}

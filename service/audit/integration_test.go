@@ -4,7 +4,6 @@ package audit_test
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"testing"
 	"time"
 
@@ -30,24 +29,20 @@ func Test_Integration_Log(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String("Integration test msg"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+	event := audit.Event{
+		Message: "Integration test msg",
 	}
 
-	out, err := client.Log(ctx, input)
+	out, err := client.Log(ctx, event, true, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
 	assert.NotNil(t, out.Result.EventEnvelope.Event.Message)
-	assert.NotEmpty(t, *out.Result.Hash)
+	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.CanonicalEnvelopeBase64)
-	assert.NotEmpty(t, *out.Result.CanonicalEnvelopeBase64)
+	assert.NotEmpty(t, out.Result.CanonicalEnvelopeBase64)
 }
 
 func Test_Integration_Log_NoVerbose(t *testing.T) {
@@ -57,21 +52,17 @@ func Test_Integration_Log_NoVerbose(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String("Integration test msg"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(false),
+	event := audit.Event{
+		Message: "Integration test msg",
 	}
 
-	out, err := client.Log(ctx, input)
+	out, err := client.Log(ctx, event, false, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Hash)
-	assert.NotEmpty(t, *out.Result.Hash)
+	assert.NotEmpty(t, out.Result.Hash)
 	assert.Nil(t, out.Result.EventEnvelope)
-	assert.Nil(t, out.Result.CanonicalEnvelopeBase64)
+	assert.Empty(t, out.Result.CanonicalEnvelopeBase64)
 }
 
 func Test_Integration_Log_Silent(t *testing.T) {
@@ -81,20 +72,16 @@ func Test_Integration_Log_Silent(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String("Integration test msg"),
-		},
-		ReturnHash: pangea.Bool(false),
-		Verbose:    pangea.Bool(false),
+	event := audit.Event{
+		Message: "Integration test msg",
 	}
 
-	out, err := client.Log(ctx, input)
+	out, err := client.Log(ctx, event, false, false)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
-	assert.Nil(t, out.Result.Hash)
+	assert.Empty(t, out.Result.Hash)
 	assert.Nil(t, out.Result.EventEnvelope)
-	assert.Nil(t, out.Result.CanonicalEnvelopeBase64)
+	assert.Empty(t, out.Result.CanonicalEnvelopeBase64)
 }
 
 func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
@@ -105,15 +92,11 @@ func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
 	cfg.Token = "notavalidtoken"
 	client, _ := audit.New(cfg)
 
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String("Integration test msg"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+	event := audit.Event{
+		Message: "Integration test msg",
 	}
 
-	out, err := client.Log(ctx, input)
+	out, err := client.Log(ctx, event, true, true)
 	assert.Error(t, err)
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
@@ -129,15 +112,11 @@ func Test_Integration_Log_Error_BadConfidID(t *testing.T) {
 	cfg.ConfigID = "notavalidid"
 	client, _ := audit.New(cfg)
 
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String("Integration test msg"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+	event := audit.Event{
+		Message: "Integration test msg",
 	}
 
-	out, err := client.Log(ctx, input)
+	out, err := client.Log(ctx, event, true, true)
 	assert.Error(t, err)
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
@@ -152,15 +131,11 @@ func Test_Integration_Log_Error_EmptyMessage(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	input := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String(""),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+	event := audit.Event{
+		Message: "",
 	}
 
-	out, err := client.Log(ctx, input)
+	out, err := client.Log(ctx, event, true, true)
 
 	assert.Error(t, err)
 	assert.Nil(t, out)
@@ -182,30 +157,23 @@ func Test_Integration_Signatures(t *testing.T) {
 	)
 
 	msg := "sigtest" + "100"
-	logInput := &audit.LogInput{
-		Event: &audit.Event{
-			Message: pangea.String(msg),
-			Source:  pangea.String("Source"),
-			Status:  pangea.String("Status"),
-			Target:  pangea.String("Target"),
-			Actor:   pangea.String("Actor"),
-			Action:  pangea.String("Action"),
-			New:     pangea.String("New"),
-			Old:     pangea.String("Old"),
-		},
-		ReturnHash: pangea.Bool(true),
-		Verbose:    pangea.Bool(true),
+	event := audit.Event{
+		Message: msg,
+		Source:  "Source",
+		Status:  "Status",
+		Target:  "Target",
+		Actor:   "Actor",
+		Action:  "Action",
+		New:     "New",
+		Old:     "Old",
 	}
 
-	outLog, err := client.Log(ctx, logInput)
+	_, err := client.Log(ctx, event, true, true)
 	assert.NoError(t, err)
 
-	fmt.Println("Event signature: ", *outLog.Result.EventEnvelope.Signature)
-	fmt.Println("Encoded public key: ", *outLog.Result.EventEnvelope.PublicKey)
-
 	searchInput := &audit.SearchInput{
-		Query:      pangea.String(fmt.Sprintf("message:%s", msg)),
-		MaxResults: pangea.Int(1),
+		Query:      fmt.Sprintf("message:%s", msg),
+		MaxResults: 1,
 	}
 	// signature verification is done inside search
 	out, err := client.Search(ctx, searchInput)
@@ -213,11 +181,10 @@ func Test_Integration_Signatures(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.Count)
-	assert.Equal(t, 1, pangea.IntValue(out.Result.Count))
+	assert.Equal(t, out.Result.Count, 1)
 	assert.Equal(t, len(out.Result.Events), 1)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.Signature)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.PublicKey)
+	assert.Equal(t, out.Result.Events[0].EventEnvelope.Signature, "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA==")
+	assert.Equal(t, out.Result.Events[0].EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
 }
 
 func Test_Integration_Root(t *testing.T) {
@@ -233,11 +200,9 @@ func Test_Integration_Root(t *testing.T) {
 
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Data)
-	assert.NotNil(t, out.Result.Data.RootHash)
-	assert.NotEmpty(t, *out.Result.Data.RootHash)
-	assert.NotNil(t, out.Result.Data.TreeName)
-	assert.NotEmpty(t, *out.Result.Data.TreeName)
-	assert.NotNil(t, out.Result.Data.Size)
+	assert.NotEmpty(t, out.Result.Data.RootHash)
+	assert.NotEmpty(t, out.Result.Data.TreeName)
+	assert.NotEmpty(t, out.Result.Data.Size)
 }
 
 func Test_Integration_Proof(t *testing.T) {
@@ -251,12 +216,12 @@ func Test_Integration_Proof(t *testing.T) {
 	limit := 2
 
 	input := &audit.SearchInput{
-		IncludeHash:            pangea.Bool(true),
-		IncludeMembershipProof: pangea.Bool(true),
-		IncludeRoot:            pangea.Bool(true),
-		MaxResults:             pangea.Int(maxResults),
-		Limit:                  pangea.Int(limit),
-		Query:                  pangea.String(""),
+		IncludeHash:            true,
+		IncludeMembershipProof: true,
+		IncludeRoot:            true,
+		MaxResults:             maxResults,
+		Limit:                  limit,
+		Query:                  "",
 	}
 	out, err := client.Search(ctx, input)
 	assert.NoError(t, err)
@@ -265,7 +230,7 @@ func Test_Integration_Proof(t *testing.T) {
 	assert.NotNil(t, out.Result.ID)
 	assert.NotEmpty(t, out.Result.ID)
 	assert.NotNil(t, out.Result.ExpiresAt)
-	assert.Equal(t, maxResults, pangea.IntValue(out.Result.Count))
+	assert.Equal(t, maxResults, out.Result.Count)
 	assert.NotNil(t, out.Result.Root)
 	assert.Equal(t, limit, len(out.Result.Events))
 	for _, event := range out.Result.Events {
@@ -284,9 +249,12 @@ func Test_Integration_Search(t *testing.T) {
 	limit := 2
 
 	input := &audit.SearchInput{
-		MaxResults: pangea.Int(maxResults),
-		Limit:      pangea.Int(limit),
-		Query:      pangea.String(""),
+		MaxResults:             maxResults,
+		Limit:                  limit,
+		Query:                  "",
+		IncludeHash:            true,
+		IncludeMembershipProof: true,
+		IncludeRoot:            true,
 	}
 	out, err := client.Search(ctx, input)
 	assert.NoError(t, err)
@@ -294,7 +262,7 @@ func Test_Integration_Search(t *testing.T) {
 	assert.NotNil(t, out.Result.ID)
 	assert.NotEmpty(t, out.Result.ID)
 	assert.NotNil(t, out.Result.ExpiresAt)
-	assert.Equal(t, maxResults, pangea.IntValue(out.Result.Count))
+	assert.Equal(t, maxResults, out.Result.Count)
 	assert.Equal(t, limit, len(out.Result.Events))
 }
 
@@ -305,7 +273,7 @@ func Test_Integration_SearchResults(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	searchInput := &audit.SearchInput{
-		Query: pangea.String("message:test"),
+		Query: "message:test",
 	}
 	searchOut, err := client.Search(ctx, searchInput)
 	assert.NoError(t, err)
@@ -321,12 +289,45 @@ func Test_Integration_SearchResults(t *testing.T) {
 	assert.NotNil(t, out.Result.Count)
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+func Test_Integration_SearchAll(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 7*time.Second)
+	defer cancelFn()
 
-func RandStringBytes(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+	searchInput := &audit.SearchInput{
+		Query:                  "message:Integration test msg",
+		IncludeRoot:            true,
+		IncludeMembershipProof: true,
+		Limit:                  2,
 	}
-	return string(b)
+	root, se, err := audit.SearchAll(ctx, client, searchInput)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, root)
+	assert.NotEmpty(t, se)
+
+	ve := se.VerifiableRecords()
+	assert.NotEmpty(t, ve)
+
+}
+
+func Test_Integration_SearchAllAndValidate(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+	searchInput := &audit.SearchInput{
+		Query:                  "message:Integration test msg",
+		IncludeMembershipProof: true,
+		IncludeRoot:            true,
+	}
+
+	root, se, err := audit.SearchAllAndValidate(ctx, client, searchInput)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, root)
+	assert.NotEmpty(t, se)
+
 }
