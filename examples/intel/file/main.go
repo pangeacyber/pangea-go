@@ -30,7 +30,7 @@ func main() {
 
 	ctx := context.Background()
 	input := &file_intel.FileLookupInput{
-		Hash:     "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df542706",
+		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
 		HashType: "sha256",
 		Raw:      true,
 		Verbose:  true,
