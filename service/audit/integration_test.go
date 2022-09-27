@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/go-pangea/internal/pangeatesting"
+	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/pangea"
 	"github.com/pangeacyber/go-pangea/service/audit"
 	"github.com/stretchr/testify/assert"
@@ -154,18 +155,22 @@ func Test_Integration_Signatures(t *testing.T) {
 	client, _ := audit.New(cfg,
 		audit.WithLogSigningEnabled("./testdata/privkey"),
 		audit.WithLogSignatureVerificationEnabled(),
+		audit.WithLogProofVerificationEnabled(),
 	)
+
+	ts := pu.PangeaTimestamp(time.Date(2022, time.Month(11), 27, 12, 23, 37, 123456, time.UTC))
 
 	msg := "sigtest" + "100"
 	event := audit.Event{
-		Message: msg,
-		Source:  "Source",
-		Status:  "Status",
-		Target:  "Target",
-		Actor:   "Actor",
-		Action:  "Action",
-		New:     "New",
-		Old:     "Old",
+		Message:   msg,
+		Source:    "Source",
+		Status:    "Status",
+		Target:    "Target",
+		Actor:     "Actor",
+		Action:    "Action",
+		New:       "New",
+		Old:       "Old",
+		Timestamp: pangea.PangeaTime(ts),
 	}
 
 	_, err := client.Log(ctx, event, true, true)
@@ -183,7 +188,7 @@ func Test_Integration_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.Equal(t, out.Result.Count, 1)
 	assert.Equal(t, len(out.Result.Events), 1)
-	assert.Equal(t, out.Result.Events[0].EventEnvelope.Signature, "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA==")
+	assert.Equal(t, out.Result.Events[0].EventEnvelope.Signature, "6qQGLhiIfWRqrPpcoVXFhtAxKr4iqzU5MT0iJm77ky3DWif6YS5PS4k/5CQ7rogwT09gdo8Dx2Ak8wrTYW1XBA==")
 	assert.Equal(t, out.Result.Events[0].EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
 }
 
@@ -273,7 +278,8 @@ func Test_Integration_SearchResults(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	searchInput := &audit.SearchInput{
-		Query: "message:test",
+		Query:      "message:test",
+		MaxResults: 4,
 	}
 	searchOut, err := client.Search(ctx, searchInput)
 	assert.NoError(t, err)

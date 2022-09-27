@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pangeacyber/go-pangea/internal/pangeautil"
+	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/internal/signer"
 	"github.com/pangeacyber/go-pangea/pangea"
 	"github.com/pangeacyber/go-pangea/pangea/hash"
@@ -236,7 +236,7 @@ type LogInput struct {
 }
 
 func (i *LogInput) Sign(s signer.Signer) error {
-	b := pangeautil.CanonicalizeStruct(&i.Event)
+	b := pu.CanonicalizeStruct(&i.Event)
 
 	signature, err := s.Sign(b)
 	if err != nil {
@@ -293,7 +293,7 @@ type Event struct {
 	Target string `json:"target,omitempty"`
 
 	// An optional client-supplied timestamp.
-	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Timestamp *pu.PangeaTimestamp `json:"timestamp,omitempty"`
 }
 
 type EventEnvelope struct {
@@ -447,7 +447,7 @@ func (ee *SearchEvent) VerifyHash() bool {
 		return false
 	}
 
-	eventCanon := pangeautil.CanonicalizeStruct((ee.EventEnvelope))
+	eventCanon := pu.CanonicalizeStruct((ee.EventEnvelope))
 	eventHash := hash.Encode(eventCanon)
 
 	return ee.Hash == eventHash.String()
@@ -470,7 +470,7 @@ func (ee *EventEnvelope) VerifySignature() bool {
 		return false
 	}
 
-	b := pangeautil.CanonicalizeStruct(ee.Event)
+	b := pu.CanonicalizeStruct(ee.Event)
 
 	sig, err := base64.StdEncoding.DecodeString(ee.Signature)
 	if err != nil {
