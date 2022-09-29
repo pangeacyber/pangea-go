@@ -21,7 +21,7 @@ func CanonicalizeStruct(v interface{}) []byte {
 
 type PangeaTimestamp time.Time
 
-const ptLayout = "2006-01-02T15:04:05.999999Z"
+const ptLayout = "2006-01-02T15:04:05.000000Z"
 
 // UnmarshalJSON Parses the json string in the custom format
 func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) (err error) {

@@ -3,6 +3,7 @@ package audit
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"time"
 
@@ -72,9 +73,15 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose, returnHash bool) 
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
 func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
+	if input == nil {
+		return nil, errors.New("nil input")
+	}
+
+	// Always include hash to verify record. We'll be changed in server soon.
+	input.IncludeHash = true
+
 	if a.VerifyProofs {
 		// Need this info to verify
-		input.IncludeHash = true
 		input.IncludeMembershipProof = true
 		input.IncludeRoot = true
 	}
@@ -200,17 +207,17 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 }
 
 func (a *Audit) verifyRecords(events SearchEvents, root *Root) error {
-	for idx, event := range events {
-		if a.VerifyProofs && !event.VerifyHash() {
-			return fmt.Errorf("audit: cannot verify hash of record [%v]", idx)
+	for _, event := range events {
+		if !event.VerifyHash() {
+			return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
 		}
 
-		if a.VerifySignature && !event.EventEnvelope.VerifySignature() {
-			return fmt.Errorf("audit: cannot verify signature of record [%v]", idx)
+		if !event.EventEnvelope.VerifySignature() {
+			return fmt.Errorf("audit: cannot verify signature of record. Hash [%s]", event.Hash)
 		}
 
 		if a.VerifyProofs && !event.VerifyMembershipProof(root) {
-			return fmt.Errorf("audit: cannot verify membership proof of record [%v]", idx)
+			return fmt.Errorf("audit: cannot verify membership proof of record. Hash [%s]", event.Hash)
 		}
 	}
 	return nil
@@ -304,13 +311,13 @@ type EventEnvelope struct {
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
-	Signature string `json:"signature,omitempty"`
+	Signature *string `json:"signature,omitempty"`
 
 	// The base64-encoded ed25519 public key used for the signature, if one is provided
-	PublicKey string `json:"public_key,omitempty"`
+	PublicKey *string `json:"public_key,omitempty"`
 
 	// A server-supplied timestamp.
-	ReceivedAt *time.Time `json:"received_at,omitempty"`
+	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
 type LogOutput struct {
@@ -444,12 +451,10 @@ func (event *SearchEvent) IsVerifiable() bool {
 
 func (ee *SearchEvent) VerifyHash() bool {
 	if ee.Hash == "" {
-		return false
+		return true
 	}
-
 	eventCanon := pu.CanonicalizeStruct((ee.EventEnvelope))
 	eventHash := hash.Encode(eventCanon)
-
 	return ee.Hash == eventHash.String()
 }
 
@@ -466,18 +471,18 @@ func (ee *SearchEvent) VerifyMembershipProof(root *Root) bool {
 }
 
 func (ee *EventEnvelope) VerifySignature() bool {
-	if ee.Signature == "" {
-		return false
+	if ee.Signature == nil || ee.PublicKey == nil {
+		return true
 	}
 
 	b := pu.CanonicalizeStruct(ee.Event)
 
-	sig, err := base64.StdEncoding.DecodeString(ee.Signature)
+	sig, err := base64.StdEncoding.DecodeString(*ee.Signature)
 	if err != nil {
 		return false
 	}
 
-	pubKey, err := base64.StdEncoding.DecodeString(ee.PublicKey)
+	pubKey, err := base64.StdEncoding.DecodeString(*ee.PublicKey)
 	if err != nil {
 		return false
 	}
