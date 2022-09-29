@@ -28,7 +28,7 @@ type Audit struct {
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	cli := &Audit{
 		Client:                pangea.NewClient("audit", cfg),
-		SkipEventVerification: true,
+		SkipEventVerification: false,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -62,7 +62,7 @@ func WithLogSigningEnabled(filename string) Option {
 
 func DisableEventVerification() Option {
 	return func(a *Audit) error {
-		a.SkipEventVerification = false
+		a.SkipEventVerification = true
 		return nil
 	}
 }
