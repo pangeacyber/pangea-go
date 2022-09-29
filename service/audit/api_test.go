@@ -883,4 +883,10 @@ func TestFailedOptions(t *testing.T) {
 	)
 	assert.Error(t, err)
 
+	_, err = audit.New(
+		pangeatesting.TestConfig("url"),
+		audit.DisableEventVerification(),
+	)
+	assert.NoError(t, err)
+
 }

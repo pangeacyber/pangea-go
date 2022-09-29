@@ -21,12 +21,14 @@ type Audit struct {
 	SignLogs bool
 	Signer   signer.Signer
 
-	VerifyProofs bool
+	VerifyProofs          bool
+	SkipEventVerification bool
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	cli := &Audit{
-		Client: pangea.NewClient("audit", cfg),
+		Client:                pangea.NewClient("audit", cfg),
+		SkipEventVerification: true,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -54,6 +56,13 @@ func WithLogSigningEnabled(filename string) Option {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
 		a.Signer = s
+		return nil
+	}
+}
+
+func DisableEventVerification() Option {
+	return func(a *Audit) error {
+		a.SkipEventVerification = false
 		return nil
 	}
 }

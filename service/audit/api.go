@@ -208,11 +208,11 @@ func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput
 
 func (a *Audit) verifyRecords(events SearchEvents, root *Root) error {
 	for _, event := range events {
-		if !event.VerifyHash() {
+		if a.SkipEventVerification && !event.VerifyHash() {
 			return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
 		}
 
-		if !event.EventEnvelope.VerifySignature() {
+		if a.SkipEventVerification && !event.EventEnvelope.VerifySignature() {
 			return fmt.Errorf("audit: cannot verify signature of record. Hash [%s]", event.Hash)
 		}
 
