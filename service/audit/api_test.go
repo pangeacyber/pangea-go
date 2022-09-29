@@ -124,7 +124,7 @@ func TestSearch(t *testing.T) {
 	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "some-id",
@@ -259,7 +259,7 @@ func TestSearch_Verify(t *testing.T) {
 			  }`)
 	})
 
-	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled(), audit.WithLogSignatureVerificationEnabled())
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
 		Query:                  "message:test",
 		IncludeMembershipProof: true,
@@ -328,7 +328,7 @@ func TestSearch_VerifyFailSignature(t *testing.T) {
 			  }`)
 	})
 
-	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled(), audit.WithLogSignatureVerificationEnabled())
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
 		Query:                  "message:test",
 		IncludeMembershipProof: true,
@@ -337,7 +337,7 @@ func TestSearch_VerifyFailSignature(t *testing.T) {
 	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify signature of record [0]")
+	assert.Equal(t, err.Error(), "audit: cannot verify signature of record. Hash [9ddc99bf74c65b345c442604f3ce84288218c4548499a761018bf13473d252d0]")
 	assert.Nil(t, got)
 }
 
@@ -398,7 +398,7 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 			  }`)
 	})
 
-	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled(), audit.WithLogSignatureVerificationEnabled())
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
 		Query:                  "message:test",
 		IncludeMembershipProof: true,
@@ -407,7 +407,7 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify signature of record [0]")
+	assert.Equal(t, err.Error(), "audit: cannot verify signature of record. Hash [8c779d38f7ec4a88a4e09d064b6868ccc16da8696692de688d9367c28a3bdb08]")
 	assert.Nil(t, got)
 }
 
@@ -466,7 +466,7 @@ func TestSearch_VerifyFailConsistencyProof(t *testing.T) {
 			  }`)
 	})
 
-	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled(), audit.WithLogSignatureVerificationEnabled())
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
 		Query:                  "message:test",
 		IncludeMembershipProof: true,
@@ -475,7 +475,7 @@ func TestSearch_VerifyFailConsistencyProof(t *testing.T) {
 	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record [0]")
+	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record. Hash [afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202]")
 	assert.Nil(t, got)
 }
 
@@ -543,7 +543,7 @@ func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
 	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record [0]")
+	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record. Hash [afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202]")
 	assert.Nil(t, got)
 }
 
@@ -613,7 +613,7 @@ func TestSearch_VerifyFailHash(t *testing.T) {
 	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify hash of record [0]")
+	assert.Equal(t, err.Error(), "audit: cannot verify hash of record. Hash: [notarealhash]")
 	assert.Nil(t, got)
 }
 
@@ -683,7 +683,7 @@ func TestSearch_VerifyFailHashEmpty(t *testing.T) {
 	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify hash of record [0]")
+	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record. Hash []")
 	assert.Nil(t, got)
 }
 
@@ -885,7 +885,8 @@ func TestFailedOptions(t *testing.T) {
 
 	_, err = audit.New(
 		pangeatesting.TestConfig("url"),
-		audit.WithLogSignatureVerificationEnabled(),
+		audit.DisableEventVerification(),
 	)
 	assert.NoError(t, err)
+
 }

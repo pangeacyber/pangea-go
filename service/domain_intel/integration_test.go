@@ -153,6 +153,5 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "NotEnumMember")
-	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'provider' must be a one of the following values [crowdstrike]")
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/provider")
 }

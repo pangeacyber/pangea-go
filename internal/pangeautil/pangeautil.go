@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 )
 
 func CanonicalizeStruct(v interface{}) []byte {
@@ -16,6 +17,30 @@ func CanonicalizeStruct(v interface{}) []byte {
 	json.Unmarshal(ebytes, &smap)
 	mbytes, _ := json.Marshal(smap)
 	return mbytes
+}
+
+type PangeaTimestamp time.Time
+
+const ptLayout = "2006-01-02T15:04:05.000000Z"
+
+// UnmarshalJSON Parses the json string in the custom format
+func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) (err error) {
+	s := strings.Trim(string(b), `"`)
+	nt, err := time.Parse(ptLayout, s)
+	*ct = PangeaTimestamp(nt)
+	return
+}
+
+// MarshalJSON writes a quoted string in the custom format
+func (ct PangeaTimestamp) MarshalJSON() ([]byte, error) {
+	return []byte(ct.String()), nil
+}
+
+// String returns the time in the custom format
+func (ct *PangeaTimestamp) String() string {
+	t := time.Time(*ct)
+	utc := t.UTC()
+	return fmt.Sprintf("%q", utc.Format(ptLayout))
 }
 
 // CanonicalizeJSONMarshall is not a true canoni

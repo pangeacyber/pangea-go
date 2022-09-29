@@ -43,7 +43,7 @@ func NewAPIError(err error, r *Response) *APIError {
 	var errRes error
 	var pa PangeaErrors
 	errUnm := r.UnmarshalResult(&pa)
-	if err != nil {
+	if errUnm != nil {
 		pa = PangeaErrors{}
 		errRes = fmt.Errorf("Error: %s. Unmarshall Error: %s.", err.Error(), errUnm.Error())
 	} else {

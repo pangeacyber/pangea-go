@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+
+	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
 )
 
 // Bool is a helper routine that allocates a new bool value
@@ -54,5 +56,11 @@ func Stringify(obj interface{}) string {
 // Time is a helper routine that allocates a new time.Time value
 // to store v and returns a pointer to it.
 func Time(v time.Time) *time.Time {
+	return &v
+}
+
+// Time is a helper routine that allocates a new PangeaTimestamp value
+// to store v and returns a pointer to it.
+func PangeaTime(v pu.PangeaTimestamp) *pu.PangeaTimestamp {
 	return &v
 }
