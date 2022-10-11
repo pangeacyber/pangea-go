@@ -25,10 +25,10 @@ func Test_Integration_DomainLookup(t *testing.T) {
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
-		Domain:   "teoghehofuuxo.su",
+		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "crowdstrike",
+		Provider: "domaintools",
 	}
 	out, err := domainintel.Lookup(ctx, input)
 	if err != nil {
@@ -56,7 +56,7 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 		Domain:   "google.com",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "crowdstrike",
+		Provider: "domaintools",
 	}
 
 	out, err := domainintel.Lookup(ctx, input)
@@ -66,7 +66,7 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Verdict, "unknown")
+	assert.Equal(t, out.Result.Data.Verdict, "benign")
 }
 
 // Test empty domain
@@ -85,7 +85,7 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 		Domain:   "",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "crowdstrike",
+		Provider: "domaintools",
 	}
 
 	out, err := domainintel.Lookup(ctx, input)
@@ -114,10 +114,10 @@ func Test_Integration_DomainLookup_Error_BadAuthToken(t *testing.T) {
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
-		Domain:   "teoghehofuuxo.su",
+		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "crowdstrike",
+		Provider: "domaintools",
 	}
 	out, err := domainintel.Lookup(ctx, input)
 
@@ -140,7 +140,7 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
-		Domain:   "teoghehofuuxo.su",
+		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "notaprovider",

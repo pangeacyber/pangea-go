@@ -30,10 +30,10 @@ func main() {
 
 	ctx := context.Background()
 	input := &domain_intel.DomainLookupInput{
-		Domain:   "teoghehofuuxo.su",
+		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "crowdstrike",
+		Provider: "domaintools",
 	}
 
 	response, err := intelcli.Lookup(ctx, input)

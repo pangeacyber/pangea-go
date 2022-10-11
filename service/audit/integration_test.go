@@ -297,7 +297,7 @@ func Test_Integration_SearchResults(t *testing.T) {
 }
 
 func Test_Integration_SearchAll(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 7*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)

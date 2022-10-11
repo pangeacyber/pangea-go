@@ -13,10 +13,10 @@ import (
 // Example:
 //
 //	 input := &domain_intel.DomainLookupInput{
-//	     	Domain: "teoghehofuuxo.su",
+//	     	Domain: "737updatesboeing.com",
 //	     	Raw: true,
 //	     	Verbose: true,
-//	     Provider: "crowdstrike",
+//	     Provider: "domaintools",
 //	 }
 //
 //		checkResponse, err := domainintel.Lookup(ctx, input)

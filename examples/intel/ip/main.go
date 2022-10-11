@@ -33,7 +33,7 @@ func main() {
 		Ip:       "93.231.182.110",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "crowdstrike",
+		Provider: "domaintools",
 	}
 
 	response, err := intelcli.Lookup(ctx, input)

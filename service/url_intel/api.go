@@ -16,7 +16,7 @@ import (
 //	     Url: "http://113.235.101.11:54384",
 //	     Raw: true,
 //	     Verbose: true,
-//	     Provider: "crowdstrike",
+//	     Provider: "domaintools",
 //	 }
 //
 //		checkOutput, _, err := urlintel.Lookup(ctx, input)
