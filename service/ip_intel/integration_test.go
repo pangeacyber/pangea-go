@@ -27,7 +27,7 @@ package ip_intel_test
 // 		Ip:       "93.231.182.110",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 // 	out, err := ipintel.Lookup(ctx, input)
 // 	if err != nil {
@@ -56,7 +56,7 @@ package ip_intel_test
 // 		Ip:       "8.8.4.4",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 // 	out, err := ipintel.Lookup(ctx, input)
 // 	if err != nil {
@@ -84,7 +84,7 @@ package ip_intel_test
 // 		Ip:       "93.231.182.300",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 // 	out, err := ipintel.Lookup(ctx, input)
 
@@ -112,7 +112,7 @@ package ip_intel_test
 // 		Ip:       "notanip",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 // 	out, err := ipintel.Lookup(ctx, input)
 
@@ -141,7 +141,7 @@ package ip_intel_test
 // 		Ip:       "93.231.182.110",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 
 // 	out, err := ipintel.Lookup(ctx, input)

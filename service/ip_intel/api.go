@@ -16,7 +16,7 @@ import (
 //	     Ip: "93.231.182.110",
 //	     Raw: true,
 //	     Verbose: true,
-//	     Provider: "domaintools",
+//	     Provider: "crowdstrike",
 //	 }
 //
 //		checkOutput, _, err := ipintel.Lookup(ctx, input)

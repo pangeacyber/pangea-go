@@ -27,7 +27,7 @@ package url_intel_test
 // 		Url:      "http://113.235.101.11:54384",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 // 	out, err := urlintel.Lookup(ctx, input)
 // 	if err != nil {
@@ -55,7 +55,7 @@ package url_intel_test
 // 		Url:      "http://google.com",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 // 	out, err := urlintel.Lookup(ctx, input)
 // 	if err != nil {
@@ -84,7 +84,7 @@ package url_intel_test
 // 		Url:      "http://113.235.101.11:54384",
 // 		Raw:      true,
 // 		Verbose:  true,
-// 		Provider: "domaintools",
+// 		Provider: "crowdstrike",
 // 	}
 
 // 	out, err := urlintel.Lookup(ctx, input)
