@@ -6,43 +6,65 @@ import (
 	"github.com/pangeacyber/go-pangea/pangea"
 )
 
-// File Lookup
+type FileLookupInput struct {
+	Hash string `json:"hash"`
+
+	// One of "sha256", "sha", "md5".
+	HashType string `json:"hash_type"`
+
+	// Echo the API parameters in the response.
+	Verbose bool `json:"verbose,omitempty"`
+
+	// Include raw data from this provider.
+	Raw bool `json:"raw,omitempty"`
+
+	// Use reputation data from this provider.
+	Provider string `json:"provider,omitempty"`
+}
+
+type LookupData struct {
+	// The categories that apply to this
+	// indicator as determined by the provider
+	Category []string `json:"category"`
+
+	// The score, given by the Pangea service,
+	// for the indicator
+	Score int `json:"score"`
+
+	// The verdict, given by the Pangea service,
+	// for the indicator
+	Verdict string `json:"verdict"`
+}
+
+type FileLookupOutput struct {
+	// High-level normalized results sent
+	// by the Pangea service
+	Data LookupData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters interface{} `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData interface{} `json:"raw_data,omitempty"`
+}
+
+// Look up a file
 //
 // Lookup a file's hash to retrieve reputation data.
 //
 // Example:
 //
-//  input := &file_intel.FileLookupInput{
-//      Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
-//      HashType: "sha256",
-//      Raw: true,
-//      Verbose: true,
-//      Provider: "reversinglabs",
-//  }
+//	input := &file_intel.FileLookupInput{
+//	    Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
+//	    HashType: "sha256",
+//	    Raw: true,
+//	    Verbose: true,
+//	    Provider: "reversinglabs",
+//	}
 //
-//  checkOutput, _, err := fileintel.Lookup(ctx, input)
-//
-
-type FileLookupInput struct {
-	Hash     string `json:"hash"`
-	HashType string `json:"hash_type"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
-	Provider string `json:"provider,omitempty"`
-}
-
-type LookupData struct {
-	Category []string `json:"category"`
-	Score    int      `json:"score"`
-	Verdict  string   `json:"verdict"`
-}
-
-type FileLookupOutput struct {
-	Data       LookupData  `json:"data"`
-	Parameters interface{} `json:"parameters,omitempty"`
-	RawData    interface{} `json:"raw_data,omitempty"`
-}
-
+//	checkOutput, _, err := fileintel.Lookup(ctx, input)
 func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea.PangeaResponse[FileLookupOutput], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
