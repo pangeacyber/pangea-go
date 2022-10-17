@@ -393,6 +393,12 @@ type SearchRestriction struct {
 
 	// A list of targets to restrict the search to.
 	Target []string `json:"target,omitempty"`
+
+	// A list of actions to restrict the search to.
+	Action []string `json:"action,omitempty"`
+
+	// A list of status to restrict the search to.
+	Status []string `json:"status,omitempty"`
 }
 
 type SearchOutput struct {
