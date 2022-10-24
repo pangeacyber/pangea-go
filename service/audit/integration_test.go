@@ -16,9 +16,12 @@ import (
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "AUDIT_INTEGRATION_CONFIG_TOKEN")
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_AUDIT_TOKEN")
+	if token == "" {
+		t.Skip("set PANGEA_INTEGRATION_AUDIT_TOKEN env variables to run this test")
+	}
 	cfg := &pangea.Config{
-		ConfigID: cfgToken,
+		Token: token,
 	}
 	return cfg.Copy(pangeatesting.IntegrationConfig(t))
 }
@@ -102,26 +105,6 @@ func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
-}
-
-// Not a valid config ID
-func Test_Integration_Log_Error_BadConfidID(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	cfg := auditIntegrationCfg(t)
-	cfg.ConfigID = "notavalidid"
-	client, _ := audit.New(cfg)
-
-	event := audit.Event{
-		Message: "Integration test msg",
-	}
-
-	out, err := client.Log(ctx, event, true, true)
-	assert.Error(t, err)
-	assert.Nil(t, out)
-	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, apiErr.Err.Error(), "API error: Missing Config ID, you can provide using the config header X-Pangea-audit-Config-Id or adding a token scope `service:audit:*:config:r`.")
 }
 
 // Fails because empty message

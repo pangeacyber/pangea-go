@@ -15,20 +15,14 @@ type yourCustomDataStruct struct {
 }
 
 func main() {
-	token := os.Getenv("PANGEA_AUTH_TOKEN")
+	token := os.Getenv("PANGEA_REDACT_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	configID := os.Getenv("REDACT_CONFIG_ID")
-	if token == "" {
-		log.Fatal("Configuration: No config ID present")
-	}
-
 	redactcli := redact.New(&pangea.Config{
-		Token:    token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		ConfigID: configID,
+		Token:  token,
+		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	ctx := context.Background()

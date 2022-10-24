@@ -12,20 +12,14 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_AUTH_TOKEN")
+	token := os.Getenv("PANGEA_EMBARGO_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	configID := os.Getenv("EMBARGO_CONFIG_ID")
-	if token == "" {
-		log.Fatal("Configuration: No config ID present")
-	}
-
 	embargocli := embargo.New(&pangea.Config{
-		Token:    token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		ConfigID: configID,
+		Token:  token,
+		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	ctx := context.Background()

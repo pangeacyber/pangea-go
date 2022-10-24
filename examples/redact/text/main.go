@@ -11,20 +11,14 @@ import (
 )
 
 func main() {
-	token := os.Getenv("REDACT_AUTH_TOKEN")
+	token := os.Getenv("PANGEA_REDACT_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	configID := os.Getenv("REDACT_CONFIG_ID")
-	if token == "" {
-		log.Fatal("Configuration: No config ID present")
-	}
-
 	redactcli := redact.New(&pangea.Config{
-		Token:    token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		ConfigID: configID,
+		Token:  token,
+		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	var text = "Hello, my phone number is 123-456-7890"

@@ -12,15 +12,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func intelFileIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_INTEL_FILE_TOKEN")
+	if token == "" {
+		t.Skip("set PANGEA_INTEGRATION_INTEL_FILE_TOKEN env variables to run this test")
+	}
+	cfg := &pangea.Config{
+		Token: token,
+	}
+	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+}
+
 func Test_Integration_FileLookup(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "FILE_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelFileIntegrationCfg(t)
 	fileintel := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
@@ -46,11 +54,7 @@ func Test_Integration_FileLookup_2(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "FILE_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelFileIntegrationCfg(t)
 	fileintel := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
@@ -75,11 +79,7 @@ func Test_Integration_FileLookup_ErrorBadHash(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "FILE_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelFileIntegrationCfg(t)
 	fileintel := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
@@ -104,11 +104,7 @@ func Test_Integration_FileLookup_ErrorBadHashType(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "FILE_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelFileIntegrationCfg(t)
 	fileintel := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
@@ -133,11 +129,7 @@ func Test_Integration_FileLookup_ErrorBadToken(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "FILE_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelFileIntegrationCfg(t)
 	cfg.Token = "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e"
 	fileintel := file_intel.New(cfg)
 
