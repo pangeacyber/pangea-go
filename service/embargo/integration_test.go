@@ -12,16 +12,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func embargoIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_EMBARGO_TOKEN")
+	if token == "" {
+		t.Skip("set PANGEA_INTEGRATION_EMBARGO_TOKEN env variables to run this test")
+	}
+	cfg := &pangea.Config{
+		Token: token,
+	}
+	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+}
+
 // Check ISO with sanctions
 func Test_Integration_Check(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "EMBARGO_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := embargoIntegrationCfg(t)
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
@@ -43,11 +51,7 @@ func Test_Integration_Check_2(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "EMBARGO_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := embargoIntegrationCfg(t)
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
@@ -66,11 +70,7 @@ func Test_Integration_Check_Error_BadISO(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "EMBARGO_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := embargoIntegrationCfg(t)
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
@@ -91,11 +91,7 @@ func Test_Integration_Check_Error_BadToken(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "EMBARGO_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := embargoIntegrationCfg(t)
 	cfg.Token = "notatoken"
 	client := embargo.New(cfg)
 

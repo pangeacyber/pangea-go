@@ -12,16 +12,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func intelDomainIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_DOMAIN_INTEL_TOKEN")
+	if token == "" {
+		t.Skip("set PANGEA_INTEGRATION_DOMAIN_INTEL_TOKEN env variables to run this test")
+	}
+	cfg := &pangea.Config{
+		Token: token,
+	}
+	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+}
+
 // Lookup domain malicious
 func Test_Integration_DomainLookup(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "DOMAIN_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
@@ -45,11 +53,7 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "DOMAIN_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
@@ -74,11 +78,7 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "DOMAIN_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
@@ -105,11 +105,7 @@ func Test_Integration_DomainLookup_Error_BadAuthToken(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "DOMAIN_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelDomainIntegrationCfg(t)
 	cfg.Token = "notavalidtoken"
 	domainintel := domain_intel.New(cfg)
 
@@ -132,11 +128,7 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "DOMAIN_INTEL_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{

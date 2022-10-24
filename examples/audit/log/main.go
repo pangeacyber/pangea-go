@@ -12,20 +12,14 @@ import (
 
 func main() {
 
-	configID := os.Getenv("AUDIT_CONFIG_ID")
-	if configID == "" {
-		log.Fatal("Configuration: No config ID present")
-	}
-
-	token := os.Getenv("AUDIT_AUTH_TOKEN")
+	token := os.Getenv("PANGEA_AUDIT_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
 	auditcli, err := audit.New(&pangea.Config{
-		Token:    token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		ConfigID: configID,
+		Token:  token,
+		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 	if err != nil {
 		log.Fatal("failed to create audit client")

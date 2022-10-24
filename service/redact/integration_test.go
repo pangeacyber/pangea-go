@@ -12,16 +12,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func redactIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_REDACT_TOKEN")
+	if token == "" {
+		t.Skip("set PANGEA_INTEGRATION_REDACT_TOKEN env variables to run this test")
+	}
+	cfg := &pangea.Config{
+		Token: token,
+	}
+	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+}
+
 func Test_Integration_Redact(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "REDACT_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-		Retry:    true,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := redactIntegrationCfg(t)
 	client := redact.New(cfg)
 
 	input := &redact.TextInput{
@@ -39,12 +46,8 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "REDACT_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-		Retry:    true,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := redactIntegrationCfg(t)
+	cfg.Retry = true
 	client := redact.New(cfg)
 
 	input := &redact.TextInput{
@@ -62,12 +65,8 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "REDACT_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-		Retry:    true,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
+	cfg := redactIntegrationCfg(t)
+	cfg.Retry = true
 	cfg.Token = "notarealtoken"
 	client := redact.New(cfg)
 
@@ -79,29 +78,4 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
-}
-
-func Test_Integration_Redact_Error_BadConfigID(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancelFn()
-
-	cfgToken := pangeatesting.GetEnvVarOrSkip(t, "REDACT_INTEGRATION_CONFIG_TOKEN")
-	cfg := &pangea.Config{
-		ConfigID: cfgToken,
-		Retry:    true,
-	}
-	cfg = cfg.Copy(pangeatesting.IntegrationConfig(t))
-	cfg.ConfigID = "notarealconfigid"
-	client := redact.New(cfg)
-
-	input := &redact.TextInput{
-		Text: pangea.String(""),
-	}
-
-	out, err := client.Redact(ctx, input)
-
-	assert.Error(t, err)
-	assert.Nil(t, out)
-	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, apiErr.Err.Error(), "API error: Missing Config ID, you can provide using the config header X-Pangea-redact-Config-Id or adding a token scope `service:redact:*:config:r`.")
 }

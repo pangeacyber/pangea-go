@@ -12,20 +12,14 @@ import (
 )
 
 func main() {
-	token := os.Getenv("INTEL_AUTH_TOKEN")
+	token := os.Getenv("PANGEA_DOMAIN_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	configID := os.Getenv("INTEL_DOMAIN_CONFIG_ID")
-	if token == "" {
-		log.Fatal("Configuration: No config ID present")
-	}
-
 	intelcli := domain_intel.New(&pangea.Config{
-		Token:    token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		ConfigID: configID,
+		Token:  token,
+		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	ctx := context.Background()
