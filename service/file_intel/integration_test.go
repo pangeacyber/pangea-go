@@ -14,9 +14,9 @@ import (
 
 func intelFileIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
-	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_INTEL_FILE_TOKEN")
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_FILE_INTEL_TOKEN")
 	if token == "" {
-		t.Skip("set PANGEA_INTEGRATION_INTEL_FILE_TOKEN env variables to run this test")
+		t.Skip("set PANGEA_INTEGRATION_FILE_INTEL_TOKEN env variables to run this test")
 	}
 	cfg := &pangea.Config{
 		Token: token,

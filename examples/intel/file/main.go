@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_INTEL_FILE_TOKEN")
+	token := os.Getenv("PANGEA_FILE_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
