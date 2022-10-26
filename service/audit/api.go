@@ -173,9 +173,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	events = append(events, resp.Result.Events...)
 	for resp.Result.Count > len(events) {
 		s := SearchResultInput{
-			ID:                     resp.Result.ID,
-			IncludeMembershipProof: input.IncludeMembershipProof,
-			IncludeHash:            input.IncludeHash,
+			ID: resp.Result.ID,
 		}
 		sOut, err := client.SearchResults(ctx, &s)
 		if err != nil {
@@ -355,9 +353,6 @@ type SearchInput struct {
 	// Name of column to sort the results by.
 	OrderBy string `json:"order_by,omitempty"`
 
-	// If set, the last value from the response to fetch the next page from.
-	Last string `json:"last,omitempty"`
-
 	// The start of the time range to perform the search on.
 	Start *time.Time `json:"start,omitempty"`
 
@@ -501,15 +496,6 @@ type SearchResultInput struct {
 	// A search results identifier returned by the search call
 	// ID is a required field
 	ID string `json:"id"`
-
-	// If true, include membership proofs for each record in the first page.
-	IncludeMembershipProof bool `json:"include_membership_proof,omitempty"`
-
-	// If true, include hashes for each record in the first page.
-	IncludeHash bool `json:"include_hash,omitempty"`
-
-	// If true, include the Merkle root hash of the tree in the first page.
-	IncludeRoot bool `json:"include_root,omitempty"`
 
 	// Number of audit records to include from the first page of the results.
 	Limit int `json:"limit,omitempty"`

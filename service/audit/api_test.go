@@ -694,7 +694,7 @@ func TestSearchResults(t *testing.T) {
 	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
 	mux.HandleFunc("/v1/results", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"id":"some-id","include_membership_proof":true,"limit":50}`)
+		pangeatesting.TestBody(t, r, `{"id":"some-id","limit":50}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "some-id",
@@ -741,9 +741,8 @@ func TestSearchResults(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.SearchResultInput{
-		ID:                     "some-id",
-		IncludeMembershipProof: true,
-		Limit:                  50,
+		ID:    "some-id",
+		Limit: 50,
 	}
 	ctx := context.Background()
 	got, err := client.SearchResults(ctx, input)
