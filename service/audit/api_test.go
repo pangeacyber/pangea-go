@@ -19,7 +19,7 @@ func TestLog(t *testing.T) {
 
 	mux.HandleFunc("/v1/log", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"return_hash":true,"verbose":true}`)
+		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"verbose":true}`)
 		fmt.Fprint(w,
 			`{
 				"request_id": "some-id",
@@ -27,7 +27,6 @@ func TestLog(t *testing.T) {
 				"response_time": "1970-01-01T00:00:10Z",
 				"status": "Success",
 				"result": {
-					"canonical_envelope_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"envelope": {
 						"event": {
 							"message": "test"
@@ -44,13 +43,12 @@ func TestLog(t *testing.T) {
 		Message: "test",
 	}
 	ctx := context.Background()
-	got, err := client.Log(ctx, event, true, true)
+	got, err := client.Log(ctx, event, true)
 
 	assert.NoError(t, err)
 
 	want := &audit.LogOutput{
-		CanonicalEnvelopeBase64: "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
-		Hash:                    "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484",
+		Hash: "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484",
 		EventEnvelope: &audit.EventEnvelope{
 			Event: &audit.Event{
 				Message: "test",
@@ -74,7 +72,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 
 	mux.HandleFunc("/v1/log", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"return_hash":true,"verbose":true}`)
+		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"verbose":true}`)
 		fmt.Fprint(w,
 			`{
 				"request_id": "some-id",
@@ -82,7 +80,6 @@ func TestDomainTrailingSlash(t *testing.T) {
 				"response_time": "1970-01-01T00:00:10Z",
 				"status": "Success",
 				"result": {
-					"canonical_envelope_base64": "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
 					"envelope": {
 						"event": {
 							"message": "test"
@@ -101,13 +98,12 @@ func TestDomainTrailingSlash(t *testing.T) {
 		Message: "test",
 	}
 	ctx := context.Background()
-	got, err := client.Log(ctx, event, true, true)
+	got, err := client.Log(ctx, event, true)
 
 	assert.NoError(t, err)
 
 	want := &audit.LogOutput{
-		CanonicalEnvelopeBase64: "eyJtZXNzYWdlIjoicHJ1ZWJhXzQ1NiIsInJlY2VpdmVkX2F0IjoiMjAyMi0wNi0yOFQfadDowMjowNS40ODAyNjdaIn0=",
-		Hash:                    "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484",
+		Hash: "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484",
 		EventEnvelope: &audit.EventEnvelope{
 			Event: &audit.Event{
 				Message: "test",
@@ -124,7 +120,7 @@ func TestSearch(t *testing.T) {
 	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "some-id",
@@ -164,8 +160,8 @@ func TestSearch(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
@@ -185,7 +181,7 @@ func TestSearch(t *testing.T) {
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
-				MembershipProof: "some-proof",
+				MembershipProof: pangea.String("some-proof"),
 			},
 			{
 				EventEnvelope: audit.EventEnvelope{
@@ -195,7 +191,7 @@ func TestSearch(t *testing.T) {
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
-				MembershipProof: "some-proof",
+				MembershipProof: pangea.String("some-proof"),
 			},
 		},
 	}
@@ -208,7 +204,7 @@ func TestSearch_Verify(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -261,8 +257,8 @@ func TestSearch_Verify(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
@@ -277,7 +273,7 @@ func TestSearch_VerifyFailSignature(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -287,7 +283,7 @@ func TestSearch_VerifyFailSignature(t *testing.T) {
 				"summary": "Found 1 event(s)",
 				"result": {
 				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
-				  "count": 4,
+				  "count": 1,
 				  "expires_at": "2022-09-22T15:15:49.328006Z",
 				  "events": [
 					{
@@ -330,15 +326,17 @@ func TestSearch_VerifyFailSignature(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
 
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify signature of record. Hash [9ddc99bf74c65b345c442604f3ce84288218c4548499a761018bf13473d252d0]")
-	assert.Nil(t, got)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, got.Result.Count)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.Failed, got.Result.Events[0].SignatureVerification)
 }
 
 func TestSearch_VerifyFailPublicKey(t *testing.T) {
@@ -347,7 +345,7 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -357,7 +355,7 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 				"summary": "Found 1 event(s)",
 				"result": {
 				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
-				  "count": 4,
+				  "count": 1,
 				  "expires_at": "2022-09-22T15:15:49.328006Z",
 				  "events": [
 					{
@@ -400,15 +398,17 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
 
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify signature of record. Hash [8c779d38f7ec4a88a4e09d064b6868ccc16da8696692de688d9367c28a3bdb08]")
-	assert.Nil(t, got)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, got.Result.Count)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.Failed, got.Result.Events[0].SignatureVerification)
 }
 
 // Membership proof bad formated
@@ -418,7 +418,7 @@ func TestSearch_VerifyFailConsistencyProof(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -428,7 +428,7 @@ func TestSearch_VerifyFailConsistencyProof(t *testing.T) {
 				"summary": "Found 1 event(s)",
 				"result": {
 				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
-				  "count": 4,
+				  "count": 1,
 				  "expires_at": "2022-09-22T15:15:49.328006Z",
 				  "events": [
 					{
@@ -468,15 +468,17 @@ func TestSearch_VerifyFailConsistencyProof(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
 
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record. Hash [afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202]")
-	assert.Nil(t, got)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, got.Result.Count)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.NotVerified, got.Result.Events[0].ConsistencyVerification)
 }
 
 // deleted proof members
@@ -486,7 +488,7 @@ func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -496,7 +498,7 @@ func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
 				"summary": "Found 1 event(s)",
 				"result": {
 				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
-				  "count": 4,
+				  "count": 1,
 				  "expires_at": "2022-09-22T15:15:49.328006Z",
 				  "events": [
 					{
@@ -536,15 +538,17 @@ func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
 
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record. Hash [afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202]")
-	assert.Nil(t, got)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, got.Result.Count)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.NotVerified, got.Result.Events[0].ConsistencyVerification)
 }
 
 func TestSearch_VerifyFailHash(t *testing.T) {
@@ -553,7 +557,7 @@ func TestSearch_VerifyFailHash(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -606,8 +610,8 @@ func TestSearch_VerifyFailHash(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
@@ -623,7 +627,7 @@ func TestSearch_VerifyFailHashEmpty(t *testing.T) {
 
 	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","include_membership_proof":true,"include_hash":true,"include_root":true}`)
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
@@ -633,7 +637,7 @@ func TestSearch_VerifyFailHashEmpty(t *testing.T) {
 				"summary": "Found 1 event(s)",
 				"result": {
 				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
-				  "count": 4,
+				  "count": 1,
 				  "expires_at": "2022-09-22T15:15:49.328006Z",
 				  "events": [
 					{
@@ -676,15 +680,17 @@ func TestSearch_VerifyFailHashEmpty(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
 	input := &audit.SearchInput{
-		Query:                  "message:test",
-		IncludeMembershipProof: true,
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
 	got, err := client.Search(ctx, input)
 
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "audit: cannot verify membership proof of record. Hash []")
-	assert.Nil(t, got)
+	assert.Nil(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, got.Result.Count)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.NotVerified, got.Result.Events[0].MembershipVerification)
 }
 
 func TestSearchResults(t *testing.T) {
@@ -694,7 +700,7 @@ func TestSearchResults(t *testing.T) {
 	t1 := time.Date(2018, time.September, 16, 12, 0, 0, 0, time.FixedZone("", 2*60*60))
 	mux.HandleFunc("/v1/results", func(w http.ResponseWriter, r *http.Request) {
 		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"id":"some-id","include_membership_proof":true,"limit":50}`)
+		pangeatesting.TestBody(t, r, `{"id":"some-id","limit":50}`)
 		fmt.Fprintf(w,
 			`{
 				"request_id": "some-id",
@@ -741,9 +747,8 @@ func TestSearchResults(t *testing.T) {
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
 	input := &audit.SearchResultInput{
-		ID:                     "some-id",
-		IncludeMembershipProof: true,
-		Limit:                  50,
+		ID:    "some-id",
+		Limit: 50,
 	}
 	ctx := context.Background()
 	got, err := client.SearchResults(ctx, input)
@@ -761,7 +766,7 @@ func TestSearchResults(t *testing.T) {
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(2),
-				MembershipProof: "some-proof",
+				MembershipProof: pangea.String("some-proof"),
 			},
 			{
 				EventEnvelope: audit.EventEnvelope{
@@ -771,14 +776,14 @@ func TestSearchResults(t *testing.T) {
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
 				},
 				LeafIndex:       pangea.Int(3),
-				MembershipProof: "some-proof",
+				MembershipProof: pangea.String("some-proof"),
 			},
 		},
-		Root: audit.Root{
+		Root: &audit.Root{
 			PublishedAt: &t1,
 			RootHash:    "3a2563b40abe941f21c2ea929f2be92606fd2545762d3fa755ecec2942f5d452",
 			Size:        11,
-			ConsistencyProof: []string{
+			ConsistencyProof: &[]string{
 				"x:68810d719dc9dccee268d17a6c5baf3bf12d7ffad5673b763e06338121ed4e46,r:4a291c09b0bed8303d3e7f91315bd47da3df422151e642ded4208f46342a12f6",
 				"x:82eba5aa211af097d22ecf215be386212c192d7068a02aeb4280905e4d200ff9,r:03c513b31ev80f4c871dbcd07b069fd369482529984f0770008f6c7777813026",
 			},
@@ -830,7 +835,7 @@ func TestRoot(t *testing.T) {
 			PublishedAt: &t1,
 			RootHash:    "3a2563b40abe941f21c2ea929f2be92606fd2545762d3fa755ecec2942f5d452",
 			Size:        11,
-			ConsistencyProof: []string{
+			ConsistencyProof: &[]string{
 				"x:68810d719dc9dccee268d17a6c5baf3bf12d7ffad5673b763e06338121ed4e46,r:4a291c09b0bed8303d3e7f91315bd47da3df422151e642ded4208f46342a12f6",
 				"x:82eba5aa211af097d22ecf215be386212c192d7068a02aeb4280905e4d200ff9,r:03c513b31ev80f4c871dbcd07b069fd369482529984f0770008f6c7777813026",
 			},
@@ -843,7 +848,7 @@ func TestRoot(t *testing.T) {
 func TestLogError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.Log(context.Background(), audit.Event{}, true, true)
+		_, err := client.Log(context.Background(), audit.Event{}, true)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Log", f)

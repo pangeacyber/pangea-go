@@ -1,12 +1,11 @@
 package audit
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/pangeacyber/go-pangea/pangea"
+	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/pangea/hash"
 )
 
@@ -31,10 +30,19 @@ type rootProofItem struct {
 
 type rootProof []rootProofItem
 
-func decodeRootProof(rawProof []string) (rootProof, error) {
-	if len(rawProof) == 0 {
-		return nil, nil
+func VerifyHash(ee EventEnvelope, h string) EventVerification {
+	if h == "" {
+		return NotVerified
 	}
+	eventCanon := pu.CanonicalizeStruct((ee))
+	eventHash := hash.Encode(eventCanon)
+	if h == eventHash.String() {
+		return Success
+	}
+	return Failed
+}
+
+func decodeRootProof(rawProof []string) (rootProof, error) {
 	proof := make(rootProof, 0, len(rawProof))
 	for _, rawItem := range rawProof {
 		root, membershipProof, err := splitConsistencyProof(rawItem)
@@ -59,11 +67,8 @@ func decodeRootProof(rawProof []string) (rootProof, error) {
 
 func decodeProof(s string) (proof, error) {
 	items := strings.Split(s, ",")
-	if len(items) == 0 {
-		return nil, nil
-	}
-
 	p := make(proof, 0, len(items))
+
 	for _, item := range items {
 		side, h, err := hashFromHashProof(item)
 		if err != nil {
@@ -85,24 +90,23 @@ func decodeProof(s string) (proof, error) {
 	return p, nil
 }
 
-func VerifyMembershipProof(root Root, event SearchEvent, required bool) (bool, error) {
-	membershipProof := event.MembershipProof
-	if membershipProof == "" {
-		return !required, nil
-	}
-	targetHash, err := hash.Decode(event.Hash)
+func VerifyMembershipProof(rootHashEnc, h string, membershipProof string) (EventVerification, error) {
+	targetHash, err := hash.Decode(h)
 	if err != nil {
-		return false, err
+		return Failed, err
 	}
-	rootHash, err := hash.Decode(root.RootHash)
+	rootHash, err := hash.Decode(rootHashEnc)
 	if err != nil {
-		return false, err
+		return Failed, err
 	}
 	proof, err := decodeProof(membershipProof)
 	if err != nil {
-		return false, err
+		return Failed, err
 	}
-	return verifyLogProof(targetHash, rootHash, proof), nil
+	if verifyLogProof(targetHash, rootHash, proof) {
+		return Success, nil
+	}
+	return Failed, nil
 }
 
 func verifyLogProof(target, root hash.Hash, p proof) bool {
@@ -118,95 +122,35 @@ func verifyLogProof(target, root hash.Hash, p proof) bool {
 	return root.Equal(h)
 }
 
-func VerifyConsistencyProof(publishedRoots map[int]Root, event SearchEvent, required bool) bool {
-	if event.LeafIndex == nil {
-		return !required
-	}
-	idx := *event.LeafIndex
-	if idx <= 1 {
-		return !required
-	}
-	current, ok := publishedRoots[idx]
-	if !ok {
-		return false
-	}
-	previous, ok := publishedRoots[idx-1]
-	if !ok {
-		return false
-	}
-	verified, err := verifyConsistencyProof(previous, current)
-	if err != nil {
-		return false
-	}
-	return verified
-}
-
-func verifyConsistencyProof(old, new Root) (bool, error) {
-	oldHash, err := hash.Decode(old.RootHash)
+func verifyConsistencyProof(oldRootHash, newRootHash string, consistencyProof []string) (bool, error) {
+	oldHash, err := hash.Decode(oldRootHash)
 	if err != nil {
 		return false, err
 	}
-	newHash, err := hash.Decode(new.RootHash)
+	newHash, err := hash.Decode(newRootHash)
 	if err != nil {
 		return false, err
 	}
-	consistencyProof, err := decodeRootProof(new.ConsistencyProof)
+	proof, err := decodeRootProof(consistencyProof)
 	if err != nil {
 		return false, err
 	}
-	if len(consistencyProof) == 0 {
+	if len(proof) == 0 {
 		return false, fmt.Errorf("audit: consistency proof is empty")
 	}
-	rootHash := consistencyProof[0].Hash
-	for i := 1; i < len(consistencyProof); i++ {
-		rootHash = hash.Pair(consistencyProof[i].Hash).With(rootHash)
+	rootHash := proof[0].Hash
+	for i := 1; i < len(proof); i++ {
+		rootHash = hash.Pair(proof[i].Hash).With(rootHash)
 	}
 	if !rootHash.Equal(oldHash) {
 		return false, nil
 	}
-	for _, item := range consistencyProof {
+	for _, item := range proof {
 		if !verifyLogProof(item.Hash, newHash, item.Proof) {
 			return false, nil
 		}
 	}
 	return true, nil
-}
-
-func VerifyAuditRecords(ctx context.Context, rp RootsProvider, root *Root, events SearchEvents, required bool) (ValidateEvents, error) {
-	if root == nil || len(events) == 0 {
-		return nil, fmt.Errorf("audit: empty root or events")
-	}
-
-	treeSizes := treeSizes(root, events)
-	roots, err := rp.Roots(ctx, treeSizes)
-	if err != nil {
-		return nil, err
-	}
-	validatedEvents := make(ValidateEvents, 0, len(events))
-	for _, event := range events {
-		validatedEvent := &ValidatedEvent{
-			Event: &event.EventEnvelope,
-		}
-		if event.LeafIndex == nil {
-			continue
-		}
-		validatedEvent.ConsistencyProofStatus = pangea.Bool(VerifyConsistencyProof(roots, *event, required))
-		mStatus, err := VerifyMembershipProof(*root, *event, required)
-		if err != nil {
-			return nil, err
-		}
-		validatedEvent.MembershipProofStatus = pangea.Bool(mStatus)
-		validatedEvents = append(validatedEvents, validatedEvent)
-	}
-	return validatedEvents, nil
-}
-
-func VerifyAuditRecordsWithArweave(ctx context.Context, root *Root, events SearchEvents, required bool) (ValidateEvents, error) {
-	if root == nil {
-		return ValidateEvents{}, nil
-	}
-	arweavecli := NewArweaveRootsProvider(root.TreeName)
-	return VerifyAuditRecords(ctx, arweavecli, root, events, required)
 }
 
 func treeSizes(root *Root, events SearchEvents) []string {

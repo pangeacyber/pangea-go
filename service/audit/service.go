@@ -9,7 +9,7 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, Event, bool, bool) (*pangea.PangeaResponse[LogOutput], error)
+	Log(context.Context, Event, bool) (*pangea.PangeaResponse[LogOutput], error)
 	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
 	SearchResults(context.Context, *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error)
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
@@ -23,12 +23,16 @@ type Audit struct {
 
 	VerifyProofs          bool
 	SkipEventVerification bool
+	rp                    RootsProvider
+	lastUnpRootHash       *string
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	cli := &Audit{
 		Client:                pangea.NewClient("audit", cfg),
 		SkipEventVerification: false,
+		rp:                    nil,
+		lastUnpRootHash:       nil,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
