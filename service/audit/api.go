@@ -194,7 +194,7 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	nurh := log.UnpublishedRootHash
 
 	if a.VerifyProofs {
-		if VerifyHash(*log.EventEnvelope, log.Hash) == Failed {
+		if log.EventEnvelope != nil && VerifyHash(*log.EventEnvelope, log.Hash) == Failed {
 			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
 		}
 
