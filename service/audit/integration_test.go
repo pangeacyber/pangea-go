@@ -243,7 +243,6 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 		assert.Nil(t, e.LeafIndex)
 		assert.Equal(t, audit.NotVerified, e.ConsistencyVerification)
 		assert.Equal(t, audit.NotVerified, e.MembershipVerification)
-		assert.Equal(t, audit.NotVerified, e.SignatureVerification)
 	}
 
 	// Test results
