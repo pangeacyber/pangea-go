@@ -34,14 +34,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	verified, err := audit.VerifyAuditRecordsWithArweave(ctx, &searchResponse.Result.Root, searchResponse.Result.Events.VerifiableRecords(), true)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	fmt.Println(pangea.Stringify(searchResponse.Result))
-
-	if len(verified) == 0 {
-		log.Fatal("failed validation of audit records")
-	}
 }

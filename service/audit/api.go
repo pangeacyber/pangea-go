@@ -10,7 +10,6 @@ import (
 	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
 	"github.com/pangeacyber/go-pangea/internal/signer"
 	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/pangea/hash"
 )
 
 // Log an entry
@@ -19,19 +18,20 @@ import (
 //
 // Example:
 //
-//	input := &audit.LogInput{
-//		Event: &audit.LogEventInput{
-//			Message: pangea.String("some important message."),
-//		},
-//		ReturnHash: pangea.Bool(true),
-//	}
+//	event := audit.Event{
+//		Message: "Integration test msg",
+//	 }
 //
-//	logResponse, err := auditcli.Log(ctx, input)
-func (a *Audit) Log(ctx context.Context, event Event, verbose, returnHash bool) (*pangea.PangeaResponse[LogOutput], error) {
+//		logResponse, err := auditcli.Log(ctx, event, true)
+func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
 	input := LogInput{
-		Event:      event,
-		Verbose:    verbose,
-		ReturnHash: returnHash,
+		Event:   event,
+		Verbose: verbose,
+	}
+
+	if a.VerifyProofs {
+		input.Verbose = true
+		input.PrevRoot = a.lastUnpRootHash
 	}
 
 	if a.SignLogs {
@@ -40,6 +40,7 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose, returnHash bool) 
 			return nil, err
 		}
 	}
+
 	req, err := a.Client.NewRequest("POST", "v1/log", input)
 	if err != nil {
 		return nil, err
@@ -51,6 +52,8 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose, returnHash bool) 
 	if err != nil {
 		return nil, err
 	}
+
+	a.processLogResponse(ctx, &out)
 
 	panresp := pangea.PangeaResponse[LogOutput]{
 		Response: *resp,
@@ -77,13 +80,9 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		return nil, errors.New("nil input")
 	}
 
-	// Always include hash to verify record. We'll be changed in server soon.
-	input.IncludeHash = true
-
 	if a.VerifyProofs {
 		// Need this info to verify
-		input.IncludeMembershipProof = true
-		input.IncludeRoot = true
+		input.Verbose = pangea.Bool(true)
 	}
 
 	req, err := a.Client.NewRequest("POST", "v1/search", input)
@@ -97,7 +96,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		return nil, err
 	}
 
-	err = a.verifyRecords(out.Events, &out.Root)
+	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +119,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	if err != nil {
 		return nil, err
 	}
-	err = a.verifyRecords(out.Events, &out.Root)
+	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -184,38 +183,69 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 		}
 		events = append(events, sOut.Result.Events...)
 	}
-	return &resp.Result.Root, events, nil
+	return resp.Result.Root, events, nil
 }
 
-// SearchAll is a helper function to return all the search results for a search with pages and valitade membership proof and consitency proof
-func SearchAllAndValidate(ctx context.Context, client Client, input *SearchInput) (*Root, ValidateEvents, error) {
-	input.IncludeRoot = true
-	root, events, err := SearchAll(ctx, client, input)
-	if err != nil {
-		return nil, nil, err
+func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
+	if log == nil {
+		return nil
 	}
 
-	rp := NewArweaveRootsProvider(root.TreeName)
+	nurh := log.UnpublishedRootHash
 
-	vEvents, err := VerifyAuditRecords(ctx, rp, root, events, true)
-	if err != nil {
-		return nil, nil, err
+	if a.VerifyProofs {
+		if log.EventEnvelope != nil && VerifyHash(*log.EventEnvelope, log.Hash) == Failed {
+			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
+		}
+
+		if nurh != nil && log.MembershipProof != nil {
+			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
+			log.MembershipVerification = res
+
+			if log.ConsistencyProof != nil && a.lastUnpRootHash != nil {
+				b, _ := verifyConsistencyProof(*a.lastUnpRootHash, *nurh, *log.ConsistencyProof)
+				if b {
+					log.ConcistencyVerification = Success
+				} else {
+					log.ConcistencyVerification = Failed
+				}
+			}
+		}
+
 	}
-	return root, vEvents, nil
+
+	if nurh != nil {
+		a.lastUnpRootHash = nurh
+	}
+	return nil
 }
 
-func (a *Audit) verifyRecords(events SearchEvents, root *Root) error {
+func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
+	var roots map[int]Root
+
+	if a.VerifyProofs && root != nil {
+		if a.rp == nil {
+			a.rp = NewArweaveRootsProvider(root.TreeName)
+		}
+		treeSizes := treeSizes(root, events)
+		roots = a.rp.UpdateRoots(ctx, treeSizes)
+	}
+
 	for _, event := range events {
-		if !a.SkipEventVerification && !event.VerifyHash() {
-			return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
+		if !a.SkipEventVerification {
+			if VerifyHash(event.EventEnvelope, event.Hash) == Failed {
+				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
+			}
+			event.SignatureVerification = event.EventEnvelope.VerifySignature()
 		}
 
-		if !a.SkipEventVerification && !event.EventEnvelope.VerifySignature() {
-			return fmt.Errorf("audit: cannot verify signature of record. Hash [%s]", event.Hash)
-		}
-
-		if a.VerifyProofs && !event.VerifyMembershipProof(root) {
-			return fmt.Errorf("audit: cannot verify membership proof of record. Hash [%s]", event.Hash)
+		if a.VerifyProofs {
+			if event.Published != nil && *event.Published == true {
+				event.VerifyMembershipProof(root)
+				event.VerifyConsistencyProof(roots)
+			} else {
+				event.VerifyMembershipProof(unpRoot)
+			}
 		}
 	}
 	return nil
@@ -225,10 +255,7 @@ type LogInput struct {
 	// A structured event describing an auditable activity.
 	Event Event `json:"event"`
 
-	// Return the event's hash with response.
-	ReturnHash bool `json:"return_hash"`
-
-	// If true, be verbose in the response; include canonical events, create time, hashes, etc.
+	// If true, be verbose in the response; include root, membership and consistency proof, etc.
 	// default: false
 	Verbose bool `json:"verbose"`
 
@@ -238,6 +265,9 @@ type LogInput struct {
 
 	// The base64-encoded ed25519 public key used for the signature, if one is provided
 	PublicKey *string `json:"public_key,omitempty"`
+
+	// Previous unpublished root
+	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
 func (i *LogInput) Sign(s signer.Signer) error {
@@ -318,6 +348,26 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
+type EventVerification int
+
+const (
+	NotVerified EventVerification = iota
+	Success
+	Failed
+)
+
+func (ev EventVerification) String() string {
+	switch ev {
+	case NotVerified:
+		return "NotVerified"
+	case Success:
+		return "Success"
+	case Failed:
+		return "Failed"
+	}
+	return "unknown"
+}
+
 type LogOutput struct {
 	EventEnvelope *EventEnvelope `json:"envelope"`
 
@@ -325,8 +375,12 @@ type LogOutput struct {
 	// max len of 64 bytes
 	Hash string `json:"hash"`
 
-	// A base64 encoded canonical JSON form of the event, used for hashing.
-	CanonicalEnvelopeBase64 string `json:"canonical_envelope_base64"`
+	UnpublishedRootHash     *string   `json:"unpublished_root,omitempty"`
+	MembershipProof         *string   `json:"membership_proof,omitempty"`
+	ConsistencyProof        *[]string `json:"consistency_proof,omitempty"`
+	MembershipVerification  EventVerification
+	ConcistencyVerification EventVerification
+	SignatureVerification   EventVerification
 }
 
 type SearchInput struct {
@@ -366,14 +420,8 @@ type SearchInput struct {
 	// min 1 max 10000
 	MaxResults int `json:"max_results,omitempty"`
 
-	// If true, include membership proofs for each record in the first page.
-	IncludeMembershipProof bool `json:"include_membership_proof,omitempty"`
-
-	// If true, include hashes for each record in the first page.
-	IncludeHash bool `json:"include_hash,omitempty"`
-
-	// If true, include the Merkle root hash of the tree in the first page.
-	IncludeRoot bool `json:"include_root,omitempty"`
+	// If true include root, membership and consistency proof
+	Verbose *bool `json:"verbose,omitempty"`
 
 	// A list of keys to restrict the search results to. Useful for partitioning data available to the query string.
 	SearchRestriction *SearchRestriction `json:"search_restriction,omitempty"`
@@ -409,12 +457,15 @@ type SearchOutput struct {
 	// Count is always populated on a successful response.
 	Count int `json:"count"`
 
-	// A root of a Merkle Tree
-	Root Root `json:"root"`
-
 	// A list of matching audit records.
 	// Events is always populated on a successful response.
 	Events SearchEvents `json:"events"`
+
+	// A root of a Merkle Tree
+	Root *Root `json:"root"`
+
+	// A unpublished root of a Merkle Tree
+	UnpublishedRoot *Root `json:"unpublished_root"`
 }
 
 type SearchEvents []*SearchEvent
@@ -442,7 +493,13 @@ type SearchEvent struct {
 	LeafIndex *int `json:"leaf_index"`
 
 	// A cryptographic proof that the record has been persisted in the log.
-	MembershipProof string `json:"membership_proof"`
+	MembershipProof *string `json:"membership_proof"`
+
+	Published *bool `json:"published"`
+
+	MembershipVerification  EventVerification
+	ConsistencyVerification EventVerification
+	SignatureVerification   EventVerification
 }
 
 // IsVerifiable checks if a record can be verfiable with the published proof
@@ -450,46 +507,74 @@ func (event *SearchEvent) IsVerifiable() bool {
 	return event.LeafIndex != nil && *event.LeafIndex >= 0
 }
 
-func (ee *SearchEvent) VerifyHash() bool {
-	if ee.Hash == "" {
-		return true
+func (ee *SearchEvent) VerifyMembershipProof(root *Root) {
+	if root == nil || ee.MembershipProof == nil {
+		ee.MembershipVerification = NotVerified
+	} else {
+		res, err := VerifyMembershipProof(root.RootHash, ee.Hash, *ee.MembershipProof)
+		if err != nil {
+			ee.MembershipVerification = Failed
+		} else {
+			ee.MembershipVerification = res
+		}
 	}
-	eventCanon := pu.CanonicalizeStruct((ee.EventEnvelope))
-	eventHash := hash.Encode(eventCanon)
-	return ee.Hash == eventHash.String()
 }
 
-func (ee *SearchEvent) VerifyMembershipProof(root *Root) bool {
-	if root == nil || ee.MembershipProof == "" {
-		return true
+func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
+	if ee.Published == nil || *ee.Published != true || ee.LeafIndex == nil {
+		ee.ConsistencyVerification = NotVerified
+		return
 	}
-
-	b, err := VerifyMembershipProof(*root, *ee, false)
+	idx := *ee.LeafIndex
+	if idx < 0 {
+		ee.ConsistencyVerification = Failed
+		return
+	}
+	current, ok := publishedRoots[idx]
+	if !ok || current.ConsistencyProof == nil {
+		ee.ConsistencyVerification = NotVerified
+		return
+	}
+	previous, ok := publishedRoots[idx-1]
+	if !ok {
+		ee.ConsistencyVerification = NotVerified
+		return
+	}
+	verified, err := verifyConsistencyProof(previous.RootHash, current.RootHash, *current.ConsistencyProof)
 	if err != nil {
-		return false
+		ee.ConsistencyVerification = Failed
+		return
 	}
-	return b
+	if verified {
+		ee.ConsistencyVerification = Success
+	} else {
+		ee.ConsistencyVerification = Failed
+	}
+	return
 }
 
-func (ee *EventEnvelope) VerifySignature() bool {
+func (ee *EventEnvelope) VerifySignature() EventVerification {
 	if ee.Signature == nil || ee.PublicKey == nil {
-		return true
+		return NotVerified
 	}
 
 	b := pu.CanonicalizeStruct(ee.Event)
 
 	sig, err := base64.StdEncoding.DecodeString(*ee.Signature)
 	if err != nil {
-		return false
+		return Failed
 	}
 
 	pubKey, err := base64.StdEncoding.DecodeString(*ee.PublicKey)
 	if err != nil {
-		return false
+		return Failed
 	}
 
 	v := signer.NewVerifierFromPubKey(pubKey)
-	return v.Verify(b, sig)
+	if v.Verify(b, sig) {
+		return Success
+	}
+	return Failed
 }
 
 type SearchResultInput struct {
@@ -514,7 +599,10 @@ type SearchResultOutput struct {
 	Events SearchEvents `json:"events"`
 
 	// A root of a Merkle Tree
-	Root Root `json:"root"`
+	Root *Root `json:"root"`
+
+	// A unpublished root of a Merkle Tree
+	UnpublishedRoot *Root `json:"unpublished_root"`
 }
 
 type RootInput struct {
@@ -534,13 +622,13 @@ type Root struct {
 	RootHash string `json:"root_hash"`
 
 	// The URL where this root has been published
-	URL string `json:"url"`
+	URL *string `json:"url"`
 
 	// The date/time when this root was published
 	PublishedAt *time.Time `json:"published_at"`
 
 	// Consistency proof to verify that this root is a continuation of the previous one
-	ConsistencyProof []string `json:"consistency_proof"`
+	ConsistencyProof *[]string `json:"consistency_proof"`
 }
 
 type RootOutput struct {

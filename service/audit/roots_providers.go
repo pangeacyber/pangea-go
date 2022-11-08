@@ -10,50 +10,65 @@ import (
 )
 
 type RootsProvider interface {
-	Roots(ctx context.Context, treeSizes []string) (map[int]Root, error)
+	UpdateRoots(ctx context.Context, treeSizes []string) map[int]Root
 }
 
 type ArweaveRootsProvider struct {
 	TreeName string
 	Client   *arweave.Arweave
+	Roots    map[int]Root
 }
 
 func NewArweaveRootsProvider(treeName string) *ArweaveRootsProvider {
 	return &ArweaveRootsProvider{
 		TreeName: treeName,
 		Client:   arweave.New(),
+		Roots:    make(map[int]Root),
 	}
 }
 
-func (s *ArweaveRootsProvider) Roots(ctx context.Context, treeSizes []string) (map[int]Root, error) {
-	tags := arweave.TagFilters{
-		{
-			Name:   "tree_size",
-			Values: treeSizes,
-		},
-		{
-			Name:   "tree_name",
-			Values: []string{s.TreeName},
-		},
-	}
-	resp, err := s.Client.TransactionConnectionByTags(ctx, tags)
-	if err != nil {
-		return nil, err
-	}
-	roots := make(map[int]Root)
-	for _, edge := range resp.Data.Transactions.Edges {
-		root := Root{}
-		err = s.fetchTransaction(ctx, *edge.Node.ID, &root)
+func (rp *ArweaveRootsProvider) UpdateRoots(ctx context.Context, treeSizes []string) map[int]Root {
+	newTreeSizes := make([]string, 0)
+	// Request only new tree sizes roots
+	for _, s := range treeSizes {
+		n, err := strconv.Atoi(s)
 		if err != nil {
-			return nil, err
+			if _, ok := rp.Roots[n]; !ok {
+				// If not present in map, add to newTreeSizes to make request
+				newTreeSizes = append(newTreeSizes, s)
+			}
 		}
-		size, err := treeSizeFromTransaction(edge.Node)
-		if err != nil {
-			return nil, err
-		}
-		roots[size] = root
 	}
-	return roots, nil
+
+	if len(newTreeSizes) > 0 {
+		tags := arweave.TagFilters{
+			{
+				Name:   "tree_size",
+				Values: newTreeSizes,
+			},
+			{
+				Name:   "tree_name",
+				Values: []string{rp.TreeName},
+			},
+		}
+		resp, err := rp.Client.TransactionConnectionByTags(ctx, tags)
+		if err != nil {
+			return rp.Roots
+		}
+		for _, edge := range resp.Data.Transactions.Edges {
+			root := Root{}
+			err = rp.fetchTransaction(ctx, *edge.Node.ID, &root)
+			if err != nil {
+				continue
+			}
+			size, err := treeSizeFromTransaction(edge.Node)
+			if err != nil {
+				continue
+			}
+			rp.Roots[size] = root
+		}
+	}
+	return rp.Roots
 }
 
 func treeSizeFromTransaction(tx *arweave.Transaction) (int, error) {

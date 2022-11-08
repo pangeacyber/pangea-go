@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	token := os.Getenv("PANGEA_AUDIT_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
@@ -32,7 +31,7 @@ func main() {
 
 	fmt.Printf("Logging: %s\n", event.Message)
 
-	logResponse, err := auditcli.Log(ctx, event, true, true)
+	logResponse, err := auditcli.Log(ctx, event, true)
 	if err != nil {
 		log.Fatal(err)
 	}
