@@ -1,6 +1,5 @@
-image: golang:1.18-bullseye
-
 default:
+  image: golang:1.18-bullseye
   tags:
     - pangea-internal
 
@@ -17,20 +16,5 @@ stages:
   - unit_tests
   - integration_tests
 
-before_script:
-  - go install github.com/boumenot/gocover-cobertura@latest
-
-lint:
-  stage: lint
-  script:
-    - make verify
-
-testing:
-  stage: unit_tests
-  script:
-    - make unit
-
-integration:
-  stage: integration_tests
-  script:
-    - make integration
+include:
+  - /packages/pangea-sdk/.sdk-ci.yml
