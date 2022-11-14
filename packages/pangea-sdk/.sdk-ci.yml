@@ -1,0 +1,27 @@
+.go-sdk-base:
+  before_script:
+    - cd packages/pangea-sdk
+    - go install github.com/boumenot/gocover-cobertura@latest
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - packages/pangea-sdk/**/*
+      when: on_success
+
+lint:
+  extends: .go-sdk-base
+  stage: lint
+  script:
+    - make verify
+
+testing:
+  extends: .go-sdk-base
+  stage: unit_tests
+  script:
+    - make unit
+
+integration:
+  extends: .go-sdk-base
+  stage: integration_tests
+  script:
+    - make integration
