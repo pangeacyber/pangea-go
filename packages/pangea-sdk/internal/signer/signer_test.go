@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pangeacyber/go-pangea/internal/signer"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/signer"
 	"github.com/stretchr/testify/assert"
 )
 

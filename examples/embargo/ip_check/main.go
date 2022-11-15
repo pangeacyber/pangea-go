@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/service/embargo"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/embargo"
 )
 
 func main() {

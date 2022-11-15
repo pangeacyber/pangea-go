@@ -3,7 +3,7 @@ package pangeautil_test
 import (
 	"testing"
 
-	"github.com/pangeacyber/go-pangea/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/pangeautil"
 	"github.com/stretchr/testify/assert"
 )
 

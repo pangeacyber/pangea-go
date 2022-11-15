@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/go-pangea/internal/pangeatesting"
-	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/service/domain_intel"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/domain_intel"
 	"github.com/stretchr/testify/assert"
 )
 

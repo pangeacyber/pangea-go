@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/pangeacyber/go-pangea/internal/defaults"
-	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/defaults"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
 )
 
 const (

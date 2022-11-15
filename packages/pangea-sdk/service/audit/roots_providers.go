@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pangeacyber/go-pangea/internal/arweave"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/arweave"
 )
 
 type RootsProvider interface {

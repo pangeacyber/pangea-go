@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
 )
 
 // Redact

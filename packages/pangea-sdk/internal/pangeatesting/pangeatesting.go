@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
 )
 
 const baseURLPath = "/api"

@@ -3,7 +3,7 @@ package embargo
 import (
 	"context"
 
-	"github.com/pangeacyber/go-pangea/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
 )
 
 type Client interface {
