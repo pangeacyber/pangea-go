@@ -3,7 +3,7 @@
     - cd packages/pangea-sdk
     - go install github.com/boumenot/gocover-cobertura@latest
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "external_pull_request_event"
       changes:
         - packages/pangea-sdk/**/*
       when: on_success
