@@ -3,6 +3,7 @@ package audit
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -49,6 +50,11 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 	var out LogOutput
 	resp, err := a.Client.Do(ctx, req, &out)
 
+	if err != nil {
+		return nil, err
+	}
+
+	out.EventEnvelope, err = newEventEnvelopeFromMap(out.RawEnvelope)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +200,7 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	nurh := log.UnpublishedRootHash
 
 	if a.VerifyProofs {
-		if log.EventEnvelope != nil && VerifyHash(*log.EventEnvelope, log.Hash) == Failed {
+		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
 			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
 		}
 
@@ -223,6 +229,14 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
 	var roots map[int]Root
 
+	var err error
+	for _, event := range events {
+		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope)
+		if err != nil {
+			return err
+		}
+	}
+
 	if a.VerifyProofs && root != nil {
 		if a.rp == nil {
 			a.rp = NewArweaveRootsProvider(root.TreeName)
@@ -233,7 +247,7 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 
 	for _, event := range events {
 		if !a.SkipEventVerification {
-			if VerifyHash(event.EventEnvelope, event.Hash) == Failed {
+			if VerifyHash(event.RawEnvelope, event.Hash) == Failed {
 				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
 			}
 			event.SignatureVerification = event.EventEnvelope.VerifySignature()
@@ -348,6 +362,25 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
+func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
+	if m == nil {
+		return nil, nil
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	var ee = EventEnvelope{}
+	err = json.Unmarshal(b, &ee)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ee, nil
+}
+
 type EventVerification int
 
 const (
@@ -369,7 +402,9 @@ func (ev EventVerification) String() string {
 }
 
 type LogOutput struct {
-	EventEnvelope *EventEnvelope `json:"envelope"`
+	EventEnvelope *EventEnvelope
+
+	RawEnvelope *map[string]any `json:"envelope"`
 
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -474,6 +509,8 @@ type SearchEvents []*SearchEvent
 func (events SearchEvents) VerifiableRecords() SearchEvents {
 	evs := make(SearchEvents, 0)
 	for _, event := range events {
+		b, _ := json.Marshal(event)
+		fmt.Println(event.LeafIndex, event.EventEnvelope.ReceivedAt, string(b))
 		if event.IsVerifiable() {
 			evs = append(evs, event)
 		}
@@ -483,7 +520,9 @@ func (events SearchEvents) VerifiableRecords() SearchEvents {
 
 type SearchEvent struct {
 	// Include Event data and security information
-	EventEnvelope EventEnvelope `json:"envelope"`
+	EventEnvelope *EventEnvelope
+
+	RawEnvelope *map[string]any `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes

@@ -30,8 +30,8 @@ type rootProofItem struct {
 
 type rootProof []rootProofItem
 
-func VerifyHash(ee EventEnvelope, h string) EventVerification {
-	if h == "" {
+func VerifyHash(ee *map[string]any, h string) EventVerification {
+	if h == "" || ee == nil {
 		return NotVerified
 	}
 	eventCanon := pu.CanonicalizeStruct((ee))
