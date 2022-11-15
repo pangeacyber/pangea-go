@@ -60,7 +60,7 @@ func TestLog(t *testing.T) {
 }
 
 func TestLog_FailSigner(t *testing.T) {
-	client, err := audit.New(pangeatesting.TestConfig("someurl"), audit.WithLogSigningEnabled("notarealkey"))
+	client, err := audit.New(pangeatesting.TestConfig("someurl"), audit.WithLogLocalSigning("notarealkey"))
 
 	assert.Error(t, err)
 	assert.Nil(t, client)
@@ -890,7 +890,7 @@ func TestRootError(t *testing.T) {
 func TestFailedOptions(t *testing.T) {
 	_, err := audit.New(
 		pangeatesting.TestConfig("url"),
-		audit.WithLogSigningEnabled("bad file name"),
+		audit.WithLogLocalSigning("bad file name"),
 	)
 	assert.Error(t, err)
 

@@ -15,11 +15,21 @@ type Client interface {
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 }
 
+type LogSigningMode int
+
+const (
+	Unsigned  LogSigningMode = 0
+	LocalSign                = 1
+	VaultSign                = 2
+)
+
 type Audit struct {
 	*pangea.Client
 
-	SignLogs bool
-	Signer   signer.Signer
+	SignLogsMode        LogSigningMode
+	Signer              *signer.Signer
+	SignatureKeyID      *string
+	SignatureKeyVersion *string
 
 	VerifyProofs          bool
 	SkipEventVerification bool
@@ -33,6 +43,10 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		SkipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,
+		SignLogsMode:          Unsigned,
+		Signer:                nil,
+		SignatureKeyID:        nil,
+		SignatureKeyVersion:   nil,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -52,14 +66,26 @@ func WithLogProofVerificationEnabled() Option {
 	}
 }
 
-func WithLogSigningEnabled(filename string) Option {
+func WithLogLocalSigning(filename string) Option {
 	return func(a *Audit) error {
-		a.SignLogs = true
+		a.SignLogsMode = LocalSign
 		s, err := signer.NewSignerFromPrivateKeyFile(filename)
+		a.SignatureKeyID = nil
+		a.SignatureKeyVersion = nil
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
-		a.Signer = s
+		a.Signer = &s
+		return nil
+	}
+}
+
+func WithLogVaultSigning(signatureKeyID, signatureKeyVersion *string) Option {
+	return func(a *Audit) error {
+		a.SignLogsMode = VaultSign
+		a.SignatureKeyID = signatureKeyID
+		a.SignatureKeyVersion = signatureKeyVersion
+		a.Signer = nil
 		return nil
 	}
 }

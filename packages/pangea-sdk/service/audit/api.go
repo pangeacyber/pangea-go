@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
@@ -35,11 +36,16 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		input.PrevRoot = a.lastUnpRootHash
 	}
 
-	if a.SignLogs {
-		err := input.Sign(a.Signer)
+	if a.SignLogsMode == LocalSign && a.Signer != nil {
+		err := input.SignEvent(*a.Signer)
 		if err != nil {
 			return nil, err
 		}
+	}
+	if a.SignLogsMode == VaultSign {
+		input.Sign = pangea.Bool(true)
+		input.SignatureKeyID = a.SignatureKeyID
+		input.SignatureKeyVersion = a.SignatureKeyVersion
 	}
 
 	req, err := a.Client.NewRequest("POST", "v1/log", input)
@@ -282,9 +288,18 @@ type LogInput struct {
 
 	// Previous unpublished root
 	PrevRoot *string `json:"prev_root,omitempty"`
+
+	// Sign with vault service if true
+	Sign *bool `json:"sign,omitempty"`
+
+	// Signature key id to use in vault if sign is true
+	SignatureKeyID *string `json:"signature_key_id,omitempty"`
+
+	// Signature key version to use in vault if sign is true
+	SignatureKeyVersion *string `json:"signature_key_version,omitempty"`
 }
 
-func (i *LogInput) Sign(s signer.Signer) error {
+func (i *LogInput) SignEvent(s signer.Signer) error {
 	b := pu.CanonicalizeStruct(&i.Event)
 
 	signature, err := s.Sign(b)
@@ -509,8 +524,6 @@ type SearchEvents []*SearchEvent
 func (events SearchEvents) VerifiableRecords() SearchEvents {
 	evs := make(SearchEvents, 0)
 	for _, event := range events {
-		b, _ := json.Marshal(event)
-		fmt.Println(event.LeafIndex, event.EventEnvelope.ReceivedAt, string(b))
 		if event.IsVerifiable() {
 			evs = append(evs, event)
 		}
@@ -593,7 +606,7 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 }
 
 func (ee *EventEnvelope) VerifySignature() EventVerification {
-	if ee.Signature == nil || ee.PublicKey == nil {
+	if ee.Signature == nil || ee.PublicKey == nil || strings.HasPrefix(*ee.PublicKey, "-----") {
 		return NotVerified
 	}
 
