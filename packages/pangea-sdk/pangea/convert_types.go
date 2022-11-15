@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
+	pu "github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/pangeautil"
 )
 
 // Bool is a helper routine that allocates a new bool value

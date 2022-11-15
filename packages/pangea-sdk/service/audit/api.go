@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"time"
 
-	pu "github.com/pangeacyber/go-pangea/internal/pangeautil"
-	"github.com/pangeacyber/go-pangea/internal/signer"
-	"github.com/pangeacyber/go-pangea/pangea"
+	pu "github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/signer"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
 )
 
 // Log an entry

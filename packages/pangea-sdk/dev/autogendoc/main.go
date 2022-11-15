@@ -150,7 +150,7 @@ func main() {
 		}
 
 		// Compute package documentation with examples.
-		p, err := doc.NewFromFiles(fset, files, fmt.Sprintf("github.com/pangeacyber/go-pangea/%s", dir), doc.AllMethods)
+		p, err := doc.NewFromFiles(fset, files, fmt.Sprintf("github.com/pangeacyber/pangea-go/packages/pangea-sdk/%s", dir), doc.AllMethods)
 		if err != nil {
 			log.Fatal(err)
 		}

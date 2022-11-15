@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/service/audit"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/audit"
 )
 
 func main() {
