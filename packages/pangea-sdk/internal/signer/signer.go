@@ -23,7 +23,7 @@ type Verifier interface {
 type signer ed25519.PrivateKey
 type verifier ed25519.PublicKey
 
-func NewSignerFromPrivateKeyFile(name string) (signer, error) {
+func NewSignerFromPrivateKeyFile(name string) (Signer, error) {
 	b, err := os.ReadFile(name)
 	if err != nil {
 		return nil, fmt.Errorf("signer: cannot read file %v: %w", name, err)

@@ -3,8 +3,10 @@ package audit
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	pu "github.com/pangeacyber/pangea-go/packages/pangea-sdk/internal/pangeautil"
@@ -34,8 +36,8 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		input.PrevRoot = a.lastUnpRootHash
 	}
 
-	if a.SignLogs {
-		err := input.Sign(a.Signer)
+	if a.SignLogsMode == LocalSign && a.Signer != nil {
+		err := input.SignEvent(*a.Signer)
 		if err != nil {
 			return nil, err
 		}
@@ -53,6 +55,10 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		return nil, err
 	}
 
+	out.EventEnvelope, err = newEventEnvelopeFromMap(out.RawEnvelope)
+	if err != nil {
+		return nil, err
+	}
 	a.processLogResponse(ctx, &out)
 
 	panresp := pangea.PangeaResponse[LogOutput]{
@@ -194,7 +200,7 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	nurh := log.UnpublishedRootHash
 
 	if a.VerifyProofs {
-		if log.EventEnvelope != nil && VerifyHash(*log.EventEnvelope, log.Hash) == Failed {
+		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
 			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
 		}
 
@@ -223,6 +229,14 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
 	var roots map[int]Root
 
+	var err error
+	for _, event := range events {
+		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope)
+		if err != nil {
+			return err
+		}
+	}
+
 	if a.VerifyProofs && root != nil {
 		if a.rp == nil {
 			a.rp = NewArweaveRootsProvider(root.TreeName)
@@ -233,7 +247,7 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 
 	for _, event := range events {
 		if !a.SkipEventVerification {
-			if VerifyHash(event.EventEnvelope, event.Hash) == Failed {
+			if VerifyHash(event.RawEnvelope, event.Hash) == Failed {
 				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
 			}
 			event.SignatureVerification = event.EventEnvelope.VerifySignature()
@@ -270,7 +284,7 @@ type LogInput struct {
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogInput) Sign(s signer.Signer) error {
+func (i *LogInput) SignEvent(s signer.Signer) error {
 	b := pu.CanonicalizeStruct(&i.Event)
 
 	signature, err := s.Sign(b)
@@ -348,6 +362,25 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
+func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
+	if m == nil {
+		return nil, nil
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	var ee = EventEnvelope{}
+	err = json.Unmarshal(b, &ee)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ee, nil
+}
+
 type EventVerification int
 
 const (
@@ -369,7 +402,9 @@ func (ev EventVerification) String() string {
 }
 
 type LogOutput struct {
-	EventEnvelope *EventEnvelope `json:"envelope"`
+	EventEnvelope *EventEnvelope
+
+	RawEnvelope *map[string]any `json:"envelope"`
 
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -483,7 +518,9 @@ func (events SearchEvents) VerifiableRecords() SearchEvents {
 
 type SearchEvent struct {
 	// Include Event data and security information
-	EventEnvelope EventEnvelope `json:"envelope"`
+	EventEnvelope *EventEnvelope
+
+	RawEnvelope *map[string]any `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes
@@ -554,7 +591,7 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 }
 
 func (ee *EventEnvelope) VerifySignature() EventVerification {
-	if ee.Signature == nil || ee.PublicKey == nil {
+	if ee.Signature == nil || ee.PublicKey == nil || strings.HasPrefix(*ee.PublicKey, "-----") {
 		return NotVerified
 	}
 
