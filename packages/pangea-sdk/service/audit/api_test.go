@@ -54,12 +54,13 @@ func TestLog(t *testing.T) {
 				Message: "test",
 			},
 		},
+		RawEnvelope: got.Result.RawEnvelope,
 	}
 	assert.Equal(t, want, got.Result)
 }
 
 func TestLog_FailSigner(t *testing.T) {
-	client, err := audit.New(pangeatesting.TestConfig("someurl"), audit.WithLogSigningEnabled("notarealkey"))
+	client, err := audit.New(pangeatesting.TestConfig("someurl"), audit.WithLogLocalSigning("notarealkey"))
 
 	assert.Error(t, err)
 	assert.Nil(t, client)
@@ -109,6 +110,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 				Message: "test",
 			},
 		},
+		RawEnvelope: got.Result.RawEnvelope,
 	}
 	assert.Equal(t, want, got.Result)
 }
@@ -174,7 +176,7 @@ func TestSearch(t *testing.T) {
 		ID:        "some-id",
 		Events: audit.SearchEvents{
 			{
-				EventEnvelope: audit.EventEnvelope{
+				EventEnvelope: &audit.EventEnvelope{
 					Event: &audit.Event{
 						Message: "test_2",
 					},
@@ -182,9 +184,10 @@ func TestSearch(t *testing.T) {
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
+				RawEnvelope:     got.Result.Events[0].RawEnvelope,
 			},
 			{
-				EventEnvelope: audit.EventEnvelope{
+				EventEnvelope: &audit.EventEnvelope{
 					Event: &audit.Event{
 						Message: "test_1",
 					},
@@ -192,6 +195,7 @@ func TestSearch(t *testing.T) {
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
+				RawEnvelope:     got.Result.Events[1].RawEnvelope,
 			},
 		},
 	}
@@ -759,7 +763,7 @@ func TestSearchResults(t *testing.T) {
 		Count: 2,
 		Events: audit.SearchEvents{
 			{
-				EventEnvelope: audit.EventEnvelope{
+				EventEnvelope: &audit.EventEnvelope{
 					Event: &audit.Event{
 						Message: "test_2",
 					},
@@ -767,9 +771,10 @@ func TestSearchResults(t *testing.T) {
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
+				RawEnvelope:     got.Result.Events[0].RawEnvelope,
 			},
 			{
-				EventEnvelope: audit.EventEnvelope{
+				EventEnvelope: &audit.EventEnvelope{
 					Event: &audit.Event{
 						Message: "test_1",
 					},
@@ -777,6 +782,7 @@ func TestSearchResults(t *testing.T) {
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
+				RawEnvelope:     got.Result.Events[1].RawEnvelope,
 			},
 		},
 		Root: &audit.Root{
@@ -884,7 +890,7 @@ func TestRootError(t *testing.T) {
 func TestFailedOptions(t *testing.T) {
 	_, err := audit.New(
 		pangeatesting.TestConfig("url"),
-		audit.WithLogSigningEnabled("bad file name"),
+		audit.WithLogLocalSigning("bad file name"),
 	)
 	assert.Error(t, err)
 

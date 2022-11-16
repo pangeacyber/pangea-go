@@ -126,13 +126,13 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 
 }
 
-func Test_Integration_Signatures(t *testing.T) {
+func Test_Integration_Local_Signatures(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg,
-		audit.WithLogSigningEnabled("./testdata/privkey"),
+		audit.WithLogLocalSigning("./testdata/privkey"),
 		audit.WithLogProofVerificationEnabled(),
 	)
 
@@ -195,7 +195,7 @@ func Test_Integration_Root_2(t *testing.T) {
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
-	TreeSize := 2
+	TreeSize := 1
 
 	input := &audit.RootInput{
 		TreeSize: TreeSize,
@@ -222,7 +222,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 	input := &audit.SearchInput{
 		MaxResults: maxResults,
 		Limit:      limit,
-		Order:      "asc",
+		Order:      "desc",
 		Query:      "message:",
 		Verbose:    pangea.Bool(false),
 	}
@@ -324,9 +324,9 @@ func Test_Integration_SearchAll(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	searchInput := &audit.SearchInput{
-		Query:   "message:Integration test msg",
+		Query:   "message:test-message",
 		Verbose: pangea.Bool(true),
-		Limit:   2,
+		Limit:   10,
 	}
 	_, se, err := audit.SearchAll(ctx, client, searchInput)
 
