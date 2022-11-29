@@ -30,8 +30,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/embargo"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea pangea-sdk/v1.0.0"
+	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/embargo pangea-sdk/v1.0.0"
 )
 
 func main() {
