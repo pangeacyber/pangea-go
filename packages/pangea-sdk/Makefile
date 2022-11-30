@@ -45,3 +45,9 @@ vet:
 
 fmt:
 	@gofmt -l -w .
+
+##########################
+# Generate Documentation #
+##########################
+docgen:
+	@go run ./dev/autogendoc/main.go || exit 1

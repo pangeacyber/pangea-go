@@ -11,6 +11,13 @@ lint:
   script:
     - make verify
 
+docgen:
+  extends: .go-sdk-base
+  stage: lint
+  allow_failure: true
+  script:
+    - make docgen
+
 testing:
   extends: .go-sdk-base
   stage: unit_tests
