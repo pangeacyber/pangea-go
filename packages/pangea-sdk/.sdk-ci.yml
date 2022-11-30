@@ -20,7 +20,7 @@ generate_docs:
   artifacts:
     expire_in: 1 month
     expose_as: go_sdk
-    paths: ['go_sdk.json']
+    paths: ['packages/pangea-sdk/go_sdk.json']
     when: on_success
 
 testing:
