@@ -50,4 +50,5 @@ fmt:
 # Generate Documentation #
 ##########################
 docgen:
+	@echo "Generating docs JSON from docstrings"
 	@go run ./dev/autogendoc/main.go || exit 1

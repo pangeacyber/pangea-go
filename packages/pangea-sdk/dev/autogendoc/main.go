@@ -269,15 +269,15 @@ func gatherExamples(examples []*doc.Example, fs *token.FileSet) []*DocumentedExa
 }
 
 func gatherAstFuncType(astType *ast.FuncType, fs *token.FileSet) *AstFuncType {
-	// results := []*AstField{}
+	results := []*AstField{}
 
-	// if astType.Results != nil {
-	// 	results = gatherAstFieldList(astType.Results.List, fs)
-	// }
+	if astType.Results != nil {
+		results = gatherAstFieldList(astType.Results.List, fs)
+	}
 
 	return &AstFuncType{
 		Params:  gatherAstFieldList(astType.Params.List, fs),
-		Results: gatherAstFieldList(astType.Results.List, fs),
+		Results: results,
 	}
 }
 
