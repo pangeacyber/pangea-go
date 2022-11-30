@@ -40,16 +40,10 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	configID := os.Getenv("EMBARGO_CONFIG_ID")
-	if token == "" {
-		log.Fatal("Configuration: No config ID present")
-	}
-
 	embargocli, err := embargo.New(&pangea.Config{
 		Token: 		token,
 		Domain: 	os.Getenv("PANGEA_DOMAIN"),
 		Insecure: 	false,
-		CfgToken: 	configID,
 	})
 	if err != nil {
 		log.Fatal("failed to create embargo client")
