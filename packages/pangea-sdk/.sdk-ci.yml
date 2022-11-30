@@ -17,6 +17,11 @@ docgen:
   allow_failure: true
   script:
     - make docgen
+  artifacts:
+    expire_in: 1 month
+    expose_as: go_sdk
+    paths: ['go_sdk.json']
+    when: on_success
 
 testing:
   extends: .go-sdk-base

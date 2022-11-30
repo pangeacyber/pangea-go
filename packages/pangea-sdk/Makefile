@@ -51,4 +51,4 @@ fmt:
 ##########################
 docgen:
 	@echo "Generating docs JSON from docstrings"
-	@go run ./dev/autogendoc/main.go || exit 1
+	@go run ./dev/autogendoc/main.go > ./go_sdk.json || exit 1
