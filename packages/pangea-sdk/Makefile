@@ -45,3 +45,10 @@ vet:
 
 fmt:
 	@gofmt -l -w .
+
+##########################
+# Generate Documentation #
+##########################
+docgen:
+	@echo "Generating docs JSON from docstrings"
+	@go run ./dev/autogendoc/main.go > ./go_sdk.json || exit 1

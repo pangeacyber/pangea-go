@@ -11,6 +11,18 @@ lint:
   script:
     - make verify
 
+generate_docs:
+  extends: .go-sdk-base
+  stage: lint
+  allow_failure: true
+  script:
+    - make docgen
+  artifacts:
+    expire_in: 1 month
+    expose_as: go_sdk
+    paths: ['packages/pangea-sdk/go_sdk.json']
+    when: on_success
+
 testing:
   extends: .go-sdk-base
   stage: unit_tests
