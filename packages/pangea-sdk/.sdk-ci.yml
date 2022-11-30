@@ -11,7 +11,7 @@ lint:
   script:
     - make verify
 
-docgen:
+generate_docs:
   extends: .go-sdk-base
   stage: lint
   allow_failure: true
