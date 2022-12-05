@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
 	"github.com/stretchr/testify/assert"
