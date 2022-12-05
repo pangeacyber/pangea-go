@@ -10,10 +10,10 @@ import (
 	"github.com/gorilla/mux"
 
 	// Pangea
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/audit"
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/embargo"
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/redact"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/embargo"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/redact"
 )
 
 type App struct {
