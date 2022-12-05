@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/packages/pangea-sdk/service/redact"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/redact"
 )
 
 type yourCustomDataStruct struct {
