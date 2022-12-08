@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_TOKEN")
+	token := os.Getenv("PANGEA_REDACT_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
