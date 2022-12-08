@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_AUDIT_TOKEN")
+	token := os.Getenv("PANGEA_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -25,16 +25,15 @@ func main() {
 	}
 
 	ctx := context.Background()
-	event := audit.Event{
-		Message: "Hello, World!",
+	input := &audit.SearchInput{
+		Query: "message:Hello, World",
 	}
 
-	fmt.Printf("Logging: %s\n", event.Message)
-
-	logResponse, err := auditcli.Log(ctx, event, true)
+	searchResponse, err := auditcli.Search(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Response: %s", pangea.Stringify(logResponse.Result))
+	fmt.Println(pangea.Stringify(searchResponse.Result))
+
 }
