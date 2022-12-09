@@ -31,7 +31,7 @@ func main() {
 
 	fmt.Printf("Logging: %s\n", event.Message)
 
-	logResponse, err := auditcli.Log(ctx, event, true)
+	logResponse, err := auditcli.Log(ctx, event, false)
 	if err != nil {
 		log.Fatal(err)
 	}
