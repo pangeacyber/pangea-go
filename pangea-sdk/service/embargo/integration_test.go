@@ -14,9 +14,9 @@ import (
 
 func embargoIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
-	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_EMBARGO_TOKEN")
+	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_TOKEN")
 	if token == "" {
-		t.Skip("set PANGEA_INTEGRATION_EMBARGO_TOKEN env variables to run this test")
+		t.Skip("set PANGEA_INTEGRATION_TOKEN env variables to run this test")
 	}
 	cfg := &pangea.Config{
 		Token: token,
