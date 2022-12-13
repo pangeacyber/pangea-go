@@ -59,7 +59,10 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 	if err != nil {
 		return nil, err
 	}
-	a.processLogResponse(ctx, &out)
+	err = a.processLogResponse(ctx, &out)
+	if err != nil {
+		return nil, err
+	}
 
 	panresp := pangea.PangeaResponse[LogOutput]{
 		Response: *resp,
@@ -198,12 +201,11 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	}
 
 	nurh := log.UnpublishedRootHash
+	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
+		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
+	}
 
 	if a.VerifyProofs {
-		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
-		}
-
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
@@ -217,7 +219,6 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 				}
 			}
 		}
-
 	}
 
 	if nurh != nil {
@@ -497,10 +498,10 @@ type SearchOutput struct {
 	Events SearchEvents `json:"events"`
 
 	// A root of a Merkle Tree
-	Root *Root `json:"root"`
+	Root *Root `json:"root,omitempty"`
 
 	// A unpublished root of a Merkle Tree
-	UnpublishedRoot *Root `json:"unpublished_root"`
+	UnpublishedRoot *Root `json:"unpublished_root,omitempty"`
 }
 
 type SearchEvents []*SearchEvent
