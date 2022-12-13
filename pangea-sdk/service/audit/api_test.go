@@ -32,7 +32,7 @@ func TestLog(t *testing.T) {
 							"message": "test"
 						}
 					},
-					"hash": "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"
+					"hash": "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d"
 				},
 				"summary": "Logged 1 record(s)"
 			}`)
@@ -48,7 +48,7 @@ func TestLog(t *testing.T) {
 	assert.NoError(t, err)
 
 	want := &audit.LogOutput{
-		Hash: "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484",
+		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
 			Event: &audit.Event{
 				Message: "test",
@@ -57,6 +57,43 @@ func TestLog(t *testing.T) {
 		RawEnvelope: got.Result.RawEnvelope,
 	}
 	assert.Equal(t, want, got.Result)
+}
+
+func TestLog_FailHashVerification(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/log", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"event":{"message":"test"},"verbose":true}`)
+		fmt.Fprint(w,
+			`{
+				"request_id": "some-id",
+				"request_time": "1970-01-01T00:00:00Z",
+				"response_time": "1970-01-01T00:00:10Z",
+				"status": "Success",
+				"result": {
+					"envelope": {
+						"event": {
+							"message": "test"
+						}
+					},
+					"hash": "notarealhash"
+				},
+				"summary": "Logged 1 record(s)"
+			}`)
+	})
+
+	client, _ := audit.New(pangeatesting.TestConfig(url))
+	event := audit.Event{
+		Message: "test",
+	}
+	ctx := context.Background()
+	got, err := client.Log(ctx, event, true)
+
+	assert.Error(t, err)
+	assert.NotNil(t, err)
+	assert.Nil(t, got)
 }
 
 func TestLog_FailSigner(t *testing.T) {
@@ -86,7 +123,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 							"message": "test"
 						}
 					},
-					"hash": "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484"
+					"hash": "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d"
 				},
 				"summary": "Logged 1 record(s)"
 			}`)
@@ -104,7 +141,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 	assert.NoError(t, err)
 
 	want := &audit.LogOutput{
-		Hash: "b0e7b01c733ed4983e4c706206a8e6a77a00503ffadb13a3ab27f37ae1dd8484",
+		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
 			Event: &audit.Event{
 				Message: "test",
@@ -237,6 +274,7 @@ func TestSearch_Verify(t *testing.T) {
 						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
 						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
 					  },
+					  "published": true,
 					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
 					  "leaf_index": 30,
 					  "membership_proof": "l:c0bfb0fd1159f7f40c8b0e5f1ec28ebf3c7c7bbe41c8b9e62ee5f3238b1c51fa,l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:17d7f0d7483acfdddadaef8941fe68af809d9be6c560a9277aad2c35fe958606,l:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
@@ -269,6 +307,348 @@ func TestSearch_Verify(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
+	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
+	assert.Equal(t, audit.Success, got.Result.Events[0].MembershipVerification)
+}
+
+func TestSearch_InvalidEventHash(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
+		fmt.Fprintf(w,
+			`{
+				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
+				"request_time": "2022-09-20T15:15:48.743Z",
+				"response_time": "2022-09-20T15:15:49.772Z",
+				"status": "Success",
+				"summary": "Found 1 event(s)",
+				"result": {
+				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
+				  "count": 4,
+				  "expires_at": "2022-09-22T15:15:49.328006Z",
+				  "events": [
+					{
+					  "envelope": {
+						"event": {
+						  "actor": "Actor",
+						  "action": "Action",
+						  "message": "sigtest100",
+						  "new": "New",
+						  "old": "Old",
+						  "source": "Source",
+						  "status": "Status",
+						  "target": "Target"
+						},
+						"received_at": "2022-09-20T13:09:28.673562Z",
+						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
+						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
+					  },
+					  "published": true,
+					  "hash": "notarealhash",
+					  "leaf_index": 30,
+					  "membership_proof": "l:c0bfb0fd1159f7f40c8b0e5f1ec28ebf3c7c7bbe41c8b9e62ee5f3238b1c51fa,l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:17d7f0d7483acfdddadaef8941fe68af809d9be6c560a9277aad2c35fe958606,l:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
+					}
+				  ],
+				  "root": {
+					"url": "https://arweave.net/GHamEz43bRGY0oeGMT-3kB7K3U7WI4OY2g1y2RgUGcM",
+					"published_at": "2022-09-20T13:30:33.280268Z",
+					"size": 31,
+					"root_hash": "58e83c3bed473694e34d714a5c71d78be3d2e6741fef6120c0108564a8c3519d",
+					"consistency_proof": [
+					  "x:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,r:20bf7a8d010354fa3eacaf5d53d6b33a87ab23a7e6b4e1ac4cb712d5fca2a54a,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,r:7f50966e703039f135755e41afe8cb557941ff1431fa0c09d49d1ff2d7d906f3,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,r:51de5a887c3e09610693ac0514ae3ef53166bf7d1a774078dce1390c6228f940,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce,r:029e187f6a9c5f51e6d44b40194de81e80c6288f08e3e00f59ea3b81fc092991"
+					],
+					"tree_name": "e4faf306ccb5e76f00430e203ef9ebb9dbf694f782fa17ca7d342c4802f031c7"
+				  }
+				}
+			  }`)
+	})
+
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled(), audit.DisableEventVerification())
+	input := &audit.SearchInput{
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
+	}
+	ctx := context.Background()
+	got, err := client.Search(ctx, input)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
+	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
+}
+
+func TestSearch_InvalidSideInMembershipProof(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
+		fmt.Fprintf(w,
+			`{
+				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
+				"request_time": "2022-09-20T15:15:48.743Z",
+				"response_time": "2022-09-20T15:15:49.772Z",
+				"status": "Success",
+				"summary": "Found 1 event(s)",
+				"result": {
+				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
+				  "count": 4,
+				  "expires_at": "2022-09-22T15:15:49.328006Z",
+				  "events": [
+					{
+					  "envelope": {
+						"event": {
+						  "actor": "Actor",
+						  "action": "Action",
+						  "message": "sigtest100",
+						  "new": "New",
+						  "old": "Old",
+						  "source": "Source",
+						  "status": "Status",
+						  "target": "Target"
+						},
+						"received_at": "2022-09-20T13:09:28.673562Z",
+						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
+						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
+					  },
+					  "published": true,
+					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
+					  "leaf_index": 30,
+					  "membership_proof": "notvalidside:c0bfb0fd1159f7f40c8b0e5f1ec28ebf3c7c7bbe41c8b9e62ee5f3238b1c51fa,l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:17d7f0d7483acfdddadaef8941fe68af809d9be6c560a9277aad2c35fe958606,l:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
+					}
+				  ],
+				  "root": {
+					"url": "https://arweave.net/GHamEz43bRGY0oeGMT-3kB7K3U7WI4OY2g1y2RgUGcM",
+					"published_at": "2022-09-20T13:30:33.280268Z",
+					"size": 31,
+					"root_hash": "58e83c3bed473694e34d714a5c71d78be3d2e6741fef6120c0108564a8c3519d",
+					"consistency_proof": [
+					  "x:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,r:20bf7a8d010354fa3eacaf5d53d6b33a87ab23a7e6b4e1ac4cb712d5fca2a54a,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,r:7f50966e703039f135755e41afe8cb557941ff1431fa0c09d49d1ff2d7d906f3,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,r:51de5a887c3e09610693ac0514ae3ef53166bf7d1a774078dce1390c6228f940,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce,r:029e187f6a9c5f51e6d44b40194de81e80c6288f08e3e00f59ea3b81fc092991"
+					],
+					"tree_name": "e4faf306ccb5e76f00430e203ef9ebb9dbf694f782fa17ca7d342c4802f031c7"
+				  }
+				}
+			  }`)
+	})
+
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
+	input := &audit.SearchInput{
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
+	}
+	ctx := context.Background()
+	got, err := client.Search(ctx, input)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
+	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
+}
+
+func TestSearch_InvalidHashInMembershipProof(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
+		fmt.Fprintf(w,
+			`{
+				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
+				"request_time": "2022-09-20T15:15:48.743Z",
+				"response_time": "2022-09-20T15:15:49.772Z",
+				"status": "Success",
+				"summary": "Found 1 event(s)",
+				"result": {
+				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
+				  "count": 4,
+				  "expires_at": "2022-09-22T15:15:49.328006Z",
+				  "events": [
+					{
+					  "envelope": {
+						"event": {
+						  "actor": "Actor",
+						  "action": "Action",
+						  "message": "sigtest100",
+						  "new": "New",
+						  "old": "Old",
+						  "source": "Source",
+						  "status": "Status",
+						  "target": "Target"
+						},
+						"received_at": "2022-09-20T13:09:28.673562Z",
+						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
+						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
+					  },
+					  "published": true,
+					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
+					  "leaf_index": 30,
+					  "membership_proof": "l:notavalidhash,l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:17d7f0d7483acfdddadaef8941fe68af809d9be6c560a9277aad2c35fe958606,l:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
+					}
+				  ],
+				  "root": {
+					"url": "https://arweave.net/GHamEz43bRGY0oeGMT-3kB7K3U7WI4OY2g1y2RgUGcM",
+					"published_at": "2022-09-20T13:30:33.280268Z",
+					"size": 31,
+					"root_hash": "58e83c3bed473694e34d714a5c71d78be3d2e6741fef6120c0108564a8c3519d",
+					"consistency_proof": [
+					  "x:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,r:20bf7a8d010354fa3eacaf5d53d6b33a87ab23a7e6b4e1ac4cb712d5fca2a54a,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,r:7f50966e703039f135755e41afe8cb557941ff1431fa0c09d49d1ff2d7d906f3,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,r:51de5a887c3e09610693ac0514ae3ef53166bf7d1a774078dce1390c6228f940,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce,r:029e187f6a9c5f51e6d44b40194de81e80c6288f08e3e00f59ea3b81fc092991"
+					],
+					"tree_name": "e4faf306ccb5e76f00430e203ef9ebb9dbf694f782fa17ca7d342c4802f031c7"
+				  }
+				}
+			  }`)
+	})
+
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
+	input := &audit.SearchInput{
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
+	}
+	ctx := context.Background()
+	got, err := client.Search(ctx, input)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
+}
+
+func TestSearch_InvalidRootHash(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
+		fmt.Fprintf(w,
+			`{
+				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
+				"request_time": "2022-09-20T15:15:48.743Z",
+				"response_time": "2022-09-20T15:15:49.772Z",
+				"status": "Success",
+				"summary": "Found 1 event(s)",
+				"result": {
+				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
+				  "count": 4,
+				  "expires_at": "2022-09-22T15:15:49.328006Z",
+				  "events": [
+					{
+					  "envelope": {
+						"event": {
+						  "actor": "Actor",
+						  "action": "Action",
+						  "message": "sigtest100",
+						  "new": "New",
+						  "old": "Old",
+						  "source": "Source",
+						  "status": "Status",
+						  "target": "Target"
+						},
+						"received_at": "2022-09-20T13:09:28.673562Z",
+						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
+						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
+					  },
+					  "published": true,
+					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
+					  "leaf_index": 30,
+					  "membership_proof": "l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:17d7f0d7483acfdddadaef8941fe68af809d9be6c560a9277aad2c35fe958606,l:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
+					}
+				  ],
+				  "root": {
+					"url": "https://arweave.net/GHamEz43bRGY0oeGMT-3kB7K3U7WI4OY2g1y2RgUGcM",
+					"published_at": "2022-09-20T13:30:33.280268Z",
+					"size": 31,
+					"root_hash": "notavalidhash",
+					"consistency_proof": [
+					  "x:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,r:20bf7a8d010354fa3eacaf5d53d6b33a87ab23a7e6b4e1ac4cb712d5fca2a54a,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,r:7f50966e703039f135755e41afe8cb557941ff1431fa0c09d49d1ff2d7d906f3,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,r:51de5a887c3e09610693ac0514ae3ef53166bf7d1a774078dce1390c6228f940,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce",
+					  "x:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce,r:029e187f6a9c5f51e6d44b40194de81e80c6288f08e3e00f59ea3b81fc092991"
+					],
+					"tree_name": "e4faf306ccb5e76f00430e203ef9ebb9dbf694f782fa17ca7d342c4802f031c7"
+				  }
+				}
+			  }`)
+	})
+
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
+	input := &audit.SearchInput{
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
+	}
+	ctx := context.Background()
+	got, err := client.Search(ctx, input)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, got)
+	assert.Equal(t, 1, len(got.Result.Events))
+	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
+}
+
+// There is a , after "action" in event
+func TestSearch_FailedToUnmarshall(t *testing.T) {
+	mux, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
+		pangeatesting.TestMethod(t, r, "POST")
+		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
+		fmt.Fprintf(w,
+			`{
+				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
+				"request_time": "2022-09-20T15:15:48.743Z",
+				"response_time": "2022-09-20T15:15:49.772Z",
+				"status": "Success",
+				"summary": "Found 1 event(s)",
+				"result": {
+				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
+				  "count": 4,
+				  "expires_at": "2022-09-22T15:15:49.328006Z",
+				  "events": [
+					{
+					  "envelope": {
+						"event": {
+						  "actor": "Actor",
+						  "action": "Action",
+						},
+						"received_at": "2022-09-20T13:09:28.673562Z",
+						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
+						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
+					  },
+					  "published": true,
+					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
+					  "leaf_index": 30,
+					}
+				  ],
+				}
+			  }`)
+	})
+
+	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
+	input := &audit.SearchInput{
+		Query:   "message:test",
+		Verbose: pangea.Bool(true),
+	}
+	ctx := context.Background()
+	got, err := client.Search(ctx, input)
+
+	assert.Error(t, err)
+	assert.Nil(t, got)
+
 }
 
 func TestSearch_VerifyFailSignature(t *testing.T) {
@@ -415,78 +795,8 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 	assert.Equal(t, audit.Failed, got.Result.Events[0].SignatureVerification)
 }
 
-// Membership proof bad formated
-func TestSearch_VerifyFailConsistencyProof(t *testing.T) {
-	mux, url, teardown := pangeatesting.SetupServer()
-	defer teardown()
-
-	mux.HandleFunc("/v1/search", func(w http.ResponseWriter, r *http.Request) {
-		pangeatesting.TestMethod(t, r, "POST")
-		pangeatesting.TestBody(t, r, `{"query":"message:test","verbose":true}`)
-		fmt.Fprintf(w,
-			`{
-				"request_id": "prq_pnlmbzvj4ytk7juvhlkwp5x4djeyiwov",
-				"request_time": "2022-09-20T15:15:48.743Z",
-				"response_time": "2022-09-20T15:15:49.772Z",
-				"status": "Success",
-				"summary": "Found 1 event(s)",
-				"result": {
-				  "id": "pit_q2zjhuymmbclgzsfg2dwi5bslswxbxd5",
-				  "count": 1,
-				  "expires_at": "2022-09-22T15:15:49.328006Z",
-				  "events": [
-					{
-					  "envelope": {
-						"event": {
-						  "actor": "Actor",
-						  "action": "Action",
-						  "message": "sigtest100",
-						  "new": "New",
-						  "old": "Old",
-						  "source": "Source",
-						  "status": "Status",
-						  "target": "Target"
-						},
-						"received_at": "2022-09-20T13:09:28.673562Z",
-						"public_key": "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=",
-						"signature": "dg7Wg+E8QzZzhECzQoH3v3pbjWObR8ve7SHREAyA9JlFOusKPHVb16t5D3rbscnv80ry/aWzfMTscRNSYJFzDA=="
-					  },
-					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
-					  "leaf_index": 30,
-					  "membership_proof": "notarealmembershipproof,l:edc77dec9297653dddf55e833ec9b415f2aa32d77a231408443a7d642504f9bb,l:17d7f0d7483acfdddadaef8941fe68af809d9be6c560a9277aad2c35fe958606,l:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e,l:cb0df5395b30583e928a2d779b101da997b8a25d2a162375ada3bdc8f6621f9c,l:26345b33ead978bf870990c8b4c2d116f4ed2c6de0802a4906d97c4504937824,l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
-					}
-				  ],
-				  "root": {
-					"url": "https://arweave.net/GHamEz43bRGY0oeGMT-3kB7K3U7WI4OY2g1y2RgUGcM",
-					"published_at": "2022-09-20T13:30:33.280268Z",
-					"size": 31,
-					"root_hash": "58e83c3bed473694e34d714a5c71d78be3d2e6741fef6120c0108564a8c3519d",
-					"consistency_proof": [
-					  "x:a9e2809545d2e6a6a82ec636fd2c29bc84e3c063497f3f62356bf2c9fe7fcd2e"
-					],
-					"tree_name": "e4faf306ccb5e76f00430e203ef9ebb9dbf694f782fa17ca7d342c4802f031c7"
-				  }
-				}
-			  }`)
-	})
-
-	client, _ := audit.New(pangeatesting.TestConfig(url), audit.WithLogProofVerificationEnabled())
-	input := &audit.SearchInput{
-		Query:   "message:test",
-		Verbose: pangea.Bool(true),
-	}
-	ctx := context.Background()
-	got, err := client.Search(ctx, input)
-
-	assert.Nil(t, err)
-	assert.NotNil(t, got)
-	assert.Equal(t, 1, got.Result.Count)
-	assert.Equal(t, 1, len(got.Result.Events))
-	assert.Equal(t, audit.NotVerified, got.Result.Events[0].ConsistencyVerification)
-}
-
 // deleted proof members
-func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
+func TestSearch_VerifyFailMembershipProof(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
 
@@ -523,7 +833,8 @@ func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
 					  },
 					  "hash": "afa77464cad6e1b34e23d4847106081577f0b78f9c407ab501d16c09b23be202",
 					  "leaf_index": 30,
-					  "membership_proof": "l:25cdb02dd291cf24068996c32b5848f6fa637327ecd94e7cc7f07562b0a997ce"
+					  "membership_proof": "l:notarealmembershipproof",
+					  "published": true
 					}
 				  ],
 				  "root": {
@@ -552,7 +863,8 @@ func TestSearch_VerifyFailConsistencyProof_2(t *testing.T) {
 	assert.NotNil(t, got)
 	assert.Equal(t, 1, got.Result.Count)
 	assert.Equal(t, 1, len(got.Result.Events))
-	assert.Equal(t, audit.NotVerified, got.Result.Events[0].ConsistencyVerification)
+	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
+	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
 }
 
 func TestSearch_VerifyFailHash(t *testing.T) {
@@ -851,6 +1163,58 @@ func TestRoot(t *testing.T) {
 	assert.Equal(t, want, got.Result)
 }
 
+func Test_BadDomain(t *testing.T) {
+	_, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	cfg := pangeatesting.TestConfig(url)
+	cfg.Domain = "fakedomain^^"
+	client, _ := audit.New(cfg)
+	event := audit.Event{
+		Message: "test",
+	}
+	ctx := context.Background()
+	got, err := client.Log(ctx, event, true)
+	assert.Error(t, err)
+	assert.Nil(t, got)
+
+	got2, err := client.Search(ctx, &audit.SearchInput{})
+	assert.Error(t, err)
+	assert.Nil(t, got2)
+
+	got3, err := client.SearchResults(ctx, &audit.SearchResultInput{})
+	assert.Error(t, err)
+	assert.Nil(t, got3)
+
+	got4, err := client.Root(ctx, &audit.RootInput{})
+	assert.Error(t, err)
+	assert.Nil(t, got4)
+
+}
+
+func Test_NilRequest(t *testing.T) {
+	_, url, teardown := pangeatesting.SetupServer()
+	defer teardown()
+
+	cfg := pangeatesting.TestConfig(url)
+	client, _ := audit.New(cfg)
+
+	ctx := context.Background()
+
+	got2, err := client.Search(ctx, nil)
+	assert.Error(t, err)
+	assert.Nil(t, got2)
+
+	got3, err := client.SearchResults(ctx, nil)
+	assert.Error(t, err)
+	assert.Nil(t, got3)
+
+	got4, err := client.Root(ctx, nil)
+	assert.Error(t, err)
+	assert.Nil(t, got4)
+
+}
+
 func TestLogError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
@@ -863,7 +1227,7 @@ func TestLogError(t *testing.T) {
 func TestSearchError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.Search(context.Background(), nil)
+		_, err := client.Search(context.Background(), &audit.SearchInput{})
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Search", f)
@@ -872,7 +1236,7 @@ func TestSearchError(t *testing.T) {
 func TestSearchResultsError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.SearchResults(context.Background(), nil)
+		_, err := client.SearchResults(context.Background(), &audit.SearchResultInput{})
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.SearchResults", f)
@@ -881,7 +1245,7 @@ func TestSearchResultsError(t *testing.T) {
 func TestRootError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.Root(context.Background(), nil)
+		_, err := client.Root(context.Background(), &audit.RootInput{})
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Root", f)
@@ -899,5 +1263,4 @@ func TestFailedOptions(t *testing.T) {
 		audit.DisableEventVerification(),
 	)
 	assert.NoError(t, err)
-
 }

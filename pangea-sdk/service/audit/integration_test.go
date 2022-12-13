@@ -211,7 +211,7 @@ func Test_Integration_Root_2(t *testing.T) {
 }
 
 func Test_Integration_Search_Results_NoVerify(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
@@ -262,12 +262,13 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 		assert.Nil(t, e.LeafIndex)
 		assert.Equal(t, audit.NotVerified, e.ConsistencyVerification)
 		assert.Equal(t, audit.NotVerified, e.MembershipVerification)
+		assert.Equal(t, "NotVerified", e.MembershipVerification.String())
 	}
 
 }
 
 func Test_Integration_Search_Results_Verify(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
@@ -296,6 +297,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 		assert.NotEmpty(t, e.MembershipProof)
 		assert.Equal(t, audit.Success, e.MembershipVerification)
 		assert.Equal(t, audit.Success, e.SignatureVerification)
+		assert.Equal(t, "Success", e.SignatureVerification.String())
 	}
 
 	// Test results

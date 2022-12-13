@@ -32,7 +32,7 @@ func (rp *ArweaveRootsProvider) UpdateRoots(ctx context.Context, treeSizes []str
 	// Request only new tree sizes roots
 	for _, s := range treeSizes {
 		n, err := strconv.Atoi(s)
-		if err != nil {
+		if err == nil {
 			if _, ok := rp.Roots[n]; !ok {
 				// If not present in map, add to newTreeSizes to make request
 				newTreeSizes = append(newTreeSizes, s)
@@ -42,11 +42,11 @@ func (rp *ArweaveRootsProvider) UpdateRoots(ctx context.Context, treeSizes []str
 
 	if len(newTreeSizes) > 0 {
 		tags := arweave.TagFilters{
-			{
+			arweave.TagFilter{
 				Name:   "tree_size",
 				Values: newTreeSizes,
 			},
-			{
+			arweave.TagFilter{
 				Name:   "tree_name",
 				Values: []string{rp.TreeName},
 			},

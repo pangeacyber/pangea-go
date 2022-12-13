@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	version   = "v0.2.2"
+	version   = "v1.0.0"
 	userAgent = "Pangea Go " + version
 )
 
