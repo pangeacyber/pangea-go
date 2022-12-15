@@ -10,10 +10,10 @@ import (
 	"github.com/gorilla/mux"
 
 	// Pangea
-	"github.com/pangeacyber/go-pangea/pangea"
-	"github.com/pangeacyber/go-pangea/service/audit"
-	"github.com/pangeacyber/go-pangea/service/embargo"
-	"github.com/pangeacyber/go-pangea/service/redact"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/embargo"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/redact"
 )
 
 type App struct {
@@ -42,33 +42,24 @@ func (a *App) Initialize(pangea_token string) {
 
 	a.store = NewDB()
 
-	embargoConfigID := os.Getenv("EMBARGO_CONFIG_ID")
-
 	a.embargo = embargo.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
-		ConfigID: embargoConfigID,
 	})
-
-	auditConfigID := os.Getenv("AUDIT_CONFIG_ID")
 
 	a.audit, err = audit.New(&pangea.Config{
 		Token:    a.pangea_token,
 		Domain:   os.Getenv("PANGEA_DOMAIN"),
 		Insecure: false,
-		ConfigID: auditConfigID,
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	redactConfigID := os.Getenv("REDACT_CONFIG_ID")
-
 	a.redact = redact.New(&pangea.Config{
-		Token:    a.pangea_token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		ConfigID: redactConfigID,
+		Token:  a.pangea_token,
+		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 }

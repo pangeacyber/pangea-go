@@ -17,4 +17,4 @@ stages:
   - integration_tests
 
 include:
-  - /packages/pangea-sdk/.sdk-ci.yml
+  - /pangea-sdk/.sdk-ci.yml
