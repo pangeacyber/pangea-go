@@ -2,6 +2,10 @@ package file_intel
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
+	"os"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
@@ -83,4 +87,23 @@ func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea
 	}
 
 	return &panresp, err
+}
+
+// Create a FileLookupInput from path file
+func NewFileLookupInputFromFilepath(fp string) (*FileLookupInput, error) {
+	f, err := os.Open(fp)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return nil, err
+	}
+
+	return &FileLookupInput{
+		Hash:     hex.EncodeToString(h.Sum(nil)),
+		HashType: "sha256",
+	}, nil
 }
