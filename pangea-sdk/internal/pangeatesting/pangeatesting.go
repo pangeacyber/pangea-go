@@ -107,3 +107,31 @@ func GetEnvVarOrSkip(t *testing.T, varname string) string {
 	}
 	return envVar
 }
+
+type TestEnvironment string
+
+const (
+	Production TestEnvironment = "PROD"
+	Develop                    = "DEV"
+	Staging                    = "STG"
+)
+
+func GetTestDomain(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_DOMAIN_" + string(env)
+	envVar := os.Getenv(varname)
+	if envVar == "" {
+		t.Skipf("set %v env variable to run this test", varname)
+	}
+	return envVar
+}
+
+func GetTestToken(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_TOKEN_" + string(env)
+	envVar := os.Getenv(varname)
+	if envVar == "" {
+		t.Skipf("set %v env variable to run this test", varname)
+	}
+	return envVar
+}
