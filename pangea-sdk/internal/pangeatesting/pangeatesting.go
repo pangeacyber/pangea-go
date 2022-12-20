@@ -119,19 +119,11 @@ const (
 func GetTestDomain(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_DOMAIN_" + string(env)
-	envVar := os.Getenv(varname)
-	if envVar == "" {
-		t.Skipf("set %v env variable to run this test", varname)
-	}
-	return envVar
+	return GetEnvVarOrSkip(t, varname)
 }
 
 func GetTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_TOKEN_" + string(env)
-	envVar := os.Getenv(varname)
-	if envVar == "" {
-		t.Skipf("set %v env variable to run this test", varname)
-	}
-	return envVar
+	return GetEnvVarOrSkip(t, varname)
 }
