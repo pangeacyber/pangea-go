@@ -21,7 +21,7 @@ const (
 	STATUS_SIGNED      = "signed"
 	MSG_SIGNED         = "sign-test"
 	STATUS_NO_SIGNED   = "no-signed"
-	testingEnvironment = pangeatesting.Production
+	testingEnvironment = pangeatesting.Live
 )
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {

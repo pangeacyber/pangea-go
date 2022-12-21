@@ -111,9 +111,9 @@ func GetEnvVarOrSkip(t *testing.T, varname string) string {
 type TestEnvironment string
 
 const (
-	Production TestEnvironment = "PROD"
-	Develop                    = "DEV"
-	Staging                    = "STG"
+	Live    TestEnvironment = "LVE"
+	Develop                 = "DEV"
+	Staging                 = "STG"
 )
 
 func GetTestDomain(t *testing.T, env TestEnvironment) string {

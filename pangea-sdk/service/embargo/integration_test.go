@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Production
+	testingEnvironment = pangeatesting.Live
 )
 
 func embargoIntegrationCfg(t *testing.T) *pangea.Config {
