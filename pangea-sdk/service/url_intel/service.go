@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Lookup(ctx context.Context, input *UrlLookupInput) (*pangea.PangeaResponse[UrlLookupOutput], error)
+	Lookup(ctx context.Context, input *UrlLookupRequest) (*pangea.PangeaResponse[UrlLookupResult], error)
 }
 
 type UrlIntel struct {

@@ -20,19 +20,19 @@ import (
 //	 }
 //
 //		checkOutput, _, err := ipintel.Lookup(ctx, input)
-func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupInput) (*pangea.PangeaResponse[IpLookupOutput], error) {
+func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.PangeaResponse[IpLookupResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
 		return nil, err
 	}
-	out := IpLookupOutput{}
+	out := IpLookupResult{}
 	resp, err := e.Client.Do(ctx, req, &out)
 
 	if resp == nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[IpLookupOutput]{
+	panresp := pangea.PangeaResponse[IpLookupResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -40,7 +40,7 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupInput) (*pangea.Pan
 	return &panresp, err
 }
 
-type IpLookupInput struct {
+type IpLookupRequest struct {
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -53,7 +53,7 @@ type LookupData struct {
 	Verdict  string   `json:"verdict"`
 }
 
-type IpLookupOutput struct {
+type IpLookupResult struct {
 	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
 	RawData    interface{} `json:"raw_data,omitempty"`

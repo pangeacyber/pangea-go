@@ -12,13 +12,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// FIXME: Update to Live when released
+const (
+	testingEnvironment = pangeatesting.Develop
+)
+
 func Test_Integration_UrlLookup(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
 	urlintel := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &url_intel.UrlLookupInput{
+	input := &url_intel.UrlLookupRequest{
 		Url:      "http://113.235.101.11:54384",
 		Raw:      true,
 		Verbose:  true,
@@ -41,7 +46,7 @@ func Test_Integration_UrlLookup_2(t *testing.T) {
 
 	urlintel := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &url_intel.UrlLookupInput{
+	input := &url_intel.UrlLookupRequest{
 		Url:      "http://google.com",
 		Raw:      true,
 		Verbose:  true,
@@ -66,7 +71,7 @@ func Test_Integration_UrlLookup_Error_BadToken(t *testing.T) {
 	cfg.Token = "notarealtoken"
 	urlintel := url_intel.New(cfg)
 
-	input := &url_intel.UrlLookupInput{
+	input := &url_intel.UrlLookupRequest{
 		Url:      "http://113.235.101.11:54384",
 		Raw:      true,
 		Verbose:  true,

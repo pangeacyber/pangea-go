@@ -12,13 +12,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// FIXME: Update to Live when released
+const (
+	testingEnvironment = pangeatesting.Develop
+)
+
 func Test_Integration_IpLookup(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &ip_intel.IpLookupInput{
+	input := &ip_intel.IpLookupRequest{
 		Ip:       "93.231.182.110",
 		Raw:      true,
 		Verbose:  true,
@@ -42,7 +47,7 @@ func Test_Integration_IpLookup_2(t *testing.T) {
 
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &ip_intel.IpLookupInput{
+	input := &ip_intel.IpLookupRequest{
 		Ip:       "8.8.4.4",
 		Raw:      true,
 		Verbose:  true,
@@ -65,7 +70,7 @@ func Test_Integration_IpLookup_Error_BadIPFormat_1(t *testing.T) {
 
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &ip_intel.IpLookupInput{
+	input := &ip_intel.IpLookupRequest{
 		Ip:       "93.231.182.300",
 		Raw:      true,
 		Verbose:  true,
@@ -88,7 +93,7 @@ func Test_Integration_IpLookup_Error_BadIPFormat_2(t *testing.T) {
 
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &ip_intel.IpLookupInput{
+	input := &ip_intel.IpLookupRequest{
 		Ip:       "notanip",
 		Raw:      true,
 		Verbose:  true,
@@ -113,7 +118,7 @@ func Test_Integration_IpLookup_Error_BadToken(t *testing.T) {
 	cfg.Token = "notarealtoken"
 	ipintel := ip_intel.New(cfg)
 
-	input := &ip_intel.IpLookupInput{
+	input := &ip_intel.IpLookupRequest{
 		Ip:       "93.231.182.110",
 		Raw:      true,
 		Verbose:  true,
