@@ -12,9 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// FIXME: Update to Live when released
 const (
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func Test_Integration_IpLookup(t *testing.T) {
