@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - This CHANGELOG
+- Intel add IP and URL services lookup endpoint
 
 ### Fixed
 
