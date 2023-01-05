@@ -6,8 +6,6 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-type Scopes []string
-
 type UserinfoResult struct {
 	Token     string            `json:"token"`
 	ID        string            `json:"id"`
@@ -16,7 +14,7 @@ type UserinfoResult struct {
 	Expire    string            `json:"expire"`
 	Identity  string            `json:"identity"`
 	Email     string            `json:"email"`
-	Scopes    *Scopes           `json:"scopes,omitempty"`
+	Scopes    *[]string         `json:"scopes,omitempty"`
 	Profile   map[string]string `json:"profile"`
 	CreatedAt string            `json:"created_at"`
 }
@@ -87,13 +85,13 @@ const (
 )
 
 type UserCreateRequest struct {
-	Email         string   `json:"email"`
-	Authenticator string   `json:"authenticator"`
-	IDProvider    string   `json:"id_provider"`
-	Verified      *bool    `json:"verified,omitempty"`
-	RequireMFA    *bool    `json:"require_mfa,omitempty"`
-	Profile       *Profile `json:"profile,omitempty"`
-	Scopes        *Scopes  `json:"scopes,omitempty"`
+	Email         string    `json:"email"`
+	Authenticator string    `json:"authenticator"`
+	IDProvider    string    `json:"id_provider"`
+	Verified      *bool     `json:"verified,omitempty"`
+	RequireMFA    *bool     `json:"require_mfa,omitempty"`
+	Profile       *Profile  `json:"profile,omitempty"`
+	Scopes        *[]string `json:"scopes,omitempty"`
 }
 
 type UserCreateResult struct {
@@ -169,7 +167,7 @@ type UserUpdateResult struct {
 	Identity    string            `json:"identity"`
 	Email       string            `json:"email"`
 	Profile     map[string]string `json:"profile"`
-	Scopes      *Scopes           `json:"scopes,omitempty"`
+	Scopes      *[]string         `json:"scopes,omitempty"`
 	IDProvider  IDProvider        `json:"id_provider"`
 	MFAProvider *[]string         `json:"mfa_provider"`
 	RequireMFA  bool              `json:"require_mfa"`
@@ -242,15 +240,15 @@ func (a *User) Invite(ctx context.Context, input UserInviteRequest) (*pangea.Pan
 }
 
 type UserListRequest struct {
-	Scopes     Scopes `json:"scopes"`
-	GlobScopes Scopes `json:"glob_scopes"`
+	Scopes     []string `json:"scopes"`
+	GlobScopes []string `json:"glob_scopes"`
 }
 
 type UserInfo struct {
-	Profile  Profile `json:"profile"`
-	Identity string  `json:"identity"`
-	Email    string  `json:"email"`
-	Scopes   Scopes  `json:"scopes"`
+	Profile  Profile  `json:"profile"`
+	Identity string   `json:"identity"`
+	Email    string   `json:"email"`
+	Scopes   []string `json:"scopes"`
 }
 
 type UserListResult struct {
@@ -279,9 +277,9 @@ func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaR
 }
 
 type UserLoginRequest struct {
-	Email  string  `json:"email"`
-	Secret string  `json:"secret"`
-	Scopes *Scopes `json:"scopes,omitempty"`
+	Email  string    `json:"email"`
+	Secret string    `json:"secret"`
+	Scopes *[]string `json:"scopes,omitempty"`
 }
 
 type UserLoginResult struct {
@@ -292,7 +290,7 @@ type UserLoginResult struct {
 	Expire    string            `json:"expire"`
 	Identity  string            `json:"identity"`
 	Email     string            `json:"email"`
-	Scopes    *Scopes           `json:"scopes,omitempty"`
+	Scopes    *[]string         `json:"scopes,omitempty"`
 	Profile   map[string]string `json:"profile"`
 	CreatedAt string            `json:"created_at"`
 }

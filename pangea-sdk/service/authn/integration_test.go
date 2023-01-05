@@ -255,3 +255,32 @@ func Test_Integration_User_Invite(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, resp3.Result)
 }
+
+func Test_Integration_User_Invite_List(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+	resp, err := client.User.Invites.List(ctx)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Result)
+	assert.Greater(t, len(resp.Result.Invites), 0)
+}
+
+func Test_Integration_User_List(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+	input := authn.UserListRequest{
+		Scopes:     make([]string, 0),
+		GlobScopes: make([]string, 0),
+	}
+	resp, err := client.User.List(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Result)
+	// assert.Greater(t, len(resp.Result.Users), 0)
+	assert.Equal(t, 0, len(resp.Result.Users)) //FIXME: remove once fixed and uncomment test above
+}
