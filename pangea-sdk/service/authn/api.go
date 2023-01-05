@@ -7,19 +7,18 @@ import (
 )
 
 type Scopes []string
-type UserProfile map[string]string
 
 type UserinfoResult struct {
-	Token     string      `json:"token"`
-	ID        string      `json:"id"`
-	Type      string      `json:"type"`
-	Life      string      `json:"life"`
-	Expire    string      `json:"expire"`
-	Identity  string      `json:"identity"`
-	Email     string      `json:"email"`
-	Scopes    *Scopes     `json:"scopes,omitempty"`
-	Profile   UserProfile `json:"profile"`
-	CreatedAt string      `json:"created_at"`
+	Token     string            `json:"token"`
+	ID        string            `json:"id"`
+	Type      string            `json:"type"`
+	Life      string            `json:"life"`
+	Expire    string            `json:"expire"`
+	Identity  string            `json:"identity"`
+	Email     string            `json:"email"`
+	Scopes    *Scopes           `json:"scopes,omitempty"`
+	Profile   map[string]string `json:"profile"`
+	CreatedAt string            `json:"created_at"`
 }
 
 type UserinfoRequest struct {
@@ -80,11 +79,11 @@ func (a *Password) Update(ctx context.Context, input PasswordUpdateRequest) (*pa
 type IDProvider string
 
 const (
-	Facebook         IDProvider = "facebook"
-	Github                      = "github"
-	Google                      = "google"
-	MicrosoftOnline             = "microsoftonline"
-	PasswordProvider            = "password"
+	IDPFacebook        IDProvider = "facebook"
+	IDPGithub                     = "github"
+	IDPGoogle                     = "google"
+	IDPMicrosoftOnline            = "microsoftonline"
+	IDPPassword                   = "password"
 )
 
 type UserCreateRequest struct {
@@ -98,15 +97,15 @@ type UserCreateRequest struct {
 }
 
 type UserCreateResult struct {
-	Identity    string      `json:"identity"`
-	Email       string      `json:"email"`
-	Profile     UserProfile `json:"profile"`
-	IDProvider  IDProvider  `json:"id_provider"`
-	RequireMFA  bool        `json:"require_mfa"`
-	Verified    bool        `json:"verified"`
-	LastLoginAt *bool       `json:"last_login_at,omitempty"`
-	Disabled    *bool       `json:"disabled"`
-	MFAProvider *[]string   `json:"mfa_provider,omitempty"`
+	Identity    string            `json:"identity"`
+	Email       string            `json:"email"`
+	Profile     map[string]string `json:"profile"`
+	IDProvider  IDProvider        `json:"id_provider"`
+	RequireMFA  bool              `json:"require_mfa"`
+	Verified    bool              `json:"verified"`
+	LastLoginAt *bool             `json:"last_login_at,omitempty"`
+	Disabled    *bool             `json:"disabled"`
+	MFAProvider *[]string         `json:"mfa_provider,omitempty"`
 }
 
 func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.PangeaResponse[UserCreateResult], error) {
@@ -167,16 +166,16 @@ type UserUpdateRequest struct {
 }
 
 type UserUpdateResult struct {
-	Identity    string      `json:"identity"`
-	Email       string      `json:"email"`
-	Profile     UserProfile `json:"profile"`
-	Scopes      *Scopes     `json:"scopes,omitempty"`
-	IDProvider  IDProvider  `json:"id_provider"`
-	MFAProvider *[]string   `json:"mfa_provider"`
-	RequireMFA  bool        `json:"require_mfa"`
-	Verified    bool        `json:"verified"`
-	Disabled    bool        `json:"disabled"`
-	LastLoginAt string      `json:"last_login_at"`
+	Identity    string            `json:"identity"`
+	Email       string            `json:"email"`
+	Profile     map[string]string `json:"profile"`
+	Scopes      *Scopes           `json:"scopes,omitempty"`
+	IDProvider  IDProvider        `json:"id_provider"`
+	MFAProvider *[]string         `json:"mfa_provider"`
+	RequireMFA  bool              `json:"require_mfa"`
+	Verified    bool              `json:"verified"`
+	Disabled    bool              `json:"disabled"`
+	LastLoginAt string            `json:"last_login_at"`
 }
 
 func (a *User) Update(ctx context.Context, input UserUpdateRequest) (*pangea.PangeaResponse[UserUpdateResult], error) {
@@ -286,16 +285,16 @@ type UserLoginRequest struct {
 }
 
 type UserLoginResult struct {
-	Token     string      `json:"token"`
-	ID        string      `json:"id"`
-	Type      string      `json:"type"`
-	Life      string      `json:"life"`
-	Expire    string      `json:"expire"`
-	Identity  string      `json:"identity"`
-	Email     string      `json:"email"`
-	Scopes    *Scopes     `json:"scopes,omitempty"`
-	Profile   UserProfile `json:"profile"`
-	CreatedAt string      `json:"created_at"`
+	Token     string            `json:"token"`
+	ID        string            `json:"id"`
+	Type      string            `json:"type"`
+	Life      int               `json:"life"`
+	Expire    string            `json:"expire"`
+	Identity  string            `json:"identity"`
+	Email     string            `json:"email"`
+	Scopes    *Scopes           `json:"scopes,omitempty"`
+	Profile   map[string]string `json:"profile"`
+	CreatedAt string            `json:"created_at"`
 }
 
 func (a *User) Login(ctx context.Context, input UserLoginRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
@@ -325,15 +324,15 @@ type UserProfileGetRequest struct {
 }
 
 type UserProfileGetResult struct {
-	Identity    string      `json:"identity"`
-	Email       string      `json:"email"`
-	Profile     UserProfile `json:"profile"`
-	IDProvider  IDProvider  `json:"id_provider"`
-	MFAProvider []string    `json:"mfa_provider"`
-	RequireMFA  bool        `json:"require_mfa"`
-	Verified    bool        `json:"verified"`
-	LastLoginAt string      `json:"last_login_at"`
-	Disabled    *bool       `json:"disabled,omitempty"`
+	Identity    string            `json:"identity"`
+	Email       string            `json:"email"`
+	Profile     map[string]string `json:"profile"`
+	IDProvider  IDProvider        `json:"id_provider"`
+	MFAProvider []string          `json:"mfa_provider"`
+	RequireMFA  bool              `json:"require_mfa"`
+	Verified    bool              `json:"verified"`
+	LastLoginAt string            `json:"last_login_at"`
+	Disabled    *bool             `json:"disabled,omitempty"`
 }
 
 func (a *Profile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea.PangeaResponse[UserProfileGetResult], error) {
@@ -358,24 +357,24 @@ func (a *Profile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea
 }
 
 type UserProfileUpdateRequest struct {
-	Profile     UserProfile `json:"profile"`
-	Identity    *string     `json:"identity,omitempty"`
-	Email       *string     `json:"email,omitempty"`
-	RequireMFA  *bool       `json:"require_mfa,omitempty"`
-	MFAValue    *string     `json:"mfa_value,omitempty"`
-	MFAProvider *[]string   `json:"mfa_provider,omitempty"`
+	Profile     map[string]string `json:"profile"`
+	Identity    *string           `json:"identity,omitempty"`
+	Email       *string           `json:"email,omitempty"`
+	RequireMFA  *bool             `json:"require_mfa,omitempty"`
+	MFAValue    *string           `json:"mfa_value,omitempty"`
+	MFAProvider *[]string         `json:"mfa_provider,omitempty"`
 }
 
 type UserProfileUpdateResult struct {
-	Identity    string      `json:"identity"`
-	Email       string      `json:"email"`
-	Profile     UserProfile `json:"profile"`
-	IDProvider  IDProvider  `json:"id_provider"`
-	MFAProvider []string    `json:"mfa_provider"`
-	RequireMFA  bool        `json:"require_mfa"`
-	Verified    bool        `json:"verified"`
-	LastLoginAt string      `json:"last_login_at"`
-	Disabled    *bool       `json:"disabled,omitempty"`
+	Identity    string            `json:"identity"`
+	Email       string            `json:"email"`
+	Profile     map[string]string `json:"profile"`
+	IDProvider  IDProvider        `json:"id_provider"`
+	MFAProvider []string          `json:"mfa_provider"`
+	RequireMFA  bool              `json:"require_mfa"`
+	Verified    bool              `json:"verified"`
+	LastLoginAt string            `json:"last_login_at"`
+	Disabled    *bool             `json:"disabled,omitempty"`
 }
 
 func (a *Profile) Update(ctx context.Context, input UserProfileUpdateRequest) (*pangea.PangeaResponse[UserProfileUpdateResult], error) {
