@@ -6,9 +6,9 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// IP address Lookup
+// Look up an IP
 //
-// Lookup an IP address to retrieve reputation data.
+// Retrieve a reputation score for an IP address from a provider, including an optional detailed report.
 //
 // Example:
 //

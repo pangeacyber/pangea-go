@@ -6,9 +6,9 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// URL Lookup
+// Look up a URL
 //
-// Lookup a web URL to retrieve reputation data.
+// Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
 // Example:
 //
