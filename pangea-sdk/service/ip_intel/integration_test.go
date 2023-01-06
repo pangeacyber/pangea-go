@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	// FIXME: update this to live once service is released to prod
+	testingEnvironment = pangeatesting.Develop
 )
 
 func Test_Integration_IpLookup(t *testing.T) {
@@ -37,6 +38,31 @@ func Test_Integration_IpLookup(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Data)
 	assert.Equal(t, out.Result.Data.Verdict, "malicious")
+}
+
+func Test_Integration_IpGeolocate(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpGeolocateRequest{
+		Ip:       "93.231.182.110",
+		Raw:      true,
+		Verbose:  true,
+		Provider: "digitalenvoy",
+	}
+	out, err := ipintel.Geolocate(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, out.Result.Data.Country, "deu")
+	assert.Equal(t, out.Result.Data.City, "unna")
+	assert.Equal(t, out.Result.Data.PostalCode, "59425")
 }
 
 // Unknown IP
