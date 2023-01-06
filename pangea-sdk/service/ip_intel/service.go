@@ -8,6 +8,7 @@ import (
 
 type Client interface {
 	Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.PangeaResponse[IpLookupResult], error)
+	Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error)
 }
 
 type IpIntel struct {
