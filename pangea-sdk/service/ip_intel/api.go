@@ -53,7 +53,7 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 //	     Provider: "crowdstrike",
 //	 }
 //
-//		checkOutput, _, err := ipintel.geolocate(ctx, input)
+//	checkOutput, _, err := ipintel.geolocate(ctx, input)
 func (e *IpIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/geolocate", input)
 	if err != nil {
