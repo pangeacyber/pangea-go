@@ -40,7 +40,7 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 	return &panresp, err
 }
 
-// IP address geolocate
+// Geolocate an IP
 //
 // Geolocate an IP address.
 //
