@@ -14,23 +14,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const ACTOR = "go-sdk"
-const MSG_NO_SIGNED = "test-message"
-const MSG_JSON = "JSON-message"
-const MSG_SIGNED = "sign-test"
-const STATUS_NO_SIGNED = "no-signed"
-const STATUS_SIGNED = "signed"
+const (
+	ACTOR              = "go-sdk"
+	MSG_NO_SIGNED      = "test-message"
+	MSG_JSON           = "JSON-message"
+	STATUS_SIGNED      = "signed"
+	MSG_SIGNED         = "sign-test"
+	STATUS_NO_SIGNED   = "no-signed"
+	testingEnvironment = pangeatesting.Live
+)
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
-	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_TOKEN")
-	if token == "" {
-		t.Skip("set PANGEA_INTEGRATION_TOKEN env variables to run this test")
-	}
-	cfg := &pangea.Config{
-		Token: token,
-	}
-	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+	return pangeatesting.IntegrationConfig(t, testingEnvironment)
 }
 
 func Test_Integration_Log_NoVerbose(t *testing.T) {
@@ -123,7 +119,6 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	assert.Equal(t, out.Result.ConcistencyVerification, audit.Success) // Second log can be verified
 	assert.Equal(t, out.Result.MembershipVerification, audit.Success)
 	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
-
 }
 
 func Test_Integration_Local_Signatures(t *testing.T) {

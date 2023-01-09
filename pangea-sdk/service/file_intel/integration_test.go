@@ -12,16 +12,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	testingEnvironment = pangeatesting.Live
+)
+
 func intelFileIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
-	token := pangeatesting.GetEnvVarOrSkip(t, "PANGEA_INTEGRATION_TOKEN")
-	if token == "" {
-		t.Skip("set PANGEA_INTEGRATION_TOKEN env variables to run this test")
-	}
-	cfg := &pangea.Config{
-		Token: token,
-	}
-	return cfg.Copy(pangeatesting.IntegrationConfig(t))
+	return pangeatesting.IntegrationConfig(t, testingEnvironment)
 }
 
 func Test_Integration_FileLookup(t *testing.T) {
@@ -145,4 +142,19 @@ func Test_Integration_FileLookup_ErrorBadToken(t *testing.T) {
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
+}
+
+func Test_Integration_NewFileLookupInputFromFilepath(t *testing.T) {
+	input, err := file_intel.NewFileLookupInputFromFilepath("./api.go")
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, input.Hash)
+	assert.Equal(t, "sha256", input.HashType)
+}
+
+func Test_Integration_NewFileLookupInputFromFilepath_WrongFile(t *testing.T) {
+	input, err := file_intel.NewFileLookupInputFromFilepath("./not/a/real/path/file.exe")
+
+	assert.Error(t, err)
+	assert.Nil(t, input)
 }
