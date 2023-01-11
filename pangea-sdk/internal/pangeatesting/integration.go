@@ -19,3 +19,9 @@ func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	integrationConfig.Token = GetTestToken(t, env)
 	return integrationConfig
 }
+
+func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Config {
+	integrationConfig.Domain = GetTestDomain(t, env)
+	integrationConfig.Token = GetVaultSignatureTestToken(t, env)
+	return integrationConfig
+}

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
@@ -41,11 +40,6 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		if err != nil {
 			return nil, err
 		}
-	}
-	if a.SignLogsMode == VaultSign {
-		input.Sign = pangea.Bool(true)
-		input.SignatureKeyID = a.SignatureKeyID
-		input.SignatureKeyVersion = a.SignatureKeyVersion
 	}
 
 	req, err := a.Client.NewRequest("POST", "v1/log", input)
@@ -209,6 +203,9 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
 		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 	}
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
 
 	if a.VerifyProofs {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
@@ -292,15 +289,6 @@ type LogInput struct {
 
 	// Previous unpublished root
 	PrevRoot *string `json:"prev_root,omitempty"`
-
-	// Sign with vault service if true
-	Sign *bool `json:"sign,omitempty"`
-
-	// Signature key id to use in vault if sign is true
-	SignatureKeyID *string `json:"signature_key_id,omitempty"`
-
-	// Signature key version to use in vault if sign is true
-	SignatureKeyVersion *string `json:"signature_key_version,omitempty"`
 }
 
 func (i *LogInput) SignEvent(s signer.Signer) error {
@@ -311,7 +299,11 @@ func (i *LogInput) SignEvent(s signer.Signer) error {
 		return err
 	}
 	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
-	i.PublicKey = pangea.String(s.PublicKey())
+	pk, err := s.PublicKey()
+	if err != nil {
+		return err
+	}
+	i.PublicKey = pangea.String(pk)
 	return nil
 }
 
@@ -610,7 +602,7 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 }
 
 func (ee *EventEnvelope) VerifySignature() EventVerification {
-	if ee.Signature == nil || ee.PublicKey == nil || strings.HasPrefix(*ee.PublicKey, "-----") {
+	if ee.Signature == nil || ee.PublicKey == nil {
 		return NotVerified
 	}
 
@@ -621,16 +613,23 @@ func (ee *EventEnvelope) VerifySignature() EventVerification {
 		return Failed
 	}
 
-	pubKey, err := base64.StdEncoding.DecodeString(*ee.PublicKey)
-	if err != nil {
+	v, err := signer.NewVerifierFromPubKey(*ee.PublicKey)
+	if v == nil {
 		return Failed
 	}
 
-	v := signer.NewVerifierFromPubKey(pubKey)
-	if v.Verify(b, sig) {
-		return Success
+	if v != nil {
+		ver, err := v.Verify(b, sig)
+		if err != nil {
+			return NotVerified
+		}
+		if ver {
+			return Success
+		} else {
+			return Failed
+		}
 	}
-	return Failed
+	return NotVerified
 }
 
 type SearchResultInput struct {

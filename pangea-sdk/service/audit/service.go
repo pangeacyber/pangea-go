@@ -20,7 +20,6 @@ type LogSigningMode int
 const (
 	Unsigned  LogSigningMode = 0
 	LocalSign                = 1
-	VaultSign                = 2
 )
 
 type Audit struct {
@@ -28,8 +27,6 @@ type Audit struct {
 
 	SignLogsMode          LogSigningMode
 	Signer                *signer.Signer
-	SignatureKeyID        *string
-	SignatureKeyVersion   *string
 	VerifyProofs          bool
 	SkipEventVerification bool
 	rp                    RootsProvider
@@ -67,22 +64,10 @@ func WithLogLocalSigning(filename string) Option {
 	return func(a *Audit) error {
 		a.SignLogsMode = LocalSign
 		s, err := signer.NewSignerFromPrivateKeyFile(filename)
-		a.SignatureKeyID = nil
-		a.SignatureKeyVersion = nil
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
 		a.Signer = &s
-		return nil
-	}
-}
-
-func WithLogVaultSigning(signatureKeyID, signatureKeyVersion *string) Option {
-	return func(a *Audit) error {
-		a.SignLogsMode = VaultSign
-		a.SignatureKeyID = signatureKeyID
-		a.SignatureKeyVersion = signatureKeyVersion
-		a.Signer = nil
 		return nil
 	}
 }

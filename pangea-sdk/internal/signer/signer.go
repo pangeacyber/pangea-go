@@ -4,24 +4,30 @@ import (
 	"crypto"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
 
 type Signer interface {
 	Sign(msg []byte) ([]byte, error)
-	PublicKey() string
+	PublicKey() (string, error)
 }
 
 type Verifier interface {
-	Verify(msg, sig []byte) bool
+	Verify(msg, sig []byte) (bool, error)
 }
 
 type signer ed25519.PrivateKey
-type verifier ed25519.PublicKey
+type ed25519Verifier struct {
+	pubkey ed25519.PublicKey
+}
 
 func NewSignerFromPrivateKeyFile(name string) (Signer, error) {
 	b, err := os.ReadFile(name)
@@ -46,14 +52,59 @@ func (s signer) Sign(msg []byte) ([]byte, error) {
 	return (ed25519.PrivateKey)(s).Sign(rand.Reader, msg, crypto.Hash(0))
 }
 
-func (s signer) PublicKey() string {
-	return base64.StdEncoding.EncodeToString((ed25519.PrivateKey)(s).Public().(ed25519.PublicKey))
+func (s signer) PublicKey() (string, error) {
+	// public key
+	b, err := x509.MarshalPKIXPublicKey((ed25519.PrivateKey)(s).Public())
+	if err != nil {
+		return "", err
+	}
+
+	block := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: b,
+	}
+
+	pubPEM := string(pem.EncodeToMemory(block))
+	return pubPEM, nil
 }
 
-func NewVerifierFromPubKey(pubkey []byte) Verifier {
-	return (verifier)(pubkey)
+func NewVerifierFromPubKey(pkPem string) (Verifier, error) {
+	if strings.HasPrefix(pkPem, "-----") {
+		block, _ := pem.Decode([]byte(pkPem))
+		if block == nil {
+			return nil, errors.New("Failed to decode PEM block")
+		}
+
+		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		switch pub := pub.(type) {
+		// TODO: Add support for more kind of signatures
+		// case *rsa.PublicKey:
+		// case *dsa.PublicKey:
+		// case *ecdsa.PublicKey:
+		case ed25519.PublicKey:
+			return ed25519Verifier{
+				pubkey: pub,
+			}, nil
+		default:
+			return nil, errors.New("unknown type of public key")
+		}
+	} else {
+		// Done to keep backward compatibility with old key format without header
+		pubKey, err := base64.StdEncoding.DecodeString(pkPem)
+		if err != nil {
+			return nil, err
+		}
+		return ed25519Verifier{
+			pubkey: pubKey,
+		}, nil
+	}
+
 }
 
-func (v verifier) Verify(msg, sig []byte) bool {
-	return ed25519.Verify((ed25519.PublicKey)(v), msg, sig)
+func (v ed25519Verifier) Verify(msg, sig []byte) (bool, error) {
+	return ed25519.Verify(v.pubkey, msg, sig), nil
 }
