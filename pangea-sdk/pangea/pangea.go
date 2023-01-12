@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	version   = "v1.1.0"
-	userAgent = "Pangea Go " + version
+	version   = "1.1.0"
+	userAgent = "pangea-go/" + version
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
