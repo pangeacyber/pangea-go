@@ -95,7 +95,7 @@ type TextOutput struct {
 	RedactedText *string `json:"redacted_text"`
 
 	// Number of redactions present in the response
-	Count int
+	Count int `json:"count"`
 
 	Report *DebugReport `json:"report"`
 }
@@ -158,7 +158,7 @@ type StructuredOutput struct {
 	RedactedData json.RawMessage `json:"redacted_data"`
 
 	// Number of redactions present in the response
-	Count int
+	Count int `json:"count"`
 
 	Report *DebugReport `json:"report"`
 }
