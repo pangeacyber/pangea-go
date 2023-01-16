@@ -504,7 +504,7 @@ type SearchOutput struct {
 	UnpublishedRoot *Root `json:"unpublished_root,omitempty"`
 }
 
-type SearchEvents []SearchEvent
+type SearchEvents []*SearchEvent
 
 // VerifiableRecords retuns a slice of records that can be verifiable by the published proof
 func (events SearchEvents) VerifiableRecords() SearchEvents {
