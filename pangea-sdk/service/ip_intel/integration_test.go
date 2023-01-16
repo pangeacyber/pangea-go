@@ -24,8 +24,8 @@ func Test_Integration_IpLookup(t *testing.T) {
 
 	input := &ip_intel.IpLookupRequest{
 		Ip:       "93.231.182.110",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	out, err := ipintel.Lookup(ctx, input)
@@ -48,8 +48,8 @@ func Test_Integration_IpLookup_2(t *testing.T) {
 
 	input := &ip_intel.IpLookupRequest{
 		Ip:       "8.8.4.4",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	out, err := ipintel.Lookup(ctx, input)
@@ -71,8 +71,8 @@ func Test_Integration_IpLookup_Error_BadIPFormat_1(t *testing.T) {
 
 	input := &ip_intel.IpLookupRequest{
 		Ip:       "93.231.182.300",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	out, err := ipintel.Lookup(ctx, input)
@@ -94,8 +94,8 @@ func Test_Integration_IpLookup_Error_BadIPFormat_2(t *testing.T) {
 
 	input := &ip_intel.IpLookupRequest{
 		Ip:       "notanip",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	out, err := ipintel.Lookup(ctx, input)
@@ -119,8 +119,8 @@ func Test_Integration_IpLookup_Error_BadToken(t *testing.T) {
 
 	input := &ip_intel.IpLookupRequest{
 		Ip:       "93.231.182.110",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 

@@ -42,8 +42,8 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 
 type IpLookupRequest struct {
 	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 

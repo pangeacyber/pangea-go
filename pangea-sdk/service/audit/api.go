@@ -350,7 +350,7 @@ type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Event *Event `json:"event"`
+	Event Event `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -363,7 +363,7 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
-func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
+func newEventEnvelopeFromMap(m map[string]any) (*EventEnvelope, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -405,7 +405,7 @@ func (ev EventVerification) String() string {
 type LogOutput struct {
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope,omitempty"`
 
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -504,7 +504,7 @@ type SearchOutput struct {
 	UnpublishedRoot *Root `json:"unpublished_root,omitempty"`
 }
 
-type SearchEvents []*SearchEvent
+type SearchEvents []SearchEvent
 
 // VerifiableRecords retuns a slice of records that can be verifiable by the published proof
 func (events SearchEvents) VerifiableRecords() SearchEvents {
@@ -521,7 +521,7 @@ type SearchEvent struct {
 	// Include Event data and security information
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes

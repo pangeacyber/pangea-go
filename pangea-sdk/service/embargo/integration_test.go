@@ -30,7 +30,7 @@ func Test_Integration_Check(t *testing.T) {
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("CU"),
+		ISOCode: "CU",
 	}
 	out, err := client.ISOCheck(ctx, input)
 	if err != nil {
@@ -52,7 +52,7 @@ func Test_Integration_Check_2(t *testing.T) {
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("AR"),
+		ISOCode: "AR",
 	}
 	out, err := client.ISOCheck(ctx, input)
 	if err != nil {
@@ -71,7 +71,7 @@ func Test_Integration_Check_Error_BadISO(t *testing.T) {
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("NotAnISOcode"),
+		ISOCode: "NotAnISOcode",
 	}
 	out, err := client.ISOCheck(ctx, input)
 
@@ -93,7 +93,7 @@ func Test_Integration_Check_Error_BadToken(t *testing.T) {
 	client := embargo.New(cfg)
 
 	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("CU"),
+		ISOCode: "CU",
 	}
 	out, err := client.ISOCheck(ctx, input)
 

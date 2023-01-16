@@ -84,7 +84,7 @@ func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (
 type TextInput struct {
 	// The text to be redacted.
 	// Text is a required field.
-	Text *string `json:"text"`
+	Text string `json:"text"`
 
 	// If the response should include some debug Info.
 	Debug *bool `json:"debug,omitempty"`
@@ -92,7 +92,7 @@ type TextInput struct {
 
 type TextOutput struct {
 	// The redacted text.
-	RedactedText *string `json:"redacted_text"`
+	RedactedText string `json:"redacted_text"`
 
 	// Number of redactions present in the response
 	Count int `json:"count"`
@@ -101,30 +101,30 @@ type TextOutput struct {
 }
 
 type DebugReport struct {
-	SummaryCounts     map[string]int      `json:"summary_counts"`
-	RecognizerResults []*RecognizerResult `json:"recognizer_results"`
+	SummaryCounts     map[string]int     `json:"summary_counts"`
+	RecognizerResults []RecognizerResult `json:"recognizer_results"`
 }
 
 type RecognizerResult struct {
 	// FieldType is always populated on a successful response.
-	FieldType *string `json:"field_type"`
+	FieldType string `json:"field_type"`
 
 	// Score is always populated on a successful response.
-	Score *int `json:"score"`
+	Score int `json:"score"`
 
 	// Text is always populated on a successful response.
-	Text *string `json:"text"`
+	Text string `json:"text"`
 
 	// Start is always populated on a successful response.
-	Start *int `json:"start"`
+	Start int `json:"start"`
 
 	// End is always populated on a successful response.
-	End *int `json:"end"`
+	End int `json:"end"`
 
 	// Redacted is always populated on a successful response.
-	Redacted *bool `json:"redacted"` // FieldType is always populated on a successful response.
+	Redacted bool `json:"redacted"` // FieldType is always populated on a successful response.
 
-	DataKey *string `json:"data_key"`
+	DataKey string `json:"data_key"`
 }
 
 type StructuredInput struct {
@@ -134,7 +134,7 @@ type StructuredInput struct {
 
 	// JSON path(s) used to identify the specific JSON fields to redact in the structured data.
 	// Note: If jsonp parameter is used, the data parameter must be in JSON format.
-	JSONP []*string `json:"jsonp,omitempty"`
+	JSONP []string `json:"jsonp,omitempty"`
 
 	// The format of the structured data to redact.
 	Format *string `json:"format,omitempty"`

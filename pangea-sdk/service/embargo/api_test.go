@@ -49,7 +49,7 @@ func TestISOCheck(t *testing.T) {
 
 	client := embargo.New(pangeatesting.TestConfig(url))
 	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("CU"),
+		ISOCode: "CU",
 	}
 	ctx := context.Background()
 	got, err := client.ISOCheck(ctx, input)
@@ -113,7 +113,7 @@ func TestIPCheck(t *testing.T) {
 
 	client := embargo.New(pangeatesting.TestConfig(url))
 	input := &embargo.IPCheckInput{
-		IP: pangea.String("200.0.16.2"),
+		IP: "200.0.16.2",
 	}
 	ctx := context.Background()
 	got, err := client.IPCheck(ctx, input)

@@ -31,8 +31,8 @@ func Test_Integration_FileLookup(t *testing.T) {
 	input := &file_intel.FileLookupInput{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
 		HashType: "sha256",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "reversinglabs",
 	}
 	out, err := fileintel.Lookup(ctx, input)
@@ -57,8 +57,8 @@ func Test_Integration_FileLookup_2(t *testing.T) {
 	input := &file_intel.FileLookupInput{
 		Hash:     "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df542706",
 		HashType: "sha256",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "reversinglabs",
 	}
 	out, err := fileintel.Lookup(ctx, input)
@@ -82,8 +82,8 @@ func Test_Integration_FileLookup_ErrorBadHash(t *testing.T) {
 	input := &file_intel.FileLookupInput{
 		Hash:     "notarealhash",
 		HashType: "sha256",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "reversinglabs",
 	}
 	out, err := fileintel.Lookup(ctx, input)
@@ -107,8 +107,8 @@ func Test_Integration_FileLookup_ErrorBadHashType(t *testing.T) {
 	input := &file_intel.FileLookupInput{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
 		HashType: "notarealhashtype",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "reversinglabs",
 	}
 	out, err := fileintel.Lookup(ctx, input)
@@ -133,8 +133,8 @@ func Test_Integration_FileLookup_ErrorBadToken(t *testing.T) {
 	input := &file_intel.FileLookupInput{
 		Hash:     "notarealhash",
 		HashType: "sha256",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "reversinglabs",
 	}
 	out, err := fileintel.Lookup(ctx, input)

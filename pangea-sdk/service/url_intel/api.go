@@ -42,8 +42,8 @@ func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupRequest) (*pangea
 
 type UrlLookupRequest struct {
 	Url      string `json:"url"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 

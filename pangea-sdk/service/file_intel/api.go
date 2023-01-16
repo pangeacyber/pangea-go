@@ -17,10 +17,10 @@ type FileLookupInput struct {
 	HashType string `json:"hash_type"`
 
 	// Echo the API parameters in the response.
-	Verbose bool `json:"verbose,omitempty"`
+	Verbose *bool `json:"verbose,omitempty"`
 
 	// Include raw data from this provider.
-	Raw bool `json:"raw,omitempty"`
+	Raw *bool `json:"raw,omitempty"`
 
 	// Use reputation data from this provider.
 	Provider string `json:"provider,omitempty"`

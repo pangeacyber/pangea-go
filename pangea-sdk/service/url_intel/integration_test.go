@@ -24,8 +24,8 @@ func Test_Integration_UrlLookup(t *testing.T) {
 
 	input := &url_intel.UrlLookupRequest{
 		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	out, err := urlintel.Lookup(ctx, input)
@@ -47,8 +47,8 @@ func Test_Integration_UrlLookup_2(t *testing.T) {
 
 	input := &url_intel.UrlLookupRequest{
 		Url:      "http://google.com",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	out, err := urlintel.Lookup(ctx, input)
@@ -72,8 +72,8 @@ func Test_Integration_UrlLookup_Error_BadToken(t *testing.T) {
 
 	input := &url_intel.UrlLookupRequest{
 		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 

@@ -50,7 +50,7 @@ func TestLog(t *testing.T) {
 	want := &audit.LogOutput{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
-			Event: &audit.Event{
+			Event: audit.Event{
 				Message: "test",
 			},
 		},
@@ -143,7 +143,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 	want := &audit.LogOutput{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
-			Event: &audit.Event{
+			Event: audit.Event{
 				Message: "test",
 			},
 		},
@@ -214,7 +214,7 @@ func TestSearch(t *testing.T) {
 		Events: audit.SearchEvents{
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: &audit.Event{
+					Event: audit.Event{
 						Message: "test_2",
 					},
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
@@ -225,7 +225,7 @@ func TestSearch(t *testing.T) {
 			},
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: &audit.Event{
+					Event: audit.Event{
 						Message: "test_1",
 					},
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
@@ -1076,7 +1076,7 @@ func TestSearchResults(t *testing.T) {
 		Events: audit.SearchEvents{
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: &audit.Event{
+					Event: audit.Event{
 						Message: "test_2",
 					},
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
@@ -1087,7 +1087,7 @@ func TestSearchResults(t *testing.T) {
 			},
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: &audit.Event{
+					Event: audit.Event{
 						Message: "test_1",
 					},
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,

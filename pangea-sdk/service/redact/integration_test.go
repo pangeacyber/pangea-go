@@ -29,7 +29,7 @@ func Test_Integration_Redact(t *testing.T) {
 	client := redact.New(cfg)
 
 	input := &redact.TextInput{
-		Text: pangea.String("My Phone number is 110045638"),
+		Text: "My Phone number is 110045638",
 	}
 	out, err := client.Redact(ctx, input)
 	if err != nil {
@@ -48,7 +48,7 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	client := redact.New(cfg)
 
 	input := &redact.TextInput{
-		Text: pangea.String("My Phone number is 110045638"),
+		Text: "My Phone number is 110045638",
 	}
 	out, err := client.Redact(ctx, input)
 	if err != nil {
@@ -68,7 +68,7 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	client := redact.New(cfg)
 
 	input := &redact.TextInput{
-		Text: pangea.String(""),
+		Text: "",
 	}
 	out, err := client.Redact(ctx, input)
 	assert.Error(t, err)
