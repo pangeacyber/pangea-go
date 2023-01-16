@@ -18,18 +18,18 @@ import (
 //	}
 //
 //	redactResponse, err := redactcli.Redact(ctx, input)
-func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaResponse[TextOutput], error) {
+func (r *Redact) Redact(ctx context.Context, input *TextRequest) (*pangea.PangeaResponse[TextResult], error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact", input)
 	if err != nil {
 		return nil, err
 	}
-	out := TextOutput{}
+	out := TextResult{}
 	resp, err := r.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
-	panresp := pangea.PangeaResponse[TextOutput]{
+	panresp := pangea.PangeaResponse[TextResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -58,22 +58,22 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaRe
 //	input.SetData(rawData)
 //
 //	redactResponse, err := redactcli.RedactStructured(ctx, input)
-func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error) {
+func (r *Redact) RedactStructured(ctx context.Context, input *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error) {
 	if input == nil {
-		input = &StructuredInput{}
+		input = &StructuredRequest{}
 	}
 	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
 	if err != nil {
 		return nil, err
 	}
-	out := StructuredOutput{}
+	out := StructuredResult{}
 	resp, err := r.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[StructuredOutput]{
+	panresp := pangea.PangeaResponse[StructuredResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -81,7 +81,7 @@ func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (
 	return &panresp, nil
 }
 
-type TextInput struct {
+type TextRequest struct {
 	// The text to be redacted.
 	// Text is a required field.
 	Text string `json:"text"`
@@ -90,7 +90,7 @@ type TextInput struct {
 	Debug *bool `json:"debug,omitempty"`
 }
 
-type TextOutput struct {
+type TextResult struct {
 	// The redacted text.
 	RedactedText string `json:"redacted_text"`
 
@@ -127,7 +127,7 @@ type RecognizerResult struct {
 	DataKey string `json:"data_key"`
 }
 
-type StructuredInput struct {
+type StructuredRequest struct {
 	// Structured data to redact
 	// Data is a required field.
 	Data json.RawMessage `json:"data"`
@@ -144,7 +144,7 @@ type StructuredInput struct {
 }
 
 // SetData marshal and sets the JSON encoding of obj into Data.
-func (i *StructuredInput) SetData(obj interface{}) error {
+func (i *StructuredRequest) SetData(obj interface{}) error {
 	b, err := json.Marshal(obj)
 	if err != nil {
 		return err
@@ -153,7 +153,7 @@ func (i *StructuredInput) SetData(obj interface{}) error {
 	return nil
 }
 
-type StructuredOutput struct {
+type StructuredResult struct {
 	// RedactedData is always populated on a successful response.
 	RedactedData json.RawMessage `json:"redacted_data"`
 
@@ -165,6 +165,6 @@ type StructuredOutput struct {
 
 // GetRedactedData a parses the JSON-encoded RedactedData and stores the result in the value pointed to by obj.
 // If v is nil or not a pointer, Unmarshal returns an InvalidUnmarshalError.
-func (i *StructuredOutput) GetRedactedData(obj interface{}) error {
+func (i *StructuredResult) GetRedactedData(obj interface{}) error {
 	return json.Unmarshal(i.RedactedData, obj)
 }

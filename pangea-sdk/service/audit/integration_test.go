@@ -148,7 +148,7 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 	_, err := client.Log(ctx, event, true)
 	assert.NoError(t, err)
 
-	searchInput := &audit.SearchInput{
+	searchInput := &audit.SearchRequest{
 		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
 		MaxResults: 1,
 	}
@@ -173,7 +173,7 @@ func Test_Integration_Root(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	input := &audit.RootInput{}
+	input := &audit.RootRequest{}
 	out, err := client.Root(ctx, input)
 	assert.NoError(t, err)
 
@@ -192,7 +192,7 @@ func Test_Integration_Root_2(t *testing.T) {
 	client, _ := audit.New(cfg)
 	TreeSize := 1
 
-	input := &audit.RootInput{
+	input := &audit.RootRequest{
 		TreeSize: TreeSize,
 	}
 	out, err := client.Root(ctx, input)
@@ -214,7 +214,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 	maxResults := 10
 	limit := 2
 
-	input := &audit.SearchInput{
+	input := &audit.SearchRequest{
 		MaxResults: maxResults,
 		Limit:      limit,
 		Order:      "desc",
@@ -242,7 +242,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 
 	// Test results
 	resultsLimit := 2
-	searchResultInput := &audit.SearchResultInput{
+	searchResultInput := &audit.SearchResultRequest{
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
@@ -271,7 +271,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 	maxResults := 10
 	limit := 2
 
-	input := &audit.SearchInput{
+	input := &audit.SearchRequest{
 		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
 		MaxResults: maxResults,
 		Order:      "asc",
@@ -297,7 +297,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 
 	// Test results
 	resultsLimit := 2
-	searchResultInput := &audit.SearchResultInput{
+	searchResultInput := &audit.SearchResultRequest{
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
@@ -320,7 +320,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
-	searchInput := &audit.SearchInput{
+	searchInput := &audit.SearchRequest{
 		Query:   "message:test-message",
 		Verbose: pangea.Bool(true),
 		Limit:   10,

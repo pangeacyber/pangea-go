@@ -29,7 +29,7 @@ func Test_Integration_Check(t *testing.T) {
 	cfg := embargoIntegrationCfg(t)
 	client := embargo.New(cfg)
 
-	input := &embargo.ISOCheckInput{
+	input := &embargo.ISOCheckRequest{
 		ISOCode: "CU",
 	}
 	out, err := client.ISOCheck(ctx, input)
@@ -51,7 +51,7 @@ func Test_Integration_Check_2(t *testing.T) {
 	cfg := embargoIntegrationCfg(t)
 	client := embargo.New(cfg)
 
-	input := &embargo.ISOCheckInput{
+	input := &embargo.ISOCheckRequest{
 		ISOCode: "AR",
 	}
 	out, err := client.ISOCheck(ctx, input)
@@ -70,7 +70,7 @@ func Test_Integration_Check_Error_BadISO(t *testing.T) {
 	cfg := embargoIntegrationCfg(t)
 	client := embargo.New(cfg)
 
-	input := &embargo.ISOCheckInput{
+	input := &embargo.ISOCheckRequest{
 		ISOCode: "NotAnISOcode",
 	}
 	out, err := client.ISOCheck(ctx, input)
@@ -92,7 +92,7 @@ func Test_Integration_Check_Error_BadToken(t *testing.T) {
 	cfg.Token = "notatoken"
 	client := embargo.New(cfg)
 
-	input := &embargo.ISOCheckInput{
+	input := &embargo.ISOCheckRequest{
 		ISOCode: "CU",
 	}
 	out, err := client.ISOCheck(ctx, input)

@@ -28,7 +28,7 @@ func Test_Integration_Redact(t *testing.T) {
 	cfg := redactIntegrationCfg(t)
 	client := redact.New(cfg)
 
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: "My Phone number is 110045638",
 	}
 	out, err := client.Redact(ctx, input)
@@ -47,7 +47,7 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	cfg.Retry = true
 	client := redact.New(cfg)
 
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: "My Phone number is 110045638",
 	}
 	out, err := client.Redact(ctx, input)
@@ -67,7 +67,7 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	cfg.Token = "notarealtoken"
 	client := redact.New(cfg)
 
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: "",
 	}
 	out, err := client.Redact(ctx, input)

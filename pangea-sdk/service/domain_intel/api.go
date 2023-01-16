@@ -20,19 +20,19 @@ import (
 //	}
 //
 //	checkResponse, err := domainintel.Lookup(ctx, input)
-func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error) {
+func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupRequest) (*pangea.PangeaResponse[DomainLookupResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
 		return nil, err
 	}
-	out := DomainLookupOutput{}
+	out := DomainLookupResult{}
 	resp, err := e.Client.Do(ctx, req, &out)
 
 	if resp == nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[DomainLookupOutput]{
+	panresp := pangea.PangeaResponse[DomainLookupResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -40,7 +40,7 @@ func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pa
 	return &panresp, err
 }
 
-type DomainLookupInput struct {
+type DomainLookupRequest struct {
 	// The domain to be looked up.
 	Domain string `json:"domain"`
 
@@ -68,7 +68,7 @@ type LookupData struct {
 	Verdict string `json:"verdict"`
 }
 
-type DomainLookupOutput struct {
+type DomainLookupResult struct {
 	// High-level normalized results sent
 	// by the Pangea service
 	Data LookupData `json:"data"`

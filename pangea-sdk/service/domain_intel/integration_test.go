@@ -29,7 +29,7 @@ func Test_Integration_DomainLookup(t *testing.T) {
 	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
-	input := &domain_intel.DomainLookupInput{
+	input := &domain_intel.DomainLookupRequest{
 		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,
@@ -53,7 +53,7 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
-	input := &domain_intel.DomainLookupInput{
+	input := &domain_intel.DomainLookupRequest{
 		Domain:   "google.com",
 		Raw:      true,
 		Verbose:  true,
@@ -78,7 +78,7 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
-	input := &domain_intel.DomainLookupInput{
+	input := &domain_intel.DomainLookupRequest{
 		Domain:   "",
 		Raw:      true,
 		Verbose:  true,
@@ -106,7 +106,7 @@ func Test_Integration_DomainLookup_Error_BadAuthToken(t *testing.T) {
 	cfg.Token = "notavalidtoken"
 	domainintel := domain_intel.New(cfg)
 
-	input := &domain_intel.DomainLookupInput{
+	input := &domain_intel.DomainLookupRequest{
 		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,
@@ -128,7 +128,7 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 	cfg := intelDomainIntegrationCfg(t)
 	domainintel := domain_intel.New(cfg)
 
-	input := &domain_intel.DomainLookupInput{
+	input := &domain_intel.DomainLookupRequest{
 		Domain:   "737updatesboeing.com",
 		Raw:      true,
 		Verbose:  true,

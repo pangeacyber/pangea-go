@@ -25,8 +25,8 @@ import (
 //	 }
 //
 //		logResponse, err := auditcli.Log(ctx, event, true)
-func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
-	input := LogInput{
+func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
+	input := LogRequest{
 		Event:   event,
 		Verbose: verbose,
 	}
@@ -48,7 +48,7 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		return nil, err
 	}
 
-	var out LogOutput
+	var out LogResult
 	resp, err := a.Client.Do(ctx, req, &out)
 
 	if err != nil {
@@ -64,7 +64,7 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[LogOutput]{
+	panresp := pangea.PangeaResponse[LogResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -84,7 +84,7 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 //	}
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
-func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
+func (a *Audit) Search(ctx context.Context, input *SearchRequest) (*pangea.PangeaResponse[SearchOutput], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
 	}
@@ -118,7 +118,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
+func (a *Audit) SearchResults(ctx context.Context, input *SearchResultRequest) (*pangea.PangeaResponse[SearchResultOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, err
@@ -152,19 +152,19 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 //	}
 //
 //	rootResponse, err := auditcli.Root(ctx, input)
-func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
+func (a *Audit) Root(ctx context.Context, input *RootRequest) (*pangea.PangeaResponse[RootResult], error) {
 	req, err := a.Client.NewRequest("POST", "v1/root", input)
 	if err != nil {
 		return nil, err
 	}
-	var out RootOutput
+	var out RootResult
 	resp, err := a.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[RootOutput]{
+	panresp := pangea.PangeaResponse[RootResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -172,7 +172,7 @@ func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaRespo
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages
-func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, SearchEvents, error) {
+func SearchAll(ctx context.Context, client Client, input *SearchRequest) (*Root, SearchEvents, error) {
 	resp, err := client.Search(ctx, input)
 	if err != nil {
 		return nil, nil, err
@@ -180,7 +180,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	events := make(SearchEvents, 0, resp.Result.Count)
 	events = append(events, resp.Result.Events...)
 	for resp.Result.Count > len(events) {
-		s := SearchResultInput{
+		s := SearchResultRequest{
 			ID: resp.Result.ID,
 		}
 		sOut, err := client.SearchResults(ctx, &s)
@@ -195,7 +195,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	return resp.Result.Root, events, nil
 }
 
-func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
+func (a *Audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	if log == nil {
 		return nil
 	}
@@ -266,7 +266,7 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 	return nil
 }
 
-type LogInput struct {
+type LogRequest struct {
 	// A structured event describing an auditable activity.
 	Event Event `json:"event"`
 
@@ -285,7 +285,7 @@ type LogInput struct {
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogInput) SignEvent(s signer.Signer) error {
+func (i *LogRequest) SignEvent(s signer.Signer) error {
 	b := pu.CanonicalizeStruct(&i.Event)
 
 	signature, err := s.Sign(b)
@@ -402,7 +402,7 @@ func (ev EventVerification) String() string {
 	return "unknown"
 }
 
-type LogOutput struct {
+type LogResult struct {
 	EventEnvelope *EventEnvelope
 
 	RawEnvelope map[string]any `json:"envelope,omitempty"`
@@ -419,7 +419,7 @@ type LogOutput struct {
 	SignatureVerification   EventVerification
 }
 
-type SearchInput struct {
+type SearchRequest struct {
 	// Natural search string; list of keywords with optional `<option>:<value>` qualifiers.
 	//
 	// Query is a required field.
@@ -615,7 +615,7 @@ func (ee *EventEnvelope) VerifySignature() EventVerification {
 	return Failed
 }
 
-type SearchResultInput struct {
+type SearchResultRequest struct {
 	// A search results identifier returned by the search call
 	// ID is a required field
 	ID string `json:"id"`
@@ -643,7 +643,7 @@ type SearchResultOutput struct {
 	UnpublishedRoot *Root `json:"unpublished_root"`
 }
 
-type RootInput struct {
+type RootRequest struct {
 	// The size of the tree (the number of records)
 	TreeSize int `json:"tree_size,omitempty"`
 }
@@ -669,6 +669,6 @@ type Root struct {
 	ConsistencyProof *[]string `json:"consistency_proof"`
 }
 
-type RootOutput struct {
+type RootResult struct {
 	Data Root `json:"data"`
 }

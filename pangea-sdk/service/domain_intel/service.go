@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error)
+	Lookup(ctx context.Context, input *DomainLookupRequest) (*pangea.PangeaResponse[DomainLookupResult], error)
 }
 
 type DomainIntel struct {

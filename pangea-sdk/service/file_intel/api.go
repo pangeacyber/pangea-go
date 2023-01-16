@@ -10,7 +10,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-type FileLookupInput struct {
+type FileLookupRequest struct {
 	Hash string `json:"hash"`
 
 	// One of "sha256", "sha", "md5".
@@ -40,7 +40,7 @@ type LookupData struct {
 	Verdict string `json:"verdict"`
 }
 
-type FileLookupOutput struct {
+type FileLookupResult struct {
 	// High-level normalized results sent
 	// by the Pangea service
 	Data LookupData `json:"data"`
@@ -69,19 +69,19 @@ type FileLookupOutput struct {
 //	}
 //
 //	checkOutput, _, err := fileintel.Lookup(ctx, input)
-func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea.PangeaResponse[FileLookupOutput], error) {
+func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupRequest) (*pangea.PangeaResponse[FileLookupResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
 	if err != nil {
 		return nil, err
 	}
-	out := FileLookupOutput{}
+	out := FileLookupResult{}
 	resp, err := e.Client.Do(ctx, req, &out)
 
 	if resp == nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[FileLookupOutput]{
+	panresp := pangea.PangeaResponse[FileLookupResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -90,7 +90,7 @@ func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea
 }
 
 // Create a FileLookupInput from path file
-func NewFileLookupInputFromFilepath(fp string) (*FileLookupInput, error) {
+func NewFileLookupInputFromFilepath(fp string) (*FileLookupRequest, error) {
 	f, err := os.Open(fp)
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func NewFileLookupInputFromFilepath(fp string) (*FileLookupInput, error) {
 		return nil, err
 	}
 
-	return &FileLookupInput{
+	return &FileLookupRequest{
 		Hash:     hex.EncodeToString(h.Sum(nil)),
 		HashType: "sha256",
 	}, nil

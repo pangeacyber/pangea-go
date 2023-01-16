@@ -9,10 +9,10 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, Event, bool) (*pangea.PangeaResponse[LogOutput], error)
-	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error)
-	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
+	Log(context.Context, Event, bool) (*pangea.PangeaResponse[LogResult], error)
+	Search(context.Context, *SearchRequest) (*pangea.PangeaResponse[SearchOutput], error)
+	SearchResults(context.Context, *SearchResultRequest) (*pangea.PangeaResponse[SearchResultOutput], error)
+	Root(context.Context, *RootRequest) (*pangea.PangeaResponse[RootResult], error)
 }
 
 type LogSigningMode int

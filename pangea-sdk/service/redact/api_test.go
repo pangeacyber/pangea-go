@@ -34,7 +34,7 @@ func TestRedact(t *testing.T) {
 	})
 
 	client := redact.New(pangeatesting.TestConfig(url))
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: "My phone number is: 110303456",
 	}
 	ctx := context.Background()
@@ -42,7 +42,7 @@ func TestRedact(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	want := &redact.TextOutput{
+	want := &redact.TextResult{
 		RedactedText: "My phone number is: <PHONE_NUMBER>",
 		Count:        1,
 	}
@@ -83,7 +83,7 @@ func TestRedactStructured(t *testing.T) {
 		}
 	)
 
-	input := &redact.StructuredInput{
+	input := &redact.StructuredRequest{
 		JSONP: []string{
 			"$.*.secret",
 		},
