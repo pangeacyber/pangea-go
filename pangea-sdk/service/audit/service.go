@@ -29,6 +29,7 @@ type Audit struct {
 	Signer                *signer.Signer
 	VerifyProofs          bool
 	SkipEventVerification bool
+	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
 }
@@ -41,6 +42,7 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		lastUnpRootHash:       nil,
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
+		publicKeyInfo:         nil,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -75,6 +77,13 @@ func WithLogLocalSigning(filename string) Option {
 func DisableEventVerification() Option {
 	return func(a *Audit) error {
 		a.SkipEventVerification = true
+		return nil
+	}
+}
+
+func SetPublicKeyInfo(pkinfo map[string]string) Option {
+	return func(a *Audit) error {
+		a.publicKeyInfo = pkinfo
 		return nil
 	}
 }
