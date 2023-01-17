@@ -153,10 +153,14 @@ func verifyConsistencyProof(oldRootHash, newRootHash string, consistencyProof []
 	return true, nil
 }
 
-func treeSizes(root *Root, events SearchEvents) []string {
+func treeSizes(root *Root, events *SearchEvents) []string {
+	if events == nil || root == nil {
+		return []string{}
+	}
+
 	treeSizes := make(map[int]struct{}, 0)
 	treeSizes[root.Size] = struct{}{}
-	for _, event := range events {
+	for _, event := range *events {
 		if event.LeafIndex != nil {
 			leafIdx := *event.LeafIndex
 			treeSizes[leafIdx] = struct{}{}

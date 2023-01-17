@@ -105,7 +105,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchRequest) (*pangea.Pange
 		return nil, err
 	}
 
-	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, &out.Events, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultRequest) (
 	if err != nil {
 		return nil, err
 	}
-	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, &out.Events, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -227,12 +227,15 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	return nil
 }
 
-func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
+func (a *Audit) processSearchEvents(ctx context.Context, events *SearchEvents, root *Root, unpRoot *Root) error {
+	if events == nil {
+		return errors.New("events is a nil pointer")
+	}
 	var roots map[int]Root
 
 	var err error
-	for _, event := range events {
-		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope)
+	for idx := range *events {
+		(*events)[idx].EventEnvelope, err = newEventEnvelopeFromMap((*events)[idx].RawEnvelope)
 		if err != nil {
 			return err
 		}
@@ -246,20 +249,20 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 		roots = a.rp.UpdateRoots(ctx, treeSizes)
 	}
 
-	for _, event := range events {
+	for idx := range *events {
 		if !a.SkipEventVerification {
-			if VerifyHash(event.RawEnvelope, event.Hash) == Failed {
-				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
+			if VerifyHash((*events)[idx].RawEnvelope, (*events)[idx].Hash) == Failed {
+				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", (*events)[idx].Hash)
 			}
-			event.SignatureVerification = event.EventEnvelope.VerifySignature()
+			(*events)[idx].SignatureVerification = (*events)[idx].EventEnvelope.VerifySignature()
 		}
 
 		if a.VerifyProofs {
-			if event.Published != nil && *event.Published == true {
-				event.VerifyMembershipProof(root)
-				event.VerifyConsistencyProof(roots)
+			if (*events)[idx].Published != nil && *(*events)[idx].Published == true {
+				(*events)[idx].VerifyMembershipProof(root)
+				(*events)[idx].VerifyConsistencyProof(roots)
 			} else {
-				event.VerifyMembershipProof(unpRoot)
+				(*events)[idx].VerifyMembershipProof(unpRoot)
 			}
 		}
 	}
@@ -504,7 +507,7 @@ type SearchOutput struct {
 	UnpublishedRoot *Root `json:"unpublished_root,omitempty"`
 }
 
-type SearchEvents []*SearchEvent
+type SearchEvents []SearchEvent
 
 // VerifiableRecords retuns a slice of records that can be verifiable by the published proof
 func (events SearchEvents) VerifiableRecords() SearchEvents {
