@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Intel Domain, URL and File add reputation endpoint that will replace lookup endpoint
+
+
+## [1.1.1] - 2023-01-25
+
+### Changed
+
 - Intel IP add reputation endpoint that will replace lookup endpoint
 - Change User-Agent format
 
