@@ -6,11 +6,11 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Check IP
+// @summary Check IP
 //
-// Check this IP against known sanction and trade embargo lists.
+// @description Check this IP against known sanction and trade embargo lists.
 //
-// Example:
+// @example
 //
 //	input := &embargo.IPCheckInput{
 //		IP: pangea.String("213.24.238.26"),
@@ -35,11 +35,11 @@ func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*pangea.Pan
 	return &panresp, nil
 }
 
-// ISO Code Check
+// @summary ISO Code Check
 //
-// Check this country against known sanction and trade embargo lists.
+// @description Check this country against known sanction and trade embargo lists.
 //
-// Example:
+// @example
 //
 //	input := &embargo.ISOCheckInput{
 //		ISOCode: pangea.String("CU"),

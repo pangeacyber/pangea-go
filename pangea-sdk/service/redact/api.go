@@ -7,11 +7,11 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Redact
+// @summary Redact
 //
-// Redacts the content of a single text string.
+// @description Redacts the content of a single text string.
 //
-// Example:
+// @example
 //
 //	input := &redact.TextInput{
 //		Text: pangea.String("my phone number is 123-456-7890"),
@@ -37,11 +37,11 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaRe
 	return &panresp, nil
 }
 
-// Redact structured
+// @summary Redact structured
 //
-// Redacts text within a structured object.
+// @description Redacts text within a structured object.
 //
-// Example:
+// @example
 //
 //	type yourCustomDataStruct struct {
 //		Secret string `json:"secret"`
