@@ -74,7 +74,7 @@ type FileLookupOutput struct {
 //
 //	checkOutput, _, err := fileintel.Lookup(ctx, input)
 func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea.PangeaResponse[FileLookupOutput], error) {
-	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
+	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ type FileReputationResult struct {
 //
 //	checkOutput, _, err := fileintel.Reputation(ctx, input)
 func (e *FileIntel) Reputation(ctx context.Context, input *FileReputationRequest) (*pangea.PangeaResponse[FileReputationResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
+	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
 		return nil, err
 	}

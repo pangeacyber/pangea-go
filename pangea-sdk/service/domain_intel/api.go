@@ -23,7 +23,7 @@ import (
 //
 //	checkResponse, err := domainintel.Lookup(ctx, input)
 func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error) {
-	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
+	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ type DomainLookupOutput struct {
 //
 //	checkResponse, err := domainintel.Reputation(ctx, input)
 func (e *DomainIntel) Reputation(ctx context.Context, input *DomainReputationRequest) (*pangea.PangeaResponse[DomainReputationResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
+	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
 		return nil, err
 	}
