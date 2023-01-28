@@ -77,13 +77,13 @@ To maintain parity with documentation across all our SDKs, please follow this fo
 
 Published Doc Example:
 ```
-// Redact
+// @summary Redact
 //
-// Redacts the content of a single text string.
+// @description Redacts the content of a single text string.
 //
-// Example:
+// @example
 //
-//  input := &redact.TextInput{
+//	input := &redact.TextInput{
 //  	Text: pangea.String("my phone number is 123-456-7890"),
 //  }
 //
@@ -93,11 +93,11 @@ Published Doc Example:
 
 Example breakdown:
 ```
-// Redact <-- Displayed as the Summary/Heading field in docs
+// @summary Redact <-- Displayed as the Summary/Heading field in docs
 //
-// Redacts the content of a single text string. <-- Displayed as the Description field in docs
+// @description Redacts the content of a single text string. <-- Displayed as the Description field in docs
 //
-// Example: <-- All lines below this are used as the code snippet field in docs
+// @example <-- All lines below this are used as the code snippet field in docs
 //
 //  input := &redact.TextInput{
 //  	Text: pangea.String("my phone number is 123-456-7890"),
@@ -105,6 +105,26 @@ Example breakdown:
 //
 //  redactOutput, _, err := redactcli.Redact(ctx, input)
 //
+```
+
+Example with deprecation message:
+```
+// @summary Lookup a domain
+//
+// @description Lookup an internet domain to retrieve reputation data.
+//
+// @deprecated Use Reputation instead.
+//
+// @example
+//
+//	input := &domain_intel.DomainLookupInput{
+//		Domain: "737updatesboeing.com",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "domaintools",
+//	}
+//
+//	checkResponse, err := domainintel.Lookup(ctx, input)
 ```
 
 # Generate SDK Documentation
