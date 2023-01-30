@@ -84,7 +84,7 @@ Published Doc Example:
 // @example
 //
 //	input := &redact.TextInput{
-//  	Text: pangea.String("my phone number is 123-456-7890"),
+//  		Text: pangea.String("my phone number is 123-456-7890"),
 //  }
 //
 //  redactOutput, _, err := redactcli.Redact(ctx, input)
