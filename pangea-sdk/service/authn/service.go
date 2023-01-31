@@ -13,24 +13,59 @@ type Password struct {
 	*pangea.Client
 }
 
-type Profile struct {
+type UserProfile struct {
 	*pangea.Client
 }
 
-type Invites struct {
+type UserInvite struct {
+	*pangea.Client
+}
+
+type Flow struct {
+	*pangea.Client
+	Signup *FlowSignup
+	Verify *FlowVerify
+	Enroll *FlowEnroll
+}
+
+type FlowSignup struct {
+	*pangea.Client
+}
+
+type FlowVerify struct {
+	*pangea.Client
+	MFA *FlowVerifyMFA
+}
+
+type FlowVerifyMFA struct {
+	*pangea.Client
+}
+
+type FlowEnroll struct {
+	*pangea.Client
+	MFA *FlowEnrollMFA
+}
+
+type FlowEnrollMFA struct {
 	*pangea.Client
 }
 
 type User struct {
 	*pangea.Client
-	Profile *Profile
-	Invites *Invites
+	Profile *UserProfile
+	Invites *UserInvite
+	MFA     *UserMFA
+}
+
+type UserMFA struct {
+	*pangea.Client
 }
 
 type AuthN struct {
 	*pangea.Client
 	Password *Password
 	User     *User
+	Flow     *Flow
 }
 
 func newPassword(cli *pangea.Client) *Password {
@@ -39,14 +74,60 @@ func newPassword(cli *pangea.Client) *Password {
 	}
 }
 
-func newProfile(cli *pangea.Client) *Profile {
-	return &Profile{
+func newFlowEnrollMFA(cli *pangea.Client) *FlowEnrollMFA {
+	return &FlowEnrollMFA{
 		Client: cli,
 	}
 }
 
-func newInvites(cli *pangea.Client) *Invites {
-	return &Invites{
+func newFlowEnroll(cli *pangea.Client) *FlowEnroll {
+	return &FlowEnroll{
+		Client: cli,
+	}
+}
+
+func newFlowVerifyMFA(cli *pangea.Client) *FlowVerifyMFA {
+	return &FlowVerifyMFA{
+		Client: cli,
+	}
+}
+
+func newFlowVerify(cli *pangea.Client) *FlowVerify {
+	return &FlowVerify{
+		Client: cli,
+		MFA:    newFlowVerifyMFA(cli),
+	}
+}
+
+func newFlowSignup(cli *pangea.Client) *FlowSignup {
+	return &FlowSignup{
+		Client: cli,
+	}
+}
+
+func newFlow(cli *pangea.Client) *Flow {
+	return &Flow{
+		Client: cli,
+		Enroll: newFlowEnroll(cli),
+		Verify: newFlowVerify(cli),
+		Signup: newFlowSignup(cli),
+	}
+}
+
+func newUserMFA(cli *pangea.Client) *UserMFA {
+	return &UserMFA{
+		Client: cli,
+	}
+}
+
+func newUserProfile(cli *pangea.Client) *UserProfile {
+	return &UserProfile{
+		Client: cli,
+	}
+}
+
+func newUserInvites(cli *pangea.Client) *UserInvite {
+	return &UserInvite{
 		Client: cli,
 	}
 }
@@ -54,8 +135,9 @@ func newInvites(cli *pangea.Client) *Invites {
 func newUser(cli *pangea.Client) *User {
 	return &User{
 		Client:  cli,
-		Profile: newProfile(cli),
-		Invites: newInvites(cli),
+		Profile: newUserProfile(cli),
+		Invites: newUserInvites(cli),
+		MFA:     newUserMFA(cli),
 	}
 }
 
@@ -65,6 +147,7 @@ func New(cfg *pangea.Config) *AuthN {
 		Client:   pc,
 		Password: newPassword(pc),
 		User:     newUser(pc),
+		Flow:     newFlow(pc),
 	}
 	return cli
 }

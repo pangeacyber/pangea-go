@@ -84,26 +84,34 @@ const (
 	IDPPassword                   = "password"
 )
 
+type MFAProvider string
+
+const (
+	MFAPTOTP     MFAProvider = "totp"
+	MFAPEmailOTP             = "email_otp"
+	IDPSMSOTP                = "sms_otp"
+)
+
 type UserCreateRequest struct {
-	Email         string    `json:"email"`
-	Authenticator string    `json:"authenticator"`
-	IDProvider    string    `json:"id_provider"`
-	Verified      *bool     `json:"verified,omitempty"`
-	RequireMFA    *bool     `json:"require_mfa,omitempty"`
-	Profile       *Profile  `json:"profile,omitempty"`
-	Scopes        *[]string `json:"scopes,omitempty"`
+	Email         string       `json:"email"`
+	Authenticator string       `json:"authenticator"`
+	IDProvider    string       `json:"id_provider"`
+	Verified      *bool        `json:"verified,omitempty"`
+	RequireMFA    *bool        `json:"require_mfa,omitempty"`
+	Profile       *UserProfile `json:"profile,omitempty"`
+	Scopes        *[]string    `json:"scopes,omitempty"`
 }
 
 type UserCreateResult struct {
-	Identity    string            `json:"identity"`
-	Email       string            `json:"email"`
-	Profile     map[string]string `json:"profile"`
-	IDProvider  IDProvider        `json:"id_provider"`
-	RequireMFA  bool              `json:"require_mfa"`
-	Verified    bool              `json:"verified"`
-	LastLoginAt *bool             `json:"last_login_at,omitempty"`
-	Disabled    *bool             `json:"disabled"`
-	MFAProvider *[]string         `json:"mfa_provider,omitempty"`
+	Identity     string            `json:"identity"`
+	Email        string            `json:"email"`
+	Profile      map[string]string `json:"profile"`
+	IDProvider   IDProvider        `json:"id_provider"`
+	RequireMFA   bool              `json:"require_mfa"`
+	Verified     bool              `json:"verified"`
+	LastLoginAt  *bool             `json:"last_login_at,omitempty"`
+	Disabled     *bool             `json:"disabled"`
+	MFAProviders *[]MFAProvider    `json:"mfa_providers,omitempty"`
 }
 
 func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.PangeaResponse[UserCreateResult], error) {
@@ -164,16 +172,16 @@ type UserUpdateRequest struct {
 }
 
 type UserUpdateResult struct {
-	Identity    string            `json:"identity"`
-	Email       string            `json:"email"`
-	Profile     map[string]string `json:"profile"`
-	Scopes      *[]string         `json:"scopes,omitempty"`
-	IDProvider  IDProvider        `json:"id_provider"`
-	MFAProvider *[]string         `json:"mfa_provider"`
-	RequireMFA  bool              `json:"require_mfa"`
-	Verified    bool              `json:"verified"`
-	Disabled    bool              `json:"disabled"`
-	LastLoginAt string            `json:"last_login_at"`
+	Identity     string            `json:"identity"`
+	Email        string            `json:"email"`
+	Profile      map[string]string `json:"profile"`
+	Scopes       *[]string         `json:"scopes,omitempty"`
+	IDProvider   IDProvider        `json:"id_provider"`
+	MFAProviders *[]MFAProvider    `json:"mfa_providers,omitempty"`
+	RequireMFA   bool              `json:"require_mfa"`
+	Verified     bool              `json:"verified"`
+	Disabled     bool              `json:"disabled"`
+	LastLoginAt  string            `json:"last_login_at"`
 }
 
 func (a *User) Update(ctx context.Context, input UserUpdateRequest) (*pangea.PangeaResponse[UserUpdateResult], error) {
@@ -245,10 +253,10 @@ type UserListRequest struct {
 }
 
 type UserInfo struct {
-	Profile  Profile  `json:"profile"`
-	Identity string   `json:"identity"`
-	Email    string   `json:"email"`
-	Scopes   []string `json:"scopes"`
+	Profile  UserProfile `json:"profile"`
+	Identity string      `json:"identity"`
+	Email    string      `json:"email"`
+	Scopes   []string    `json:"scopes"`
 }
 
 type UserListResult struct {
@@ -322,18 +330,18 @@ type UserProfileGetRequest struct {
 }
 
 type UserProfileGetResult struct {
-	Identity    string            `json:"identity"`
-	Email       string            `json:"email"`
-	Profile     map[string]string `json:"profile"`
-	IDProvider  IDProvider        `json:"id_provider"`
-	MFAProvider []string          `json:"mfa_provider"`
-	RequireMFA  bool              `json:"require_mfa"`
-	Verified    bool              `json:"verified"`
-	LastLoginAt string            `json:"last_login_at"`
-	Disabled    *bool             `json:"disabled,omitempty"`
+	Identity     string            `json:"identity"`
+	Email        string            `json:"email"`
+	Profile      map[string]string `json:"profile"`
+	IDProvider   IDProvider        `json:"id_provider"`
+	MFAProviders *[]MFAProvider    `json:"mfa_providers,omitempty"`
+	RequireMFA   bool              `json:"require_mfa"`
+	Verified     bool              `json:"verified"`
+	LastLoginAt  string            `json:"last_login_at"`
+	Disabled     *bool             `json:"disabled,omitempty"`
 }
 
-func (a *Profile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea.PangeaResponse[UserProfileGetResult], error) {
+func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea.PangeaResponse[UserProfileGetResult], error) {
 	req, err := a.Client.NewRequest("POST", "v1/user/profile/get", input)
 	if err != nil {
 		return nil, err
@@ -360,22 +368,22 @@ type UserProfileUpdateRequest struct {
 	Email       *string           `json:"email,omitempty"`
 	RequireMFA  *bool             `json:"require_mfa,omitempty"`
 	MFAValue    *string           `json:"mfa_value,omitempty"`
-	MFAProvider *[]string         `json:"mfa_provider,omitempty"`
+	MFAProvider *MFAProvider      `json:"mfa_provider,omitempty"`
 }
 
 type UserProfileUpdateResult struct {
-	Identity    string            `json:"identity"`
-	Email       string            `json:"email"`
-	Profile     map[string]string `json:"profile"`
-	IDProvider  IDProvider        `json:"id_provider"`
-	MFAProvider []string          `json:"mfa_provider"`
-	RequireMFA  bool              `json:"require_mfa"`
-	Verified    bool              `json:"verified"`
-	LastLoginAt string            `json:"last_login_at"`
-	Disabled    *bool             `json:"disabled,omitempty"`
+	Identity     string            `json:"identity"`
+	Email        string            `json:"email"`
+	Profile      map[string]string `json:"profile"`
+	IDProvider   IDProvider        `json:"id_provider"`
+	MFAProviders *[]MFAProvider    `json:"mfa_providers"`
+	RequireMFA   bool              `json:"require_mfa"`
+	Verified     bool              `json:"verified"`
+	LastLoginAt  string            `json:"last_login_at"`
+	Disabled     *bool             `json:"disabled,omitempty"`
 }
 
-func (a *Profile) Update(ctx context.Context, input UserProfileUpdateRequest) (*pangea.PangeaResponse[UserProfileUpdateResult], error) {
+func (a *UserProfile) Update(ctx context.Context, input UserProfileUpdateRequest) (*pangea.PangeaResponse[UserProfileUpdateResult], error) {
 	req, err := a.Client.NewRequest("POST", "v1/user/profile/update", input)
 	if err != nil {
 		return nil, err
@@ -396,7 +404,7 @@ func (a *Profile) Update(ctx context.Context, input UserProfileUpdateRequest) (*
 	return &panresp, nil
 }
 
-type UserInvite struct {
+type UserInviteData struct {
 	ID         string `json:"id"`
 	Inviter    string `json:"inviter"`
 	InviteOrg  string `json:"invite_org"`
@@ -409,10 +417,10 @@ type UserInvite struct {
 }
 
 type UserInviteListResult struct {
-	Invites []UserInvite `json:"invites"`
+	Invites []UserInviteData `json:"invites"`
 }
 
-func (a *Invites) List(ctx context.Context) (*pangea.PangeaResponse[UserInviteListResult], error) {
+func (a *UserInvite) List(ctx context.Context) (*pangea.PangeaResponse[UserInviteListResult], error) {
 	req, err := a.Client.NewRequest("POST", "v1/user/invite/list", make(map[string]string))
 	if err != nil {
 		return nil, err
@@ -440,7 +448,7 @@ type UserInviteDeleteRequest struct {
 type UserInviteDeleteResult struct {
 }
 
-func (a *Invites) Delete(ctx context.Context, input UserInviteDeleteRequest) (*pangea.PangeaResponse[UserInviteDeleteResult], error) {
+func (a *UserInvite) Delete(ctx context.Context, input UserInviteDeleteRequest) (*pangea.PangeaResponse[UserInviteDeleteResult], error) {
 	req, err := a.Client.NewRequest("POST", "v1/user/invite/delete", input)
 	if err != nil {
 		return nil, err
@@ -454,6 +462,640 @@ func (a *Invites) Delete(ctx context.Context, input UserInviteDeleteRequest) (*p
 	}
 
 	panresp := pangea.PangeaResponse[UserInviteDeleteResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/complete
+// # https://dev.pangea.cloud/docs/api/authn#complete-a-login-or-signup-flow
+type FlowCompleteRequest struct {
+	FlowID string `json:"flow_id"`
+}
+
+type FlowCompleteResult struct {
+	Token     string            `json:"flow_id"`
+	ID        string            `json:"id"`
+	Type      string            `json:"type"`
+	Life      int               `json:"life"`
+	Expire    string            `json:"expire"`
+	Identity  string            `json:"identity"`
+	Email     string            `json:"email"`
+	Scopes    *[]string         `json:"scopes"`
+	Profile   map[string]string `json:"profile"`
+	CreatedAt string            `json:"created_at"`
+}
+
+func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/complete", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowCompleteResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowCompleteResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/enroll/mfa/complete
+// # https://dev.pangea.cloud/docs/api/authn#complete-mfa-enrollment-by-verifying-a-trial-mfa-code
+
+type FlowEnrollMFACompleteRequest struct {
+	FlowID string `json:"flow_id"`
+	Code   string `json:"code"`
+	Cancel *bool  `json:"cancel,omitempty"`
+}
+
+type EnrollMFAStartData struct {
+	MFAProviders *[]MFAProvider `json:"mfa_providers,omitempty"`
+}
+
+type TOTPSecretData struct {
+	QRImage string `json:"qr_image"`
+	Secret  string `json:"secret"`
+}
+
+type EnrollMFACompleteData struct {
+	TOTPSecret TOTPSecretData `json:"totp_secret"`
+}
+
+type SocialSignupData struct {
+	RedirectURI string `json:"redirect_uri"`
+}
+
+type PasswordSignupData struct {
+	PasswordCharsMin int `json:"password_chars_min"`
+	PasswordCharsMax int `json:"password_chars_max"`
+	PasswordLowerMin int `json:"password_lower_min"`
+	PasswordUpperMin int `json:"passwrod_upper_min"`
+	PasswordPunctMin int `json:"password_punct_min"`
+}
+
+type VerifyCaptchaData struct {
+	SikeKey string `json:"site_key"`
+}
+
+type VerifyMFAStartData struct {
+	MFAProviders *[]MFAProvider `json:"mfa_providers,omitempty"`
+}
+
+type VerifyPasswordData struct {
+	PasswordCharsMin int `json:"password_chars_min"`
+	PasswordCharsMax int `json:"password_chars_max"`
+	PasswordLowerMin int `json:"password_lower_min"`
+	PasswordUpperMin int `json:"passwrod_upper_min"`
+	PasswordPunctMin int `json:"password_punct_min"`
+}
+
+type SignupData struct {
+	SocialSignup   SocialSignupData   `json:"social_signup"`
+	PasswordSignup PasswordSignupData `json:"password_signup"`
+}
+
+type VerifySocialData struct {
+	RedirectURI string `json:"redirect_uri"`
+}
+
+type CommonFlowResult struct {
+	FlowID            string                 `json:"flow_id"`
+	NextStep          string                 `json:"next_step"`
+	Error             *string                `json:"error,omitempty"`
+	Complete          *map[string]any        `json:"complete,omitempty"`
+	EnrollMFAstart    *EnrollMFAStartData    `json:"enroll_mfa_start,omitempty"`
+	EnrollMFAComplete *EnrollMFACompleteData `json:"enroll_mfa_complete,omitempty"`
+	Signup            *SignupData            `json:"signup,omitempty"`
+	VerifyCaptcha     *VerifyCaptchaData     `json:"verify_captcha,omitempty"`
+	VerifyEmail       *map[string]any        `json:"verify_email,omitempty"`
+	VerifyMFAStart    *VerifyMFAStartData    `json:"verify_mfa_start,omitempty"`
+	VerifyMFAComplete *map[string]any        `json:"verify_mfa_complete,omitempty"`
+	VerifyPassword    *VerifyPasswordData    `json:"verify_password,omitempty"`
+	VerifySocial      *VerifySocialData      `json:"verify_social,omitempty"`
+}
+
+type FlowEnrollMFACompleteResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowEnrollMFA) Complete(ctx context.Context, input FlowEnrollMFACompleteRequest) (*pangea.PangeaResponse[FlowEnrollMFACompleteResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/complete", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowEnrollMFACompleteResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowEnrollMFACompleteResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/enroll/mfa/start
+// # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-enrolling-an-mfa
+type FlowEnrollMFAStartRequest struct {
+	FlowID      string      `json:"flow_id"`
+	MFAProvider MFAProvider `json:"mfa_provider"`
+}
+
+type FlowEnrollMFAStartResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartRequest) (*pangea.PangeaResponse[FlowEnrollMFAStartResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/start", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowEnrollMFAStartResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowEnrollMFAStartResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/signup/password
+// # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-password
+type FlowSignupPasswordRequest struct {
+	FlowID    string `json:"flow_id"`
+	Password  string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+
+type FlowSignupPasswordResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordRequest) (*pangea.PangeaResponse[FlowSignupPasswordResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/signup/password", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowSignupPasswordResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowSignupPasswordResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/signup/social
+// # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-social-provider
+type FlowSignupSocialRequest struct {
+	FlowID  string `json:"flow_id"`
+	CBState string `json:"cb_state"`
+	CBCode  string `json:"cb_code"`
+}
+
+type FlowSignupSocialResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) (*pangea.PangeaResponse[FlowSignupSocialResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/signup/social", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowSignupSocialResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowSignupSocialResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/start
+// # https://dev.pangea.cloud/docs/api/authn#start-a-new-signup-or-signin-flow
+type FlowStartRequest struct {
+	CBURI     string    `json:"cb_uri"`
+	Email     *string   `json:"email,omitempty"`
+	FlowTypes *[]string `json:"flow_types,omitempty"`
+}
+
+type FlowStartResult struct {
+	CommonFlowResult
+}
+
+func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.PangeaResponse[FlowStartResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/start", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowStartResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowStartResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/verify/captcha
+// # https://dev.pangea.cloud/docs/api/authn#verify-a-captcha-during-a-signup-or-signin-flow
+type FlowVerifyCaptchaRequest struct {
+	FlowID string `json:"flow_id"`
+	Code   string `json:"code"`
+}
+
+type FlowVerifyCaptchaResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest) (*pangea.PangeaResponse[FlowVerifyCaptchaResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/captcha", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowVerifyCaptchaResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowVerifyCaptchaResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/verify/email
+// # https://dev.pangea.cloud/docs/api/authn#verify-an-email-address-during-a-signup-or-signin-flow
+type FlowVerifyEmailRequest struct {
+	FlowID  string `json:"flow_id"`
+	CBState string `json:"cb_state"`
+	CBCode  string `json:"cb_code"`
+}
+
+type FlowVerifyEmailResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*pangea.PangeaResponse[FlowVerifyEmailResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/email", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowVerifyEmailResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowVerifyEmailResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/verify/mfa/complete
+// # https://dev.pangea.cloud/docs/api/authn#complete-mfa-verification
+type FlowVerifyMFACompleteRequest struct {
+	FlowID string `json:"flow_id"`
+	Code   string `json:"code"`
+}
+
+type FlowVerifyMFACompleteResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFACompleteRequest) (*pangea.PangeaResponse[FlowVerifyMFACompleteResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/captcha", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowVerifyMFACompleteResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowVerifyMFACompleteResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/verify/mfa/start
+// # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-mfa-verification
+type FlowVerifyMFAStartRequest struct {
+	FlowID      string      `json:"flow_id"`
+	MFAProvider MFAProvider `json:"mfa_provider"`
+}
+
+type FlowVerifyMFAStartResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartRequest) (*pangea.PangeaResponse[FlowVerifyMFAStartResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/start", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowVerifyMFAStartResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowVerifyMFAStartResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/verify/password
+// # https://dev.pangea.cloud/docs/api/authn#sign-in-with-a-password
+type FlowVerifyPasswordRequest struct {
+	FlowID   string `json:"flow_id"`
+	Password string `json:"password"`
+}
+
+type FlowVerifyPasswordResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordRequest) (*pangea.PangeaResponse[FlowVerifyPasswordResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/password", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowVerifyPasswordResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowVerifyPasswordResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/flow/verify/social
+// # https://dev.pangea.cloud/docs/api/authn#signin-with-a-social-provider
+type FlowVerifySocialRequest struct {
+	FlowID  string `json:"flow_id"`
+	CBState string `json:"cb_state"`
+	CBCode  string `json:"cb_code"`
+}
+
+type FlowVerifySocialResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) (*pangea.PangeaResponse[FlowVerifySocialResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/social", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowVerifySocialResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowVerifySocialResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/user/mfa/delete
+// # https://dev.pangea.cloud/docs/api/authn#delete-mfa-enrollment-for-a-user
+type UserMFADeleteRequest struct {
+	UserID      string      `json:"user_id"`
+	MFAProvider MFAProvider `json:"mfa_provider"`
+}
+
+type UserMFADeleteResult struct {
+}
+
+func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pangea.PangeaResponse[UserMFADeleteResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/delete", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out UserMFADeleteResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[UserMFADeleteResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/user/mfa/enroll
+// # https://dev.pangea.cloud/docs/api/authn#enroll-mfa-for-a-user
+type UserMFAEnrollRequest struct {
+	UserID      string      `json:"user_id"`
+	MFAProvider MFAProvider `json:"mfa_provider"`
+	Code        string      `json:"code"`
+}
+
+type UserMFAEnrollResult struct {
+}
+
+func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pangea.PangeaResponse[UserMFAEnrollResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/enroll", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out UserMFAEnrollResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[UserMFAEnrollResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/user/mfa/start
+// # https://dev.pangea.cloud/docs/api/authn#start-mfa-verification-for-a-user
+type UserMFAStartRequest struct {
+	UserID      string      `json:"user_id"`
+	MFAProvider MFAProvider `json:"mfa_provider"`
+	Enroll      *bool       `json:"enroll,omitempty"`
+}
+
+type UserMFAStartResult struct {
+}
+
+func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea.PangeaResponse[UserMFAStartResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/start", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out UserMFAStartResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[UserMFAStartResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/user/mfa/verify
+// # https://dev.pangea.cloud/docs/api/authn#verify-an-mfa-code
+type UserMFAVerifyRequest struct {
+	UserID      string      `json:"user_id"`
+	MFAProvider MFAProvider `json:"mfa_provider"`
+	Code        string      `json:"code"`
+}
+
+type UserMFAVerifyResult struct {
+}
+
+func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pangea.PangeaResponse[UserMFAVerifyResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/verify", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out UserMFAVerifyResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[UserMFAVerifyResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+// #   - path: authn::/v1/user/verify
+// # https://dev.pangea.cloud/docs/api/authn#verify-a-user
+type UserVerifyRequest struct {
+	IDProvider    IDProvider `json:"id_provider"`
+	Email         string     `json:"email"`
+	Authenticator string     `json:"authenticator"`
+}
+
+type UserVerifyResult struct {
+	Identity    string            `json:"identity"`
+	Email       string            `json:"email"`
+	Profile     map[string]string `json:"profile"`
+	Scopes      *[]string         `json:"scopes"`
+	IDProvider  IDProvider        `json:"id_provider"`
+	RequireMFA  bool              `json:"require_mfa"`
+	Verified    bool              `json:"verified"`
+	Disable     bool              `json:"disable"`
+	LastLoginAt string            `json:"last_login_at"`
+}
+
+func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.PangeaResponse[UserVerifyResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/verify", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out UserVerifyResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[UserVerifyResult]{
 		Response: *resp,
 		Result:   &out,
 	}
