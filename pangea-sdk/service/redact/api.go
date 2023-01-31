@@ -94,6 +94,9 @@ type TextOutput struct {
 	// The redacted text.
 	RedactedText *string `json:"redacted_text"`
 
+	// Number of redactions present in the response
+	Count int `json:"count"`
+
 	Report *DebugReport `json:"report"`
 }
 
@@ -153,7 +156,11 @@ func (i *StructuredInput) SetData(obj interface{}) error {
 type StructuredOutput struct {
 	// RedactedData is always populated on a successful response.
 	RedactedData json.RawMessage `json:"redacted_data"`
-	Report       *DebugReport    `json:"report"`
+
+	// Number of redactions present in the response
+	Count int `json:"count"`
+
+	Report *DebugReport `json:"report"`
 }
 
 // GetRedactedData a parses the JSON-encoded RedactedData and stores the result in the value pointed to by obj.
