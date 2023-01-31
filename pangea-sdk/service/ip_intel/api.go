@@ -6,22 +6,22 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Look up an IP
+// @summary Look up an IP
 //
-// Retrieve a reputation score for an IP address from a provider, including an optional detailed report.
+// @deprecated Use Reputation instead.
 //
-// Deprecated: Use Reputation instead.
+// @description Retrieve a reputation score for an IP address from a provider,
+// including an optional detailed report.
 //
-// Example:
+// @example
+//	input := &ip_intel.IpLookupRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "crowdstrike",
+//	}
 //
-//	 input := &ip_intel.IpLookupRequest{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "crowdstrike",
-//	 }
-//
-//		checkOutput, _, err := ipintel.Lookup(ctx, input)
+//	checkOutput, _, err := ipintel.Lookup(ctx, input)
 func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.PangeaResponse[IpLookupResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
@@ -42,20 +42,21 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 	return &panresp, err
 }
 
-// Look up an IP reputation
+// @summary Look up an IP reputation
 //
-// Retrieve a reputation score for an IP address from a provider, including an optional detailed report.
+// @description Retrieve a reputation score for an IP address from a provider,
+// including an optional detailed report.
 //
-// Example:
+// @example
 //
-//	 input := &ip_intel.IpReputationRequest{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "crowdstrike",
-//	 }
+//	input := &ip_intel.IpReputationRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "crowdstrike",
+//	}
 //
-//		checkOutput, _, err := ipintel.Reputation(ctx, input)
+//	checkOutput, _, err := ipintel.Reputation(ctx, input)
 func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
@@ -76,23 +77,23 @@ func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 	return &panresp, err
 }
 
+// @deprecated Use IPReputationRequest
 type IpLookupRequest struct {
-	// Deprecated: Use IPReputationRequest
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 
+// @deprecated Use ReputationData
 type LookupData struct {
-	// Deprecated: Use ReputationData
 	Category []string `json:"category"`
 	Score    int      `json:"score"`
 	Verdict  string   `json:"verdict"`
 }
 
+// @deprecated Use IpReputationResult
 type IpLookupResult struct {
-	// Deprecated: Use IpReputationResult
 	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
 	RawData    interface{} `json:"raw_data,omitempty"`

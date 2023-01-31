@@ -10,8 +10,8 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
+// @deprecated Use Reputation instead.
 type FileLookupInput struct {
-	// Deprecated: Use Reputation instead.
 	Hash string `json:"hash"`
 
 	// One of "sha256", "sha", "md5".
@@ -27,8 +27,8 @@ type FileLookupInput struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+// @deprecated Use ReputationData instead.
 type LookupData struct {
-	// Deprecated: Use Reputation instead.
 	// The categories that apply to this
 	// indicator as determined by the provider
 	Category []string `json:"category"`
@@ -56,20 +56,20 @@ type FileLookupOutput struct {
 	RawData interface{} `json:"raw_data,omitempty"`
 }
 
-// Look up a file
+// @summary Look up a file
 //
-// Lookup a file's hash to retrieve reputation data.
+// @description Lookup a file's hash to retrieve reputation data.
 //
-// Deprecated: Use Reputation instead.
+// @deprecated Use Reputation instead.
 //
-// Example:
+// @example
 //
 //	input := &file_intel.FileLookupInput{
-//	    Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
-//	    HashType: "sha256",
-//	    Raw: true,
-//	    Verbose: true,
-//	    Provider: "reversinglabs",
+//		Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
+//		HashType: "sha256",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "reversinglabs",
 //	}
 //
 //	checkOutput, _, err := fileintel.Lookup(ctx, input)
@@ -94,8 +94,8 @@ func (e *FileIntel) Lookup(ctx context.Context, input *FileLookupInput) (*pangea
 }
 
 // Create a FileReputationRequest from path file
+// @deprecated Use NewFileReputationRequestFromFilepath instead.
 func NewFileLookupInputFromFilepath(fp string) (*FileLookupInput, error) {
-	// Deprecated: Use NewFileReputationRequestFromFilepath instead.
 	f, err := os.Open(fp)
 	if err != nil {
 		return nil, err
@@ -157,18 +157,18 @@ type FileReputationResult struct {
 	RawData interface{} `json:"raw_data,omitempty"`
 }
 
-// Look up a file
+// @summary Look up a file
 //
-// Lookup a file's hash to retrieve reputation data.
+// @description Lookup a file's hash to retrieve reputation data.
 //
-// Example:
+// @example
 //
 //	input := &file_intel.FileReputationRequest{
-//	    Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
-//	    HashType: "sha256",
-//	    Raw: true,
-//	    Verbose: true,
-//	    Provider: "reversinglabs",
+//		Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
+//		HashType: "sha256",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "reversinglabs",
 //	}
 //
 //	checkOutput, _, err := fileintel.Reputation(ctx, input)
