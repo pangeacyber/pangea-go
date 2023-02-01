@@ -8,20 +8,18 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-var (
-	integrationConfig = &pangea.Config{
-		HTTPClient: defaults.HTTPClient(),
-	}
-)
-
 func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
-	integrationConfig.Domain = GetTestDomain(t, env)
-	integrationConfig.Token = GetTestToken(t, env)
-	return integrationConfig
+	return &pangea.Config{
+		HTTPClient: defaults.HTTPClient(),
+		Domain:     GetTestDomain(t, env),
+		Token:      GetTestToken(t, env),
+	}
 }
 
 func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Config {
-	integrationConfig.Domain = GetTestDomain(t, env)
-	integrationConfig.Token = GetVaultSignatureTestToken(t, env)
-	return integrationConfig
+	return &pangea.Config{
+		HTTPClient: defaults.HTTPClient(),
+		Domain:     GetTestDomain(t, env),
+		Token:      GetVaultSignatureTestToken(t, env),
+	}
 }

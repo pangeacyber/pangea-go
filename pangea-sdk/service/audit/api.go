@@ -669,12 +669,13 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 		return "", errors.New("Public key field nil pointer")
 	}
 
-	pkinfo := make(map[string]string)
+	pkinfo := make(map[string]any)
 	err := json.Unmarshal([]byte(*ee.PublicKey), &pkinfo)
 	if err == nil {
 		val, ok := pkinfo["key"]
 		if ok {
-			return val, nil
+			ret := val.(string)
+			return ret, nil
 		} else {
 			return "", errors.New("'key' field not present in json")
 		}

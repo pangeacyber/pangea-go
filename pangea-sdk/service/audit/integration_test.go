@@ -158,7 +158,7 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.EventEnvelope.Signature)
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n")
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 }
 
