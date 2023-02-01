@@ -26,7 +26,8 @@ func TestRedact(t *testing.T) {
 				"response_time": "1970-01-01T00:00:10Z",
 				"status": "Success",
 				"result":{
-					"redacted_text": "My phone number is: <PHONE_NUMBER>"
+					"redacted_text": "My phone number is: <PHONE_NUMBER>",
+					"count": 1
 				},
 				"summary": "success"
 			}`)
@@ -43,6 +44,7 @@ func TestRedact(t *testing.T) {
 
 	want := &redact.TextOutput{
 		RedactedText: pangea.String("My phone number is: <PHONE_NUMBER>"),
+		Count:        1,
 	}
 	assert.Equal(t, want, got.Result)
 }
@@ -63,7 +65,8 @@ func TestRedactStructured(t *testing.T) {
 				"result": {
 					"redacted_data": {
 					  "one": { "secret": "<PHONE_NUMBER>" }
-					}
+					},
+					"count": 1
 				},
 				"summary": "success"
 			}`)
@@ -96,6 +99,7 @@ func TestRedactStructured(t *testing.T) {
 	want := Payload{One: innerType{Secret: "<PHONE_NUMBER>"}}
 	assert.NoError(t, response.Result.GetRedactedData(&got))
 	assert.Equal(t, want, got)
+	assert.Equal(t, 1, response.Result.Count)
 }
 
 func TestRedactError(t *testing.T) {
