@@ -14,17 +14,17 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Log an entry
+// @summary Log an entry
 //
-// Create a log entry in the Secure Audit Log.
+// @description Create a log entry in the Secure Audit Log.
 //
-// Example:
+// @example
 //
 //	event := audit.Event{
 //		Message: "Integration test msg",
 //	 }
 //
-//		logResponse, err := auditcli.Log(ctx, event, true)
+//	logResponse, err := auditcli.Log(ctx, event, true)
 func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
 	input := LogInput{
 		Event:   event,
@@ -77,11 +77,11 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 	return &panresp, nil
 }
 
-// Search for events
+// @summary Search for events
 //
-// Search for events that match the provided search criteria.
+// @description Search for events that match the provided search criteria.
 //
-// Example:
+// @example
 //
 //	input := &audit.SearchInput{
 //		Query:                  pangea.String("message:log-123"),
@@ -146,11 +146,11 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	return &panresp, nil
 }
 
-// Retrieve tamperproof verification
+// @summary Retrieve tamperproof verification
 //
-// Root returns current root hash and consistency proof.
+// @description Root returns current root hash and consistency proof.
 //
-// Example:
+// @example
 //
 //	input := &audit.RootInput{
 //		TreeSize: pangea.Int(10),
