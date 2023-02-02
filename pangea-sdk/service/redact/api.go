@@ -90,7 +90,7 @@ type TextInput struct {
 	Debug *bool `json:"debug,omitempty"`
 
 	// An array of redact ruleset short names
-	Rules *[]string `json:"rules,omitempty"`
+	Rules []string `json:"rules,omitempty"`
 }
 
 type TextOutput struct {
@@ -146,7 +146,7 @@ type StructuredInput struct {
 	Debug *bool `json:"debug,omitempty"`
 
 	// An array of redact ruleset short names
-	Rules *[]string `json:"rules,omitempty"`
+	Rules []string `json:"rules,omitempty"`
 }
 
 // SetData marshal and sets the JSON encoding of obj into Data.
