@@ -6,22 +6,25 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// IP address Lookup
+// @summary Look up an IP
 //
-// Lookup an IP address to retrieve reputation data.
+// @deprecated Use Reputation instead.
 //
-// Example:
+// @description Retrieve a reputation score for an IP address from a provider,
+// including an optional detailed report.
 //
-//	 input := &ip_intel.IpLookupInput{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "crowdstrike",
-//	 }
+// @example
 //
-//		checkOutput, _, err := ipintel.Lookup(ctx, input)
+//	input := &ip_intel.IpLookupRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "crowdstrike",
+//	}
+//
+//	checkOutput, _, err := ipintel.Lookup(ctx, input)
 func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.PangeaResponse[IpLookupResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/lookup", input)
+	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +53,7 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 //	     Ip: "93.231.182.110",
 //	     Raw: true,
 //	     Verbose: true,
-//	     Provider: "crowdstrike",
+//	     Provider: "digitalenvoy",
 //	 }
 //
 //	checkOutput, _, err := ipintel.geolocate(ctx, input)
@@ -74,6 +77,144 @@ func (e *IpIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pa
 	return &panresp, err
 }
 
+// @summary Look up an IP reputation
+//
+// @description Retrieve a reputation score for an IP address from a provider,
+// including an optional detailed report.
+//
+// @example
+//
+//	input := &ip_intel.IpReputationRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "crowdstrike",
+//	}
+//
+//	checkOutput, _, err := ipintel.Reputation(ctx, input)
+func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error) {
+	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
+	if err != nil {
+		return nil, err
+	}
+	out := IpReputationResult{}
+	resp, err := e.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[IpReputationResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+// Look up domain for an IP
+//
+// Retrieve the domain name associated with an IP address.
+//
+// Example:
+//
+//	 input := &ip_intel.IpDomainRequest{
+//	     Ip: "93.231.182.110",
+//	     Raw: true,
+//	     Verbose: true,
+//	     Provider: "digitalenvoy",
+//	 }
+//
+//	checkOutput, _, err := ipintel.GetDomain(ctx, input)
+func (e *IpIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error) {
+	req, err := e.Client.NewRequest("POST", "v1/domain", input)
+	if err != nil {
+		return nil, err
+	}
+	out := IpDomainResult{}
+	resp, err := e.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[IpDomainResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+// Check if an IP is a VPN
+//
+// Determine if an IP address is provided by a VPN service.
+//
+// Example:
+//
+//	 input := &ip_intel.IpVPNRequest{
+//	     Ip: "93.231.182.110",
+//	     Raw: true,
+//	     Verbose: true,
+//	     Provider: "digitalenvoy",
+//	 }
+//
+//	checkOutput, _, err := ipintel.IsVPN(ctx, input)
+func (e *IpIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error) {
+	req, err := e.Client.NewRequest("POST", "v1/vpn", input)
+	if err != nil {
+		return nil, err
+	}
+	out := IpVPNResult{}
+	resp, err := e.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[IpVPNResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+// Check for proxied IPs
+//
+// Determine if an IP address is provided by a proxy service.
+//
+// Example:
+//
+//	 input := &ip_intel.IpProxyRequest{
+//	     Ip: "93.231.182.110",
+//	     Raw: true,
+//	     Verbose: true,
+//	     Provider: "digitalenvoy",
+//	 }
+//
+//	checkOutput, _, err := ipintel.IsProxy(ctx, input)
+func (e *IpIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error) {
+	req, err := e.Client.NewRequest("POST", "v1/proxy", input)
+	if err != nil {
+		return nil, err
+	}
+	out := IpProxyResult{}
+	resp, err := e.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[IpProxyResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+// @deprecated Use IPReputationRequest
 type IpLookupRequest struct {
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
@@ -81,12 +222,14 @@ type IpLookupRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+// @deprecated Use ReputationData
 type LookupData struct {
 	Category []string `json:"category"`
 	Score    int      `json:"score"`
 	Verdict  string   `json:"verdict"`
 }
 
+// @deprecated Use IpReputationResult
 type IpLookupResult struct {
 	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
@@ -98,6 +241,25 @@ type IpGeolocateRequest struct {
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
+}
+
+type IpReputationRequest struct {
+	Ip       string `json:"ip"`
+	Verbose  bool   `json:"verbose,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+	Provider string `json:"provider,omitempty"`
+}
+
+type ReputationData struct {
+	Category []string `json:"category"`
+	Score    int      `json:"score"`
+	Verdict  string   `json:"verdict"`
+}
+
+type IpReputationResult struct {
+	Data       ReputationData `json:"data"`
+	Parameters interface{}    `json:"parameters,omitempty"`
+	RawData    interface{}    `json:"raw_data,omitempty"`
 }
 
 type IpGeolocateResult struct {
@@ -113,4 +275,56 @@ type GeolocateData struct {
 	Longitude   float32 `json:"longitude"`
 	PostalCode  string  `json:"postal_code"`
 	CountryCode string  `json:"country_code"`
+}
+
+type IpDomainRequest struct {
+	Ip       string `json:"ip"`
+	Verbose  bool   `json:"verbose,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+	Provider string `json:"provider,omitempty"`
+}
+
+type IpDomainResult struct {
+	Data       DomainData  `json:"data"`
+	Parameters interface{} `json:"parameters,omitempty"`
+	RawData    interface{} `json:"raw_data,omitempty"`
+}
+
+type DomainData struct {
+	DomainFound bool   `json:"domain_found"`
+	Domain      string `json:"domain,omitempty"`
+}
+
+type IpVPNRequest struct {
+	Ip       string `json:"ip"`
+	Verbose  bool   `json:"verbose,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+	Provider string `json:"provider,omitempty"`
+}
+
+type IpVPNResult struct {
+	Data       VPNData     `json:"data"`
+	Parameters interface{} `json:"parameters,omitempty"`
+	RawData    interface{} `json:"raw_data,omitempty"`
+}
+
+type VPNData struct {
+	IsVPN bool `json:"is_vpn"`
+}
+
+type IpProxyRequest struct {
+	Ip       string `json:"ip"`
+	Verbose  bool   `json:"verbose,omitempty"`
+	Raw      bool   `json:"raw,omitempty"`
+	Provider string `json:"provider,omitempty"`
+}
+
+type IpProxyResult struct {
+	Data       ProxyData   `json:"data"`
+	Parameters interface{} `json:"parameters,omitempty"`
+	RawData    interface{} `json:"raw_data,omitempty"`
+}
+
+type ProxyData struct {
+	IsProxy bool `json:"is_proxy"`
 }
