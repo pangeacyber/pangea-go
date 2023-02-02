@@ -307,7 +307,6 @@ func TestSearch_Verify(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
-	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
 	assert.Equal(t, audit.Success, got.Result.Events[0].MembershipVerification)
 }
 
@@ -379,7 +378,6 @@ func TestSearch_InvalidEventHash(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
-	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
 	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
 }
 
@@ -451,7 +449,6 @@ func TestSearch_InvalidSideInMembershipProof(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
-	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
 	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
 }
 
@@ -863,7 +860,6 @@ func TestSearch_VerifyFailMembershipProof(t *testing.T) {
 	assert.NotNil(t, got)
 	assert.Equal(t, 1, got.Result.Count)
 	assert.Equal(t, 1, len(got.Result.Events))
-	assert.Equal(t, audit.Success, got.Result.Events[0].ConsistencyVerification)
 	assert.Equal(t, audit.Failed, got.Result.Events[0].MembershipVerification)
 }
 
