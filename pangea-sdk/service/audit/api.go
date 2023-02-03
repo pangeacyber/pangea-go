@@ -674,8 +674,10 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 	if err == nil {
 		val, ok := pkinfo["key"]
 		if ok {
-			ret := val.(string)
-			return ret, nil
+			if ret, ok := val.(string); ok {
+				return ret, nil
+			}
+			return "", errors.New("Keys is not a string")
 		} else {
 			return "", errors.New("'key' field not present in json")
 		}
