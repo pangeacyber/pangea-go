@@ -127,3 +127,9 @@ func GetTestToken(t *testing.T, env TestEnvironment) string {
 	varname := "PANGEA_INTEGRATION_TOKEN_" + string(env)
 	return GetEnvVarOrSkip(t, varname)
 }
+
+func GetVaultSignatureTestToken(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_VAULT_TOKEN_" + string(env)
+	return GetEnvVarOrSkip(t, varname)
+}

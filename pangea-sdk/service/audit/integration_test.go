@@ -21,12 +21,19 @@ const (
 	STATUS_SIGNED      = "signed"
 	MSG_SIGNED         = "sign-test"
 	STATUS_NO_SIGNED   = "no-signed"
-	testingEnvironment = pangeatesting.Live
+	ACTION_VAULT       = "vault-sign"
+	ACTION_LOCAL       = "local-sign"
+	testingEnvironment = pangeatesting.Develop
 )
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
 	return pangeatesting.IntegrationConfig(t, testingEnvironment)
+}
+
+func auditVaultIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	return pangeatesting.IntegrationAuditVaultConfig(t, testingEnvironment)
 }
 
 func Test_Integration_Log_NoVerbose(t *testing.T) {
@@ -139,40 +146,28 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 		Status:    STATUS_SIGNED,
 		Target:    "Target",
 		Actor:     ACTOR,
-		Action:    "Action",
+		Action:    ACTION_LOCAL,
 		New:       "New",
 		Old:       "Old",
 		Timestamp: pangea.PangeaTime(ts),
 	}
 
-	_, err := client.Log(ctx, event, true)
-	assert.NoError(t, err)
-
-	searchInput := &audit.SearchInput{
-		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
-		MaxResults: 1,
-	}
-	// signature verification is done inside search
-	out, err := client.Search(ctx, searchInput)
-
+	out, err := client.Log(ctx, event, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
-	assert.Equal(t, out.Result.Count, 1)
-	assert.Equal(t, len(out.Result.Events), 1)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.Signature)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.Events[0].EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
-	assert.Equal(t, out.Result.Events[0].SignatureVerification, audit.Success)
+	assert.NotNil(t, out.Result.EventEnvelope.Signature)
+	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
+	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 }
 
 func Test_Integration_Vault_Signatures(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancelFn()
 
-	cfg := auditIntegrationCfg(t)
+	cfg := auditVaultIntegrationCfg(t)
 	client, _ := audit.New(cfg,
-		audit.WithLogVaultSigning(nil, nil),
 		audit.WithLogProofVerificationEnabled(),
 	)
 
@@ -184,30 +179,19 @@ func Test_Integration_Vault_Signatures(t *testing.T) {
 		Status:    STATUS_SIGNED,
 		Target:    "Target",
 		Actor:     ACTOR,
-		Action:    "Action",
+		Action:    ACTION_VAULT,
 		New:       "New",
 		Old:       "Old",
 		Timestamp: pangea.PangeaTime(ts),
 	}
 
-	_, err := client.Log(ctx, event, true)
-	assert.NoError(t, err)
-
-	searchInput := &audit.SearchInput{
-		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
-		MaxResults: 1,
-	}
-	// signature verification is done inside search
-	out, err := client.Search(ctx, searchInput)
-
+	out, err := client.Log(ctx, event, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
-	assert.Equal(t, out.Result.Count, 1)
-	assert.Equal(t, len(out.Result.Events), 1)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.Signature)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.PublicKey)
-	assert.Equal(t, out.Result.Events[0].SignatureVerification, audit.NotVerified)
+	assert.NotNil(t, out.Result.EventEnvelope.Signature)
+	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
+	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 }
 
 func Test_Integration_Root(t *testing.T) {

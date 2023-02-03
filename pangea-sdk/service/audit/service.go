@@ -20,7 +20,6 @@ type LogSigningMode int
 const (
 	Unsigned  LogSigningMode = 0
 	LocalSign                = 1
-	VaultSign                = 2
 )
 
 type Audit struct {
@@ -28,10 +27,9 @@ type Audit struct {
 
 	SignLogsMode          LogSigningMode
 	Signer                *signer.Signer
-	SignatureKeyID        *string
-	SignatureKeyVersion   *string
 	VerifyProofs          bool
 	SkipEventVerification bool
+	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
 }
@@ -44,6 +42,7 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		lastUnpRootHash:       nil,
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
+		publicKeyInfo:         nil,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -67,8 +66,6 @@ func WithLogLocalSigning(filename string) Option {
 	return func(a *Audit) error {
 		a.SignLogsMode = LocalSign
 		s, err := signer.NewSignerFromPrivateKeyFile(filename)
-		a.SignatureKeyID = nil
-		a.SignatureKeyVersion = nil
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
@@ -77,19 +74,16 @@ func WithLogLocalSigning(filename string) Option {
 	}
 }
 
-func WithLogVaultSigning(signatureKeyID, signatureKeyVersion *string) Option {
+func DisableEventVerification() Option {
 	return func(a *Audit) error {
-		a.SignLogsMode = VaultSign
-		a.SignatureKeyID = signatureKeyID
-		a.SignatureKeyVersion = signatureKeyVersion
-		a.Signer = nil
+		a.SkipEventVerification = true
 		return nil
 	}
 }
 
-func DisableEventVerification() Option {
+func SetPublicKeyInfo(pkinfo map[string]string) Option {
 	return func(a *Audit) error {
-		a.SkipEventVerification = true
+		a.publicKeyInfo = pkinfo
 		return nil
 	}
 }

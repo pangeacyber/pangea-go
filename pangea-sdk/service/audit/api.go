@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
@@ -37,15 +36,10 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 	}
 
 	if a.SignLogsMode == LocalSign && a.Signer != nil {
-		err := input.SignEvent(*a.Signer)
+		err := input.SignEvent(*a.Signer, a.publicKeyInfo)
 		if err != nil {
 			return nil, err
 		}
-	}
-	if a.SignLogsMode == VaultSign {
-		input.Sign = pangea.Bool(true)
-		input.SignatureKeyID = a.SignatureKeyID
-		input.SignatureKeyVersion = a.SignatureKeyVersion
 	}
 
 	req, err := a.Client.NewRequest("POST", "v1/log", input)
@@ -209,6 +203,9 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
 		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 	}
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
 
 	if a.VerifyProofs {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
@@ -292,26 +289,38 @@ type LogInput struct {
 
 	// Previous unpublished root
 	PrevRoot *string `json:"prev_root,omitempty"`
-
-	// Sign with vault service if true
-	Sign *bool `json:"sign,omitempty"`
-
-	// Signature key id to use in vault if sign is true
-	SignatureKeyID *string `json:"signature_key_id,omitempty"`
-
-	// Signature key version to use in vault if sign is true
-	SignatureKeyVersion *string `json:"signature_key_version,omitempty"`
 }
 
-func (i *LogInput) SignEvent(s signer.Signer) error {
-	b := pu.CanonicalizeStruct(&i.Event)
+func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
+	b, err := pu.CanonicalizeStruct(&i.Event)
+	if err != nil {
+		return err
+	}
 
 	signature, err := s.Sign(b)
 	if err != nil {
 		return err
 	}
+
+	pk, err := s.PublicKey()
+	if err != nil {
+		return err
+	}
+
+	if pki != nil {
+		pki["key"] = pk
+	} else {
+		pki = map[string]string{
+			"key": pk,
+		}
+	}
+	pkib, err := pu.CanonicalizeStruct(pki)
+	if err != nil {
+		return err
+	}
+
 	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
-	i.PublicKey = pangea.String(s.PublicKey())
+	i.PublicKey = pangea.String(string(pkib))
 	return nil
 }
 
@@ -610,27 +619,71 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 }
 
 func (ee *EventEnvelope) VerifySignature() EventVerification {
-	if ee.Signature == nil || ee.PublicKey == nil || strings.HasPrefix(*ee.PublicKey, "-----") {
+	// Both nil, so NotVerified
+	if ee.Signature == nil && ee.PublicKey == nil {
 		return NotVerified
 	}
 
-	b := pu.CanonicalizeStruct(ee.Event)
+	// If just one nil, it's an error so Failed
+	if ee.Signature == nil || ee.PublicKey == nil {
+		return Failed
+	}
+
+	b, err := pu.CanonicalizeStruct(ee.Event)
+	if err != nil {
+		return NotVerified
+	}
 
 	sig, err := base64.StdEncoding.DecodeString(*ee.Signature)
 	if err != nil {
 		return Failed
 	}
 
-	pubKey, err := base64.StdEncoding.DecodeString(*ee.PublicKey)
+	publicKey, err := ee.getPublicKey()
 	if err != nil {
 		return Failed
 	}
 
-	v := signer.NewVerifierFromPubKey(pubKey)
-	if v.Verify(b, sig) {
-		return Success
+	v, err := signer.NewVerifierFromPubKey(publicKey)
+	if v == nil {
+		return Failed
 	}
-	return Failed
+
+	if v != nil {
+		ver, err := v.Verify(b, sig)
+		if err != nil {
+			return NotVerified
+		}
+		if ver {
+			return Success
+		} else {
+			return Failed
+		}
+	}
+	return NotVerified
+}
+
+func (ee EventEnvelope) getPublicKey() (string, error) {
+	// Should never enter this case
+	if ee.PublicKey == nil {
+		return "", errors.New("Public key field nil pointer")
+	}
+
+	pkinfo := make(map[string]any)
+	err := json.Unmarshal([]byte(*ee.PublicKey), &pkinfo)
+	if err == nil {
+		val, ok := pkinfo["key"]
+		if ok {
+			if ret, ok := val.(string); ok {
+				return ret, nil
+			}
+			return "", errors.New("Keys is not a string")
+		} else {
+			return "", errors.New("'key' field not present in json")
+		}
+	} else {
+		return *ee.PublicKey, nil
+	}
 }
 
 type SearchResultInput struct {
