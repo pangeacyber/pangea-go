@@ -411,7 +411,7 @@ func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	algorithm := vault.AAed25519
-	purpose := vault.APsigning
+	purpose := vault.KPsigning
 
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
@@ -436,13 +436,12 @@ func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 	// Store
 	rStore, err := client.AsymmetricStore(ctx,
 		&vault.AsymmetricStoreRequest{
-			CommonStoreRequest: vault.CommonStoreRequest{
-				Managed: pangea.Bool(true),
-			},
-			Algorithm:  algorithm,
-			PublicKey:  rGen.Result.PublicKey,
-			PrivateKey: *rGen.Result.PrivateKey,
-			Purpose:    &purpose,
+			CommonStoreRequest: vault.CommonStoreRequest{},
+			Managed:            pangea.Bool(true),
+			Algorithm:          algorithm,
+			PublicKey:          rGen.Result.PublicKey,
+			PrivateKey:         *rGen.Result.PrivateKey,
+			Purpose:            &purpose,
 		})
 
 	assert.NoError(t, err)
@@ -481,11 +480,10 @@ func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
 
 	rStore, err := client.SymmetricStore(ctx,
 		&vault.SymmetricStoreRequest{
-			CommonStoreRequest: vault.CommonStoreRequest{
-				Managed: pangea.Bool(true),
-			},
-			Key:       vault.EncodedSymmetricKey(*rGen.Result.Key),
-			Algorithm: algorithm,
+			CommonStoreRequest: vault.CommonStoreRequest{},
+			Managed:            pangea.Bool(true),
+			Key:                vault.EncodedSymmetricKey(*rGen.Result.Key),
+			Algorithm:          algorithm,
 		})
 
 	if err != nil {

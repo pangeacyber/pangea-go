@@ -11,11 +11,12 @@ type EncodedPrivateKey string
 // EncodedSymmetricKey is a base64 encoded key
 type EncodedSymmetricKey string
 
-type AsymmetricPurpose string
+type KeyPurpose string
 
 const (
-	APsigning    AsymmetricPurpose = "signing"
-	APencryption                   = "encryption"
+	KPsigning    KeyPurpose = "signing"
+	KPencryption            = "encryption"
+	KPjwt                   = "jwt"
 )
 
 type AsymmetricAlgorithm string
@@ -23,18 +24,18 @@ type AsymmetricAlgorithm string
 const (
 	AAed25519 AsymmetricAlgorithm = "ed25519"
 	AArsa                         = "rsa"
+	AAes256                       = "es256"
+	AAes384                       = "es384"
+	AAes512                       = "es512"
 )
 
 type SymmetricAlgorithm string
 
 const (
-	SYAaes SymmetricAlgorithm = "aes"
-)
-
-type SecretAlgorithm string
-
-const (
-	SAbase32 SecretAlgorithm = "base32"
+	SYAaes   SymmetricAlgorithm = "aes"
+	SYAhs256                    = "hs256"
+	SYAhs384                    = "hs384"
+	SYAhs512                    = "hs512"
 )
 
 type Metadata map[string]string
@@ -46,20 +47,41 @@ const (
 	ITasymmetricKey ItemType = "asymmetric_key"
 	ITsymmetricKey           = "symmetric_key"
 	ITsecret                 = "secret"
-	ITmasterKey              = "master_key"
+)
+
+type ItemOrder string
+
+const (
+	IOasc ItemOrder = "asc"
+	IOdes           = "desc"
+)
+
+type ItemOrderBy string
+
+const (
+	IOBtype         ItemOrderBy = "type"
+	IOBcreateAt                 = "create_at"
+	IOBrevokedAt                = "revoked_at"
+	IOBidentity                 = "identity"
+	IOBmanaged                  = "managed"
+	IOBpurpose                  = "purpose"
+	IOBexpiration               = "expiration"
+	IOBlastRotated              = "last_rotated"
+	IOBnextRotation             = "next_rotation"
+	IOBname                     = "name"
+	IOBfolder                   = "folder"
+	IOBversion                  = "version"
 )
 
 type CommonStoreRequest struct {
-	Type                  ItemType `json:"type"`
-	Name                  string   `json:"name,omitempty"`
-	Folder                string   `json:"folder,omitempty"`
-	Metadata              Metadata `json:"metadata,omitempty"`
-	Tags                  Tags     `json:"tags,omitempty"`
-	AutoRotate            *bool    `json:"auto_rotate,omitempty"`
-	RotationPolicy        string   `json:"rotation_policy,omitempty"`
-	RetainPreviousVersion *bool    `json:"retain_previous_version,omitempty"`
-	Expiration            string   `json:"expiration,omitempty"` //FIXME: datetime?
-	Managed               *bool    `json:"managed,omitempty"`
+	Type           ItemType `json:"type"`
+	Name           string   `json:"name,omitempty"`
+	Folder         string   `json:"folder,omitempty"`
+	Metadata       Metadata `json:"metadata,omitempty"`
+	Tags           Tags     `json:"tags,omitempty"`
+	AutoRotate     *bool    `json:"auto_rotate,omitempty"`
+	RotationPolicy string   `json:"rotation_policy,omitempty"`
+	Expiration     string   `json:"expiration,omitempty"` //FIXME: datetime?
 }
 
 type CommonStoreResult struct {
@@ -71,17 +93,16 @@ type CommonStoreResult struct {
 // `json:"name,omitempty"`
 
 type CommonGenerateRequest struct {
-	Type                  ItemType `json:"type"`
-	Name                  string   `json:"name,omitempty"`
-	Folder                string   `json:"folder,omitempty"`
-	Metadata              Metadata `json:"metadata,omitempty"`
-	Tags                  Tags     `json:"tags,omitempty"`
-	AutoRotate            *bool    `json:"auto_rotate,omitempty"`
-	RotationPolicy        string   `json:"rotation_policy,omitempty"`
-	RetainPreviousVersion *bool    `json:"retain_previous_version,omitempty"`
-	Expiration            string   `json:"expiration,omitempty"` //FIXME: datetime?
-	Managed               *bool    `json:"managed,omitempty"`
-	Store                 *bool    `json:"store,omitempty"`
+	Type           ItemType `json:"type"`
+	Name           string   `json:"name,omitempty"`
+	Folder         string   `json:"folder,omitempty"`
+	Metadata       Metadata `json:"metadata,omitempty"`
+	Tags           Tags     `json:"tags,omitempty"`
+	AutoRotate     *bool    `json:"auto_rotate,omitempty"`
+	RotationPolicy string   `json:"rotation_policy,omitempty"`
+	Expiration     string   `json:"expiration,omitempty"` //FIXME: datetime?
+	Managed        *bool    `json:"managed,omitempty"`
+	Store          *bool    `json:"store,omitempty"`
 }
 
 type CommonGenerateResult struct {
@@ -119,7 +140,7 @@ type GetResult struct {
 	PublicKey  *EncodedPublicKey    `json:"public_key,omitempty"`
 	PrivateKey *EncodedPrivateKey   `json:"private_key,omitempty"`
 	Algorithm  string               `json:"algorithm,omitempty"`
-	Purpose    *AsymmetricPurpose   `json:"purpose,omitempty"`
+	Purpose    *KeyPurpose          `json:"purpose,omitempty"`
 	Key        *EncodedSymmetricKey `json:"key,omitempty"`
 	Managed    *bool                `json:"managed,omitempty"`
 	Secret     *string              `json:"secret,omitempty"`
@@ -138,8 +159,9 @@ type ListItemData struct {
 	RevokedAt      string   `json:"revoked_at,omitempty"` //FIXME: datetime?
 	Metadata       Metadata `json:"metadata,omitempty"`
 	Tags           Tags     `json:"tags,omitempty"`
-	Managed        *bool    `json:"managed,omitempty"`
+	Managed        bool     `json:"managed"`
 	NextRotation   string   `json:"next_rotation,omitempty"` //FIXME: datetime?
+	LastRotated    string   `json:"last_rotated,omitempty"`  //FIXME: datetime?
 	Expiration     string   `json:"expiration,omitempty"`    //FIXME: datetime?
 	RotationPolicy string   `json:"rotation_policy,omitempty"`
 	Version        int      `json:"version"`
@@ -153,12 +175,11 @@ type ListResult struct {
 }
 
 type ListRequest struct {
-	Filter       map[string]string   `json:"filter,omitempty"`
-	Restrictions map[string][]string `json:"restrictions,omitempty"`
-	Last         string              `json:"last,omitempty"`
-	Size         int                 `json:"size,omitempty"`
-	Order        string              `json:"order,omitempty"`
-	OrderBy      string              `json:"order_by,omitempty"`
+	Filter  map[string]string `json:"filter,omitempty"`
+	Last    string            `json:"last,omitempty"`
+	Size    int               `json:"size,omitempty"`
+	Order   ItemOrder         `json:"order,omitempty"`
+	OrderBy ItemOrderBy       `json:"order_by,omitempty"`
 }
 
 type CommonRotateRequest struct {

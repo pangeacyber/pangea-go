@@ -11,12 +11,15 @@ type SymmetricStoreResult struct {
 	CommonStoreResult
 	Algorithm *SymmetricAlgorithm  `json:"algorithm,omitempty"`
 	Key       *EncodedSymmetricKey `json:"key,omitempty"`
+	Managed   *bool                `json:"managed,omitempty"`
+	Purpose   *KeyPurpose          `json:"purpose,omitempty"`
 }
 
 type SymmetricGenerateRequest struct {
 	CommonGenerateRequest
 	Algorithm *SymmetricAlgorithm `json:"algorithm,omitempty"`
 	Managed   *bool               `json:"managed,omitempty"`
+	Purpose   *KeyPurpose         `json:"purpose,omitempty"`
 }
 
 type SymmetricGenerateResult struct {
