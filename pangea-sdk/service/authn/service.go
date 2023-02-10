@@ -55,9 +55,27 @@ type User struct {
 	Profile *UserProfile
 	Invites *UserInvite
 	MFA     *UserMFA
+	Login   *UserLogin
+}
+
+type Session struct {
+	*pangea.Client
+}
+
+type Client struct {
+	*pangea.Client
+	Session *ClientSession
+}
+
+type ClientSession struct {
+	*pangea.Client
 }
 
 type UserMFA struct {
+	*pangea.Client
+}
+
+type UserLogin struct {
 	*pangea.Client
 }
 
@@ -114,8 +132,33 @@ func newFlow(cli *pangea.Client) *Flow {
 	}
 }
 
+func newClient(cli *pangea.Client) *Client {
+	return &Client{
+		Client:  cli,
+		Session: newClientSession(cli),
+	}
+}
+
+func newSession(cli *pangea.Client) *Session {
+	return &Session{
+		Client: cli,
+	}
+}
+
+func newClientSession(cli *pangea.Client) *ClientSession {
+	return &ClientSession{
+		Client: cli,
+	}
+}
+
 func newUserMFA(cli *pangea.Client) *UserMFA {
 	return &UserMFA{
+		Client: cli,
+	}
+}
+
+func newUserLogin(cli *pangea.Client) *UserLogin {
+	return &UserLogin{
 		Client: cli,
 	}
 }
@@ -138,6 +181,7 @@ func newUser(cli *pangea.Client) *User {
 		Profile: newUserProfile(cli),
 		Invites: newUserInvites(cli),
 		MFA:     newUserMFA(cli),
+		Login:   newUserLogin(cli),
 	}
 }
 

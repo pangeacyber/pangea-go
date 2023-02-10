@@ -127,14 +127,15 @@ func Test_Integration_User_Login(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	input := authn.UserLoginRequest{
-		Email:  EMAIL_TEST,
-		Secret: PASSWORD_NEW,
+	input := authn.UserLoginPasswordRequest{
+		Email:    EMAIL_TEST,
+		Password: PASSWORD_NEW,
 	}
-	resp, err := client.User.Login(ctx, input)
+	resp, err := client.User.Login.Password(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
-	assert.Equal(t, USER_IDENTITY, resp.Result.Identity)
+	assert.NotEmpty(t, resp.Result.ActiveToken)
+	assert.NotEmpty(t, resp.Result.RefreshToken)
 }
 
 func Test_Integration_User_Profile(t *testing.T) {

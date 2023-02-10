@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-type UserinfoResult struct {
+type ClientUserinfoResult struct {
 	Token     string            `json:"token"`
 	ID        string            `json:"id"`
 	Type      string            `json:"type"`
@@ -19,24 +19,24 @@ type UserinfoResult struct {
 	CreatedAt string            `json:"created_at"`
 }
 
-type UserinfoRequest struct {
+type ClientUserinfoRequest struct {
 	Code string `json:"code"`
 }
 
-func (a *AuthN) Userinfo(ctx context.Context, input UserinfoRequest) (*pangea.PangeaResponse[UserinfoResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/userinfo", input)
+func (a *Client) Userinfo(ctx context.Context, input ClientUserinfoRequest) (*pangea.PangeaResponse[ClientUserinfoResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/client/userinfo", input)
 	if err != nil {
 		return nil, err
 	}
 
-	var out UserinfoResult
+	var out ClientUserinfoResult
 	resp, err := a.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[UserinfoResult]{
+	panresp := pangea.PangeaResponse[ClientUserinfoResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -290,21 +290,59 @@ type UserLoginRequest struct {
 	Scopes *[]string `json:"scopes,omitempty"`
 }
 
-type UserLoginResult struct {
-	Token     string            `json:"token"`
-	ID        string            `json:"id"`
-	Type      string            `json:"type"`
-	Life      int               `json:"life"`
-	Expire    string            `json:"expire"`
-	Identity  string            `json:"identity"`
-	Email     string            `json:"email"`
-	Scopes    *[]string         `json:"scopes,omitempty"`
-	Profile   map[string]string `json:"profile"`
-	CreatedAt string            `json:"created_at"`
+type LoginToken struct {
+	Token     string      `json:"token"`
+	ID        string      `json:"id"`
+	Type      string      `json:"type"`
+	Life      string      `json:"life"`
+	Expire    string      `json:"expire"`
+	Identity  string      `json:"identity"`
+	Email     string      `json:"email"`
+	Profile   UserProfile `json:"profile"`
+	CreatedAt string      `json:"created_at"`
 }
 
-func (a *User) Login(ctx context.Context, input UserLoginRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/login", input)
+type UserLoginResult struct {
+	RefreshToken LoginToken `json:"refres_token"`
+	ActiveToken  LoginToken `json:"active_token"`
+}
+
+type UserLoginPasswordRequest struct {
+	Email        string       `json:"email"`
+	Password     string       `json:"password"`
+	ExtraProfile *UserProfile `json:"extra_profile,omitempty"`
+}
+
+type UserLoginSocialRequest struct {
+	Email        string       `json:"email"`
+	Provider     IDProvider   `json:"provider"`
+	SocialID     string       `json:"social_id"`
+	ExtraProfile *UserProfile `json:"extra_profile,omitempty"`
+}
+
+func (a *UserLogin) Password(ctx context.Context, input UserLoginPasswordRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/login/password", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out UserLoginResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[UserLoginResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+func (a *UserLogin) Social(ctx context.Context, input UserLoginSocialRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/user/login/social", input)
 	if err != nil {
 		return nil, err
 	}
@@ -1096,6 +1134,255 @@ func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.Pan
 	}
 
 	panresp := pangea.PangeaResponse[UserVerifyResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type ClientSessionInvalidateRequest struct {
+	Token     string `json:"token"`
+	SessionID string `json:"session_id"`
+}
+
+type ClientSessionInvalidateResult struct {
+}
+
+func (a *ClientSession) Invalidate(ctx context.Context, input ClientSessionInvalidateRequest) (*pangea.PangeaResponse[ClientSessionInvalidateResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/client/session/invalidate", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out ClientSessionInvalidateResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[ClientSessionInvalidateResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type SessionListOrderBy string
+
+const (
+	SLOBid            SessionListOrderBy = "id"
+	SLOBcreatedAt                        = "created_at"
+	SLOBtype                             = "type"
+	SLOBidentity                         = "identity"
+	SLOBemail                            = "email"
+	SLOBexpire                           = "expire"
+	SLOBactiveTokenID                    = "active_token_id"
+)
+
+type SessionListOrder string
+
+const (
+	SLOasc  SessionListOrder = "asc"
+	SLOdesc                  = "desc"
+)
+
+type ClientSessionListRequest struct {
+	Token   string             `json:"token"`
+	Filter  map[string]string  `json:"filter,omitempty"`
+	Last    string             `json:"last,omitempty"`
+	Order   SessionListOrder   `json:"order,omitempty"`
+	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
+}
+
+type SessionToken struct {
+	ID        string            `json:"id"`
+	Type      string            `json:"type"`
+	Life      int               `json:"list"`
+	Expire    string            `json:"expire"`
+	Email     string            `json:"email"`
+	Scopes    []string          `json:"scopes"`
+	Profile   map[string]string `json:"profile"`
+	CreatedAt string            `json:"created_at"`
+}
+
+type SessionItem struct {
+	ID          string            `json:"id"`
+	Type        string            `json:"type"`
+	Life        int               `json:"list"`
+	Expire      string            `json:"expire"`
+	Identity    string            `json:"identity"`
+	Email       string            `json:"email"`
+	Scopes      []string          `json:"scopes"`
+	Profile     map[string]string `json:"profile"`
+	CreatedAt   string            `json:"created_at"`
+	ActiveToken SessionToken      `json:"active_token"`
+	Last        string            `json:"last"`
+}
+
+type SessionListResult struct {
+	Sessions []SessionItem `json:"sessions"`
+}
+
+func (a *ClientSession) List(ctx context.Context, input ClientSessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/client/session/invalidate", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out SessionListResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[SessionListResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type ClientSessionLogoutRequest struct {
+	Token string `json:"token"`
+}
+
+type ClientSessionLogoutResult struct {
+}
+
+func (a *ClientSession) Logout(ctx context.Context, input ClientSessionLogoutRequest) (*pangea.PangeaResponse[ClientSessionLogoutResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/client/session/logout", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out ClientSessionLogoutResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[ClientSessionLogoutResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type ClientSessionRefreshRequest struct {
+	RefreshToken string `json:"refresh_token"`
+	ActiveToken  string `json:"active_token"`
+}
+
+type ClientSessionRefreshResult struct {
+	RefreshToken LoginToken `json:"refresh_token"`
+	ActiveToken  LoginToken `json:"active_token"`
+}
+
+func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshRequest) (*pangea.PangeaResponse[ClientSessionRefreshResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/client/session/refresh", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out ClientSessionRefreshResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[ClientSessionRefreshResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type SessionListRequest struct {
+	Filter  map[string]string  `json:"filter,omitempty"`
+	Last    string             `json:"last,omitempty"`
+	Order   SessionListOrder   `json:"order,omitempty"`
+	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
+}
+
+func (a *Session) List(ctx context.Context, input SessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/session/list", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out SessionListResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[SessionListResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type SessionInvalidateRequest struct {
+	SessionID string `json:"session_id"`
+}
+
+type SessionInvalidateResult struct {
+}
+
+func (a *Session) Invalidate(ctx context.Context, input SessionInvalidateRequest) (*pangea.PangeaResponse[SessionInvalidateResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out SessionInvalidateResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[SessionInvalidateResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
+type SessionLogoutRequest struct {
+	UserID string `json:"user_id"`
+}
+
+type SessionLogoutResult struct {
+}
+
+func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out SessionLogoutResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[SessionLogoutResult]{
 		Response: *resp,
 		Result:   &out,
 	}
