@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// @summary Lookup a domain
+// @summary Domain reputation
 //
 // @description Lookup an internet domain to retrieve reputation data.
 //
