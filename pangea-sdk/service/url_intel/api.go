@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// @summary Look up a URL
+// @summary URL reputation
 //
 // @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
@@ -63,7 +63,7 @@ type UrlLookupResult struct {
 	RawData    interface{} `json:"raw_data,omitempty"`
 }
 
-// @summary Look up a URL reputation
+// @summary URL reputation
 //
 // @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
