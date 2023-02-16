@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// @summary Look up an IP
+// @summary IP reputation
 //
 // @deprecated Use Reputation instead.
 //
@@ -42,7 +42,7 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 	return &panresp, err
 }
 
-// @summary Look up an IP reputation
+// @summary IP reputation
 //
 // @description Retrieve a reputation score for an IP address from a provider,
 // including an optional detailed report.

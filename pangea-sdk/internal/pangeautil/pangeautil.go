@@ -27,14 +27,23 @@ func CanonicalizeStruct(v interface{}) ([]byte, error) {
 
 type PangeaTimestamp time.Time
 
-const ptLayout = "2006-01-02T15:04:05.000000Z"
+const ptLayout_Z = "2006-01-02T15:04:05.000000Z"
+const ptLayout_noZ = "2006-01-02T15:04:05.000000"
 
 // UnmarshalJSON Parses the json string in the custom format
 func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) (err error) {
 	s := strings.Trim(string(b), `"`)
-	nt, err := time.Parse(ptLayout, s)
-	*ct = PangeaTimestamp(nt)
-	return
+	nt, err := time.Parse(ptLayout_Z, s)
+	if err == nil {
+		*ct = PangeaTimestamp(nt)
+		return nil
+	}
+	nt, err = time.Parse(ptLayout_noZ, s)
+	if err == nil {
+		*ct = PangeaTimestamp(nt)
+		return
+	}
+	return err
 }
 
 // MarshalJSON writes a quoted string in the custom format
@@ -46,7 +55,7 @@ func (ct PangeaTimestamp) MarshalJSON() ([]byte, error) {
 func (ct *PangeaTimestamp) String() string {
 	t := time.Time(*ct)
 	utc := t.UTC()
-	return fmt.Sprintf("%q", utc.Format(ptLayout))
+	return fmt.Sprintf("%q", utc.Format(ptLayout_Z))
 }
 
 // CanonicalizeJSONMarshall is not a true canoni
