@@ -11,16 +11,6 @@ type SecretStoreResult struct {
 	Secret string `json:"secret"`
 }
 
-type SecretGenerateRequest struct {
-	CommonGenerateRequest
-	Secret string `json:"secret"`
-}
-
-type SecretGenerateResult struct {
-	CommonGenerateResult
-	Secret string `json:"secret"`
-}
-
 type SecretRotateRequest struct {
 	CommonRotateRequest
 	Secret string `json:"secret"`
@@ -29,4 +19,14 @@ type SecretRotateRequest struct {
 type SecretRotateResult struct {
 	CommonRotateResult
 	Secret string `json:"secret"`
+}
+
+type PangeaTokenRotateRequest struct {
+	CommonRotateRequest
+}
+
+type PangeaTokenStoreRequest struct {
+	CommonStoreRequest
+	RetainPreviousVersion *bool  `json:"retain_previous_version,omitempty"`
+	Token                 string `json:"secret"`
 }

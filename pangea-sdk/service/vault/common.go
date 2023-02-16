@@ -15,27 +15,27 @@ type KeyPurpose string
 
 const (
 	KPsigning    KeyPurpose = "signing"
-	KPencryption            = "encryption"
-	KPjwt                   = "jwt"
+	KPencryption KeyPurpose = "encryption"
+	KPjwt        KeyPurpose = "jwt"
 )
 
 type AsymmetricAlgorithm string
 
 const (
 	AAed25519 AsymmetricAlgorithm = "ed25519"
-	AArsa                         = "rsa"
-	AAes256                       = "es256"
-	AAes384                       = "es384"
-	AAes512                       = "es512"
+	AArsa     AsymmetricAlgorithm = "rsa"
+	AAes256   AsymmetricAlgorithm = "es256"
+	AAes384   AsymmetricAlgorithm = "es384"
+	AAes512   AsymmetricAlgorithm = "es512"
 )
 
 type SymmetricAlgorithm string
 
 const (
 	SYAaes   SymmetricAlgorithm = "aes"
-	SYAhs256                    = "hs256"
-	SYAhs384                    = "hs384"
-	SYAhs512                    = "hs512"
+	SYAhs256 SymmetricAlgorithm = "hs256"
+	SYAhs384 SymmetricAlgorithm = "hs384"
+	SYAhs512 SymmetricAlgorithm = "hs512"
 )
 
 type Metadata map[string]string
@@ -45,32 +45,33 @@ type ItemType string
 
 const (
 	ITasymmetricKey ItemType = "asymmetric_key"
-	ITsymmetricKey           = "symmetric_key"
-	ITsecret                 = "secret"
+	ITsymmetricKey  ItemType = "symmetric_key"
+	ITsecret        ItemType = "secret"
+	ITpangeaToken   ItemType = "pangea_token"
 )
 
 type ItemOrder string
 
 const (
 	IOasc ItemOrder = "asc"
-	IOdes           = "desc"
+	IOdes ItemOrder = "desc"
 )
 
 type ItemOrderBy string
 
 const (
 	IOBtype         ItemOrderBy = "type"
-	IOBcreateAt                 = "create_at"
-	IOBrevokedAt                = "revoked_at"
-	IOBidentity                 = "identity"
-	IOBmanaged                  = "managed"
-	IOBpurpose                  = "purpose"
-	IOBexpiration               = "expiration"
-	IOBlastRotated              = "last_rotated"
-	IOBnextRotation             = "next_rotation"
-	IOBname                     = "name"
-	IOBfolder                   = "folder"
-	IOBversion                  = "version"
+	IOBcreateAt     ItemOrderBy = "create_at"
+	IOBrevokedAt    ItemOrderBy = "revoked_at"
+	IOBidentity     ItemOrderBy = "identity"
+	IOBmanaged      ItemOrderBy = "managed"
+	IOBpurpose      ItemOrderBy = "purpose"
+	IOBexpiration   ItemOrderBy = "expiration"
+	IOBlastRotated  ItemOrderBy = "last_rotated"
+	IOBnextRotation ItemOrderBy = "next_rotation"
+	IOBname         ItemOrderBy = "name"
+	IOBfolder       ItemOrderBy = "folder"
+	IOBversion      ItemOrderBy = "version"
 )
 
 type CommonStoreRequest struct {
@@ -119,7 +120,7 @@ type GetRequest struct {
 
 type CommonGetResult struct {
 	ID                    string   `json:"id"`
-	Type                  ItemType `json:"type"`
+	Type                  string   `json:"type"`
 	Version               int      `json:"version"`
 	Name                  string   `json:"name,omitempty"`
 	Folder                string   `json:"folder,omitempty"`

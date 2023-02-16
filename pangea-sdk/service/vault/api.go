@@ -79,6 +79,30 @@ func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 	return &panresp, err
 }
 
+func (v *vault) JWTGet(ctx context.Context, input *JWTGetRequest) (*pangea.PangeaResponse[JWTGetResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := v.Client.NewRequest("POST", "v1/get/jwk", input)
+	if err != nil {
+		return nil, err
+	}
+	out := JWTGetResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[JWTGetResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
 func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -152,7 +176,56 @@ func (v *vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pa
 	return &panresp, err
 }
 
+func (v *vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+	input.Type = ITsecret
+
+	req, err := v.Client.NewRequest("POST", "v1/secret/store", input)
+	if err != nil {
+		return nil, err
+	}
+	out := SecretStoreResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[SecretStoreResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
 func (v *vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := v.Client.NewRequest("POST", "v1/secret/rotate", input)
+	if err != nil {
+		return nil, err
+	}
+	out := SecretRotateResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[SecretRotateResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+func (v *vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -389,6 +462,54 @@ func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.Pange
 	}
 
 	panresp := pangea.PangeaResponse[VerifyResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := v.Client.NewRequest("POST", "v1/key/sign/jwt", input)
+	if err != nil {
+		return nil, err
+	}
+	out := JWTSignResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[JWTSignResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
+
+func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := v.Client.NewRequest("POST", "v1/key/verify/jwt", input)
+	if err != nil {
+		return nil, err
+	}
+	out := JWTVerifyResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[JWTVerifyResult]{
 		Response: *resp,
 		Result:   &out,
 	}
