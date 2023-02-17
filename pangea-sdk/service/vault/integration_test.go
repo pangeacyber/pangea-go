@@ -370,8 +370,8 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.True(t, rVerify1.Result.ValidSignature)
 
 	// Get default
-	rGet, err := client.JWTGet(ctx,
-		&vault.JWTGetRequest{
+	rGet, err := client.JWKGet(ctx,
+		&vault.JWKGetRequest{
 			ID: id,
 		},
 	)
@@ -382,8 +382,8 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.Equal(t, 1, len(rGet.Result.JWK.Keys))
 
 	// Get version 1
-	rGet, err = client.JWTGet(ctx,
-		&vault.JWTGetRequest{
+	rGet, err = client.JWKGet(ctx,
+		&vault.JWKGetRequest{
 			ID:      id,
 			Version: pangea.String("1"),
 		},
@@ -395,8 +395,8 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.Equal(t, 1, len(rGet.Result.JWK.Keys))
 
 	// Get all
-	rGet, err = client.JWTGet(ctx,
-		&vault.JWTGetRequest{
+	rGet, err = client.JWKGet(ctx,
+		&vault.JWKGetRequest{
 			ID:      id,
 			Version: pangea.String("all"),
 		},
@@ -408,8 +408,8 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.Equal(t, 2, len(rGet.Result.JWK.Keys))
 
 	// Get version -1
-	rGet, err = client.JWTGet(ctx,
-		&vault.JWTGetRequest{
+	rGet, err = client.JWKGet(ctx,
+		&vault.JWKGetRequest{
 			ID:      id,
 			Version: pangea.String("-1"),
 		},

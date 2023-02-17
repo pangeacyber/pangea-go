@@ -79,7 +79,7 @@ func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 	return &panresp, err
 }
 
-func (v *vault) JWTGet(ctx context.Context, input *JWTGetRequest) (*pangea.PangeaResponse[JWTGetResult], error) {
+func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -88,14 +88,14 @@ func (v *vault) JWTGet(ctx context.Context, input *JWTGetRequest) (*pangea.Pange
 	if err != nil {
 		return nil, err
 	}
-	out := JWTGetResult{}
+	out := JWKGetResult{}
 	resp, err := v.Client.Do(ctx, req, &out)
 
 	if resp == nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[JWTGetResult]{
+	panresp := pangea.PangeaResponse[JWKGetResult]{
 		Response: *resp,
 		Result:   &out,
 	}

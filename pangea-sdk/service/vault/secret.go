@@ -27,6 +27,5 @@ type PangeaTokenRotateRequest struct {
 
 type PangeaTokenStoreRequest struct {
 	CommonStoreRequest
-	RetainPreviousVersion *bool  `json:"retain_previous_version,omitempty"`
-	Token                 string `json:"secret"`
+	Token string `json:"secret"`
 }

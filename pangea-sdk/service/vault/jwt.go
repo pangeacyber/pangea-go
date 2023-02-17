@@ -13,7 +13,7 @@ type JWT struct {
 	E   *string `json:"e,omitemtpy"`
 }
 
-type JWTGetRequest struct {
+type JWKGetRequest struct {
 	ID      string  `json:"id"`
 	Version *string `json:"version,omitempty"`
 }
@@ -22,7 +22,7 @@ type JWKSet struct {
 	Keys []JWT `json:"keys"`
 }
 
-type JWTGetResult struct {
+type JWKGetResult struct {
 	JWK JWKSet `json:"jwk"`
 }
 

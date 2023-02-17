@@ -10,7 +10,7 @@ type Client interface {
 	Revoke(ctx context.Context, input *RevokeRequest) (*pangea.PangeaResponse[RevokeResult], error)
 	Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error)
 	Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error)
-	JWTGet(ctx context.Context, input *JWTGetRequest) (*pangea.PangeaResponse[JWTGetResult], error)
+	JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error)
 	List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error)
 	Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error)
 	SecretStore(ctx context.Context, input *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error)
