@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	version   = "1.1.2"
-	userAgent = "pangea-go/" + version
+	version         = "1.2.0"
+	pangeaUserAgent = "pangea-go/" + version
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
@@ -50,6 +50,9 @@ type Config struct {
 	// AdditionalHeaders is a map of additional headers to be sent with the request.
 	AdditionalHeaders map[string]string
 
+	// Custom user agent is a string to be added to pangea sdk user agent header and identify app
+	CustomUserAgent string
+
 	// if it should retry request
 	// if HTTPClient is set in the config this value won't take effect
 	Retry bool
@@ -61,27 +64,33 @@ type Config struct {
 // A Client manages communication with the Pangea API.
 type Client struct {
 	// The auth token of the user.
-	Token string
+	token string
 
 	// The client's config.
-	Config *Config
+	config *Config
 
 	// User agent used when communicating with the Pangea API.
-	UserAgent string
+	userAgent string
 
 	// The identifier for the service
-	ServiceName string
+	serviceName string
 }
 
 func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 	cfg.HTTPClient = chooseHTTPClient(cfg)
+	var userAgent string
+	if len(baseCfg.CustomUserAgent) > 0 {
+		userAgent = pangeaUserAgent + " " + baseCfg.CustomUserAgent
+	} else {
+		userAgent = pangeaUserAgent
+	}
 	return &Client{
-		ServiceName: service,
-		Token:       cfg.Token,
-		Config:      cfg,
-		UserAgent:   userAgent,
+		serviceName: service,
+		token:       cfg.Token,
+		config:      cfg,
+		userAgent:   userAgent,
 	}
 }
 
@@ -104,12 +113,16 @@ func chooseHTTPClient(cfg *Config) *http.Client {
 
 func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
 	for k, v := range additionalHeaders {
-		req.Header.Add(k, v)
+		// We don't want to overwrite pangea headers with user additional headers. Ignore them.
+		_, ok := req.Header[k]
+		if !ok {
+			req.Header.Add(k, v)
+		}
 	}
 }
 
 func (c *Client) serviceUrl(service, path string) (string, error) {
-	cfg := c.Config
+	cfg := c.config
 	endpoint := ""
 
 	scheme := "https://"
@@ -141,7 +154,7 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
 func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
-	u, err := c.serviceUrl(c.ServiceName, urlStr)
+	u, err := c.serviceUrl(c.serviceName, urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -158,16 +171,16 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	if err != nil {
 		return nil, err
 	}
-	if c.Token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	if c.token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	if c.UserAgent != "" {
-		req.Header.Set("User-Agent", c.UserAgent)
+	if c.userAgent != "" {
+		req.Header.Set("User-Agent", c.userAgent)
 	}
-	mergeHeaders(req, c.Config.AdditionalHeaders)
+	mergeHeaders(req, c.config.AdditionalHeaders)
 	return req, nil
 }
 
@@ -199,7 +212,7 @@ func newResponse(r *http.Response) (*Response, error) {
 //	If an error or API Error occurs, the error will contain more information. Otherwise you
 //	are supposed to read and close the response's Body.
 func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response, error) {
-	resp, err := c.Config.HTTPClient.Do(req.WithContext(ctx))
+	resp, err := c.config.HTTPClient.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
