@@ -183,7 +183,7 @@ func Test_Integration_IpIsVPN(t *testing.T) {
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &ip_intel.IpVPNRequest{
-		Ip:       "1.46.128.165",
+		Ip:       "2.25.119.42",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "digitalenvoy",
@@ -206,7 +206,7 @@ func Test_Integration_IpIsVPN_DefaultProvider(t *testing.T) {
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &ip_intel.IpVPNRequest{
-		Ip: "1.46.128.165",
+		Ip: "2.25.119.42",
 	}
 	out, err := ipintel.IsVPN(ctx, input)
 	if err != nil {
