@@ -73,7 +73,7 @@ These linters will run on every `git commit` operation.
 
 # Writing Docs
 
-To maintain parity with documentation across all our SDKs, please follow this format when writing a doc comment for a *published* function or method. Published means the function ro method is listed as an endpoint in our API Reference docs.
+To maintain parity with documentation across all our SDKs, please follow this format when writing a doc comment for a *published* function or method. Published means the function or method is listed as an endpoint in our API Reference docs.
 
 Published Doc Example:
 ```
