@@ -10,13 +10,19 @@ import (
 	"time"
 )
 
-func CanonicalizeStruct(v interface{}) []byte {
+func CanonicalizeStruct(v interface{}) ([]byte, error) {
 	var smap map[string]interface{}
-	ebytes, _ := json.Marshal(v)
+	ebytes, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
 	// Order keys
 	json.Unmarshal(ebytes, &smap)
-	mbytes, _ := json.Marshal(smap)
-	return mbytes
+	mbytes, err := json.Marshal(smap)
+	if err != nil {
+		return nil, err
+	}
+	return mbytes, nil
 }
 
 type PangeaTimestamp time.Time
