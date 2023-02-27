@@ -88,6 +88,9 @@ type TextInput struct {
 
 	// If the response should include some debug Info.
 	Debug *bool `json:"debug,omitempty"`
+
+	// An array of redact rule short names
+	Rules []string `json:"rules,omitempty"`
 }
 
 type TextOutput struct {
@@ -141,6 +144,9 @@ type StructuredInput struct {
 
 	// Setting this value to true will provide a detailed analysis of the redacted data and the rules that caused redaction.
 	Debug *bool `json:"debug,omitempty"`
+
+	// An array of redact rule short names
+	Rules []string `json:"rules,omitempty"`
 }
 
 // SetData marshal and sets the JSON encoding of obj into Data.
