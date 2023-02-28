@@ -89,7 +89,7 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.Equal(t, secretV2, *rGet.Result.Versions[0].Secret)
 	assert.Equal(t, string(vault.IVSactive), rGet.Result.Versions[0].State)
 	assert.Nil(t, rGet.Result.Versions[0].PublicKey)
-	assert.Empty(t, rGet.Result.RevokedAt)
+	assert.Empty(t, rGet.Result.DestroyedAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 
 	rStateChange, err := client.StateChange(ctx,
@@ -116,7 +116,7 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.Equal(t, secretV2, *rGet.Result.Versions[0].Secret)
 	assert.Nil(t, rGet.Result.Versions[0].PublicKey)
 	assert.Equal(t, string(vault.IVSsuspended), rGet.Result.Versions[0].State)
-	assert.Empty(t, rGet.Result.RevokedAt)
+	assert.Empty(t, rGet.Result.DestroyedAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 }
 

@@ -72,7 +72,7 @@ type ItemOrderBy string
 const (
 	IOBtype         ItemOrderBy = "type"
 	IOBcreateAt     ItemOrderBy = "create_at"
-	IOBrevokedAt    ItemOrderBy = "revoked_at"
+	IOBdestroyedAt  ItemOrderBy = "destroyed_at"
 	IOBidentity     ItemOrderBy = "identity"
 	IOBmanaged      ItemOrderBy = "managed"
 	IOBpurpose      ItemOrderBy = "purpose"
@@ -146,7 +146,7 @@ type GetResult struct {
 	Expiration        string      `json:"expiration,omitempty"`
 	LastRotated       string      `json:"last_rotated,omitempty"`
 	NextRotation      string      `json:"next_rotation,omitempty"`
-	RevokedAt         string      `json:"revoked_at,omitempty"`
+	DestroyedAt       string      `json:"destroyed_at,omitempty"`
 	Algorithm         string      `json:"algorithm,omitempty"`
 	Purpose           *KeyPurpose `json:"purpose,omitempty"`
 	Versions          []ItemVersionData
@@ -162,7 +162,7 @@ type ListItemData struct {
 	ListFolderData
 	ID                string   `json:"id"`
 	CreatedAt         string   `json:"created_at,omitempty"`
-	RevokedAt         string   `json:"revoked_at,omitempty"`
+	DestroyedAt       string   `json:"destroyed_at,omitempty"`
 	Metadata          Metadata `json:"metadata,omitempty"`
 	Tags              Tags     `json:"tags,omitempty"`
 	NextRotation      string   `json:"next_rotation,omitempty"`
