@@ -17,20 +17,19 @@ type AsymmetricStoreRequest struct {
 	Algorithm  AsymmetricAlgorithm `json:"algorithm"`
 	PublicKey  EncodedPublicKey    `json:"public_key"`
 	PrivateKey EncodedPrivateKey   `json:"private_key"`
-	Managed    *bool               `json:"managed,omitempty"`
 	Purpose    *KeyPurpose         `json:"purpose,omitempty"`
 }
 
 type AsymmetricStoreResult struct {
 	CommonStoreResult
-	Algorithm  AsymmetricAlgorithm `json:"algorithm"`
-	PublicKey  EncodedPublicKey    `json:"public_key"`
-	PrivateKey *EncodedPrivateKey  `json:"private_key,omitempty"`
+	Algorithm AsymmetricAlgorithm `json:"algorithm"`
+	PublicKey EncodedPublicKey    `json:"public_key"`
 }
 
 type SignRequest struct {
 	ID      string `json:"id"`
 	Message string `json:"message"`
+	Version *int   `json:"version,omitempty"`
 }
 
 type SignResult struct {

@@ -7,23 +7,23 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-func (v *vault) Revoke(ctx context.Context, input *RevokeRequest) (*pangea.PangeaResponse[RevokeResult], error) {
+func (v *vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pangea.PangeaResponse[StateChangeResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
 
-	req, err := v.Client.NewRequest("POST", "v1/revoke", input)
+	req, err := v.Client.NewRequest("POST", "v1/state/change", input)
 	if err != nil {
 		return nil, err
 	}
-	out := RevokeResult{}
+	out := StateChangeResult{}
 	resp, err := v.Client.Do(ctx, req, &out)
 
 	if resp == nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[RevokeResult]{
+	panresp := pangea.PangeaResponse[StateChangeResult]{
 		Response: *resp,
 		Result:   &out,
 	}

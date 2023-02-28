@@ -2,8 +2,7 @@ package vault
 
 type SecretStoreRequest struct {
 	CommonStoreRequest
-	RetainPreviousVersion *bool  `json:"retain_previous_version,omitempty"`
-	Secret                string `json:"secret"`
+	Secret string `json:"secret"`
 }
 
 type SecretStoreResult struct {

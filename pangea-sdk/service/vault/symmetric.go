@@ -4,7 +4,7 @@ type SymmetricStoreRequest struct {
 	CommonStoreRequest
 	Key       EncodedSymmetricKey `json:"key"`
 	Algorithm SymmetricAlgorithm  `json:"algorithm"`
-	Managed   *bool               `json:"managed,omitempty"`
+	Purpose   KeyPurpose          `json:"purpose"`
 }
 
 type SymmetricStoreResult struct {
@@ -31,6 +31,7 @@ type SymmetricGenerateResult struct {
 type EncryptRequest struct {
 	ID        string `json:"id"`
 	PlainText string `json:"plain_text"`
+	Version   *int   `json:"version,omitempty"`
 }
 
 type EncryptResult struct {

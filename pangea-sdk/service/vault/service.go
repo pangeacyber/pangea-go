@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Revoke(ctx context.Context, input *RevokeRequest) (*pangea.PangeaResponse[RevokeResult], error)
+	StateChange(ctx context.Context, input *StateChangeRequest) (*pangea.PangeaResponse[StateChangeResult], error)
 	Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error)
 	Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error)
 	JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error)

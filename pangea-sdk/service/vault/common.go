@@ -38,6 +38,16 @@ const (
 	SYAhs512 SymmetricAlgorithm = "hs512"
 )
 
+type ItemVersionState string
+
+const (
+	IVSactive      ItemVersionState = "active"
+	IVSdeactivated ItemVersionState = "deactivated"
+	IVSsuspended   ItemVersionState = "suspended"
+	IVScompromised ItemVersionState = "compromised"
+	IVSdestroyed   ItemVersionState = "destroyed"
+)
+
 type Metadata map[string]string
 type Tags []string
 
@@ -75,14 +85,14 @@ const (
 )
 
 type CommonStoreRequest struct {
-	Type           ItemType `json:"type"`
-	Name           string   `json:"name,omitempty"`
-	Folder         string   `json:"folder,omitempty"`
-	Metadata       Metadata `json:"metadata,omitempty"`
-	Tags           Tags     `json:"tags,omitempty"`
-	AutoRotate     *bool    `json:"auto_rotate,omitempty"`
-	RotationPolicy string   `json:"rotation_policy,omitempty"`
-	Expiration     string   `json:"expiration,omitempty"` //FIXME: datetime?
+	Type              ItemType `json:"type"`
+	Name              string   `json:"name,omitempty"`
+	Folder            string   `json:"folder,omitempty"`
+	Metadata          Metadata `json:"metadata,omitempty"`
+	Tags              Tags     `json:"tags,omitempty"`
+	RotationFrequency string   `json:"rotation_frequency,omitempty"`
+	RotationState     string   `json:"rotation_state,omitempty"`
+	Expiration        string   `json:"expiration,omitempty"`
 }
 
 type CommonStoreResult struct {
@@ -94,22 +104,20 @@ type CommonStoreResult struct {
 // `json:"name,omitempty"`
 
 type CommonGenerateRequest struct {
-	Type           ItemType `json:"type"`
-	Name           string   `json:"name,omitempty"`
-	Folder         string   `json:"folder,omitempty"`
-	Metadata       Metadata `json:"metadata,omitempty"`
-	Tags           Tags     `json:"tags,omitempty"`
-	AutoRotate     *bool    `json:"auto_rotate,omitempty"`
-	RotationPolicy string   `json:"rotation_policy,omitempty"`
-	Expiration     string   `json:"expiration,omitempty"` //FIXME: datetime?
-	Managed        *bool    `json:"managed,omitempty"`
-	Store          *bool    `json:"store,omitempty"`
+	Type              ItemType `json:"type"`
+	Name              string   `json:"name,omitempty"`
+	Folder            string   `json:"folder,omitempty"`
+	Metadata          Metadata `json:"metadata,omitempty"`
+	Tags              Tags     `json:"tags,omitempty"`
+	RotationFrequency string   `json:"rotation_frequency,omitempty"`
+	RotationState     string   `json:"rotation_state,omitempty"`
+	Expiration        string   `json:"expiration,omitempty"`
 }
 
 type CommonGenerateResult struct {
-	ID      string `json:"id,omitempty"`
-	Type    string `json:"type,omitempty"`
-	Version *int   `json:"version,omitempty"`
+	ID      string `json:"id"`
+	Type    string `json:"type"`
+	Version int    `json:"version"`
 }
 
 type GetRequest struct {
@@ -118,33 +126,30 @@ type GetRequest struct {
 	Verbose *bool  `json:"verbose,omitempty"`
 }
 
-type CommonGetResult struct {
-	ID                    string   `json:"id"`
-	Type                  string   `json:"type"`
-	Version               int      `json:"version"`
-	Name                  string   `json:"name,omitempty"`
-	Folder                string   `json:"folder,omitempty"`
-	Metadata              Metadata `json:"metadata,omitempty"`
-	Tags                  Tags     `json:"tags,omitempty"`
-	AutoRotate            *bool    `json:"auto_rotate,omitempty"` // FIXME: Should be this required?
-	RotationPolicy        string   `json:"rotation_policy,omitempty"`
-	RetainPreviousVersion *bool    `json:"retain_previous_version,omitempty"` // FIXME: Should be this required?
-	Expiration            string   `json:"expiration,omitempty"`              //FIXME: datetime?
-	LastRotated           string   `json:"last_rotated,omitempty"`            //FIXME: datetime?
-	NextRotation          string   `json:"next_rotation,omitempty"`           //FIXME: datetime?
-	CreatedAt             string   `json:"created_at,omitempty"`              //FIXME: datetime?
-	RevokedAt             string   `json:"revoked_at,omitempty"`              //FIXME: datetime?
+type ItemVersionData struct {
+	Version   int               `json:"version"`
+	State     string            `json:"state"`
+	CreatedAt string            `json:"created_at"`
+	PublicKey *EncodedPublicKey `json:"public_key,omitempty"`
+	Secret    *string           `json:"secret,omitempty"`
 }
 
 type GetResult struct {
-	CommonGetResult
-	PublicKey  *EncodedPublicKey    `json:"public_key,omitempty"`
-	PrivateKey *EncodedPrivateKey   `json:"private_key,omitempty"`
-	Algorithm  string               `json:"algorithm,omitempty"`
-	Purpose    *KeyPurpose          `json:"purpose,omitempty"`
-	Key        *EncodedSymmetricKey `json:"key,omitempty"`
-	Managed    *bool                `json:"managed,omitempty"`
-	Secret     *string              `json:"secret,omitempty"`
+	ID                string      `json:"id"`
+	Type              string      `json:"type"`
+	Name              string      `json:"name,omitempty"`
+	Folder            string      `json:"folder,omitempty"`
+	Metadata          Metadata    `json:"metadata,omitempty"`
+	Tags              Tags        `json:"tags,omitempty"`
+	RotationFrequency string      `json:"rotation_frequency,omitempty"`
+	RotationState     string      `json:"rotation_state,omitempty"`
+	Expiration        string      `json:"expiration,omitempty"`
+	LastRotated       string      `json:"last_rotated,omitempty"`
+	NextRotation      string      `json:"next_rotation,omitempty"`
+	RevokedAt         string      `json:"revoked_at,omitempty"`
+	Algorithm         string      `json:"algorithm,omitempty"`
+	Purpose           *KeyPurpose `json:"purpose,omitempty"`
+	Versions          []ItemVersionData
 }
 
 type ListFolderData struct {
@@ -155,18 +160,18 @@ type ListFolderData struct {
 
 type ListItemData struct {
 	ListFolderData
-	ID             string   `json:"id"`
-	CreatedAt      string   `json:"created_at,omitempty"` //FIXME: datetime?
-	RevokedAt      string   `json:"revoked_at,omitempty"` //FIXME: datetime?
-	Metadata       Metadata `json:"metadata,omitempty"`
-	Tags           Tags     `json:"tags,omitempty"`
-	Managed        bool     `json:"managed"`
-	NextRotation   string   `json:"next_rotation,omitempty"` //FIXME: datetime?
-	LastRotated    string   `json:"last_rotated,omitempty"`  //FIXME: datetime?
-	Expiration     string   `json:"expiration,omitempty"`    //FIXME: datetime?
-	RotationPolicy string   `json:"rotation_policy,omitempty"`
-	Version        int      `json:"version"`
-	Identity       string   `json:"identity"`
+	ID                string   `json:"id"`
+	CreatedAt         string   `json:"created_at,omitempty"`
+	RevokedAt         string   `json:"revoked_at,omitempty"`
+	Metadata          Metadata `json:"metadata,omitempty"`
+	Tags              Tags     `json:"tags,omitempty"`
+	NextRotation      string   `json:"next_rotation,omitempty"`
+	LastRotated       string   `json:"last_rotated,omitempty"`
+	Expiration        string   `json:"expiration,omitempty"`
+	RotationFrequency string   `json:"rotation_frequency,omitempty"`
+	RotationState     string   `json:"rotation_state,omitempty"`
+	Version           int      `json:"version"`
+	Identity          string   `json:"identity"`
 }
 
 type ListResult struct {
@@ -184,7 +189,8 @@ type ListRequest struct {
 }
 
 type CommonRotateRequest struct {
-	ID string `json:"id"`
+	ID            string           `json:"id"`
+	RotationState ItemVersionState `json:"rotation_state"`
 }
 
 type CommonRotateResult struct {
@@ -208,12 +214,16 @@ type KeyRotateResult struct {
 	Algorithm  string               `json:"algorithm"`
 }
 
-type RevokeRequest struct {
-	ID string `json:"id"`
+type StateChangeRequest struct {
+	ID      string           `json:"id"`
+	Version int              `json:"version"`
+	State   ItemVersionState `json:"state"`
 }
 
-type RevokeResult struct {
-	ID string `json:"id"`
+type StateChangeResult struct {
+	ID      string `json:"id"`
+	Version int    `json:"version"`
+	State   string `json:"state"`
 }
 
 type DeleteRequest struct {
@@ -225,15 +235,14 @@ type DeleteResult struct {
 }
 
 type UpdateRequest struct {
-	ID                    string   `json:"id"`
-	Name                  string   `json:"name,omitempty"`
-	Folder                string   `json:"folder,omitempty"`
-	Metadata              Metadata `json:"metadata,omitempty"`
-	Tags                  Tags     `json:"tags,omitempty"`
-	AutoRotate            *bool    `json:"auto_rotate,omitempty"` // FIXME: Should be this required?
-	RotationPolicy        string   `json:"rotation_policy,omitempty"`
-	RetainPreviousVersion *bool    `json:"retain_previous_version,omitempty"` // FIXME: Should be this required?
-	Expiration            string   `json:"expiration,omitempty"`              //FIXME: datetime?
+	ID                string   `json:"id"`
+	Name              string   `json:"name,omitempty"`
+	Folder            string   `json:"folder,omitempty"`
+	Metadata          Metadata `json:"metadata,omitempty"`
+	Tags              Tags     `json:"tags,omitempty"`
+	RotationFrequency string   `json:"rotation_frequency,omitempty"`
+	RotationState     string   `json:"rotation_state,omitempty"`
+	Expiration        string   `json:"expiration,omitempty"`
 }
 
 type UpdateResult struct {
