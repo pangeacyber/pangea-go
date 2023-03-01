@@ -48,6 +48,13 @@ const (
 	IVSdestroyed   ItemVersionState = "destroyed"
 )
 
+type ItemState string
+
+const (
+	ISenabled  ItemState = "enabled"
+	ISdisabled ItemState = "disabled"
+)
+
 type Metadata map[string]string
 type Tags []string
 
@@ -121,57 +128,49 @@ type CommonGenerateResult struct {
 }
 
 type GetRequest struct {
-	ID      string `json:"id"`
-	Version *int   `json:"version,omitempty"`
-	Verbose *bool  `json:"verbose,omitempty"`
+	ID           string            `json:"id"`
+	Version      string            `json:"version,omitempty"`
+	Verbose      *bool             `json:"verbose,omitempty"`
+	VersionState *ItemVersionState `json:"version_state,omitempty"`
 }
 
 type ItemVersionData struct {
 	Version   int               `json:"version"`
 	State     string            `json:"state"`
 	CreatedAt string            `json:"created_at"`
+	DestroyAt *string           `json:"destroy_at,omitempty"`
 	PublicKey *EncodedPublicKey `json:"public_key,omitempty"`
 	Secret    *string           `json:"secret,omitempty"`
 }
 
-type GetResult struct {
-	ID                string      `json:"id"`
-	Type              string      `json:"type"`
-	Name              string      `json:"name,omitempty"`
-	Folder            string      `json:"folder,omitempty"`
-	Metadata          Metadata    `json:"metadata,omitempty"`
-	Tags              Tags        `json:"tags,omitempty"`
-	RotationFrequency string      `json:"rotation_frequency,omitempty"`
-	RotationState     string      `json:"rotation_state,omitempty"`
-	Expiration        string      `json:"expiration,omitempty"`
-	LastRotated       string      `json:"last_rotated,omitempty"`
-	NextRotation      string      `json:"next_rotation,omitempty"`
-	DestroyedAt       string      `json:"destroyed_at,omitempty"`
-	Algorithm         string      `json:"algorithm,omitempty"`
-	Purpose           *KeyPurpose `json:"purpose,omitempty"`
-	Versions          []ItemVersionData
+type ItemData struct {
+	ID                string          `json:"id"`
+	Type              string          `json:"type"`
+	ItemState         string          `json:"item_state"`
+	CurrentVersion    ItemVersionData `json:"current_version"`
+	Name              string          `json:"name,omitempty"`
+	Folder            string          `json:"folder,omitempty"`
+	Metadata          Metadata        `json:"metadata,omitempty"`
+	Tags              Tags            `json:"tags,omitempty"`
+	RotationFrequency string          `json:"rotation_frequency,omitempty"`
+	RotationState     string          `json:"rotation_state,omitempty"`
+	LastRotated       string          `json:"last_rotated,omitempty"`
+	NextRotation      string          `json:"next_rotation,omitempty"`
+	Expiration        string          `json:"expiration,omitempty"`
+	CreatedAt         string          `json:"created_at"`
+	Algorithm         string          `json:"algorithm,omitempty"`
+	Purpose           string          `json:"purpose,omitempty"`
 }
 
-type ListFolderData struct {
-	Type   string `json:"type"`
-	Name   string `json:"name,omitempty"`
-	Folder string `json:"folder,omitempty"`
+type GetResult struct {
+	ItemData
+	Versions            []ItemVersionData `json:"versions"`
+	RotationGracePeriod string            `json:"rotation_grace_period,omitempty"`
 }
 
 type ListItemData struct {
-	ListFolderData
-	ID                string   `json:"id"`
-	CreatedAt         string   `json:"created_at,omitempty"`
-	DestroyedAt       string   `json:"destroyed_at,omitempty"`
-	Metadata          Metadata `json:"metadata,omitempty"`
-	Tags              Tags     `json:"tags,omitempty"`
-	NextRotation      string   `json:"next_rotation,omitempty"`
-	LastRotated       string   `json:"last_rotated,omitempty"`
-	Expiration        string   `json:"expiration,omitempty"`
-	RotationFrequency string   `json:"rotation_frequency,omitempty"`
-	RotationState     string   `json:"rotation_state,omitempty"`
-	Version           int      `json:"version"`
-	Identity          string   `json:"identity"`
+	ItemData
+	CompromisedVersions []ItemVersionData `json:"compromised_versions"`
 }
 
 type ListResult struct {
@@ -208,22 +207,23 @@ type KeyRotateRequest struct {
 
 type KeyRotateResult struct {
 	CommonRotateResult
-	PublicKey  *EncodedPublicKey    `json:"public_key,omitempty"`
-	PrivateKey *EncodedPrivateKey   `json:"private_key,omitempty"`
-	Key        *EncodedSymmetricKey `json:"key,omitempty"`
-	Algorithm  string               `json:"algorithm"`
+	PublicKey *EncodedPublicKey `json:"public_key,omitempty"`
+	Algorithm string            `json:"algorithm"`
+	Purpose   string            `json:"purpose"`
 }
 
 type StateChangeRequest struct {
-	ID      string           `json:"id"`
-	Version int              `json:"version"`
-	State   ItemVersionState `json:"state"`
+	ID            string           `json:"id"`
+	State         ItemVersionState `json:"state"`
+	Version       *int             `json:"version,omitempty"`
+	DestroyPeriod string           `json:"destroy_period,omitempty"`
 }
 
 type StateChangeResult struct {
-	ID      string `json:"id"`
-	Version int    `json:"version"`
-	State   string `json:"state"`
+	ID        string  `json:"id"`
+	Version   int     `json:"version"`
+	State     string  `json:"state"`
+	DestroyAt *string `json:"destroy_at,omitempty"`
 }
 
 type DeleteRequest struct {
@@ -235,14 +235,16 @@ type DeleteResult struct {
 }
 
 type UpdateRequest struct {
-	ID                string   `json:"id"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
-	Metadata          Metadata `json:"metadata,omitempty"`
-	Tags              Tags     `json:"tags,omitempty"`
-	RotationFrequency string   `json:"rotation_frequency,omitempty"`
-	RotationState     string   `json:"rotation_state,omitempty"`
-	Expiration        string   `json:"expiration,omitempty"`
+	ID                  string    `json:"id"`
+	Name                string    `json:"name,omitempty"`
+	Folder              string    `json:"folder,omitempty"`
+	Metadata            Metadata  `json:"metadata,omitempty"`
+	Tags                Tags      `json:"tags,omitempty"`
+	RotationFrequency   string    `json:"rotation_frequency,omitempty"`
+	RotationState       string    `json:"rotation_state,omitempty"`
+	RotationGracePeriod string    `json:"rotation_grace_period,omitempty"`
+	Expiration          string    `json:"expiration,omitempty"`
+	ItemState           ItemState `json:"item_state,omitempty"`
 }
 
 type UpdateResult struct {

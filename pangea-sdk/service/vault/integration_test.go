@@ -85,17 +85,17 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 1, len(rGet.Result.Versions))
-	assert.Equal(t, secretV2, *rGet.Result.Versions[0].Secret)
-	assert.Equal(t, string(vault.IVSactive), rGet.Result.Versions[0].State)
-	assert.Nil(t, rGet.Result.Versions[0].PublicKey)
-	assert.Empty(t, rGet.Result.DestroyedAt)
+	assert.Equal(t, 0, len(rGet.Result.Versions))
+	assert.Equal(t, secretV2, *rGet.Result.CurrentVersion.Secret)
+	assert.Equal(t, string(vault.IVSactive), rGet.Result.CurrentVersion.State)
+	assert.Nil(t, rGet.Result.CurrentVersion.PublicKey)
+	assert.Nil(t, rGet.Result.CurrentVersion.DestroyAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 
 	rStateChange, err := client.StateChange(ctx,
 		&vault.StateChangeRequest{
 			ID:      ID,
-			Version: 2,
+			Version: pangea.Int(2),
 			State:   vault.IVSsuspended,
 		})
 
@@ -112,11 +112,11 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 1, len(rGet.Result.Versions))
-	assert.Equal(t, secretV2, *rGet.Result.Versions[0].Secret)
-	assert.Nil(t, rGet.Result.Versions[0].PublicKey)
-	assert.Equal(t, string(vault.IVSsuspended), rGet.Result.Versions[0].State)
-	assert.Empty(t, rGet.Result.DestroyedAt)
+	assert.Equal(t, 0, len(rGet.Result.Versions))
+	assert.Equal(t, secretV2, *rGet.Result.CurrentVersion.Secret)
+	assert.Nil(t, rGet.Result.CurrentVersion.PublicKey)
+	assert.Equal(t, string(vault.IVSsuspended), rGet.Result.CurrentVersion.State)
+	assert.Nil(t, rGet.Result.CurrentVersion.DestroyAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 }
 
@@ -267,7 +267,7 @@ func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id
 	rStateChange, err := client.StateChange(ctx,
 		&vault.StateChangeRequest{
 			ID:      id,
-			Version: 1,
+			Version: pangea.Int(1),
 			State:   vault.IVSdeactivated,
 		},
 	)
@@ -420,7 +420,7 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 		&vault.StateChangeRequest{
 			ID:      id,
 			State:   vault.IVSsuspended,
-			Version: 2,
+			Version: pangea.Int(2),
 		},
 	)
 	assert.NoError(t, err)
@@ -550,7 +550,7 @@ func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	rStateChange, err := client.StateChange(ctx,
 		&vault.StateChangeRequest{
 			ID:      id,
-			Version: 2,
+			Version: pangea.Int(2),
 			State:   vault.IVSsuspended,
 		})
 
@@ -702,7 +702,7 @@ func Test_Integration_AESstoreLifeCycle(t *testing.T) {
 	rStore, err := client.SymmetricStore(ctx,
 		&vault.SymmetricStoreRequest{
 			Algorithm: KEY_AES_algorithm,
-			Purpose:   purpose,
+			Purpose:   &purpose,
 			Key:       vault.EncodedSymmetricKey(KEY_AES_key),
 		})
 
