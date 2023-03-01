@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	// FIXME: update this to live once service is released to prod
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func Test_Integration_IpLookup(t *testing.T) {
@@ -104,7 +103,7 @@ func Test_Integration_IpGeolocate(t *testing.T) {
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Country, "deu")
+	assert.Equal(t, out.Result.Data.Country, "Federal Republic Of Germany")
 	assert.Equal(t, out.Result.Data.City, "unna")
 	assert.Equal(t, out.Result.Data.PostalCode, "59425")
 }
@@ -126,7 +125,7 @@ func Test_Integration_IpGeolocate_DefaultProvider(t *testing.T) {
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Country, "deu")
+	assert.Equal(t, out.Result.Data.Country, "Federal Republic Of Germany")
 	assert.Equal(t, out.Result.Data.City, "unna")
 	assert.Equal(t, out.Result.Data.PostalCode, "59425")
 }
@@ -183,7 +182,7 @@ func Test_Integration_IpIsVPN(t *testing.T) {
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &ip_intel.IpVPNRequest{
-		Ip:       "2.25.119.42",
+		Ip:       "2.56.189.74",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "digitalenvoy",
@@ -206,7 +205,7 @@ func Test_Integration_IpIsVPN_DefaultProvider(t *testing.T) {
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &ip_intel.IpVPNRequest{
-		Ip: "2.25.119.42",
+		Ip: "2.56.189.74",
 	}
 	out, err := ipintel.IsVPN(ctx, input)
 	if err != nil {
