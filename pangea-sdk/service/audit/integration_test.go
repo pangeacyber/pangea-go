@@ -81,6 +81,34 @@ func Test_Integration_Log_VerboseNoVerify(t *testing.T) {
 	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
 }
 
+func Test_Integration_Log_TenantID(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg, audit.WithTenantID("mytenantid"))
+
+	event := audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Hash)
+	assert.NotNil(t, out.Result.EventEnvelope)
+	assert.NotNil(t, out.Result.EventEnvelope.Event)
+	assert.NotNil(t, out.Result.EventEnvelope.Event.Message)
+	assert.Nil(t, out.Result.ConsistencyProof)
+	assert.NotNil(t, out.Result.MembershipProof)
+	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.MembershipVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
+	assert.Equal(t, *out.Result.EventEnvelope.Event.TenantID, "mytenantid")
+}
+
 func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
@@ -145,25 +173,50 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 		Timestamp: pangea.PangeaTime(ts),
 	}
 
-	_, err := client.Log(ctx, event, true)
-	assert.NoError(t, err)
-
-	searchInput := &audit.SearchInput{
-		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
-		MaxResults: 1,
-	}
-	// signature verification is done inside search
-	out, err := client.Search(ctx, searchInput)
-
+	out, err := client.Log(ctx, event, true)
 	assert.NoError(t, err)
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
-	assert.Equal(t, out.Result.Count, 1)
-	assert.Equal(t, len(out.Result.Events), 1)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.Signature)
-	assert.NotNil(t, out.Result.Events[0].EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.Events[0].EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
-	assert.Equal(t, out.Result.Events[0].SignatureVerification, audit.Success)
+	assert.NotNil(t, out.Result.EventEnvelope.Signature)
+	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
+	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
+}
+
+func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg,
+		audit.WithLogLocalSigning("./testdata/privkey"),
+		audit.WithLogProofVerificationEnabled(),
+		audit.WithTenantID("mytenantid"),
+	)
+
+	ts := pu.PangeaTimestamp(time.Date(2022, time.Month(11), 27, 12, 23, 37, 123456, time.UTC))
+
+	event := audit.Event{
+		Message:   MSG_SIGNED,
+		Source:    "Source",
+		Status:    STATUS_SIGNED,
+		Target:    "Target",
+		Actor:     ACTOR,
+		Action:    "Action",
+		New:       "New",
+		Old:       "Old",
+		Timestamp: pangea.PangeaTime(ts),
+	}
+
+	out, err := client.Log(ctx, event, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.EventEnvelope.Signature)
+	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
+	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
+	assert.Equal(t, *out.Result.EventEnvelope.Event.TenantID, "mytenantid")
 }
 
 func Test_Integration_Root(t *testing.T) {

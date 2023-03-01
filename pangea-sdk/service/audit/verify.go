@@ -34,7 +34,10 @@ func VerifyHash(ee *map[string]any, h string) EventVerification {
 	if h == "" || ee == nil {
 		return NotVerified
 	}
-	eventCanon := pu.CanonicalizeStruct((ee))
+	eventCanon, err := pu.CanonicalizeStruct((ee))
+	if err != nil {
+		return NotVerified
+	}
 	eventHash := hash.Encode(eventCanon)
 	if h == eventHash.String() {
 		return Success
