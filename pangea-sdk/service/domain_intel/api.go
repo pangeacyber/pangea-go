@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// @summary Domain reputation
+// @summary Reputation check
 //
 // @description Lookup an internet domain to retrieve reputation data.
 //
@@ -87,7 +87,7 @@ type DomainLookupOutput struct {
 	RawData interface{} `json:"raw_data,omitempty"`
 }
 
-// @summary Lookup a domain reputation
+// @summary Reputation check
 //
 // @description Lookup an internet domain to retrieve reputation data.
 //

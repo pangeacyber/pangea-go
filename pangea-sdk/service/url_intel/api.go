@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// @summary URL reputation
+// @summary Reputation check
 //
 // @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
