@@ -22,6 +22,7 @@ type SecretRotateResult struct {
 
 type PangeaTokenRotateRequest struct {
 	CommonRotateRequest
+	RotationGracePeriod string `json:"rotation_grace_period"`
 }
 
 type PangeaTokenStoreRequest struct {

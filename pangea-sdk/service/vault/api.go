@@ -108,7 +108,7 @@ func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 		return nil, errors.New("nil pointer to struct")
 	}
 
-	req, err := v.Client.NewRequest("POST", "v1/get", input)
+	req, err := v.Client.NewRequest("POST", "v1/list", input)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (v *vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreReq
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
-	input.Type = ITsecret
+	input.Type = ITpangeaToken
 
 	req, err := v.Client.NewRequest("POST", "v1/secret/store", input)
 	if err != nil {

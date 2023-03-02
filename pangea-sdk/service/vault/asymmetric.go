@@ -8,8 +8,9 @@ type AsymmetricGenerateRequest struct {
 
 type AsymmetricGenerateResult struct {
 	CommonGenerateResult
-	PublicKey  EncodedPublicKey   `json:"public_key"`
-	PrivateKey *EncodedPrivateKey `json:"private_key,omitempty"`
+	PublicKey EncodedPublicKey `json:"public_key"`
+	Algorithm string           `json:"algorithm"`
+	Purpose   string           `json:"purpose"`
 }
 
 type AsymmetricStoreRequest struct {
@@ -22,8 +23,9 @@ type AsymmetricStoreRequest struct {
 
 type AsymmetricStoreResult struct {
 	CommonStoreResult
-	Algorithm AsymmetricAlgorithm `json:"algorithm"`
-	PublicKey EncodedPublicKey    `json:"public_key"`
+	PublicKey EncodedPublicKey `json:"public_key"`
+	Algorithm string           `json:"algorithm"`
+	Purpose   string           `json:"purpose"`
 }
 
 type SignRequest struct {
@@ -33,11 +35,11 @@ type SignRequest struct {
 }
 
 type SignResult struct {
-	ID        string              `json:"id"`
-	Version   int                 `json:"version"`
-	Signature string              `json:"signature"`
-	Algorithm AsymmetricAlgorithm `json:"algorithm"`
-	PublicKey *EncodedPublicKey   `json:"public_key,omitempty"`
+	ID        string            `json:"id"`
+	Version   int               `json:"version"`
+	Signature string            `json:"signature"`
+	Algorithm string            `json:"algorithm"`
+	PublicKey *EncodedPublicKey `json:"public_key,omitempty"`
 }
 
 type VerifyRequest struct {
@@ -48,8 +50,8 @@ type VerifyRequest struct {
 }
 
 type VerifyResult struct {
-	ID             string              `json:"id"`
-	Version        int                 `json:"version"`
-	Algorithm      AsymmetricAlgorithm `json:"algorithm"`
-	ValidSignature bool                `json:"valid_signature"`
+	ID             string `json:"id"`
+	Version        int    `json:"version"`
+	Algorithm      string `json:"algorithm"`
+	ValidSignature bool   `json:"valid_signature"`
 }
