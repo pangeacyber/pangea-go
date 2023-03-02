@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// @summary IP reputation
+// @summary Reputation
 //
 // @deprecated Use Reputation instead.
 //
@@ -43,18 +43,18 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 	return &panresp, err
 }
 
-// Geolocate an IP
+// @summary Geolocate
 //
-// Retrieve information about the location of an IP address.
+// @description Retrieve information about the location of an IP address.
 //
-// Example:
+// @example
 //
-//	 input := &ip_intel.IpGeolocateRequest{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "digitalenvoy",
-//	 }
+//	input := &ip_intel.IpGeolocateRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "digitalenvoy",
+//	}
 //
 //	checkOutput, _, err := ipintel.geolocate(ctx, input)
 func (e *IpIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error) {
@@ -77,7 +77,7 @@ func (e *IpIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pa
 	return &panresp, err
 }
 
-// @summary IP reputation
+// @summary Reputation
 //
 // @description Retrieve a reputation score for an IP address from a provider,
 // including an optional detailed report.
@@ -112,18 +112,18 @@ func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 	return &panresp, err
 }
 
-// Look up domain for an IP
+// @summary Domain
 //
-// Retrieve the domain name associated with an IP address.
+// @description Retrieve the domain name associated with an IP address.
 //
-// Example:
+// @example
 //
-//	 input := &ip_intel.IpDomainRequest{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "digitalenvoy",
-//	 }
+//	input := &ip_intel.IpDomainRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "digitalenvoy",
+//	}
 //
 //	checkOutput, _, err := ipintel.GetDomain(ctx, input)
 func (e *IpIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error) {
@@ -146,18 +146,18 @@ func (e *IpIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pange
 	return &panresp, err
 }
 
-// Check if an IP is a VPN
+// @summary VPN
 //
-// Determine if an IP address is provided by a VPN service.
+// @description Determine if an IP address is provided by a VPN service.
 //
-// Example:
+// @example
 //
-//	 input := &ip_intel.IpVPNRequest{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "digitalenvoy",
-//	 }
+//	input := &ip_intel.IpVPNRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "digitalenvoy",
+//	}
 //
 //	checkOutput, _, err := ipintel.IsVPN(ctx, input)
 func (e *IpIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error) {
@@ -180,18 +180,18 @@ func (e *IpIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 	return &panresp, err
 }
 
-// Check for proxied IPs
+// @summary Proxy
 //
-// Determine if an IP address is provided by a proxy service.
+// @description Determine if an IP address is provided by a proxy service.
 //
-// Example:
+// @example
 //
-//	 input := &ip_intel.IpProxyRequest{
-//	     Ip: "93.231.182.110",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "digitalenvoy",
-//	 }
+//	input := &ip_intel.IpProxyRequest{
+//		Ip: "93.231.182.110",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "digitalenvoy",
+//	}
 //
 //	checkOutput, _, err := ipintel.IsProxy(ctx, input)
 func (e *IpIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error) {
