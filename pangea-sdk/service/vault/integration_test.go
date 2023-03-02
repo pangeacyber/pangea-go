@@ -18,6 +18,12 @@ const (
 	testingEnvironment = pangeatesting.Develop
 )
 
+var KEY_ED25519_algorithm = vault.AAed25519
+var KEY_ED25519_private_key = "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIGthqegkjgddRAn0PWN2FeYC6HcCVQf/Ph9sUbeprTBO\n-----END PRIVATE KEY-----\n"
+var KEY_ED25519_public_key = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAPlGrDliJXUbPc2YWEhFxlL2UbBfLHc3ed1f36FrDtTc=\n-----END PUBLIC KEY-----\n"
+var KEY_AES_algorithm = vault.SYAaes
+var KEY_AES_key = "oILlp2FUPHWiaqFXl4/1ww=="
+
 func PrintPangeAPIError(err error) {
 	if err != nil {
 		apiErr := err.(*pangea.APIError)
@@ -58,7 +64,8 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	rRotate, err := client.SecretRotate(ctx,
 		&vault.SecretRotateRequest{
 			CommonRotateRequest: vault.CommonRotateRequest{
-				ID: ID,
+				ID:            ID,
+				RotationState: vault.IVSsuspended,
 			},
 			Secret: secretV2,
 		})
@@ -78,23 +85,24 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.NotNil(t, rGet.Result.Secret)
-	assert.Equal(t, secretV2, *rGet.Result.Secret)
-	assert.Nil(t, rGet.Result.PrivateKey)
-	assert.Nil(t, rGet.Result.PublicKey)
-	assert.Nil(t, rGet.Result.Key)
-	assert.Empty(t, rGet.Result.RevokedAt)
+	assert.Equal(t, 0, len(rGet.Result.Versions))
+	assert.Equal(t, secretV2, *rGet.Result.CurrentVersion.Secret)
+	assert.Equal(t, string(vault.IVSactive), rGet.Result.CurrentVersion.State)
+	assert.Nil(t, rGet.Result.CurrentVersion.PublicKey)
+	assert.Nil(t, rGet.Result.CurrentVersion.DestroyAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 
-	rRevoke, err := client.Revoke(ctx,
-		&vault.RevokeRequest{
-			ID: ID,
+	rStateChange, err := client.StateChange(ctx,
+		&vault.StateChangeRequest{
+			ID:      ID,
+			Version: pangea.Int(2),
+			State:   vault.IVSsuspended,
 		})
 
 	assert.NoError(t, err)
-	assert.NotNil(t, rRevoke)
-	assert.NotNil(t, rRevoke.Result)
-	assert.Equal(t, ID, rRevoke.Result.ID)
+	assert.NotNil(t, rStateChange)
+	assert.NotNil(t, rStateChange.Result)
+	assert.Equal(t, ID, rStateChange.Result.ID)
 
 	rGet, err = client.Get(ctx,
 		&vault.GetRequest{
@@ -104,12 +112,11 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.NotNil(t, rGet.Result.Secret)
-	assert.Equal(t, secretV2, *rGet.Result.Secret)
-	assert.Nil(t, rGet.Result.PrivateKey)
-	assert.Nil(t, rGet.Result.PublicKey)
-	assert.Nil(t, rGet.Result.Key)
-	assert.Empty(t, rGet.Result.RevokedAt)
+	assert.Equal(t, 0, len(rGet.Result.Versions))
+	assert.Equal(t, secretV2, *rGet.Result.CurrentVersion.Secret)
+	assert.Nil(t, rGet.Result.CurrentVersion.PublicKey)
+	assert.Equal(t, string(vault.IVSsuspended), rGet.Result.CurrentVersion.State)
+	assert.Nil(t, rGet.Result.CurrentVersion.DestroyAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 }
 
@@ -132,7 +139,8 @@ func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id
 	rRotate, err := client.KeyRotate(ctx,
 		&vault.KeyRotateRequest{
 			CommonRotateRequest: vault.CommonRotateRequest{
-				ID: id,
+				ID:            id,
+				RotationState: vault.IVSsuspended,
 			},
 		},
 	)
@@ -256,32 +264,19 @@ func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id
 	assert.NotNil(t, rVerifyBad4.Result)
 	assert.False(t, rVerifyBad4.Result.ValidSignature)
 
-	rRevoke, err := client.Revoke(ctx,
-		&vault.RevokeRequest{
-			ID: id,
+	rStateChange, err := client.StateChange(ctx,
+		&vault.StateChangeRequest{
+			ID:      id,
+			Version: pangea.Int(1),
+			State:   vault.IVSdeactivated,
 		},
 	)
 	assert.NoError(t, err)
-	assert.NotNil(t, rRevoke)
-	assert.NotNil(t, rRevoke.Result)
+	assert.NotNil(t, rStateChange)
+	assert.NotNil(t, rStateChange.Result)
 
-	// Verify Revoked 2
-	rVerifyRevoked2, err := client.Verify(ctx,
-		&vault.VerifyRequest{
-			ID:        id,
-			Message:   data,
-			Signature: rSign2.Result.Signature,
-			Version:   pangea.Int(2),
-		},
-	)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, rVerifyRevoked2)
-	assert.NotNil(t, rVerifyRevoked2.Result)
-	assert.True(t, rVerifyRevoked2.Result.ValidSignature)
-
-	// Verify Revoked 1
-	rVerifyRevoked1, err := client.Verify(ctx,
+	// Verify deactivated 1
+	rVerifyDeactivated1, err := client.Verify(ctx,
 		&vault.VerifyRequest{
 			ID:        id,
 			Message:   data,
@@ -290,11 +285,11 @@ func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id
 		},
 	)
 
+	// FIXME: Should be an error
 	assert.NoError(t, err)
-	assert.NotNil(t, rVerifyRevoked1)
-	assert.NotNil(t, rVerifyRevoked1.Result)
-	assert.True(t, rVerifyRevoked1.Result.ValidSignature)
-
+	assert.NotNil(t, rVerifyDeactivated1)
+	assert.NotNil(t, rVerifyDeactivated1.Result)
+	assert.True(t, rVerifyDeactivated1.Result.ValidSignature)
 }
 
 func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id string) {
@@ -323,7 +318,8 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	rRotate, err := client.KeyRotate(ctx,
 		&vault.KeyRotateRequest{
 			CommonRotateRequest: vault.CommonRotateRequest{
-				ID: id,
+				ID:            id,
+				RotationState: vault.IVSsuspended,
 			},
 		},
 	)
@@ -420,14 +416,16 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NotNil(t, rGet.Result)
 	assert.Equal(t, 2, len(rGet.Result.JWK.Keys))
 
-	rRevoke, err := client.Revoke(ctx,
-		&vault.RevokeRequest{
-			ID: id,
+	rStateChange, err := client.StateChange(ctx,
+		&vault.StateChangeRequest{
+			ID:      id,
+			State:   vault.IVSsuspended,
+			Version: pangea.Int(2),
 		},
 	)
 	assert.NoError(t, err)
-	assert.NotNil(t, rRevoke)
-	assert.NotNil(t, rRevoke.Result)
+	assert.NotNil(t, rStateChange)
+	assert.NotNil(t, rStateChange.Result)
 
 	// Verify Revoked 2
 	rVerifyRevoked2, err := client.JWTVerify(ctx,
@@ -440,7 +438,6 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NotNil(t, rVerifyRevoked2)
 	assert.NotNil(t, rVerifyRevoked2.Result)
 	assert.True(t, rVerifyRevoked2.Result.ValidSignature)
-
 }
 
 func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id string) {
@@ -466,7 +463,8 @@ func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	rRot1, err := client.KeyRotate(ctx,
 		&vault.KeyRotateRequest{
 			CommonRotateRequest: vault.CommonRotateRequest{
-				ID: id,
+				ID:            id,
+				RotationState: vault.IVSsuspended,
 			},
 		})
 
@@ -549,15 +547,17 @@ func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.Nil(t, resp)
 
 	// Revoke key
-	rRevoke, err := client.Revoke(ctx,
-		&vault.RevokeRequest{
-			ID: id,
+	rStateChange, err := client.StateChange(ctx,
+		&vault.StateChangeRequest{
+			ID:      id,
+			Version: pangea.Int(2),
+			State:   vault.IVSsuspended,
 		})
 
 	assert.NoError(t, err)
-	assert.NotNil(t, rRevoke)
-	assert.NotNil(t, rRevoke.Result)
-	assert.Equal(t, id, rRevoke.Result.ID)
+	assert.NotNil(t, rStateChange)
+	assert.NotNil(t, rStateChange.Result)
+	assert.Equal(t, id, rStateChange.Result.ID)
 
 	// Decrypt after revoked
 	rDecRev1, err := client.Decrypt(ctx,
@@ -585,39 +585,40 @@ func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
 		&vault.AsymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Managed: pangea.Bool(false),
-				Store:   pangea.Bool(false),
-			},
-			Algorithm: &algorithm,
-			Purpose:   &purpose,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
 	assert.NotEmpty(t, rGen.Result.PublicKey)
-	assert.NotNil(t, rGen.Result.PublicKey)
-	assert.NotEmpty(t, *rGen.Result.PrivateKey)
-	assert.Empty(t, rGen.Result.ID)
-	assert.Nil(t, rGen.Result.Version)
+	assert.NotEmpty(t, rGen.Result.ID)
+	assert.Equal(t, 1, rGen.Result.Version)
+
+	AsymSigningCycle(t, client, ctx, rGen.Result.ID)
+}
+
+func Test_Integration_Ed25519StoreLifeCycle(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	purpose := vault.KPsigning
 
 	// Store
 	rStore, err := client.AsymmetricStore(ctx,
 		&vault.AsymmetricStoreRequest{
-			CommonStoreRequest: vault.CommonStoreRequest{},
-			Managed:            pangea.Bool(true),
-			Algorithm:          algorithm,
-			PublicKey:          rGen.Result.PublicKey,
-			PrivateKey:         *rGen.Result.PrivateKey,
-			Purpose:            &purpose,
+			Algorithm:  KEY_ED25519_algorithm,
+			Purpose:    purpose,
+			PublicKey:  vault.EncodedPublicKey(KEY_ED25519_public_key),
+			PrivateKey: vault.EncodedPrivateKey(KEY_ED25519_private_key),
 		})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, rStore)
 	assert.NotNil(t, rStore.Result)
 	assert.NotEmpty(t, rStore.Result.PublicKey)
-	assert.Nil(t, rStore.Result.PrivateKey)
 	assert.NotEmpty(t, rStore.Result.ID)
 	assert.Equal(t, 1, rStore.Result.Version)
 
@@ -635,43 +636,18 @@ func Test_Integration_JWT_ES256SigningLifeCycle(t *testing.T) {
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
 		&vault.AsymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Managed: pangea.Bool(false),
-				Store:   pangea.Bool(false),
-			},
-			Algorithm: &algorithm,
-			Purpose:   &purpose,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
 	assert.NotEmpty(t, rGen.Result.PublicKey)
-	assert.NotNil(t, rGen.Result.PublicKey)
-	assert.NotEmpty(t, *rGen.Result.PrivateKey)
-	assert.Empty(t, rGen.Result.ID)
-	assert.Nil(t, rGen.Result.Version)
+	assert.NotEmpty(t, rGen.Result.ID)
+	assert.Equal(t, 1, rGen.Result.Version)
 
-	// Store
-	rStore, err := client.AsymmetricStore(ctx,
-		&vault.AsymmetricStoreRequest{
-			CommonStoreRequest: vault.CommonStoreRequest{},
-			Managed:            pangea.Bool(true),
-			Algorithm:          algorithm,
-			PublicKey:          rGen.Result.PublicKey,
-			PrivateKey:         *rGen.Result.PrivateKey,
-			Purpose:            &purpose,
-		})
-
-	assert.NoError(t, err)
-	assert.NotNil(t, rStore)
-	assert.NotNil(t, rStore.Result)
-	assert.NotEmpty(t, rStore.Result.PublicKey)
-	assert.Nil(t, rStore.Result.PrivateKey)
-	assert.NotEmpty(t, rStore.Result.ID)
-	assert.Equal(t, 1, rStore.Result.Version)
-
-	JWTSigningCycle(t, client, ctx, rStore.Result.ID)
+	JWTSigningCycle(t, client, ctx, rGen.Result.ID)
 }
 
 func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
@@ -684,36 +660,16 @@ func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
 
 	rGen, err := client.SymmetricGenerate(ctx,
 		&vault.SymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Managed: pangea.Bool(false),
-				Store:   pangea.Bool(false),
-			},
-			Algorithm: &algorithm,
-			Purpose:   &purpose,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
-	assert.Empty(t, rGen.Result.ID)
-	assert.NotNil(t, rGen.Result.Key)
-	assert.NotEmpty(t, rGen.Result.Key)
+	assert.NotEmpty(t, rGen.Result.ID)
 
-	rStore, err := client.SymmetricStore(ctx,
-		&vault.SymmetricStoreRequest{
-			CommonStoreRequest: vault.CommonStoreRequest{},
-			Managed:            pangea.Bool(true),
-			Key:                vault.EncodedSymmetricKey(*rGen.Result.Key),
-			Algorithm:          algorithm,
-		})
-
-	PrintPangeAPIError(err)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, rStore)
-	assert.NotNil(t, rStore.Result)
-	assert.NotEmpty(t, rStore.Result.ID)
-	JWTSigningCycle(t, client, ctx, rStore.Result.ID)
+	JWTSigningCycle(t, client, ctx, rGen.Result.ID)
 }
 
 func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
@@ -722,47 +678,43 @@ func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	algorithm := vault.SYAaes
+	purpose := vault.KPencryption
 
 	rGen, err := client.SymmetricGenerate(ctx,
 		&vault.SymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Managed: pangea.Bool(false),
-				Store:   pangea.Bool(false),
-			},
-			Algorithm: &algorithm,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
-	assert.Empty(t, rGen.Result.ID)
-	assert.NotNil(t, rGen.Result.Key)
-	assert.NotEmpty(t, rGen.Result.Key)
+	assert.NotEmpty(t, rGen.Result.ID)
+
+	EncryptionCycle(t, client, ctx, rGen.Result.ID)
+}
+
+func Test_Integration_AESstoreLifeCycle(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	purpose := vault.KPencryption
 
 	rStore, err := client.SymmetricStore(ctx,
 		&vault.SymmetricStoreRequest{
-			CommonStoreRequest: vault.CommonStoreRequest{},
-			Managed:            pangea.Bool(true),
-			Key:                vault.EncodedSymmetricKey(*rGen.Result.Key),
-			Algorithm:          algorithm,
+			Algorithm: KEY_AES_algorithm,
+			Purpose:   purpose,
+			Key:       vault.EncodedSymmetricKey(KEY_AES_key),
 		})
-
-	PrintPangeAPIError(err)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, rStore)
 	assert.NotNil(t, rStore.Result)
 	assert.NotEmpty(t, rStore.Result.ID)
+
 	EncryptionCycle(t, client, ctx, rStore.Result.ID)
 }
-
-// 	const respStore = await vault.symmetricStore(algorithm, String(respGen.result.key));
-
-// 	const id = respStore.result.id;
-// 	expect(id).toBeDefined();
-// 	expect(respStore.result.version).toBe(1);
-// 	await encryptingCycle(id);
-//   });
 
 func Test_Integration_Error_BadToken(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
