@@ -2,8 +2,8 @@ package vault
 
 type AsymmetricGenerateRequest struct {
 	CommonGenerateRequest
-	Algorithm *AsymmetricAlgorithm `json:"algorithm,omitempty"`
-	Purpose   *KeyPurpose          `json:"purpose,omitempty"`
+	Algorithm AsymmetricAlgorithm `json:"algorithm,omitempty"`
+	Purpose   KeyPurpose          `json:"purpose,omitempty"`
 }
 
 type AsymmetricGenerateResult struct {
@@ -18,7 +18,7 @@ type AsymmetricStoreRequest struct {
 	Algorithm  AsymmetricAlgorithm `json:"algorithm"`
 	PublicKey  EncodedPublicKey    `json:"public_key"`
 	PrivateKey EncodedPrivateKey   `json:"private_key"`
-	Purpose    *KeyPurpose         `json:"purpose,omitempty"`
+	Purpose    KeyPurpose          `json:"purpose,omitempty"`
 }
 
 type AsymmetricStoreResult struct {

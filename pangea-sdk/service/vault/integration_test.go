@@ -585,8 +585,8 @@ func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
 		&vault.AsymmetricGenerateRequest{
-			Algorithm: &algorithm,
-			Purpose:   &purpose,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
@@ -610,7 +610,7 @@ func Test_Integration_Ed25519StoreLifeCycle(t *testing.T) {
 	rStore, err := client.AsymmetricStore(ctx,
 		&vault.AsymmetricStoreRequest{
 			Algorithm:  KEY_ED25519_algorithm,
-			Purpose:    &purpose,
+			Purpose:    purpose,
 			PublicKey:  vault.EncodedPublicKey(KEY_ED25519_public_key),
 			PrivateKey: vault.EncodedPrivateKey(KEY_ED25519_private_key),
 		})
@@ -636,8 +636,8 @@ func Test_Integration_JWT_ES256SigningLifeCycle(t *testing.T) {
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
 		&vault.AsymmetricGenerateRequest{
-			Algorithm: &algorithm,
-			Purpose:   &purpose,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
@@ -660,8 +660,8 @@ func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
 
 	rGen, err := client.SymmetricGenerate(ctx,
 		&vault.SymmetricGenerateRequest{
-			Algorithm: &algorithm,
-			Purpose:   &purpose,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
@@ -678,10 +678,12 @@ func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	algorithm := vault.SYAaes
+	purpose := vault.KPencryption
 
 	rGen, err := client.SymmetricGenerate(ctx,
 		&vault.SymmetricGenerateRequest{
-			Algorithm: &algorithm,
+			Algorithm: algorithm,
+			Purpose:   purpose,
 		})
 
 	assert.NoError(t, err)
@@ -702,7 +704,7 @@ func Test_Integration_AESstoreLifeCycle(t *testing.T) {
 	rStore, err := client.SymmetricStore(ctx,
 		&vault.SymmetricStoreRequest{
 			Algorithm: KEY_AES_algorithm,
-			Purpose:   &purpose,
+			Purpose:   purpose,
 			Key:       vault.EncodedSymmetricKey(KEY_AES_key),
 		})
 
