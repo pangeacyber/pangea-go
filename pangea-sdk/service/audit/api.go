@@ -25,6 +25,11 @@ import (
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
 func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
+	// Overwrite tenant id if user set it on event
+	if a.tenantID != nil {
+		event.TenantID = pangea.String(*a.tenantID)
+	}
+
 	input := LogInput{
 		Event:   event,
 		Verbose: verbose,
@@ -207,11 +212,14 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 		log.SignatureVerification = log.EventEnvelope.VerifySignature()
 	}
 
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
+
 	if a.VerifyProofs {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
 			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
 		}
-
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
@@ -371,6 +379,9 @@ type Event struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *pu.PangeaTimestamp `json:"timestamp,omitempty"`
+
+	// TenantID field
+	TenantID *string `json:"tenant_id,omitempty"`
 }
 
 type EventEnvelope struct {

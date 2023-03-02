@@ -32,6 +32,7 @@ type Audit struct {
 	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
+	tenantID              *string
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
@@ -43,6 +44,7 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
 		publicKeyInfo:         nil,
+		tenantID:              nil,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -70,6 +72,13 @@ func WithLogLocalSigning(filename string) Option {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
 		a.Signer = &s
+		return nil
+	}
+}
+
+func WithTenantID(tenantID string) Option {
+	return func(a *Audit) error {
+		a.tenantID = pangea.String(tenantID)
 		return nil
 	}
 }
