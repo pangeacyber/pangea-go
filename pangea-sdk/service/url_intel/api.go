@@ -63,7 +63,7 @@ type UrlLookupResult struct {
 	RawData    interface{} `json:"raw_data,omitempty"`
 }
 
-// @summary URL reputation
+// @summary Reputation check
 //
 // @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
