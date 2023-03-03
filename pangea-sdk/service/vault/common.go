@@ -108,8 +108,6 @@ type CommonStoreResult struct {
 	Version int    `json:"version"`
 }
 
-// `json:"name,omitempty"`
-
 type CommonGenerateRequest struct {
 	Type              ItemType `json:"type"`
 	Name              string   `json:"name,omitempty"`

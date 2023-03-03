@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"reflect"
+	"runtime"
 	"testing"
 	"time"
 
@@ -16,8 +19,11 @@ import (
 
 const (
 	testingEnvironment = pangeatesting.Develop
+	actor              = "GoSDKTest"
 )
 
+var timeNow = time.Now()
+var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
 var KEY_ED25519_algorithm = vault.AAed25519
 var KEY_ED25519_private_key = "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIGthqegkjgddRAn0PWN2FeYC6HcCVQf/Ph9sUbeprTBO\n-----END PRIVATE KEY-----\n"
 var KEY_ED25519_public_key = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAPlGrDliJXUbPc2YWEhFxlL2UbBfLHc3ed1f36FrDtTc=\n-----END PUBLIC KEY-----\n"
@@ -34,7 +40,21 @@ func PrintPangeAPIError(err error) {
 	}
 }
 
+func GetFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+func GetName(name string) string {
+	return fmt.Sprintf("%s_%s_%s_%s", timeStr, actor, name, GetRandID())
+}
+
+func GetRandID() string {
+	rand.Seed(time.Now().UnixNano())
+	return fmt.Sprint(rand.Intn(1000000))
+}
+
 func Test_Integration_SecretLifeCycle(t *testing.T) {
+	name := GetName("Test_Integration_SecretLifeCycle")
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 	const (
@@ -45,6 +65,9 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &vault.SecretStoreRequest{
+		CommonStoreRequest: vault.CommonStoreRequest{
+			Name: name,
+		},
 		Secret: secretV1,
 	}
 	rStore, err := client.SecretStore(ctx, input)
@@ -581,10 +604,14 @@ func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 
 	algorithm := vault.AAed25519
 	purpose := vault.KPsigning
+	name := GetName("Test_Integration_Ed25519SigningLifeCycle")
 
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
 		&vault.AsymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: name,
+			},
 			Algorithm: algorithm,
 			Purpose:   purpose,
 		})
@@ -605,10 +632,14 @@ func Test_Integration_Ed25519StoreLifeCycle(t *testing.T) {
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	purpose := vault.KPsigning
+	name := GetName("Test_Integration_Ed25519StoreLifeCycle")
 
 	// Store
 	rStore, err := client.AsymmetricStore(ctx,
 		&vault.AsymmetricStoreRequest{
+			CommonStoreRequest: vault.CommonStoreRequest{
+				Name: name,
+			},
 			Algorithm:  KEY_ED25519_algorithm,
 			Purpose:    purpose,
 			PublicKey:  vault.EncodedPublicKey(KEY_ED25519_public_key),
@@ -632,10 +663,13 @@ func Test_Integration_JWT_ES256SigningLifeCycle(t *testing.T) {
 
 	algorithm := vault.AAes256
 	purpose := vault.KPjwt
-
+	name := GetName("Test_Integration_JWT_ES256SigningLifeCycle")
 	// Generate
 	rGen, err := client.AsymmetricGenerate(ctx,
 		&vault.AsymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: name,
+			},
 			Algorithm: algorithm,
 			Purpose:   purpose,
 		})
@@ -657,9 +691,13 @@ func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
 
 	algorithm := vault.SYAhs256
 	purpose := vault.KPjwt
+	name := GetName("Test_Integration_JWT_HS256SigningLifeCycle")
 
 	rGen, err := client.SymmetricGenerate(ctx,
 		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: name,
+			},
 			Algorithm: algorithm,
 			Purpose:   purpose,
 		})
@@ -679,9 +717,13 @@ func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
 
 	algorithm := vault.SYAaes
 	purpose := vault.KPencryption
+	name := GetName("Test_Integration_AESencryptingLifeCycle")
 
 	rGen, err := client.SymmetricGenerate(ctx,
 		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: name,
+			},
 			Algorithm: algorithm,
 			Purpose:   purpose,
 		})
@@ -700,9 +742,13 @@ func Test_Integration_AESstoreLifeCycle(t *testing.T) {
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	purpose := vault.KPencryption
+	name := GetName("Test_Integration_AESstoreLifeCycle")
 
 	rStore, err := client.SymmetricStore(ctx,
 		&vault.SymmetricStoreRequest{
+			CommonStoreRequest: vault.CommonStoreRequest{
+				Name: name,
+			},
 			Algorithm: KEY_AES_algorithm,
 			Purpose:   purpose,
 			Key:       vault.EncodedSymmetricKey(KEY_AES_key),
@@ -723,8 +769,12 @@ func Test_Integration_Error_BadToken(t *testing.T) {
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
 	cfg.Token = "notarealtoken"
 	client := vault.New(cfg)
+	name := GetName("Test_Integration_AESstoreLifeCycle")
 
 	input := &vault.SecretStoreRequest{
+		CommonStoreRequest: vault.CommonStoreRequest{
+			Name: name,
+		},
 		Secret: "somesecret",
 	}
 
