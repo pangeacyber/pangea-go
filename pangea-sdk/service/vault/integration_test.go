@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 	actor              = "GoSDKTest"
 )
 
