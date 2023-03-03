@@ -23,7 +23,7 @@ const (
 	STATUS_NO_SIGNED   = "no-signed"
 	ACTION_VAULT       = "vault-sign"
 	ACTION_LOCAL       = "local-sign"
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {
