@@ -93,8 +93,8 @@ const (
 
 type CommonStoreRequest struct {
 	Type              ItemType `json:"type"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
+	Name              string   `json:"name"`
+	Folder            string   `json:"folder"`
 	Metadata          Metadata `json:"metadata,omitempty"`
 	Tags              Tags     `json:"tags,omitempty"`
 	RotationFrequency string   `json:"rotation_frequency,omitempty"`
@@ -108,12 +108,10 @@ type CommonStoreResult struct {
 	Version int    `json:"version"`
 }
 
-// `json:"name,omitempty"`
-
 type CommonGenerateRequest struct {
 	Type              ItemType `json:"type"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
+	Name              string   `json:"name"`
+	Folder            string   `json:"folder"`
 	Metadata          Metadata `json:"metadata,omitempty"`
 	Tags              Tags     `json:"tags,omitempty"`
 	RotationFrequency string   `json:"rotation_frequency,omitempty"`
