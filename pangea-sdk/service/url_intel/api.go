@@ -6,22 +6,21 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Look up a URL
+// @summary Reputation check
 //
-// Retrieve a reputation score for a URL from a provider, including an optional detailed report.
+// @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
-// Deprecated: Use Reputation instead.
+// @deprecated Use Reputation instead.
 //
-// Example:
+// @example
+//	input := &url_intel.UrlLookupRequest{
+//		Url: "http://113.235.101.11:54384",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "crowdstrike",
+//	}
 //
-//	 input := &url_intel.UrlLookupRequest{
-//	     Url: "http://113.235.101.11:54384",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "crowdstrike",
-//	 }
-//
-//		checkOutput, _, err := urlintel.Lookup(ctx, input)
+//	checkOutput, _, err := urlintel.Lookup(ctx, input)
 func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupRequest) (*pangea.PangeaResponse[UrlLookupResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
@@ -42,42 +41,41 @@ func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupRequest) (*pangea
 	return &panresp, err
 }
 
+// @deprecated Use UrlReputationRequest instead.
 type UrlLookupRequest struct {
-	// Deprecated: Use Reputation instead.
 	Url      string `json:"url"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 
+// @deprecated Use ReputationData instead.
 type LookupData struct {
-	// Deprecated: Use Reputation instead.
 	Category []string `json:"category"`
 	Score    int      `json:"score"`
 	Verdict  string   `json:"verdict"`
 }
 
+// @deprecated Use UrlReputationResult instead.
 type UrlLookupResult struct {
-	// Deprecated: Use Reputation instead.
 	Data       LookupData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
 	RawData    interface{} `json:"raw_data,omitempty"`
 }
 
-// Look up a URL reputation
+// @summary Reputation check
 //
-// Retrieve a reputation score for a URL from a provider, including an optional detailed report.
+// @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
-// Example:
+// @example
+//	input := &url_intel.UrlReputationRequest{
+//		Url: "http://113.235.101.11:54384",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "crowdstrike",
+//	}
 //
-//	 input := &url_intel.UrlReputationRequest{
-//	     Url: "http://113.235.101.11:54384",
-//	     Raw: true,
-//	     Verbose: true,
-//	     Provider: "crowdstrike",
-//	 }
-//
-//		checkOutput, _, err := urlintel.Reputation(ctx, input)
+//	checkOutput, _, err := urlintel.Reputation(ctx, input)
 func (e *UrlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {

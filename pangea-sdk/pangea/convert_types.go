@@ -1,6 +1,7 @@
 package pangea
 
 import (
+	b64 "encoding/base64"
 	"encoding/json"
 	"strings"
 	"time"
@@ -63,4 +64,12 @@ func Time(v time.Time) *time.Time {
 // to store v and returns a pointer to it.
 func PangeaTime(v pu.PangeaTimestamp) *pu.PangeaTimestamp {
 	return &v
+}
+
+func StrToB64(dec string) string {
+	return b64.StdEncoding.EncodeToString([]byte(dec))
+}
+
+func B64ToStr(enc string) ([]byte, error) {
+	return b64.StdEncoding.DecodeString(enc)
 }

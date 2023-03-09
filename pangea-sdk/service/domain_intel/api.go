@@ -6,19 +6,19 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Lookup a domain
+// @summary Reputation check
 //
-// Lookup an internet domain to retrieve reputation data.
+// @description Lookup an internet domain to retrieve reputation data.
 //
-// Deprecated: Use Reputation instead.
+// @deprecated Use Reputation instead.
 //
-// Example:
+// @example
 //
 //	input := &domain_intel.DomainLookupInput{
-//	    	Domain: "737updatesboeing.com",
-//	    	Raw: true,
-//	    	Verbose: true,
-//	    Provider: "domaintools",
+//		Domain: "737updatesboeing.com",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "domaintools",
 //	}
 //
 //	checkResponse, err := domainintel.Lookup(ctx, input)
@@ -42,8 +42,8 @@ func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pa
 	return &panresp, err
 }
 
+// @deprecated Use DomainReputationRequest instead.
 type DomainLookupInput struct {
-	// Deprecated: Use Reputation instead.
 	// The domain to be looked up.
 	Domain string `json:"domain"`
 
@@ -57,8 +57,8 @@ type DomainLookupInput struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+// @deprecated Use ReputationData instead.
 type LookupData struct {
-	// Deprecated: Use Reputation instead.
 	// The categories that apply to this
 	// indicator as determined by the provider
 	Category []string `json:"category"`
@@ -72,8 +72,8 @@ type LookupData struct {
 	Verdict string `json:"verdict"`
 }
 
+// @deprecated Use DomainReputationResult instead.
 type DomainLookupOutput struct {
-	// Deprecated: Use Reputation instead.
 	// High-level normalized results sent
 	// by the Pangea service
 	Data LookupData `json:"data"`
@@ -87,17 +87,17 @@ type DomainLookupOutput struct {
 	RawData interface{} `json:"raw_data,omitempty"`
 }
 
-// Lookup a domain reputation
+// @summary Reputation check
 //
-// Lookup an internet domain to retrieve reputation data.
+// @description Lookup an internet domain to retrieve reputation data.
 //
-// Example:
+// @example
 //
 //	input := &domain_intel.DomainReputationInput{
-//	    	Domain: "737updatesboeing.com",
-//	    	Raw: true,
-//	    	Verbose: true,
-//	    Provider: "domaintools",
+//		Domain: "737updatesboeing.com",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "domaintools",
 //	}
 //
 //	checkResponse, err := domainintel.Reputation(ctx, input)

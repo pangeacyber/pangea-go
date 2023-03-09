@@ -68,7 +68,7 @@ func Test_Integration_FileLookup_2(t *testing.T) {
 
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
-	assert.Equal(t, "", out.Result.Data.Verdict)
+	assert.Equal(t, "unknown", out.Result.Data.Verdict)
 	assert.Equal(t, "Not Provided", out.Result.Data.Category[0])
 }
 
@@ -206,7 +206,7 @@ func Test_Integration_FileReputation_2(t *testing.T) {
 
 	assert.NotNil(t, out)
 	assert.NotNil(t, out.Result)
-	assert.Equal(t, "", out.Result.Data.Verdict)
+	assert.Equal(t, "unknown", out.Result.Data.Verdict)
 	assert.Equal(t, "Not Provided", out.Result.Data.Category[0])
 }
 
