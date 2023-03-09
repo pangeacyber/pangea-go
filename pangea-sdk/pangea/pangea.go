@@ -158,6 +158,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	if err != nil {
 		return nil, err
 	}
+
 	var buf io.ReadWriter
 	if body != nil {
 		buf = &bytes.Buffer{}
