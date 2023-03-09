@@ -56,7 +56,7 @@ type FileLookupOutput struct {
 	RawData interface{} `json:"raw_data,omitempty"`
 }
 
-// @summary File reputation
+// @summary Reputation check
 //
 // @description Lookup a file's hash to retrieve reputation data.
 //
@@ -157,7 +157,7 @@ type FileReputationResult struct {
 	RawData interface{} `json:"raw_data,omitempty"`
 }
 
-// @summary File reputation
+// @summary Reputation check
 //
 // @description Lookup a file's hash to retrieve reputation data.
 //
