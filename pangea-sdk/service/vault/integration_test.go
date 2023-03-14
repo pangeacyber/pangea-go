@@ -315,7 +315,104 @@ func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id
 	assert.True(t, rVerifyDeactivated1.Result.ValidSignature)
 }
 
-func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id string) {
+func JWTSymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id string) {
+	data := map[string]string{
+		"message": "message to sign",
+		"data":    "Some extra data",
+	}
+
+	b, err := json.Marshal(data)
+	assert.NoError(t, err)
+
+	payload := string(b)
+
+	// Sign 1
+	rSign1, err := client.JWTSign(ctx,
+		&vault.JWTSignRequest{
+			ID:      id,
+			Payload: payload,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rSign1)
+	assert.NotNil(t, rSign1.Result)
+	assert.NotEmpty(t, rSign1.Result.JWS)
+
+	rRotate, err := client.KeyRotate(ctx,
+		&vault.KeyRotateRequest{
+			CommonRotateRequest: vault.CommonRotateRequest{
+				ID:            id,
+				RotationState: vault.IVSsuspended,
+			},
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, rRotate)
+	assert.NotNil(t, rRotate.Result)
+	assert.Equal(t, 2, rRotate.Result.Version)
+	assert.Equal(t, id, rRotate.Result.ID)
+
+	// Sign 2
+	rSign2, err := client.JWTSign(ctx,
+		&vault.JWTSignRequest{
+			ID:      id,
+			Payload: payload,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rSign2)
+	assert.NotNil(t, rSign2.Result)
+	assert.NotEmpty(t, rSign2.Result.JWS)
+
+	// Verify 2
+	rVerify2, err := client.JWTVerify(ctx,
+		&vault.JWTVerifyRequest{
+			JWS: rSign2.Result.JWS,
+		},
+	)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rVerify2)
+	assert.NotNil(t, rVerify2.Result)
+	assert.True(t, rVerify2.Result.ValidSignature)
+
+	// Verify 1
+	rVerify1, err := client.JWTVerify(ctx,
+		&vault.JWTVerifyRequest{
+			JWS: rSign1.Result.JWS,
+		},
+	)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rVerify1)
+	assert.NotNil(t, rVerify1.Result)
+	assert.True(t, rVerify1.Result.ValidSignature)
+
+	rStateChange, err := client.StateChange(ctx,
+		&vault.StateChangeRequest{
+			ID:      id,
+			State:   vault.IVSsuspended,
+			Version: pangea.Int(2),
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, rStateChange)
+	assert.NotNil(t, rStateChange.Result)
+
+	// Verify Revoked 2
+	rVerifyRevoked2, err := client.JWTVerify(ctx,
+		&vault.JWTVerifyRequest{
+			JWS: rSign2.Result.JWS,
+		},
+	)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rVerifyRevoked2)
+	assert.NotNil(t, rVerifyRevoked2.Result)
+	assert.True(t, rVerifyRevoked2.Result.ValidSignature)
+}
+
+func JWTAsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id string) {
 	data := map[string]string{
 		"message": "message to sign",
 		"data":    "Some extra data",
@@ -398,7 +495,7 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 1, len(rGet.Result.JWK.Keys))
+	assert.Equal(t, 1, len(rGet.Result.Keys))
 
 	// Get version 1
 	rGet, err = client.JWKGet(ctx,
@@ -411,7 +508,7 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 1, len(rGet.Result.JWK.Keys))
+	assert.Equal(t, 1, len(rGet.Result.Keys))
 
 	// Get all
 	rGet, err = client.JWKGet(ctx,
@@ -424,7 +521,7 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 2, len(rGet.Result.JWK.Keys))
+	assert.Equal(t, 2, len(rGet.Result.Keys))
 
 	// Get version -1
 	rGet, err = client.JWKGet(ctx,
@@ -437,7 +534,7 @@ func JWTSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 2, len(rGet.Result.JWK.Keys))
+	assert.Equal(t, 2, len(rGet.Result.Keys))
 
 	rStateChange, err := client.StateChange(ctx,
 		&vault.StateChangeRequest{
@@ -681,7 +778,7 @@ func Test_Integration_JWT_ES256SigningLifeCycle(t *testing.T) {
 	assert.NotEmpty(t, rGen.Result.ID)
 	assert.Equal(t, 1, rGen.Result.Version)
 
-	JWTSigningCycle(t, client, ctx, rGen.Result.ID)
+	JWTAsymSigningCycle(t, client, ctx, rGen.Result.ID)
 }
 
 func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
@@ -707,7 +804,7 @@ func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
 	assert.NotNil(t, rGen.Result)
 	assert.NotEmpty(t, rGen.Result.ID)
 
-	JWTSigningCycle(t, client, ctx, rGen.Result.ID)
+	JWTSymSigningCycle(t, client, ctx, rGen.Result.ID)
 }
 
 func Test_Integration_AESencryptingLifeCycle(t *testing.T) {

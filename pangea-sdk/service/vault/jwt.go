@@ -18,12 +18,8 @@ type JWKGetRequest struct {
 	Version *string `json:"version,omitempty"`
 }
 
-type JWKSet struct {
-	Keys []JWT `json:"keys"`
-}
-
 type JWKGetResult struct {
-	JWK JWKSet `json:"jwk"`
+	Keys []JWT `json:"keys"`
 }
 
 type JWTSignRequest struct {

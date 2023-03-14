@@ -8,29 +8,29 @@ import (
 	"os"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/domain_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/ip_intel"
 )
 
 func main() {
-	token := os.Getenv("PANGEA_DOMAIN_INTEL_TOKEN")
+	token := os.Getenv("PANGEA_IP_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	intelcli := domain_intel.New(&pangea.Config{
+	intelcli := ip_intel.New(&pangea.Config{
 		Token:  token,
 		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	ctx := context.Background()
-	input := &domain_intel.DomainLookupInput{
-		Domain:   "737updatesboeing.com",
+	input := &ip_intel.IpGeolocateRequest{
+		Ip:       "93.231.182.110",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "domaintools",
+		Provider: "digitalenvoy",
 	}
 
-	response, err := intelcli.Lookup(ctx, input)
+	response, err := intelcli.Geolocate(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}

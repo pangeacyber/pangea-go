@@ -2,7 +2,7 @@ module examples/embargo
 
 go 1.19
 
-require github.com/pangeacyber/pangea-go/pangea-sdk v1.4.0
+require github.com/pangeacyber/pangea-go/pangea-sdk v1.5.0
 
 require (
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
