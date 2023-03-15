@@ -225,7 +225,7 @@ func Test_Integration_IpIsProxy(t *testing.T) {
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &ip_intel.IpProxyRequest{
-		Ip:       "1.0.136.28",
+		Ip:       "34.201.32.172",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "digitalenvoy",
@@ -248,7 +248,7 @@ func Test_Integration_IpIsProxy_DefaultProvider(t *testing.T) {
 	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
 	input := &ip_intel.IpProxyRequest{
-		Ip: "1.0.136.28",
+		Ip: "34.201.32.172",
 	}
 	out, err := ipintel.IsProxy(ctx, input)
 	if err != nil {
