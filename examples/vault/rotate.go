@@ -1,4 +1,4 @@
-// embargo check is an example of how to use the check method
+// vault rotate is an example of how to use the rotate method
 package main
 
 import (
