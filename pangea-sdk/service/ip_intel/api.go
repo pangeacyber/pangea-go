@@ -53,7 +53,7 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 //		Ip: "93.231.182.110",
 //		Raw: true,
 //		Verbose: true,
-//		Provider: "digitalenvoy",
+//		Provider: "digitalelement",
 //	}
 //
 //	checkOutput, _, err := ipintel.geolocate(ctx, input)
@@ -122,7 +122,7 @@ func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 //		Ip: "93.231.182.110",
 //		Raw: true,
 //		Verbose: true,
-//		Provider: "digitalenvoy",
+//		Provider: "digitalelement",
 //	}
 //
 //	checkOutput, _, err := ipintel.GetDomain(ctx, input)
@@ -156,7 +156,7 @@ func (e *IpIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pange
 //		Ip: "93.231.182.110",
 //		Raw: true,
 //		Verbose: true,
-//		Provider: "digitalenvoy",
+//		Provider: "digitalelement",
 //	}
 //
 //	checkOutput, _, err := ipintel.IsVPN(ctx, input)
@@ -190,7 +190,7 @@ func (e *IpIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 //		Ip: "93.231.182.110",
 //		Raw: true,
 //		Verbose: true,
-//		Provider: "digitalenvoy",
+//		Provider: "digitalelement",
 //	}
 //
 //	checkOutput, _, err := ipintel.IsProxy(ctx, input)
