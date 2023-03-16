@@ -8,6 +8,8 @@ github.com/hashicorp/go-retryablehttp v0.7.1 h1:sUiuQAnLlbvmExtFQs72iFW/HXeUn8Z1
 github.com/hashicorp/go-retryablehttp v0.7.1/go.mod h1:vAew36LZh98gCBJNLH42IQ1ER/9wtLZZ8meHqQvEYWY=
 github.com/pangeacyber/pangea-go/pangea-sdk v1.0.0 h1:XetKpN0N1JP7hC3G80RflHr5ipQYROQEa/hI3/IH778=
 github.com/pangeacyber/pangea-go/pangea-sdk v1.0.0/go.mod h1:dzcCcr7kcrbj7ttBcvYaKkdl4UPLiiweCy27X+ztBXQ=
+github.com/pangeacyber/pangea-go/pangea-sdk v1.4.0 h1:FNunq1NdT6/VM2n0LwNW8YX8ghyE04RZf1QhP7jlW58=
+github.com/pangeacyber/pangea-go/pangea-sdk v1.4.0/go.mod h1:Uf1lZrtGn2nxY3QrbCa0Oo8jO1gEPDH6PwDP/DjjDvA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=

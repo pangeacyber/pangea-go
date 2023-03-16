@@ -15,8 +15,8 @@ type SymmetricStoreResult struct {
 
 type SymmetricGenerateRequest struct {
 	CommonGenerateRequest
-	Algorithm SymmetricAlgorithm `json:"algorithm,omitempty"`
-	Purpose   KeyPurpose         `json:"purpose,omitempty"`
+	Algorithm SymmetricAlgorithm `json:"algorithm"`
+	Purpose   KeyPurpose         `json:"purpose"`
 }
 
 type SymmetricGenerateResult struct {
