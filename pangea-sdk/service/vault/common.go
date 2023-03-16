@@ -187,7 +187,7 @@ type ListRequest struct {
 
 type CommonRotateRequest struct {
 	ID            string           `json:"id"`
-	RotationState ItemVersionState `json:"rotation_state"`
+	RotationState ItemVersionState `json:"rotation_state,omitempty"`
 }
 
 type CommonRotateResult struct {
