@@ -27,7 +27,7 @@ func main() {
 		Ip:       "93.231.182.110",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "digitalenvoy",
+		Provider: "digitalelement",
 	}
 
 	response, err := intelcli.Geolocate(ctx, input)
