@@ -32,7 +32,7 @@ type Audit struct {
 	SkipEventVerification bool
 	rp                    RootsProvider
 	lastUnpRootHash       *string
-	tenantID              *string
+	tenantID              string
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
@@ -43,7 +43,6 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		lastUnpRootHash:       nil,
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
-		tenantID:              nil,
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -77,7 +76,7 @@ func WithLogLocalSigning(filename string) Option {
 
 func WithTenantID(tenantID string) Option {
 	return func(a *Audit) error {
-		a.tenantID = pangea.String(tenantID)
+		a.tenantID = tenantID
 		return nil
 	}
 }
