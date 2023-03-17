@@ -43,7 +43,6 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		lastUnpRootHash:       nil,
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
-		tenantID:              "",
 	}
 	for _, opt := range opts {
 		err := opt(cli)

@@ -633,8 +633,8 @@ func (ee *EventEnvelope) VerifySignature() EventVerification {
 		return Failed
 	}
 
-	v, _ := signer.NewVerifierFromPubKey(publicKey)
-	if v == nil {
+	v, err := signer.NewVerifierFromPubKey(publicKey)
+	if err != nil {
 		return Failed
 	}
 
