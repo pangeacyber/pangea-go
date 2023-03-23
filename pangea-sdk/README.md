@@ -1,7 +1,7 @@
 <p>
   <br />
   <a href="https://pangea.cloud?utm_source=github&utm_medium=node-sdk" target="_blank" rel="noopener noreferrer">
-    <img src="https://pangea-marketing.s3.us-west-2.amazonaws.com/pangea-color.svg" alt="Pangea Logo" height="40">
+    <img src="https://pangea-marketing.s3.us-west-2.amazonaws.com/pangea-color.svg" alt="Pangea Logo" height="40" />
   </a>
   <br />
 </p>
@@ -10,7 +10,7 @@
 <br />
 
 [![documentation](https://img.shields.io/badge/documentation-pangea-blue?style=for-the-badge&labelColor=551B76)](https://pangea.cloud/docs/sdk/go/)
-[![Discord](https://img.shields.io/discord/1017567751818182786?color=%23551b76&label=Discord&logo=discord&logoColor=%23FFFFFF&style=for-the-badge)](https://discord.gg/z7yXhC7cQr)
+[![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)](https://pangea.cloud/join-slack/)
 
 <br />
 </p>
@@ -126,28 +126,3 @@ Example with deprecation message:
 //
 //	checkResponse, err := domainintel.Lookup(ctx, input)
 ```
-
-# Generate SDK Documentation
-
-## Overview
-
-Throughout the SDK, there are go doc strings that serve as the source of our SDK docs.
-
-The documentation pipeline here looks like:
-
-1. Write doc strings throughout your go code. Please refer to existing doc strings as an example of what and how to document.
-1. Make your pull request.
-1. After the pull request is merged, go ahead and run the autogen docs script to generate the JSON docs uses for rendering.
-1. Copy the output from autogen docs and overwrite the existing go_sdk.json file in the docs repo. File is located in platform/docs/sdk/go_sdk.json in the Pangea monorepo. Save this and make a merge request to update the Golang SDK docs in the Pangea monorepo.
-
-## Running the autogen sdk doc script
-
-From the root of the `go-pangea` repo run:
-```sh
-go run dev/autogendoc/main.go
-```
-That will output the script in the terminal. If you're on a mac, you can do
-```sh
-go run dev/autogendoc/main.go | pbcopy
-```
-to copy the output from the script into your clipboard.

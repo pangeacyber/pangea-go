@@ -106,7 +106,7 @@ func Test_Integration_Log_TenantID(t *testing.T) {
 	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
 	assert.Equal(t, out.Result.MembershipVerification, audit.NotVerified)
 	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
-	assert.Equal(t, *out.Result.EventEnvelope.Event.TenantID, "mytenantid")
+	assert.Equal(t, out.Result.EventEnvelope.Event.TenantID, "mytenantid")
 }
 
 func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
@@ -216,7 +216,7 @@ func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
 	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
 	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
-	assert.Equal(t, *out.Result.EventEnvelope.Event.TenantID, "mytenantid")
+	assert.Equal(t, out.Result.EventEnvelope.Event.TenantID, "mytenantid")
 }
 
 func Test_Integration_Root(t *testing.T) {

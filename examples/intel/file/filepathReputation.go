@@ -23,14 +23,16 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &file_intel.FileLookupInput{
-		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
-		HashType: "sha256",
-		Raw:      true,
-		Verbose:  true,
-		Provider: "reversinglabs",
+	input, err := file_intel.NewFileReputationRequestFromFilepath("./go.mod")
+	if err != nil {
+		log.Fatal(err)
+		return
 	}
-	response, err := intelcli.Lookup(ctx, input)
+
+	input.Raw = true
+	input.Verbose = true
+
+	response, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
