@@ -294,11 +294,12 @@ type LoginToken struct {
 	Token     string      `json:"token"`
 	ID        string      `json:"id"`
 	Type      string      `json:"type"`
-	Life      string      `json:"life"`
+	Life      int         `json:"life"`
 	Expire    string      `json:"expire"`
 	Identity  string      `json:"identity"`
 	Email     string      `json:"email"`
 	Profile   UserProfile `json:"profile"`
+	Scopes    []string    `json:"scopes"`
 	CreatedAt string      `json:"created_at"`
 }
 
@@ -401,12 +402,12 @@ func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pa
 }
 
 type UserProfileUpdateRequest struct {
-	Profile     map[string]string `json:"profile"`
-	Identity    *string           `json:"identity,omitempty"`
-	Email       *string           `json:"email,omitempty"`
-	RequireMFA  *bool             `json:"require_mfa,omitempty"`
-	MFAValue    *string           `json:"mfa_value,omitempty"`
-	MFAProvider *MFAProvider      `json:"mfa_provider,omitempty"`
+	Profile    map[string]string `json:"profile"`
+	Identity   *string           `json:"identity,omitempty"`
+	Email      *string           `json:"email,omitempty"`
+	RequireMFA *bool             `json:"require_mfa,omitempty"`
+	Disabled   *bool             `json:"disabled,omitempty"`
+	Verified   *bool             `json:"verified,omitempty"`
 }
 
 type UserProfileUpdateResult struct {
@@ -514,16 +515,8 @@ type FlowCompleteRequest struct {
 }
 
 type FlowCompleteResult struct {
-	Token     string            `json:"flow_id"`
-	ID        string            `json:"id"`
-	Type      string            `json:"type"`
-	Life      int               `json:"life"`
-	Expire    string            `json:"expire"`
-	Identity  string            `json:"identity"`
-	Email     string            `json:"email"`
-	Scopes    *[]string         `json:"scopes"`
-	Profile   map[string]string `json:"profile"`
-	CreatedAt string            `json:"created_at"`
+	RefreshToken LoginToken `json:"refresh_token"`
+	ActiveToken  LoginToken `json:"active_token"`
 }
 
 func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
@@ -647,11 +640,44 @@ func (a *FlowEnrollMFA) Complete(ctx context.Context, input FlowEnrollMFAComplet
 	return &panresp, nil
 }
 
+type FlowResetPasswordRequest struct {
+	FlowID   string `json:"flow_id"`
+	Password string `json:"password"`
+	CBState  string `json:"cb_state,omitempty"`
+	CBCode   string `json:"cb_code,omitempty"`
+}
+
+type FlowResetPasswordResult struct {
+	CommonFlowResult
+}
+
+func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest) (*pangea.PangeaResponse[FlowResetPasswordResult], error) {
+	req, err := a.Client.NewRequest("POST", "v1/flow/reset/password", input)
+	if err != nil {
+		return nil, err
+	}
+
+	var out FlowResetPasswordResult
+	resp, err := a.Client.Do(ctx, req, &out)
+
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FlowResetPasswordResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, nil
+}
+
 // #   - path: authn::/v1/flow/enroll/mfa/start
 // # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-enrolling-an-mfa
 type FlowEnrollMFAStartRequest struct {
 	FlowID      string      `json:"flow_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
+	Phone       string      `json:"phone,omitempty"`
 }
 
 type FlowEnrollMFAStartResult struct {
@@ -749,9 +775,10 @@ func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) 
 // #   - path: authn::/v1/flow/start
 // # https://dev.pangea.cloud/docs/api/authn#start-a-new-signup-or-signin-flow
 type FlowStartRequest struct {
-	CBURI     string    `json:"cb_uri"`
-	Email     *string   `json:"email,omitempty"`
-	FlowTypes *[]string `json:"flow_types,omitempty"`
+	CBURI     string      `json:"cb_uri"`
+	Email     *string     `json:"email,omitempty"`
+	FlowTypes *[]string   `json:"flow_types,omitempty"`
+	Provider  *IDProvider `json:"provider,omitempty"`
 }
 
 type FlowStartResult struct {
@@ -847,8 +874,9 @@ func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*
 // #   - path: authn::/v1/flow/verify/mfa/complete
 // # https://dev.pangea.cloud/docs/api/authn#complete-mfa-verification
 type FlowVerifyMFACompleteRequest struct {
-	FlowID string `json:"flow_id"`
-	Code   string `json:"code"`
+	FlowID string  `json:"flow_id"`
+	Code   *string `json:"code,omitempty"`
+	Cancel *bool   `json:"cancel,omitempty"`
 }
 
 type FlowVerifyMFACompleteResult struct {
@@ -911,8 +939,9 @@ func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartReque
 // #   - path: authn::/v1/flow/verify/password
 // # https://dev.pangea.cloud/docs/api/authn#sign-in-with-a-password
 type FlowVerifyPasswordRequest struct {
-	FlowID   string `json:"flow_id"`
-	Password string `json:"password"`
+	FlowID   string  `json:"flow_id"`
+	Password *string `json:"password,omitempty"`
+	Cancel   *bool   `json:"cancel,omitempty"`
 }
 
 type FlowVerifyPasswordResult struct {
@@ -1042,9 +1071,16 @@ type UserMFAStartRequest struct {
 	UserID      string      `json:"user_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 	Enroll      *bool       `json:"enroll,omitempty"`
+	Phone       *string     `json:"phone,omitempty"`
+}
+
+type UserMFAStartTOTPSecret struct {
+	QRImage string `json:"qr_image"`
+	Secret  string `json:"secret"`
 }
 
 type UserMFAStartResult struct {
+	TOTPSecret UserMFAStartTOTPSecret `json:"totp_secret"`
 }
 
 func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea.PangeaResponse[UserMFAStartResult], error) {
@@ -1109,15 +1145,16 @@ type UserVerifyRequest struct {
 }
 
 type UserVerifyResult struct {
-	Identity    string            `json:"identity"`
-	Email       string            `json:"email"`
-	Profile     map[string]string `json:"profile"`
-	Scopes      *[]string         `json:"scopes"`
-	IDProvider  IDProvider        `json:"id_provider"`
-	RequireMFA  bool              `json:"require_mfa"`
-	Verified    bool              `json:"verified"`
-	Disable     bool              `json:"disable"`
-	LastLoginAt string            `json:"last_login_at"`
+	Identity     string            `json:"identity"`
+	Email        string            `json:"email"`
+	Profile      map[string]string `json:"profile"`
+	Scopes       *[]string         `json:"scopes"`
+	IDProvider   string            `json:"id_provider"`
+	MFAProviders []string          `json:"mfa_providers"`
+	RequireMFA   bool              `json:"require_mfa"`
+	Verified     bool              `json:"verified"`
+	Disable      bool              `json:"disable"`
+	LastLoginAt  *string           `json:"last_login_at,omitempty"`
 }
 
 func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.PangeaResponse[UserVerifyResult], error) {
