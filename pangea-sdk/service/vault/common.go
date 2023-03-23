@@ -22,20 +22,24 @@ const (
 type AsymmetricAlgorithm string
 
 const (
-	AAed25519 AsymmetricAlgorithm = "ed25519"
-	AArsa     AsymmetricAlgorithm = "rsa"
-	AAes256   AsymmetricAlgorithm = "es256"
-	AAes384   AsymmetricAlgorithm = "es384"
-	AAes512   AsymmetricAlgorithm = "es512"
+	AAed25519                 AsymmetricAlgorithm = "ED25519"
+	AAes256                   AsymmetricAlgorithm = "ES256"
+	AAes384                   AsymmetricAlgorithm = "ES384"
+	AAes512                   AsymmetricAlgorithm = "ES512"
+	AArsa2048_pkcs1v15_sha256 AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256"
+	AArsa2048_oaep_sha256     AsymmetricAlgorithm = "RSA-OAEP-2048-SHA256"
+	AArsa                     AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256" // deprecated, use AArsa2048_pkcs1v15_sha256 instead
 )
 
 type SymmetricAlgorithm string
 
 const (
-	SYAaes   SymmetricAlgorithm = "aes"
-	SYAhs256 SymmetricAlgorithm = "hs256"
-	SYAhs384 SymmetricAlgorithm = "hs384"
-	SYAhs512 SymmetricAlgorithm = "hs512"
+	SYAhs256      SymmetricAlgorithm = "HS256"
+	SYAhs384      SymmetricAlgorithm = "HS384"
+	SYAhs512      SymmetricAlgorithm = "HS512"
+	SYAaes128_cfb SymmetricAlgorithm = "AES-CFB-128"
+	SYAaes256_cfb SymmetricAlgorithm = "AES-CFB-256"
+	SYAaes        SymmetricAlgorithm = "AES-CFB-128" // deprecated, use SYAaes128_cfb instead
 )
 
 type ItemVersionState string
