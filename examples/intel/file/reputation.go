@@ -23,17 +23,14 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input, err := file_intel.NewFileLookupInputFromFilepath("./api.go")
-	if err != nil {
-		log.Fatal(err)
-		return
+	input := &file_intel.FileReputationRequest{
+		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
+		HashType: "sha256",
+		Raw:      true,
+		Verbose:  true,
+		Provider: "reversinglabs",
 	}
-
-	input.Raw = true
-	input.Verbose = true
-	input.Provider = true
-
-	response, err := intelcli.Lookup(ctx, input)
+	response, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}

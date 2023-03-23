@@ -32,6 +32,7 @@ type Audit struct {
 	SkipEventVerification bool
 	rp                    RootsProvider
 	lastUnpRootHash       *string
+	tenantID              string
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
@@ -69,6 +70,13 @@ func WithLogLocalSigning(filename string) Option {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
 		a.Signer = &s
+		return nil
+	}
+}
+
+func WithTenantID(tenantID string) Option {
+	return func(a *Audit) error {
+		a.tenantID = tenantID
 		return nil
 	}
 }

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
@@ -14,18 +13,23 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-// Log an entry
+// @summary Log an entry
 //
-// Create a log entry in the Secure Audit Log.
+// @description Create a log entry in the Secure Audit Log.
 //
-// Example:
+// @example
 //
 //	event := audit.Event{
 //		Message: "Integration test msg",
 //	 }
 //
-//		logResponse, err := auditcli.Log(ctx, event, true)
+//	logResponse, err := auditcli.Log(ctx, event, true)
 func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
+	// Overwrite tenant id if user set it on event
+	if a.tenantID != "" {
+		event.TenantID = a.tenantID
+	}
+
 	input := LogInput{
 		Event:   event,
 		Verbose: verbose,
@@ -72,11 +76,11 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 	return &panresp, nil
 }
 
-// Search for events
+// @summary Search for events
 //
-// Search for events that match the provided search criteria.
+// @description Search for events that match the provided search criteria.
 //
-// Example:
+// @example
 //
 //	input := &audit.SearchInput{
 //		Query:                  pangea.String("message:log-123"),
@@ -141,11 +145,11 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	return &panresp, nil
 }
 
-// Retrieve tamperproof verification
+// @summary Retrieve tamperproof verification
 //
-// Root returns current root hash and consistency proof.
+// @description Root returns current root hash and consistency proof.
 //
-// Example:
+// @example
 //
 //	input := &audit.RootInput{
 //		TreeSize: pangea.Int(10),
@@ -205,7 +209,14 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 	}
 
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
+
 	if a.VerifyProofs {
+		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
+			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
+		}
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
@@ -255,7 +266,7 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 		}
 
 		if a.VerifyProofs {
-			if event.Published != nil && *event.Published == true {
+			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
 			} else {
@@ -286,7 +297,10 @@ type LogInput struct {
 }
 
 func (i *LogInput) SignEvent(s signer.Signer) error {
-	b := pu.CanonicalizeStruct(&i.Event)
+	b, err := pu.CanonicalizeStruct(&i.Event)
+	if err != nil {
+		return err
+	}
 
 	signature, err := s.Sign(b)
 	if err != nil {
@@ -344,6 +358,9 @@ type Event struct {
 
 	// An optional client-supplied timestamp.
 	Timestamp *pu.PangeaTimestamp `json:"timestamp,omitempty"`
+
+	// TenantID field
+	TenantID string `json:"tenant_id,omitempty"`
 }
 
 type EventEnvelope struct {
@@ -559,7 +576,7 @@ func (ee *SearchEvent) VerifyMembershipProof(root *Root) {
 }
 
 func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
-	if ee.Published == nil || *ee.Published != true || ee.LeafIndex == nil {
+	if ee.Published == nil || !*ee.Published || ee.LeafIndex == nil {
 		ee.ConsistencyVerification = NotVerified
 		return
 	}
@@ -588,31 +605,76 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 	} else {
 		ee.ConsistencyVerification = Failed
 	}
-	return
 }
 
 func (ee *EventEnvelope) VerifySignature() EventVerification {
-	if ee.Signature == nil || ee.PublicKey == nil || strings.HasPrefix(*ee.PublicKey, "-----") {
+	// Both nil, so NotVerified
+	if ee.Signature == nil && ee.PublicKey == nil {
 		return NotVerified
 	}
 
-	b := pu.CanonicalizeStruct(ee.Event)
+	// If just one nil, it's an error so Failed
+	if ee.Signature == nil || ee.PublicKey == nil {
+		return Failed
+	}
+
+	b, err := pu.CanonicalizeStruct(ee.Event)
+	if err != nil {
+		return NotVerified
+	}
 
 	sig, err := base64.StdEncoding.DecodeString(*ee.Signature)
 	if err != nil {
 		return Failed
 	}
 
-	pubKey, err := base64.StdEncoding.DecodeString(*ee.PublicKey)
+	publicKey, err := ee.getPublicKey()
 	if err != nil {
 		return Failed
 	}
 
-	v := signer.NewVerifierFromPubKey(pubKey)
-	if v.Verify(b, sig) {
-		return Success
+	v, err := signer.NewVerifierFromPubKey(publicKey)
+	if err != nil {
+		return Failed
 	}
-	return Failed
+
+	if v != nil {
+		ver, err := v.Verify(b, sig)
+		if err != nil {
+			return NotVerified
+		}
+		if ver {
+			return Success
+		} else {
+			return Failed
+		}
+	}
+	return NotVerified
+}
+
+func (ee EventEnvelope) getPublicKey() (string, error) {
+	// Should never enter this case
+	if ee.PublicKey == nil {
+		return "", errors.New("public key field nil pointer")
+	}
+
+	pkinfo := make(map[string]any)
+	err := json.Unmarshal([]byte(*ee.PublicKey), &pkinfo)
+	if err != nil {
+		return *ee.PublicKey, nil
+	}
+
+	val, ok := pkinfo["key"]
+	if !ok {
+		return "", errors.New("'key' field not present in json")
+	}
+
+	ret, ok := val.(string)
+	if !ok {
+		return "", errors.New("value is not a string")
+	}
+
+	return ret, nil
 }
 
 type SearchResultInput struct {

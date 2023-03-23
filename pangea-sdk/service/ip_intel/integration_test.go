@@ -63,6 +63,204 @@ func Test_Integration_IpLookup_2(t *testing.T) {
 	assert.Equal(t, out.Result.Data.Verdict, "unknown")
 }
 
+func Test_Integration_IpLookup_DefaultProvider(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpLookupRequest{
+		Ip: "93.231.182.110",
+	}
+	out, err := ipintel.Lookup(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, out.Result.Data.Verdict, "malicious")
+}
+
+func Test_Integration_IpGeolocate(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpGeolocateRequest{
+		Ip:       "93.231.182.110",
+		Raw:      true,
+		Verbose:  true,
+		Provider: "digitalelement",
+	}
+	out, err := ipintel.Geolocate(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, out.Result.Data.Country, "Federal Republic Of Germany")
+	assert.Equal(t, out.Result.Data.City, "unna")
+	assert.Equal(t, out.Result.Data.PostalCode, "59425")
+}
+
+func Test_Integration_IpGeolocate_DefaultProvider(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpGeolocateRequest{
+		Ip: "93.231.182.110",
+	}
+	out, err := ipintel.Geolocate(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.Equal(t, out.Result.Data.Country, "Federal Republic Of Germany")
+	assert.Equal(t, out.Result.Data.City, "unna")
+	assert.Equal(t, out.Result.Data.PostalCode, "59425")
+}
+
+func Test_Integration_IpGetDomain(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpDomainRequest{
+		Ip:       "24.235.114.61",
+		Raw:      true,
+		Verbose:  true,
+		Provider: "digitalelement",
+	}
+	out, err := ipintel.GetDomain(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.True(t, out.Result.Data.DomainFound)
+	assert.Equal(t, out.Result.Data.Domain, "rogers.com")
+}
+
+func Test_Integration_IpGetDomain_DefaultProvider(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpDomainRequest{
+		Ip: "24.235.114.61",
+	}
+	out, err := ipintel.GetDomain(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.True(t, out.Result.Data.DomainFound)
+	assert.Equal(t, out.Result.Data.Domain, "rogers.com")
+}
+
+func Test_Integration_IpIsVPN(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpVPNRequest{
+		Ip:       "2.56.189.74",
+		Raw:      true,
+		Verbose:  true,
+		Provider: "digitalelement",
+	}
+	out, err := ipintel.IsVPN(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.True(t, out.Result.Data.IsVPN)
+}
+
+func Test_Integration_IpIsVPN_DefaultProvider(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpVPNRequest{
+		Ip: "2.56.189.74",
+	}
+	out, err := ipintel.IsVPN(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.True(t, out.Result.Data.IsVPN)
+}
+
+func Test_Integration_IpIsProxy(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpProxyRequest{
+		Ip:       "34.201.32.172",
+		Raw:      true,
+		Verbose:  true,
+		Provider: "digitalelement",
+	}
+	out, err := ipintel.IsProxy(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.True(t, out.Result.Data.IsProxy)
+}
+
+func Test_Integration_IpIsProxy_DefaultProvider(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	ipintel := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpProxyRequest{
+		Ip: "34.201.32.172",
+	}
+	out, err := ipintel.IsProxy(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.Data)
+	assert.True(t, out.Result.Data.IsProxy)
+}
+
 func Test_Integration_IpLookup_Error_BadIPFormat_1(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
