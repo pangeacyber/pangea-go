@@ -32,7 +32,7 @@ type Audit struct {
 	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
-	tenantID              *string
+	tenantID              string
 }
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
@@ -44,7 +44,7 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
 		publicKeyInfo:         nil,
-		tenantID:              nil,
+		tenantID:              "",
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -78,7 +78,7 @@ func WithLogLocalSigning(filename string) Option {
 
 func WithTenantID(tenantID string) Option {
 	return func(a *Audit) error {
-		a.tenantID = pangea.String(tenantID)
+		a.tenantID = tenantID
 		return nil
 	}
 }

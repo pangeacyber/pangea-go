@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2023-03-27
+
+###
+
+- Algorithm support in Vault Service
+
+### Changed
+
+- Algorithm name in Vault Service
+
+## [1.5.0] - 2023-03-17
+
+### Added
+
+- Vault service support
+- LICENSE
+
+### Changed
+
+- Update services examples
+- Improve docs
+
 ## [1.4.0] - 2023-03-01
 
 ### Added
@@ -70,7 +92,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redact client
 
 
-[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.4.0...main
+[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.6.0...main
+[1.6.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.1.2...v1.2.0

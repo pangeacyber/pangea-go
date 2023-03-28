@@ -26,8 +26,8 @@ import (
 //	logResponse, err := auditcli.Log(ctx, event, true)
 func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
 	// Overwrite tenant id if user set it on event
-	if a.tenantID != nil {
-		event.TenantID = pangea.String(*a.tenantID)
+	if a.tenantID != "" {
+		event.TenantID = a.tenantID
 	}
 
 	input := LogInput{
@@ -269,7 +269,7 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 		}
 
 		if a.VerifyProofs {
-			if event.Published != nil && *event.Published == true {
+			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
 			} else {
@@ -381,7 +381,7 @@ type Event struct {
 	Timestamp *pu.PangeaTimestamp `json:"timestamp,omitempty"`
 
 	// TenantID field
-	TenantID *string `json:"tenant_id,omitempty"`
+	TenantID string `json:"tenant_id,omitempty"`
 }
 
 type EventEnvelope struct {
@@ -597,7 +597,7 @@ func (ee *SearchEvent) VerifyMembershipProof(root *Root) {
 }
 
 func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
-	if ee.Published == nil || *ee.Published != true || ee.LeafIndex == nil {
+	if ee.Published == nil || !*ee.Published || ee.LeafIndex == nil {
 		ee.ConsistencyVerification = NotVerified
 		return
 	}
@@ -626,7 +626,6 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 	} else {
 		ee.ConsistencyVerification = Failed
 	}
-	return
 }
 
 func (ee *EventEnvelope) VerifySignature() EventVerification {
@@ -656,7 +655,7 @@ func (ee *EventEnvelope) VerifySignature() EventVerification {
 	}
 
 	v, err := signer.NewVerifierFromPubKey(publicKey)
-	if v == nil {
+	if err != nil {
 		return Failed
 	}
 
@@ -677,24 +676,26 @@ func (ee *EventEnvelope) VerifySignature() EventVerification {
 func (ee EventEnvelope) getPublicKey() (string, error) {
 	// Should never enter this case
 	if ee.PublicKey == nil {
-		return "", errors.New("Public key field nil pointer")
+		return "", errors.New("public key field nil pointer")
 	}
 
 	pkinfo := make(map[string]any)
 	err := json.Unmarshal([]byte(*ee.PublicKey), &pkinfo)
-	if err == nil {
-		val, ok := pkinfo["key"]
-		if ok {
-			if ret, ok := val.(string); ok {
-				return ret, nil
-			}
-			return "", errors.New("Keys is not a string")
-		} else {
-			return "", errors.New("'key' field not present in json")
-		}
-	} else {
+	if err != nil {
 		return *ee.PublicKey, nil
 	}
+
+	val, ok := pkinfo["key"]
+	if !ok {
+		return "", errors.New("'key' field not present in json")
+	}
+
+	ret, ok := val.(string)
+	if !ok {
+		return "", errors.New("value is not a string")
+	}
+
+	return ret, nil
 }
 
 type SearchResultInput struct {

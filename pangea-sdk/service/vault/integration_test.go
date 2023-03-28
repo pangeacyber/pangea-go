@@ -3,6 +3,7 @@ package vault_test
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -144,7 +145,8 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 }
 
 func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id string) {
-	data := "thisisamessagetosign"
+	message := "thisisamessagetosign"
+	data := base64.StdEncoding.EncodeToString([]byte(message))
 
 	// Sign 1
 	rSign1, err := client.Sign(ctx,
@@ -812,7 +814,7 @@ func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
 	defer cancelFn()
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	algorithm := vault.SYAaes
+	algorithm := vault.SYAaes128_cfb
 	purpose := vault.KPencryption
 	name := GetName("Test_Integration_AESencryptingLifeCycle")
 

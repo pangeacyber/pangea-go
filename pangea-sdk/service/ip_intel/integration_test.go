@@ -93,7 +93,7 @@ func Test_Integration_IpGeolocate(t *testing.T) {
 		Ip:       "93.231.182.110",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "digitalenvoy",
+		Provider: "digitalelement",
 	}
 	out, err := ipintel.Geolocate(ctx, input)
 	if err != nil {
@@ -140,7 +140,7 @@ func Test_Integration_IpGetDomain(t *testing.T) {
 		Ip:       "24.235.114.61",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "digitalenvoy",
+		Provider: "digitalelement",
 	}
 	out, err := ipintel.GetDomain(ctx, input)
 	if err != nil {
@@ -185,7 +185,7 @@ func Test_Integration_IpIsVPN(t *testing.T) {
 		Ip:       "2.56.189.74",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "digitalenvoy",
+		Provider: "digitalelement",
 	}
 	out, err := ipintel.IsVPN(ctx, input)
 	if err != nil {
@@ -228,7 +228,7 @@ func Test_Integration_IpIsProxy(t *testing.T) {
 		Ip:       "34.201.32.172",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "digitalenvoy",
+		Provider: "digitalelement",
 	}
 	out, err := ipintel.IsProxy(ctx, input)
 	if err != nil {
