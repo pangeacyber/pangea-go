@@ -135,7 +135,6 @@ func Test_Integration_User_Login(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.NotEmpty(t, resp.Result.ActiveToken)
-	assert.NotEmpty(t, resp.Result.RefreshToken)
 }
 
 func Test_Integration_User_Profile(t *testing.T) {

@@ -26,9 +26,14 @@ type Flow struct {
 	Signup *FlowSignup
 	Verify *FlowVerify
 	Enroll *FlowEnroll
+	Reset  *FlowReset
 }
 
 type FlowSignup struct {
+	*pangea.Client
+}
+
+type FlowReset struct {
 	*pangea.Client
 }
 
@@ -104,6 +109,12 @@ func newFlowEnroll(cli *pangea.Client) *FlowEnroll {
 	}
 }
 
+func newFlowReset(cli *pangea.Client) *FlowReset {
+	return &FlowReset{
+		Client: cli,
+	}
+}
+
 func newFlowVerifyMFA(cli *pangea.Client) *FlowVerifyMFA {
 	return &FlowVerifyMFA{
 		Client: cli,
@@ -129,6 +140,7 @@ func newFlow(cli *pangea.Client) *Flow {
 		Enroll: newFlowEnroll(cli),
 		Verify: newFlowVerify(cli),
 		Signup: newFlowSignup(cli),
+		Reset:  newFlowReset(cli),
 	}
 }
 
