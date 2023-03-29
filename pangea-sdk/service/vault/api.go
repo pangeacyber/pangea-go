@@ -14,7 +14,7 @@ import (
 // @example
 //
 //	input := &vault.StateChangeRequest{
-//		ID:    pangea.String("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		ID:    pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
 //		State: vault.IVSdeactivated,
 //	}
 //
@@ -51,7 +51,7 @@ func (v *Vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pa
 // @example
 //
 //	input := &vault.DeleteRequest{
-//		ID: pangea.String("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
 //	}
 //
 //	deleteResponse, err := vaultcli.Delete(ctx, input)
@@ -87,10 +87,10 @@ func (v *Vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.Pange
 // @example
 //
 //	input := &vault.GetRequest{
-//		ID:           pangea.String("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
-//		Version:      pangea.Int(1),
+//		ID:           pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		Version:      pangea.StringValue(1),
 //		Verbose:      pangea.Bool(true),
-//		VersionState: vault.IVSactive,
+//		VersionState: &vault.IVSactive,
 //	}
 //
 //	getResponse, err := vaultcli.Get(ctx, input)
@@ -119,6 +119,18 @@ func (v *Vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 	return &panresp, err
 }
 
+// @summary JWT Retrieve
+//
+// @description Retrieve a key in JWK format
+//
+// @example
+//
+//	input := &vault.JWKGetRequest{
+//		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//	}
+//
+//	jwkGetResponse, err := vaultcli.JWKGet(ctx, input)
+//
 func (v *Vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -143,6 +155,28 @@ func (v *Vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.Pange
 	return &panresp, err
 }
 
+// @summary List
+//
+// @description Look up a list of secrets, keys and folders, and their associated information
+//
+// @example
+//
+//	input := &vault.ListRequest{
+//		Filter: map[string]string{
+//			"folder": "/",
+//			"type": "asymmetric_key",
+//			"name__contains": "test",
+//			"metadata_key1": "value1",
+//			"created_at__lt": "2023-12-12T00:00:00Z",
+//		},
+//		Last:    pangea.StringValue("WyIvdGVzdF8yMDdfc3ltbWV0cmljLyJd"),
+//		Size:    pangea.IntValue(20),
+//		Order:   vault.IOasc,
+//		OrderBy: vault.IOBname,
+//	}
+//
+//	listResponse, err := vaultcli.List(ctx, input)
+//
 func (v *Vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -167,6 +201,33 @@ func (v *Vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 	return &panresp, err
 }
 
+// @summary Update
+//
+// @description Update information associated with a secret or key
+//
+// @example
+//
+//	input := &vault.Update Request{
+//		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		Name: pangea.StringValue("my-very-secret-secret"),
+//		Folder: pangea.StringValue("/personal"),
+//		Metadata: vault.Metadata{
+//			"created_by": pangea.StringValue("John Doe"),
+//			"used_in":    pangea.StringValue("Google products"),
+//		},
+//		Tags: vault.Tags{
+//			pangea.StringValue("irs_2023"),
+//			pangea.StringValue("personal"),
+//		},
+//		RotationFrequency:   pangea.StringValue("10d"),
+//		RotationState:       pangea.StringValue("deactivated"),
+//		RotationGracePeriod: pangea.StringValue("1d"),
+//		Expiration:          pangea.StringValue("2025-01-01T10:00:00Z"),
+//		ItemState:           vault.ISdisabled,
+//	}
+//
+//	updateResponse, err := vaultcli.Update(ctx, input)
+//
 func (v *Vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -191,6 +252,33 @@ func (v *Vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.Pange
 	return &panresp, err
 }
 
+// @summary Secret store
+//
+// @description Import a secret
+//
+// @example
+//
+//	input := &vault.SecretStoreRequest{
+//		Secret: pangea.String("12sdfgs4543qv@#%$casd"),
+//		CommonStoreRequest: vault.CommonStoreRequest{
+//			Name: pangea.StringValue("my-very-secret-secret"),
+//			Folder: pangea.StringValue("/personal"),
+//			Metadata: vault.Metadata{
+//				"created_by": pangea.StringValue("John Doe"),
+//				"used_in":    pangea.StringValue("Google products"),
+//			},
+//			Tags: vault.Tags{
+//				pangea.StringValue("irs_2023"),
+//				pangea.StringValue("personal"),
+//			},
+//			RotationFrequency: pangea.StringValue("10d"),
+//			RotationState:     pangea.StringValue("deactivated"),
+//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//		}
+//	}
+//
+//	secretStoreResponse, err := vaultcli.SecretStore(ctx, input)
+//
 func (v *Vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
