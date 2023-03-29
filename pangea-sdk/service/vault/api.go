@@ -18,7 +18,7 @@ import (
 //		State: vault.IVSdeactivated,
 //	}
 //
-//	stateChangeResponse, err := vaultcli.StateChange(ctx, input)
+//	scr, err := vaultcli.StateChange(ctx, input)
 //
 func (v *Vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pangea.PangeaResponse[StateChangeResult], error) {
 	if input == nil {
@@ -259,7 +259,7 @@ func (v *Vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.Pange
 // @example
 //
 //	input := &vault.SecretStoreRequest{
-//		Secret: pangea.String("12sdfgs4543qv@#%$casd"),
+//		Secret: pangea.StringValue("12sdfgs4543qv@#%$casd"),
 //		CommonStoreRequest: vault.CommonStoreRequest{
 //			Name: pangea.StringValue("my-very-secret-secret"),
 //			Folder: pangea.StringValue("/personal"),
@@ -274,10 +274,10 @@ func (v *Vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.Pange
 //			RotationFrequency: pangea.StringValue("10d"),
 //			RotationState:     pangea.StringValue("deactivated"),
 //			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
-//		}
+//		},
 //	}
 //
-//	secretStoreResponse, err := vaultcli.SecretStore(ctx, input)
+//	ssr, err := vaultcli.SecretStore(ctx, input)
 //
 func (v *Vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
 	if input == nil {
@@ -304,6 +304,33 @@ func (v *Vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pa
 	return &panresp, err
 }
 
+// @summary Pangea token store
+//
+// @description Import a secret
+//
+// @example
+//
+//	input := &vault.PangeaTokenStoreRequest{
+//		Token: pangea.StringValue("ptv_x6fdiizbon6j3bsdvnpmwxsz2aan7fqd"),
+//		CommonStoreRequest: vault.CommonStoreRequest{
+//			Name: pangea.StringValue("my-very-secret-secret"),
+//			Folder: pangea.StringValue("/personal"),
+//			Metadata: vault.Metadata{
+//				"created_by": pangea.StringValue("John Doe"),
+//				"used_in":    pangea.StringValue("Google products"),
+//			},
+//			Tags: vault.Tags{
+//				pangea.StringValue("irs_2023"),
+//				pangea.StringValue("personal"),
+//			},
+//			RotationFrequency: pangea.StringValue("10d"),
+//			RotationState:     pangea.StringValue("deactivated"),
+//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//		},
+//	}
+//
+//	tsr, err := vaultcli.PangeaTokenStore(ctx, input)
+//
 func (v *Vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -329,6 +356,22 @@ func (v *Vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreReq
 	return &panresp, err
 }
 
+// @summary Secret rotate
+//
+// @description Rotate a secret
+//
+// @example
+//
+//	input := &vault.SecretRotateRequest{
+//		Secret: pangea.StringValue("12sdfgs4543qv@#%$casd"),
+//		CommonRotateRequest: vault.CommonRotateRequest{
+//			ID:           pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//			RotationState vault.IVSdeactivated,
+//		},
+//	}
+//
+//	srr, err := vaultcli.SecretRotate(ctx, input)
+//
 func (v *Vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -353,6 +396,21 @@ func (v *Vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*
 	return &panresp, err
 }
 
+// @summary Token rotate
+//
+// @description Rotate a Pangea token
+//
+// @example
+//
+//	input := &vault.PangeaTokenRotateRequest{
+//		RotationGracePeriod: pangea.StringValue("1d"),
+//		CommonRotateRequest: vault.CommonRotateRequest{
+//			ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		},
+//	}
+//
+//	trp, err := vaultcli.PangeaTokenRotate(ctx, input)
+//
 func (v *Vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -377,6 +435,34 @@ func (v *Vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateR
 	return &panresp, err
 }
 
+// @summary Symmetric generate
+//
+// @description Generate a symmetric key
+//
+// @example
+//
+//	input := &vault.SymmetricGenerateRequest{
+//		Algorithm: vault.SYAaes128_cfb,
+//		Purpose:   vault.KPencryption,
+//		CommonGenerateRequest: vault.CommonGenerateRequest{
+//			Name:   pangea.StringValue("my-very-secret-secret"),
+//			Folder: pangea.StringValue("/personal"),
+//			Metadata: vault.Metadata{
+//				"created_by": pangea.StringValue("John Doe"),
+//				"used_in":    pangea.StringValue("Google products"),
+//			},
+//			Tags: vault.Tags{
+//				pangea.StringValue("irs_2023"),
+//				pangea.StringValue("personal"),
+//			},
+//			RotationFrequency: pangea.StringValue("10d"),
+//			RotationState:     pangea.StringValue("deactivated"),
+//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//		},
+//	}
+//
+//	sgr, err := vaultcli.SymmetricGenerate(ctx, input)
+//
 func (v *Vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateRequest) (*pangea.PangeaResponse[SymmetricGenerateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -402,6 +488,34 @@ func (v *Vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateR
 	return &panresp, err
 }
 
+// @summary Asymmetric generate
+//
+// @description Generate an asymmetric key
+//
+// @example
+//
+//	input := &vault.AsymmetricGenerateRequest{
+//		Algorithm: vault.AArsa2048_pkcs1v15_sha256,
+//		Purpose:   vault.KPsigning,
+//		CommonGenerateRequest: vault.CommonGenerateRequest{
+//			Name:   pangea.StringValue("my-very-secret-secret"),
+//			Folder: pangea.StringValue("/personal"),
+//			Metadata: vault.Metadata{
+//				"created_by": pangea.StringValue("John Doe"),
+//				"used_in":    pangea.StringValue("Google products"),
+//			},
+//			Tags: vault.Tags{
+//				pangea.StringValue("irs_2023"),
+//				pangea.StringValue("personal"),
+//			},
+//			RotationFrequency: pangea.StringValue("10d"),
+//			RotationState:     pangea.StringValue("deactivated"),
+//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//		},
+//	}
+//
+//	agr, err := vaultcli.AsymmetricGenerate(ctx, input)
+//
 func (v *Vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerateRequest) (*pangea.PangeaResponse[AsymmetricGenerateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -427,6 +541,39 @@ func (v *Vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerat
 	return &panresp, err
 }
 
+// @summary Asymmetric store
+//
+// @description Import an asymmetric key
+//
+// @example
+//
+//	var PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA8s5JopbEPGBylPBcMK+L5PqHMqPJW/5KYPgBHzZGncc=\n-----END PUBLIC KEY-----"
+//	var PRIVATE_KEY = "private key example"
+//
+//	input := &vault.AsymmetricStoreRequest{
+//		Algorithm:  vault.AArsa2048_pkcs1v15_sha256,
+//		PublicKey:  vault.EncodedPublicKey(PUBLIC_KEY),
+//		PrivateKey: vault.EncodedPrivateKey(PRIVATE_KEY),
+//		Purpose:    vault.KPsigning,
+//		CommonStoreRequest: vault.CommonStoreRequest{
+//			Name: pangea.StringValue("my-very-secret-secret"),
+//			Folder: pangea.StringValue("/personal"),
+//			Metadata: vault.Metadata{
+//				"created_by": pangea.StringValue("John Doe"),
+//				"used_in":    pangea.StringValue("Google products"),
+//			},
+//			Tags: vault.Tags{
+//				pangea.StringValue("irs_2023"),
+//				pangea.StringValue("personal"),
+//			},
+//			RotationFrequency: pangea.StringValue("10d"),
+//			RotationState:     pangea.StringValue("deactivated"),
+//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//		},
+//	}
+//
+//	asr, err := vaultcli.AsymmetricStore(ctx, input)
+//
 func (v *Vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreRequest) (*pangea.PangeaResponse[AsymmetricStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -452,6 +599,35 @@ func (v *Vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreReque
 	return &panresp, err
 }
 
+// @summary Symmetric store
+//
+// @description Import a symmetric key
+//
+// @example
+//
+//	input := &vault.SymmetricStoreRequest{
+//		Key: vault.EncodedSymmetricKey("lJkk0gCLux+Q+rPNqLPEYw=="),
+//		Algorithm: vault.SYAaes128_cfb,
+//		Purpose: vault.KPencryption,
+//		CommonStoreRequest: vault.CommonStoreRequest{
+//			Name: pangea.StringValue("my-very-secret-secret"),
+//			Folder: pangea.StringValue("/personal"),
+//			Metadata: vault.Metadata{
+//				"created_by": pangea.StringValue("John Doe"),
+//				"used_in":    pangea.StringValue("Google products"),
+//			},
+//			Tags: vault.Tags{
+//				pangea.StringValue("irs_2023"),
+//				pangea.StringValue("personal"),
+//			},
+//			RotationFrequency: pangea.StringValue("10d"),
+//			RotationState:     pangea.StringValue("deactivated"),
+//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//		},
+//	}
+//
+//	ssr, err := vaultcli.SymmetricStore(ctx, input)
+//
 func (v *Vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest) (*pangea.PangeaResponse[SymmetricStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -477,6 +653,24 @@ func (v *Vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest
 	return &panresp, err
 }
 
+// @summary Key rotate
+//
+// @description Manually rotate a symmetric or asymmetric key
+//
+// @example
+//
+//	var SYMMETRIC_KEY = "lJkk0gCLux+Q+rPNqLPEYw=="
+//
+//	input := &vault.KeyRotateRequest{
+//		CommonRotateRequest: vault.CommonRotateRequest{
+//			ID:            pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//			RotationState: vault.IVSdeactivated,
+//		},
+//		Key: &vault.EncodedSymmetricKey(SYMMETRIC_KEY),
+//	}
+//
+//	krr, err := vaultcli.KeyRotate(ctx, input)
+//
 func (v *Vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea.PangeaResponse[KeyRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -501,6 +695,23 @@ func (v *Vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea
 	return &panresp, err
 }
 
+// @summary Encrypt
+//
+// @description Encrypt a message using a key
+//
+// @example
+//
+//	message := "message to encrypt..."
+//	data := base64.StdEncoding.EncodeToString([]byte(message))
+//
+//	input := &vault.EncryptRequest{
+//		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		PlainText: data,
+//		Version: pangea.Int(1),
+//	}
+//
+//	encryptResponse, err := vaultcli.Encrypt(ctx, input)
+//
 func (v *Vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.PangeaResponse[EncryptResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -525,6 +736,20 @@ func (v *Vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.Pan
 	return &panresp, err
 }
 
+// @summary Decrypt
+//
+// @description Decrypt a message using a key
+//
+// @example
+//
+//	input := &vault.DecryptRequest{
+//		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		CipherText: pangea.StringValue("lJkk0gCLux+Q+rPNqLPEYw=="),
+//		Version: pangea.Int(1),
+//	}
+//
+//	decryptResponse, err := vaultcli.Decrypt(ctx, input)
+//
 func (v *Vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.PangeaResponse[DecryptResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -549,6 +774,23 @@ func (v *Vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.Pan
 	return &panresp, err
 }
 
+// @summary Sign
+//
+// @description Sign a message using a key
+//
+// @example
+//
+//	message := "message to sign..."
+//	data := base64.StdEncoding.EncodeToString([]byte(message))
+//
+//	input := &vault.SignRequest{
+//		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		Message: data,
+//		Version: pangea.Int(1),
+//	}
+//
+//	signResponse, err := vaultcli.Sign(ctx, input)
+//
 func (v *Vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaResponse[SignResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -573,6 +815,21 @@ func (v *Vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaRes
 	return &panresp, err
 }
 
+// @summary Verify
+//
+// @description Verify a signature using a key
+//
+// @example
+//
+//	input := &vault.VerifyRequest{
+//		ID:        pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		Version:   pangea.Int(1),
+//		Message:   pangea.StringValue("lJkk0gCLux+Q+rPNqLPEYw=="),
+//		Signature: pangea.StringValue("FfWuT2Mq/+cxa7wIugfhzi7ktZxVf926idJNgBDCysF/knY9B7M6wxqHMMPDEBs86D8OsEGuED21y3J7IGOpCQ=="),
+//	}
+//
+//	verifyResponse, err := vaultcli.Verify(ctx, input)
+//
 func (v *Vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -597,6 +854,19 @@ func (v *Vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.Pange
 	return &panresp, err
 }
 
+// @summary JWT Sign
+//
+// @description Sign a JSON Web Token (JWT) using a key
+//
+// @example
+//
+//	input := &vault.JWTSignRequest{
+//		ID:      pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		Payload: pangea.StringValue("{\"sub\": \"1234567890\",\"name\": \"John Doe\",\"admin\": true}"),
+//	}
+//
+//	jwtSignResponse, err := vaultcli.JWTSign(ctx, input)
+//
 func (v *Vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -621,6 +891,18 @@ func (v *Vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.Pan
 	return &panresp, err
 }
 
+// @summary JWT Verify
+//
+// @description Verify the signature of a JSON Web Token (JWT)
+//
+// @example
+//
+//	input := &vault.JWTVerifyRequest{
+//		JWS: pangea.StringValue("ewogICJhbGciO..."),
+//	}
+//
+//	jwtVerifyResponse, err := vaultcli.JWTVerify(ctx, input)
+//
 func (v *Vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
