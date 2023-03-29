@@ -27,23 +27,18 @@ func main() {
 
 	ctx := context.Background()
 
+	data := map[string]any{
+		"Secret": "My phone number is 415-867-5309",
+	}
+
 	input := &redact.StructuredInput{
-		JSONP: []*string{
-			pangea.String("$.secret"),
-		},
+		Data: data,
 	}
-	rawData := yourCustomDataStruct{
-		Secret: "My social security number is 0303456",
-	}
-	input.SetData(rawData)
 
 	redactResponse, err := redactcli.RedactStructured(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var redactedData yourCustomDataStruct
-	redactResponse.Result.GetRedactedData(&redactedData)
-
-	fmt.Println(pangea.Stringify(redactedData))
+	fmt.Println(pangea.Stringify(redactResponse.Result.RedactedData))
 }
