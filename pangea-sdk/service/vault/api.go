@@ -7,7 +7,20 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
-func (v *vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pangea.PangeaResponse[StateChangeResult], error) {
+// @summary State change
+//
+// @description Change the state of a specific version of a secret or key
+//
+// @example
+//
+//	input := &vault.StateChangeRequest{
+//		ID:    pangea.String("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		State: vault.IVSdeactivated,
+//	}
+//
+//	stateChangeResponse, err := vaultcli.StateChange(ctx, input)
+//
+func (v *Vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pangea.PangeaResponse[StateChangeResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -31,7 +44,19 @@ func (v *vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pa
 	return &panresp, err
 }
 
-func (v *vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
+// @summary Delete
+//
+// @description Delete a secret or key
+//
+// @example
+//
+//	input := &vault.DeleteRequest{
+//		ID: pangea.String("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//	}
+//
+//	deleteResponse, err := vaultcli.Delete(ctx, input)
+//
+func (v *Vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -55,7 +80,22 @@ func (v *vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.Pange
 	return &panresp, err
 }
 
-func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
+// @summary Retrieve
+//
+// @description Retrieve a secret or key, and any associated information
+//
+// @example
+//
+//	input := &vault.GetRequest{
+//		ID:           pangea.String("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
+//		Version:      pangea.Int(1),
+//		Verbose:      pangea.Bool(true),
+//		VersionState: vault.IVSactive,
+//	}
+//
+//	getResponse, err := vaultcli.Get(ctx, input)
+//
+func (v *Vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -79,7 +119,7 @@ func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 	return &panresp, err
 }
 
-func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error) {
+func (v *Vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -103,7 +143,7 @@ func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.Pange
 	return &panresp, err
 }
 
-func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
+func (v *Vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -127,7 +167,7 @@ func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 	return &panresp, err
 }
 
-func (v *vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
+func (v *Vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -151,7 +191,7 @@ func (v *vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.Pange
 	return &panresp, err
 }
 
-func (v *vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
+func (v *Vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -176,7 +216,7 @@ func (v *vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pa
 	return &panresp, err
 }
 
-func (v *vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
+func (v *Vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -201,7 +241,7 @@ func (v *vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreReq
 	return &panresp, err
 }
 
-func (v *vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
+func (v *Vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -225,7 +265,7 @@ func (v *vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*
 	return &panresp, err
 }
 
-func (v *vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
+func (v *Vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -249,7 +289,7 @@ func (v *vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateR
 	return &panresp, err
 }
 
-func (v *vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateRequest) (*pangea.PangeaResponse[SymmetricGenerateResult], error) {
+func (v *Vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateRequest) (*pangea.PangeaResponse[SymmetricGenerateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -274,7 +314,7 @@ func (v *vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateR
 	return &panresp, err
 }
 
-func (v *vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerateRequest) (*pangea.PangeaResponse[AsymmetricGenerateResult], error) {
+func (v *Vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerateRequest) (*pangea.PangeaResponse[AsymmetricGenerateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -299,7 +339,7 @@ func (v *vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerat
 	return &panresp, err
 }
 
-func (v *vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreRequest) (*pangea.PangeaResponse[AsymmetricStoreResult], error) {
+func (v *Vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreRequest) (*pangea.PangeaResponse[AsymmetricStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -324,7 +364,7 @@ func (v *vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreReque
 	return &panresp, err
 }
 
-func (v *vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest) (*pangea.PangeaResponse[SymmetricStoreResult], error) {
+func (v *Vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest) (*pangea.PangeaResponse[SymmetricStoreResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -349,7 +389,7 @@ func (v *vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest
 	return &panresp, err
 }
 
-func (v *vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea.PangeaResponse[KeyRotateResult], error) {
+func (v *Vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea.PangeaResponse[KeyRotateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -373,7 +413,7 @@ func (v *vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea
 	return &panresp, err
 }
 
-func (v *vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.PangeaResponse[EncryptResult], error) {
+func (v *Vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.PangeaResponse[EncryptResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -397,7 +437,7 @@ func (v *vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.Pan
 	return &panresp, err
 }
 
-func (v *vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.PangeaResponse[DecryptResult], error) {
+func (v *Vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.PangeaResponse[DecryptResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -421,7 +461,7 @@ func (v *vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.Pan
 	return &panresp, err
 }
 
-func (v *vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaResponse[SignResult], error) {
+func (v *Vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaResponse[SignResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -445,7 +485,7 @@ func (v *vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaRes
 	return &panresp, err
 }
 
-func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error) {
+func (v *Vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -469,7 +509,7 @@ func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.Pange
 	return &panresp, err
 }
 
-func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error) {
+func (v *Vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
@@ -493,7 +533,7 @@ func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.Pan
 	return &panresp, err
 }
 
-func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error) {
+func (v *Vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}

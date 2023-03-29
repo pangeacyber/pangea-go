@@ -30,12 +30,12 @@ type Client interface {
 	JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error)
 }
 
-type vault struct {
+type Vault struct {
 	*pangea.Client
 }
 
 func New(cfg *pangea.Config) Client {
-	cli := &vault{
+	cli := &Vault{
 		Client: pangea.NewClient("vault", cfg),
 	}
 	return cli
