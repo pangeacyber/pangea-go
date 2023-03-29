@@ -2,7 +2,6 @@ package redact
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
@@ -43,25 +42,16 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaRe
 //
 // @example
 //
-//	type yourCustomDataStruct struct {
-//		Secret string `json:"secret"`
+//	data := yourCustomDataStruct{
+//		Secret: "My social security number is 0303456",
 //	}
 //
 //	input := &redact.StructuredInput{
-//		JSONP: []*string{
-//			pangea.String("$.secret"),
-//		},
+//		Data: data,
 //	}
-//	rawData := yourCustomDataStruct{
-//		Secret: "My social security number is 0303456",
-//	}
-//	input.SetData(rawData)
 //
 //	redactResponse, err := redactcli.RedactStructured(ctx, input)
 func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error) {
-	if input == nil {
-		input = &StructuredInput{}
-	}
 	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
 	if err != nil {
 		return nil, err
@@ -91,6 +81,9 @@ type TextInput struct {
 
 	// An array of redact rule short names
 	Rules []string `json:"rules,omitempty"`
+
+	// Setting this value to false will omit the redacted result only returning count
+	ReturnResult *bool `json:"return_result,omitempty"`
 }
 
 type TextOutput struct {
@@ -133,7 +126,7 @@ type RecognizerResult struct {
 type StructuredInput struct {
 	// Structured data to redact
 	// Data is a required field.
-	Data json.RawMessage `json:"data"`
+	Data map[string]any `json:"data"`
 
 	// JSON path(s) used to identify the specific JSON fields to redact in the structured data.
 	// Note: If jsonp parameter is used, the data parameter must be in JSON format.
@@ -147,30 +140,17 @@ type StructuredInput struct {
 
 	// An array of redact rule short names
 	Rules []string `json:"rules,omitempty"`
-}
 
-// SetData marshal and sets the JSON encoding of obj into Data.
-func (i *StructuredInput) SetData(obj interface{}) error {
-	b, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-	i.Data = b
-	return nil
+	// Setting this value to false will omit the redacted result only returning count
+	ReturnResult *bool `json:"return_result,omitempty"`
 }
 
 type StructuredOutput struct {
 	// RedactedData is always populated on a successful response.
-	RedactedData json.RawMessage `json:"redacted_data"`
+	RedactedData map[string]any `json:"redacted_data"`
 
 	// Number of redactions present in the response
 	Count int `json:"count"`
 
 	Report *DebugReport `json:"report"`
-}
-
-// GetRedactedData a parses the JSON-encoded RedactedData and stores the result in the value pointed to by obj.
-// If v is nil or not a pointer, Unmarshal returns an InvalidUnmarshalError.
-func (i *StructuredOutput) GetRedactedData(obj interface{}) error {
-	return json.Unmarshal(i.RedactedData, obj)
 }
