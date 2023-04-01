@@ -30,8 +30,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea pangea-sdk/v1.0.0"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/embargo pangea-sdk/v1.0.0"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/embargo"
 )
 
 func main() {
@@ -40,26 +40,22 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	embargocli, err := embargo.New(&pangea.Config{
-		Token: 		token,
-		Domain: 	os.Getenv("PANGEA_DOMAIN"),
-		Insecure: 	false,
+	embargocli := embargo.New(&pangea.Config{
+		Token:    token,
+		Domain:   os.Getenv("PANGEA_DOMAIN"),
+		Insecure: false,
 	})
-	if err != nil {
-		log.Fatal("failed to create embargo client")
-	}
 
-	ctx := context.Background()
 	input := &embargo.ISOCheckInput{
 		ISOCode: pangea.String("CU"),
 	}
 
-	checkOutput, _, err := embargocli.ISOCheck(ctx, input)
+	checkOutput, err := embargocli.ISOCheck(context.Background(), input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(checkOutput))
+	fmt.Println(pangea.Stringify(checkOutput.Result))
 }
 ```
 
