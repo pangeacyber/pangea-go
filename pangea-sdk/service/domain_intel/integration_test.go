@@ -27,7 +27,7 @@ func Test_Integration_DomainLookup(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "737updatesboeing.com",
@@ -35,14 +35,14 @@ func Test_Integration_DomainLookup(t *testing.T) {
 		Verbose:  true,
 		Provider: "domaintools",
 	}
-	out, err := domainintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Verdict, "malicious")
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
 }
 
 // Lookup domain unknown
@@ -51,7 +51,7 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "google.com",
@@ -60,14 +60,14 @@ func Test_Integration_DomainLookup_2(t *testing.T) {
 		Provider: "domaintools",
 	}
 
-	out, err := domainintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Verdict, "benign")
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, resp.Result.Data.Verdict, "benign")
 }
 
 // Test empty domain
@@ -76,7 +76,7 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "",
@@ -85,10 +85,10 @@ func Test_Integration_DomainLookup_Error(t *testing.T) {
 		Provider: "domaintools",
 	}
 
-	out, err := domainintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	err = err.(*pangea.APIError)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
@@ -104,7 +104,7 @@ func Test_Integration_DomainLookup_Error_BadAuthToken(t *testing.T) {
 
 	cfg := intelDomainIntegrationCfg(t)
 	cfg.Token = "notavalidtoken"
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "737updatesboeing.com",
@@ -112,10 +112,10 @@ func Test_Integration_DomainLookup_Error_BadAuthToken(t *testing.T) {
 		Verbose:  true,
 		Provider: "domaintools",
 	}
-	out, err := domainintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 }
@@ -126,7 +126,7 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainLookupInput{
 		Domain:   "737updatesboeing.com",
@@ -134,10 +134,10 @@ func Test_Integration_DomainLookup_Error_Provider(t *testing.T) {
 		Verbose:  true,
 		Provider: "notaprovider",
 	}
-	out, err := domainintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	err = err.(*pangea.APIError)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
@@ -151,7 +151,7 @@ func Test_Integration_DomainReputation(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainReputationRequest{
 		Domain:   "737updatesboeing.com",
@@ -159,14 +159,14 @@ func Test_Integration_DomainReputation(t *testing.T) {
 		Verbose:  true,
 		Provider: "domaintools",
 	}
-	out, err := domainintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Verdict, "malicious")
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
 }
 
 // Reputation domain unknown
@@ -175,7 +175,7 @@ func Test_Integration_DomainReputation_2(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainReputationRequest{
 		Domain:   "google.com",
@@ -184,14 +184,14 @@ func Test_Integration_DomainReputation_2(t *testing.T) {
 		Provider: "domaintools",
 	}
 
-	out, err := domainintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, out.Result.Data.Verdict, "benign")
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, resp.Result.Data.Verdict, "benign")
 }
 
 // Test empty domain
@@ -200,7 +200,7 @@ func Test_Integration_DomainReputation_Error(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainReputationRequest{
 		Domain:   "",
@@ -209,10 +209,10 @@ func Test_Integration_DomainReputation_Error(t *testing.T) {
 		Provider: "domaintools",
 	}
 
-	out, err := domainintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	err = err.(*pangea.APIError)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
@@ -228,7 +228,7 @@ func Test_Integration_DomainReputation_Error_BadAuthToken(t *testing.T) {
 
 	cfg := intelDomainIntegrationCfg(t)
 	cfg.Token = "notavalidtoken"
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainReputationRequest{
 		Domain:   "737updatesboeing.com",
@@ -236,10 +236,10 @@ func Test_Integration_DomainReputation_Error_BadAuthToken(t *testing.T) {
 		Verbose:  true,
 		Provider: "domaintools",
 	}
-	out, err := domainintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 }
@@ -250,7 +250,7 @@ func Test_Integration_DomainReputation_Error_Provider(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
-	domainintel := domain_intel.New(cfg)
+	intelcli := domain_intel.New(cfg)
 
 	input := &domain_intel.DomainReputationRequest{
 		Domain:   "737updatesboeing.com",
@@ -258,10 +258,10 @@ func Test_Integration_DomainReputation_Error_Provider(t *testing.T) {
 		Verbose:  true,
 		Provider: "notaprovider",
 	}
-	out, err := domainintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	err = err.(*pangea.APIError)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)

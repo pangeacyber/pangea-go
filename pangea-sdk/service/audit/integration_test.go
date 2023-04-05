@@ -3,7 +3,6 @@ package audit_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -271,7 +270,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 		MaxResults: maxResults,
 		Limit:      limit,
 		Order:      "desc",
-		Query:      "message:",
+		Query:      "message:\"\"",
 		Verbose:    pangea.Bool(false),
 	}
 
@@ -325,7 +324,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 	limit := 2
 
 	input := &audit.SearchInput{
-		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
+		Query:      "message:" + MSG_SIGNED + " status:" + STATUS_SIGNED + " actor:" + ACTOR,
 		MaxResults: maxResults,
 		Order:      "asc",
 		Limit:      limit,

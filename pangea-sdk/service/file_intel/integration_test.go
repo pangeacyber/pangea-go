@@ -26,7 +26,7 @@ func Test_Integration_FileLookup(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
@@ -35,16 +35,16 @@ func Test_Integration_FileLookup(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, "malicious", out.Result.Data.Verdict)
-	assert.Equal(t, "Trojan", out.Result.Data.Category[0])
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, "malicious", resp.Result.Data.Verdict)
+	assert.Equal(t, "Trojan", resp.Result.Data.Category[0])
 }
 
 func Test_Integration_FileLookup_2(t *testing.T) {
@@ -52,7 +52,7 @@ func Test_Integration_FileLookup_2(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
 		Hash:     "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df542706",
@@ -61,15 +61,15 @@ func Test_Integration_FileLookup_2(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result)
-	assert.Equal(t, "unknown", out.Result.Data.Verdict)
-	assert.Equal(t, "Not Provided", out.Result.Data.Category[0])
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.Equal(t, "unknown", resp.Result.Data.Verdict)
+	assert.Equal(t, "Not Provided", resp.Result.Data.Category[0])
 }
 
 func Test_Integration_FileLookup_ErrorBadHash(t *testing.T) {
@@ -77,7 +77,7 @@ func Test_Integration_FileLookup_ErrorBadHash(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
 		Hash:     "notarealhash",
@@ -86,10 +86,10 @@ func Test_Integration_FileLookup_ErrorBadHash(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
@@ -102,7 +102,7 @@ func Test_Integration_FileLookup_ErrorBadHashType(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
@@ -111,10 +111,10 @@ func Test_Integration_FileLookup_ErrorBadHashType(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "NotEnumMember")
@@ -128,7 +128,7 @@ func Test_Integration_FileLookup_ErrorBadToken(t *testing.T) {
 
 	cfg := intelFileIntegrationCfg(t)
 	cfg.Token = "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e"
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileLookupInput{
 		Hash:     "notarealhash",
@@ -137,9 +137,9 @@ func Test_Integration_FileLookup_ErrorBadToken(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Lookup(ctx, input)
+	resp, err := intelcli.Lookup(ctx, input)
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 }
@@ -164,7 +164,7 @@ func Test_Integration_FileReputation(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileReputationRequest{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
@@ -173,16 +173,16 @@ func Test_Integration_FileReputation(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.Data)
-	assert.Equal(t, "malicious", out.Result.Data.Verdict)
-	assert.Equal(t, "Trojan", out.Result.Data.Category[0])
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, "malicious", resp.Result.Data.Verdict)
+	assert.Equal(t, "Trojan", resp.Result.Data.Category[0])
 }
 
 func Test_Integration_FileReputation_2(t *testing.T) {
@@ -190,7 +190,7 @@ func Test_Integration_FileReputation_2(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileReputationRequest{
 		Hash:     "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df542706",
@@ -199,15 +199,15 @@ func Test_Integration_FileReputation_2(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	assert.NotNil(t, out)
-	assert.NotNil(t, out.Result)
-	assert.Equal(t, "unknown", out.Result.Data.Verdict)
-	assert.Equal(t, "Not Provided", out.Result.Data.Category[0])
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.Equal(t, "unknown", resp.Result.Data.Verdict)
+	assert.Equal(t, "Not Provided", resp.Result.Data.Category[0])
 }
 
 func Test_Integration_FileReputation_ErrorBadHash(t *testing.T) {
@@ -215,7 +215,7 @@ func Test_Integration_FileReputation_ErrorBadHash(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileReputationRequest{
 		Hash:     "notarealhash",
@@ -224,10 +224,10 @@ func Test_Integration_FileReputation_ErrorBadHash(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "BelowMinLength")
@@ -240,7 +240,7 @@ func Test_Integration_FileReputation_ErrorBadHashType(t *testing.T) {
 	defer cancelFn()
 
 	cfg := intelFileIntegrationCfg(t)
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileReputationRequest{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
@@ -249,10 +249,10 @@ func Test_Integration_FileReputation_ErrorBadHashType(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "NotEnumMember")
@@ -266,7 +266,7 @@ func Test_Integration_FileReputation_ErrorBadToken(t *testing.T) {
 
 	cfg := intelFileIntegrationCfg(t)
 	cfg.Token = "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e"
-	fileintel := file_intel.New(cfg)
+	intelcli := file_intel.New(cfg)
 
 	input := &file_intel.FileReputationRequest{
 		Hash:     "notarealhash",
@@ -275,9 +275,9 @@ func Test_Integration_FileReputation_ErrorBadToken(t *testing.T) {
 		Verbose:  true,
 		Provider: "reversinglabs",
 	}
-	out, err := fileintel.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 	assert.Error(t, err)
-	assert.Nil(t, out)
+	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 }
