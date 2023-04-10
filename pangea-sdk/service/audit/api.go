@@ -41,7 +41,7 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 	}
 
 	if a.SignLogsMode == LocalSign && a.Signer != nil {
-		err := input.SignEvent(*a.Signer)
+		err := input.SignEvent(*a.Signer, a.publicKeyInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -208,6 +208,9 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
 		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 	}
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
 
 	if log.EventEnvelope != nil {
 		log.SignatureVerification = log.EventEnvelope.VerifySignature()
@@ -296,7 +299,7 @@ type LogInput struct {
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogInput) SignEvent(s signer.Signer) error {
+func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
 	b, err := pu.CanonicalizeStruct(&i.Event)
 	if err != nil {
 		return err
@@ -306,8 +309,26 @@ func (i *LogInput) SignEvent(s signer.Signer) error {
 	if err != nil {
 		return err
 	}
+
+	pk, err := s.PublicKey()
+	if err != nil {
+		return err
+	}
+
+	if pki != nil {
+		pki["key"] = pk
+	} else {
+		pki = map[string]string{
+			"key": pk,
+		}
+	}
+	pkib, err := pu.CanonicalizeStruct(pki)
+	if err != nil {
+		return err
+	}
+
 	i.Signature = pangea.String(base64.StdEncoding.EncodeToString(signature))
-	i.PublicKey = pangea.String(s.PublicKey())
+	i.PublicKey = pangea.String(string(pkib))
 	return nil
 }
 

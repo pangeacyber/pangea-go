@@ -15,3 +15,11 @@ func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 		Token:      GetTestToken(t, env),
 	}
 }
+
+func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Config {
+	return &pangea.Config{
+		HTTPClient: defaults.HTTPClient(),
+		Domain:     GetTestDomain(t, env),
+		Token:      GetVaultSignatureTestToken(t, env),
+	}
+}
