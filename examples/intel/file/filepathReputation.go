@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	token := os.Getenv("PANGEA_FILE_INTEL_TOKEN")
+	token := os.Getenv("PANGEA_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
@@ -32,10 +32,10 @@ func main() {
 	input.Raw = true
 	input.Verbose = true
 
-	response, err := intelcli.Reputation(ctx, input)
+	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(response.Result))
+	fmt.Println(pangea.Stringify(resp.Result))
 }
