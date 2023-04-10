@@ -342,6 +342,7 @@ type Event struct {
 	Actor string `json:"actor,omitempty"`
 
 	// The auditable action that occurred."
+	// max len is 32 bytes
 	// examples:
 	// 	created
 	//  deleted

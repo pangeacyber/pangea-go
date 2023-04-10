@@ -27,7 +27,7 @@ func main() {
 
 	fmt.Println("Generate key...")
 	generateInput := &vault.SymmetricGenerateRequest{
-		Algorithm: vault.SYAaes,
+		Algorithm: vault.SYAaes128_cfb,
 		Purpose:   vault.KPencryption,
 		CommonGenerateRequest: vault.CommonGenerateRequest{
 			Name: "My key's name",
