@@ -17,7 +17,7 @@ import (
 
 type Signer interface {
 	Sign(msg []byte) ([]byte, error)
-	PublicKey() string
+	PublicKey() (string, error)
 }
 
 type Verifier interface {
@@ -52,8 +52,20 @@ func (s signer) Sign(msg []byte) ([]byte, error) {
 	return (ed25519.PrivateKey)(s).Sign(rand.Reader, msg, crypto.Hash(0))
 }
 
-func (s signer) PublicKey() string {
-	return base64.StdEncoding.EncodeToString((ed25519.PrivateKey)(s).Public().(ed25519.PublicKey))
+func (s signer) PublicKey() (string, error) {
+	// public key
+	b, err := x509.MarshalPKIXPublicKey((ed25519.PrivateKey)(s).Public())
+	if err != nil {
+		return "", err
+	}
+
+	block := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: b,
+	}
+
+	pubPEM := string(pem.EncodeToMemory(block))
+	return pubPEM, nil
 }
 
 func NewVerifierFromPubKey(pkPem string) (Verifier, error) {
