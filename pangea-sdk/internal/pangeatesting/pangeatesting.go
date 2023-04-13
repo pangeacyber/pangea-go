@@ -1,6 +1,7 @@
 package pangeatesting
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 )
 
@@ -132,4 +134,39 @@ func GetVaultSignatureTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_VAULT_TOKEN_" + string(env)
 	return GetEnvVarOrSkip(t, varname)
+}
+
+func GetCustomSchemaTestToken(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_CUSTOM_SCHEMA_TOKEN_" + string(env)
+	return GetEnvVarOrSkip(t, varname)
+}
+
+type CustomSchemaEvent struct {
+	Message       string              `json:"message"`
+	FieldInt      int                 `json:"field_int,omitempty"`
+	FieldBool     bool                `json:"field_bool,omitempty"`
+	FieldStrShort string              `json:"field_str_short,omitempty"`
+	FieldStrLong  string              `json:"field_str_long,omitempty"`
+	FieldTime     *pu.PangeaTimestamp `json:"field_time,omitempty"`
+
+	// TenantID field
+	TenantID string `json:"tenant_id,omitempty"`
+}
+
+func (_ *CustomSchemaEvent) NewFromJSON(b []byte) (any, error) {
+	var e CustomSchemaEvent
+
+	if err := json.Unmarshal(b, &e); err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func (e *CustomSchemaEvent) GetTenantID() string {
+	return e.TenantID
+}
+
+func (e *CustomSchemaEvent) SetTenantID(tid string) {
+	e.TenantID = tid
 }

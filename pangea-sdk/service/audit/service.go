@@ -9,10 +9,16 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, Event, bool) (*pangea.PangeaResponse[LogOutput], error)
-	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error)
+	Log(context.Context, IEvent, bool) (*pangea.PangeaResponse[LogOutput], error)
+	Search(context.Context, *SearchInput, IEvent) (*pangea.PangeaResponse[SearchOutput], error)
+	SearchResults(context.Context, *SearchResultInput, IEvent) (*pangea.PangeaResponse[SearchResultOutput], error)
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
+}
+
+type IEvent interface {
+	GetTenantID() string
+	SetTenantID(string)
+	NewFromJSON([]byte) (any, error)
 }
 
 type LogSigningMode int
@@ -22,27 +28,25 @@ const (
 	LocalSign                = 1
 )
 
-type Audit struct {
+type audit struct {
 	*pangea.Client
 
-	SignLogsMode          LogSigningMode
-	Signer                *signer.Signer
-	VerifyProofs          bool
-	SkipEventVerification bool
+	signer                *signer.Signer
+	verifyProofs          bool
+	skipEventVerification bool
 	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
 	tenantID              string
 }
 
-func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
-	cli := &Audit{
+func New(cfg *pangea.Config, opts ...Option) (Client, error) {
+	cli := &audit{
 		Client:                pangea.NewClient("audit", cfg),
-		SkipEventVerification: false,
+		skipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,
-		SignLogsMode:          Unsigned,
-		Signer:                nil,
+		signer:                nil,
 		publicKeyInfo:         nil,
 		tenantID:              "",
 	}
@@ -55,43 +59,42 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	return cli, nil
 }
 
-type Option func(*Audit) error
+type Option func(*audit) error
 
 func WithLogProofVerificationEnabled() Option {
-	return func(a *Audit) error {
-		a.VerifyProofs = true
+	return func(a *audit) error {
+		a.verifyProofs = true
 		return nil
 	}
 }
 
 func WithLogLocalSigning(filename string) Option {
-	return func(a *Audit) error {
-		a.SignLogsMode = LocalSign
+	return func(a *audit) error {
 		s, err := signer.NewSignerFromPrivateKeyFile(filename)
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
-		a.Signer = &s
+		a.signer = &s
 		return nil
 	}
 }
 
 func WithTenantID(tenantID string) Option {
-	return func(a *Audit) error {
+	return func(a *audit) error {
 		a.tenantID = tenantID
 		return nil
 	}
 }
 
 func DisableEventVerification() Option {
-	return func(a *Audit) error {
-		a.SkipEventVerification = true
+	return func(a *audit) error {
+		a.skipEventVerification = true
 		return nil
 	}
 }
 
 func SetPublicKeyInfo(pkinfo map[string]string) Option {
-	return func(a *Audit) error {
+	return func(a *audit) error {
 		a.publicKeyInfo = pkinfo
 		return nil
 	}
