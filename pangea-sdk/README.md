@@ -17,47 +17,7 @@
 
 # Pangea Go SDK
 
-A Go SDK for integrating with Pangea Services.
-
-# Usage
-```go
-// embargo check is an example of how to use the check method
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-	"os"
-
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/embargo"
-)
-
-func main() {
-	token := os.Getenv("PANGEA_TOKEN")
-	if token == "" {
-		log.Fatal("Unauthorized: No token present")
-	}
-
-	embargocli := embargo.New(&pangea.Config{
-		Token:    token,
-		Domain:   os.Getenv("PANGEA_DOMAIN"),
-		Insecure: false,
-	})
-
-	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("CU"),
-	}
-
-	checkOutput, err := embargocli.ISOCheck(context.Background(), input)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(pangea.Stringify(checkOutput.Result))
-}
-```
+A Go SDK for integrating with Pangea Services. See the [examples](../examples) for usage.
 
 # Contributing
 
