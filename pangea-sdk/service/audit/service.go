@@ -25,11 +25,11 @@ const (
 type Audit struct {
 	*pangea.Client
 
-	SignLogsMode LogSigningMode
-	Signer       *signer.Signer
-
+	SignLogsMode          LogSigningMode
+	Signer                *signer.Signer
 	VerifyProofs          bool
 	SkipEventVerification bool
+	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
 	tenantID              string
@@ -43,6 +43,8 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 		lastUnpRootHash:       nil,
 		SignLogsMode:          Unsigned,
 		Signer:                nil,
+		publicKeyInfo:         nil,
+		tenantID:              "",
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -84,6 +86,13 @@ func WithTenantID(tenantID string) Option {
 func DisableEventVerification() Option {
 	return func(a *Audit) error {
 		a.SkipEventVerification = true
+		return nil
+	}
+}
+
+func SetPublicKeyInfo(pkinfo map[string]string) Option {
+	return func(a *Audit) error {
+		a.publicKeyInfo = pkinfo
 		return nil
 	}
 }

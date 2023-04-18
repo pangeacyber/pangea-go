@@ -12,14 +12,23 @@ import (
 func TestSigner(t *testing.T) {
 	s, err := signer.NewSignerFromPrivateKeyFile("./testdata/privkey")
 	assert.NoError(t, err)
-
-	signature, err := s.Sign([]byte("Hello signed world"))
+	msg := "Hello signed world"
+	signature, err := s.Sign([]byte(msg))
 	signBase64 := base64.StdEncoding.EncodeToString(signature)
 
 	fmt.Println("Signature base64 is: ", signBase64)
-	fmt.Println("Publick key base64 is: ", s.PublicKey())
-	assert.Equal(t, s.PublicKey(), "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
+	pk, err := s.PublicKey()
+	assert.NoError(t, err)
+	fmt.Println("Publick key base64 is: ", pk)
+	assert.Equal(t, pk, "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n")
 	assert.Equal(t, signBase64, "IYmIUBKWu5yLHM1u3bAw7dvVg1MPc7FLDWSz6d9oqn4FoCu9Bk6ta/lXvvXZUpa7hCm6RhU0VdBzh53x3mKiDQ==")
+
+	v, err := signer.NewVerifierFromPubKey(pk)
+	assert.NoError(t, err)
+	sDecoded, err := base64.StdEncoding.DecodeString(signBase64)
+	res, err := v.Verify([]byte(msg), sDecoded)
+	assert.NoError(t, err)
+	assert.True(t, res)
 }
 
 func TestSigner_BadFile(t *testing.T) {
