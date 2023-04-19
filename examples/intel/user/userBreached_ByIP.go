@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/ip_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/user_intel"
 )
 
 func main() {
@@ -17,20 +17,20 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	intelcli := ip_intel.New(&pangea.Config{
+	intelcli := user_intel.New(&pangea.Config{
 		Token:  token,
 		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	ctx := context.Background()
-	input := &ip_intel.IpGeolocateRequest{
-		Ip:       "93.231.182.110",
+	input := &user_intel.UserBreachedRequest{
+		IP:       "192.168.140.37",
 		Raw:      true,
 		Verbose:  true,
-		Provider: "digitalelement",
+		Provider: "spycloud",
 	}
 
-	resp, err := intelcli.Geolocate(ctx, input)
+	resp, err := intelcli.UserBreached(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}

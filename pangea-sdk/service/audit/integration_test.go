@@ -3,7 +3,6 @@ package audit_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -21,12 +20,19 @@ const (
 	STATUS_SIGNED      = "signed"
 	MSG_SIGNED         = "sign-test"
 	STATUS_NO_SIGNED   = "no-signed"
+	ACTION_VAULT       = "vault-sign"
+	ACTION_LOCAL       = "local-sign"
 	testingEnvironment = pangeatesting.Live
 )
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
 	return pangeatesting.IntegrationConfig(t, testingEnvironment)
+}
+
+func auditVaultIntegrationCfg(t *testing.T) *pangea.Config {
+	t.Helper()
+	return pangeatesting.IntegrationAuditVaultConfig(t, testingEnvironment)
 }
 
 func Test_Integration_Log_NoVerbose(t *testing.T) {
@@ -167,7 +173,7 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 		Status:    STATUS_SIGNED,
 		Target:    "Target",
 		Actor:     ACTOR,
-		Action:    "Action",
+		Action:    ACTION_LOCAL,
 		New:       "New",
 		Old:       "Old",
 		Timestamp: pangea.PangeaTime(ts),
@@ -179,8 +185,8 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.EventEnvelope.Signature)
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
-	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
+	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 }
 
 func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
@@ -214,9 +220,41 @@ func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.EventEnvelope.Signature)
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=")
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
 	assert.Equal(t, out.Result.EventEnvelope.Event.TenantID, "mytenantid")
+}
+
+func Test_Integration_Vault_Signatures(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelFn()
+
+	cfg := auditVaultIntegrationCfg(t)
+	client, _ := audit.New(cfg,
+		audit.WithLogProofVerificationEnabled(),
+	)
+
+	ts := pu.PangeaTimestamp(time.Date(2022, time.Month(11), 27, 12, 23, 37, 123456, time.UTC))
+
+	event := audit.Event{
+		Message:   MSG_SIGNED,
+		Source:    "Source",
+		Status:    STATUS_SIGNED,
+		Target:    "Target",
+		Actor:     ACTOR,
+		Action:    ACTION_VAULT,
+		New:       "New",
+		Old:       "Old",
+		Timestamp: pangea.PangeaTime(ts),
+	}
+
+	out, err := client.Log(ctx, event, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.EventEnvelope.Signature)
+	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
+	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 }
 
 func Test_Integration_Root(t *testing.T) {
@@ -271,7 +309,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 		MaxResults: maxResults,
 		Limit:      limit,
 		Order:      "desc",
-		Query:      "message:",
+		Query:      "message:\"\"",
 		Verbose:    pangea.Bool(false),
 	}
 
@@ -325,7 +363,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 	limit := 2
 
 	input := &audit.SearchInput{
-		Query:      fmt.Sprintf("message:%s status:%s actor: %s", MSG_SIGNED, STATUS_SIGNED, ACTOR),
+		Query:      "message:" + MSG_SIGNED,
 		MaxResults: maxResults,
 		Order:      "asc",
 		Limit:      limit,
