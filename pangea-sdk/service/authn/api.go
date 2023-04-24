@@ -9,7 +9,7 @@ import (
 )
 
 type ClientUserinfoResult struct {
-	RefressToken LoginToken  `json:"refresh_token"`
+	RefreshToken LoginToken  `json:"refresh_token"`
 	ActiveToken  *LoginToken `json:"active_token,omitempty"`
 }
 
@@ -150,6 +150,7 @@ const (
 
 type ProfileData map[string]string
 type Scopes []string
+type Filter map[string]any
 
 type UserCreateRequest struct {
 	Email         string       `json:"email"`
@@ -318,7 +319,7 @@ const (
 
 type UserListRequest struct {
 	UseNew  bool            `json:"use_new"`
-	Filter  map[string]any  `json:"filter,omitempty"`
+	Filter  Filter          `json:"filter,omitempty"`
 	Last    string          `json:"last,omitempty"`
 	Order   ItemOrder       `json:"order,omitempty"`
 	OrderBy UserListOrderBy `json:"order_by,omitempty"`
@@ -542,7 +543,7 @@ type UserInviteData struct {
 }
 
 type UserInviteListRequest struct {
-	Filter  map[string]any  `json:"filter,omitempty"`
+	Filter  Filter          `json:"filter,omitempty"`
 	Last    string          `json:"last,omitempty"`
 	Order   ItemOrder       `json:"order,omitempty"`
 	OrderBy UserListOrderBy `json:"order_by,omitempty"`
@@ -1355,7 +1356,7 @@ const (
 
 type ClientSessionListRequest struct {
 	Token   string             `json:"token"`
-	Filter  map[string]string  `json:"filter,omitempty"`
+	Filter  Filter             `json:"filter,omitempty"`
 	Last    string             `json:"last,omitempty"`
 	Order   ItemOrder          `json:"order,omitempty"`
 	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
@@ -1373,16 +1374,16 @@ type SessionToken struct {
 }
 
 type SessionItem struct {
-	ID          string       `json:"id"`
-	Type        string       `json:"type"`
-	Life        int          `json:"list"`
-	Expire      string       `json:"expire"`
-	Identity    string       `json:"identity"`
-	Email       string       `json:"email"`
-	Scopes      Scopes       `json:"scopes"`
-	Profile     ProfileData  `json:"profile"`
-	CreatedAt   string       `json:"created_at"`
-	ActiveToken SessionToken `json:"active_token"`
+	ID          string        `json:"id"`
+	Type        string        `json:"type"`
+	Life        int           `json:"list"`
+	Expire      string        `json:"expire"`
+	Identity    string        `json:"identity"`
+	Email       string        `json:"email"`
+	Scopes      Scopes        `json:"scopes"`
+	Profile     ProfileData   `json:"profile"`
+	CreatedAt   string        `json:"created_at"`
+	ActiveToken *SessionToken `json:"active_token,omitempty"`
 }
 
 type SessionListResult struct {
@@ -1471,7 +1472,7 @@ func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshR
 }
 
 type SessionListRequest struct {
-	Filter  map[string]string  `json:"filter,omitempty"`
+	Filter  Filter             `json:"filter,omitempty"`
 	Last    string             `json:"last,omitempty"`
 	Order   ItemOrder          `json:"order,omitempty"`
 	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
