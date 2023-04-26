@@ -106,7 +106,7 @@ type RecognizerResult struct {
 	FieldType *string `json:"field_type"`
 
 	// Score is always populated on a successful response.
-	Score *int `json:"score"`
+	Score *float64 `json:"score"`
 
 	// Text is always populated on a successful response.
 	Text *string `json:"text"`
