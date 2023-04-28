@@ -205,19 +205,18 @@ func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 		return nil
 	}
 
+	if !a.skipEventVerification {
+		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
+			return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
+		}
+	}
+
 	nurh := log.UnpublishedRootHash
 	if log.EventEnvelope != nil {
 		log.SignatureVerification = log.EventEnvelope.VerifySignature()
 	}
 
-	if log.EventEnvelope != nil {
-		log.SignatureVerification = log.EventEnvelope.VerifySignature()
-	}
-
 	if a.verifyProofs {
-		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-			return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
-		}
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
