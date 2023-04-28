@@ -55,8 +55,8 @@ type UserBreachedRequest struct {
 	IP          string `json:"ip,omitempty"`
 	Start       string `json:"start,omitempty"`
 	End         string `json:"end,omitempty"`
-	Verbose     bool   `json:"verbose,omitempty"`
-	Raw         bool   `json:"raw,omitempty"`
+	Verbose     *bool  `json:"verbose,omitempty"`
+	Raw         *bool  `json:"raw,omitempty"`
 	Provider    string `json:"provider,omitempty"`
 }
 
@@ -109,8 +109,8 @@ func (e *userIntel) PasswordBreached(ctx context.Context, input *UserPasswordBre
 type UserPasswordBreachedRequest struct {
 	HashType   HashType `json:"hash_type,omitempty"`
 	HashPrefix string   `json:"hash_prefix,omitempty"`
-	Verbose    bool     `json:"verbose,omitempty"`
-	Raw        bool     `json:"raw,omitempty"`
+	Verbose    *bool    `json:"verbose,omitempty"`
+	Raw        *bool    `json:"raw,omitempty"`
 	Provider   string   `json:"provider,omitempty"`
 }
 

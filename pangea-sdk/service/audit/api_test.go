@@ -47,7 +47,7 @@ func TestLog(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	want := &audit.LogOutput{
+	want := &audit.LogResult{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
 			Event: audit.Event{
@@ -140,7 +140,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	want := &audit.LogOutput{
+	want := &audit.LogResult{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
 			Event: audit.Event{

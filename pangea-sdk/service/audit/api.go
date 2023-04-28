@@ -24,14 +24,14 @@ import (
 //	 }
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
-func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
+func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
 	// Overwrite tenant id if user set it on event
 
 	if event.GetTenantID() == "" && a.tenantID != "" {
 		event.SetTenantID(a.tenantID)
 	}
 
-	input := LogInput{
+	input := LogRequest{
 		Event:   event,
 		Verbose: verbose,
 	}
@@ -53,7 +53,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 		return nil, err
 	}
 
-	var out LogOutput = LogOutput{}
+	var out LogResult = LogResult{}
 	resp, err := a.Client.Do(ctx, req, &out)
 
 	if err != nil {
@@ -69,7 +69,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[LogOutput]{
+	panresp := pangea.PangeaResponse[LogResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -200,15 +200,12 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput, e IEvent)
 	return resp.Result.Root, events, nil
 }
 
-func (a *audit) processLogResponse(ctx context.Context, log *LogOutput) error {
+func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	if log == nil {
 		return nil
 	}
 
 	nurh := log.UnpublishedRootHash
-	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
-	}
 	if log.EventEnvelope != nil {
 		log.SignatureVerification = log.EventEnvelope.VerifySignature()
 	}
@@ -219,7 +216,7 @@ func (a *audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 
 	if a.verifyProofs {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
+			return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 		}
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
@@ -281,7 +278,7 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, e 
 	return nil
 }
 
-type LogInput struct {
+type LogRequest struct {
 	// A structured event describing an auditable activity.
 	Event IEvent `json:"event"`
 
@@ -300,7 +297,7 @@ type LogInput struct {
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
+func (i *LogRequest) SignEvent(s signer.Signer, pki map[string]string) error {
 	b, err := pu.CanonicalizeStruct(&i.Event)
 	if err != nil {
 		return err
@@ -420,7 +417,7 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
-func newEventEnvelopeFromMap(m *map[string]any, e IEvent) (*EventEnvelope, error) {
+func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -470,10 +467,10 @@ func (ev EventVerification) String() string {
 	return "unknown"
 }
 
-type LogOutput struct {
+type LogResult struct {
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -589,7 +586,7 @@ type SearchEvent struct {
 	// Include Event data and security information
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes

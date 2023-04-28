@@ -30,7 +30,7 @@ func Test_Integration_Redact(t *testing.T) {
 
 	redacted := "My Phone number is <PHONE_NUMBER>"
 
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: pangea.String("My Phone number is 415-867-5309"),
 	}
 	out, err := client.Redact(ctx, input)
@@ -51,7 +51,7 @@ func Test_Integration_Redact_NoResult(t *testing.T) {
 	cfg := redactIntegrationCfg(t)
 	client := redact.New(cfg)
 
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text:         pangea.String("My Phone number is 415-867-5309"),
 		ReturnResult: pangea.Bool(false),
 	}
@@ -64,7 +64,6 @@ func Test_Integration_Redact_NoResult(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.Nil(t, out.Result.RedactedText)
 	assert.Equal(t, 1, out.Result.Count)
-
 }
 
 func Test_Integration_Redact_Structured(t *testing.T) {
@@ -78,7 +77,7 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	data := map[string]any{"phone": "415-867-5309"}
 	redacted := map[string]any{"phone": "<PHONE_NUMBER>"}
 
-	input := &redact.StructuredInput{
+	input := &redact.StructuredRequest{
 		Data: data,
 	}
 	out, err := client.RedactStructured(ctx, input)
@@ -102,7 +101,7 @@ func Test_Integration_Redact_Structured_NoResult(t *testing.T) {
 
 	data := map[string]any{"phone": "415-867-5309"}
 
-	input := &redact.StructuredInput{
+	input := &redact.StructuredRequest{
 		Data:         data,
 		ReturnResult: pangea.Bool(false),
 	}
@@ -126,7 +125,7 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	cfg.Token = "notarealtoken"
 	client := redact.New(cfg)
 
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: pangea.String(""),
 	}
 	out, err := client.Redact(ctx, input)

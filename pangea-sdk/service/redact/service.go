@@ -7,16 +7,16 @@ import (
 )
 
 type Client interface {
-	RedactText(ctx context.Context, input *TextInput) (*pangea.PangeaResponse[TextOutput], error)
-	RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error)
+	Redact(ctx context.Context, input *TextRequest) (*pangea.PangeaResponse[TextResult], error)
+	RedactStructured(ctx context.Context, input *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error)
 }
 
-type Redact struct {
+type redact struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config) *Redact {
-	cli := &Redact{
+func New(cfg *pangea.Config) Client {
+	cli := &redact{
 		Client: pangea.NewClient("redact", cfg),
 	}
 	return cli
