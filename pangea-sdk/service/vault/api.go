@@ -57,7 +57,7 @@ func (v *vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pa
 //		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
 //	}
 //
-//	deleteResponse, err := vaultcli.Delete(ctx, input)
+//	dr, err := vaultcli.Delete(ctx, input)
 func (v *vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -97,7 +97,7 @@ func (v *vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.Pange
 //		VersionState: &vault.IVSactive,
 //	}
 //
-//	getResponse, err := vaultcli.Get(ctx, input)
+//	gr, err := vaultcli.Get(ctx, input)
 func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -134,7 +134,7 @@ func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 //		ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
 //	}
 //
-//	jwkGetResponse, err := vaultcli.JWKGet(ctx, input)
+//	jr, err := vaultcli.JWKGet(ctx, input)
 func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -181,7 +181,7 @@ func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.Pange
 //		OrderBy: vault.IOBname,
 //	}
 //
-//	listResponse, err := vaultcli.List(ctx, input)
+//	lr, err := vaultcli.List(ctx, input)
 func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -233,7 +233,7 @@ func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 //		ItemState:           vault.ISdisabled,
 //	}
 //
-//	updateResponse, err := vaultcli.Update(ctx, input)
+//	ur, err := vaultcli.Update(ctx, input)
 func (v *vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -727,7 +727,7 @@ func (v *vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea
 //		Version: pangea.Int(1),
 //	}
 //
-//	encryptResponse, err := vaultcli.Encrypt(ctx, input)
+//	enc, err := vaultcli.Encrypt(ctx, input)
 func (v *vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.PangeaResponse[EncryptResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -766,7 +766,7 @@ func (v *vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.Pan
 //		Version: pangea.Int(1),
 //	}
 //
-//	decryptResponse, err := vaultcli.Decrypt(ctx, input)
+//	dr, err := vaultcli.Decrypt(ctx, input)
 func (v *vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.PangeaResponse[DecryptResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -808,7 +808,7 @@ func (v *vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.Pan
 //		Version: pangea.Int(1),
 //	}
 //
-//	signResponse, err := vaultcli.Sign(ctx, input)
+//	sr, err := vaultcli.Sign(ctx, input)
 func (v *vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaResponse[SignResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -848,7 +848,7 @@ func (v *vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaRes
 //		Signature: pangea.StringValue("FfWuT2Mq/+cxa7wIugfhzi7ktZxVf926idJNgBDCysF/knY9B7M6wxqHMMPDEBs86D8OsEGuED21y3J7IGOpCQ=="),
 //	}
 //
-//	verifyResponse, err := vaultcli.Verify(ctx, input)
+//	vr, err := vaultcli.Verify(ctx, input)
 func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -886,7 +886,7 @@ func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.Pange
 //		Payload: pangea.StringValue("{\"sub\": \"1234567890\",\"name\": \"John Doe\",\"admin\": true}"),
 //	}
 //
-//	jwtSignResponse, err := vaultcli.JWTSign(ctx, input)
+//	jr, err := vaultcli.JWTSign(ctx, input)
 func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -923,7 +923,7 @@ func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.Pan
 //		JWS: pangea.StringValue("ewogICJhbGciO..."),
 //	}
 //
-//	jwtVerifyResponse, err := vaultcli.JWTVerify(ctx, input)
+//	jr, err := vaultcli.JWTVerify(ctx, input)
 func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
