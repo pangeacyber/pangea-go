@@ -41,10 +41,10 @@ func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 	RANDOM_VALUE = strconv.Itoa(rand.Intn(10000000))
 	USER_ID = ""
-	EMAIL_TEST = "andres.tournour+test" + RANDOM_VALUE + "@pangea.cloud"
-	EMAIL_DELETE = "andres.tournour+delete" + RANDOM_VALUE + "@pangea.cloud"
-	EMAIL_INVITE_DELETE = "andres.tournour+invite_del" + RANDOM_VALUE + "@pangea.cloud"
-	EMAIL_INVITE_KEEP = "andres.tournour+invite_keep" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_TEST = "user+test" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_DELETE = "user+delete" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_INVITE_DELETE = "user+invite_del" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_INVITE_KEEP = "user+invite_keep" + RANDOM_VALUE + "@pangea.cloud"
 	PROFILE_OLD = authn.ProfileData{
 		"name":    "User name",
 		"country": "Argentina",

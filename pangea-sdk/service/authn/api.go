@@ -43,7 +43,7 @@ type ClientJWKSResult struct {
 }
 
 func (a *Client) JWKS(ctx context.Context) (*pangea.PangeaResponse[ClientJWKSResult], error) {
-	req, err := a.client.NewRequest("POST", "v1/client/userinfo", make(map[string]string))
+	req, err := a.client.NewRequest("POST", "v1/client/jwks", make(map[string]string))
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +148,13 @@ const (
 	IDPSMSOTP                = "sms_otp"
 )
 
+type FlowType string
+
+const (
+	FTsignin FlowType = "signin"
+	FTsignup          = "signup"
+)
+
 type ProfileData map[string]string
 type Scopes []string
 type Filter map[string]any
@@ -172,6 +179,7 @@ type UserCreateResult struct {
 	LastLoginAt  *string       `json:"last_login_at,omitempty"`
 	Disabled     bool          `json:"disabled"`
 	MFAProviders []MFAProvider `json:"mfa_providers,omitempty"`
+	CreatedAt    string        `json:"created_at"`
 }
 
 func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.PangeaResponse[UserCreateResult], error) {
@@ -317,8 +325,21 @@ const (
 	ULOBemail                       = "email"
 )
 
+type UserInviteListOrderBy string
+
+const (
+	UILOBid        UserListOrderBy = "id"
+	UILOBcreatedAt                 = "created_at"
+	UILOBtype                      = "type"
+	UILOBexpire                    = "expire"
+	UILOBcallback                  = "callback"
+	UILOBstate                     = "state"
+	UILOBemail                     = "email"
+	UILOBinviter                   = "inviter"
+	UILOBinviteOrg                 = "invite_org"
+)
+
 type UserListRequest struct {
-	UseNew  bool            `json:"use_new"`
 	Filter  Filter          `json:"filter,omitempty"`
 	Last    string          `json:"last,omitempty"`
 	Order   ItemOrder       `json:"order,omitempty"`
@@ -328,7 +349,6 @@ type UserListRequest struct {
 
 type UserInfo struct {
 	Profile      ProfileData `json:"profile"`
-	Identity     string      `json:"identity"`
 	ID           string      `json:"id"`
 	Email        string      `json:"email"`
 	Scopes       Scopes      `json:"scopes"`
@@ -348,7 +368,6 @@ type UserListResult struct {
 }
 
 func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaResponse[UserListResult], error) {
-	input.UseNew = true //Temporary field
 	req, err := a.Client.NewRequest("POST", "v1/user/list", input)
 	if err != nil {
 		return nil, err
@@ -369,12 +388,6 @@ func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaR
 	return &panresp, nil
 }
 
-type UserLoginRequest struct {
-	Email  string `json:"email"`
-	Secret string `json:"secret"`
-	Scopes Scopes `json:"scopes,omitempty"`
-}
-
 type LoginToken struct {
 	Token     string      `json:"token"`
 	ID        string      `json:"id"`
@@ -389,7 +402,7 @@ type LoginToken struct {
 }
 
 type UserLoginResult struct {
-	RefreshToken LoginToken  `json:"refres_token"`
+	RefreshToken LoginToken  `json:"refresh_token"`
 	ActiveToken  *LoginToken `json:"active_token,omitempty"`
 }
 
@@ -488,12 +501,9 @@ func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pa
 }
 
 type UserProfileUpdateRequest struct {
-	Profile    ProfileData `json:"profile"`
-	ID         *string     `json:"id,omitempty"`
-	Email      *string     `json:"email,omitempty"`
-	RequireMFA *bool       `json:"require_mfa,omitempty"`
-	Disabled   *bool       `json:"disabled,omitempty"`
-	Verified   *bool       `json:"verified,omitempty"`
+	Profile ProfileData `json:"profile"`
+	ID      *string     `json:"id,omitempty"`
+	Email   *string     `json:"email,omitempty"`
 }
 
 type UserProfileUpdateResult struct {
@@ -543,11 +553,11 @@ type UserInviteData struct {
 }
 
 type UserInviteListRequest struct {
-	Filter  Filter          `json:"filter,omitempty"`
-	Last    string          `json:"last,omitempty"`
-	Order   ItemOrder       `json:"order,omitempty"`
-	OrderBy UserListOrderBy `json:"order_by,omitempty"`
-	Size    int             `json:"size,omitempty"`
+	Filter  Filter                `json:"filter,omitempty"`
+	Last    string                `json:"last,omitempty"`
+	Order   ItemOrder             `json:"order,omitempty"`
+	OrderBy UserInviteListOrderBy `json:"order_by,omitempty"`
+	Size    int                   `json:"size,omitempty"`
 }
 
 type UserInviteListResult struct {
@@ -689,15 +699,16 @@ type EnrollMFACompleteData struct {
 }
 
 type SocialSignupData struct {
-	RedirectURI string `json:"redirect_uri"`
+	RedirectURI map[string]string `json:"redirect_uri"`
 }
 
 type PasswordSignupData struct {
-	PasswordCharsMin int `json:"password_chars_min"`
-	PasswordCharsMax int `json:"password_chars_max"`
-	PasswordLowerMin int `json:"password_lower_min"`
-	PasswordUpperMin int `json:"passwrod_upper_min"`
-	PasswordPunctMin int `json:"password_punct_min"`
+	PasswordCharsMin  int `json:"password_chars_min"`
+	PasswordCharsMax  int `json:"password_chars_max"`
+	PasswordLowerMin  int `json:"password_lower_min"`
+	PasswordUpperMin  int `json:"passwrod_upper_min"`
+	PasswordPunctMin  int `json:"password_punct_min"`
+	PasswordNumberMin int `json:"password_number_min"`
 }
 
 type VerifyCaptchaData struct {
@@ -709,11 +720,12 @@ type VerifyMFAStartData struct {
 }
 
 type VerifyPasswordData struct {
-	PasswordCharsMin int `json:"password_chars_min"`
-	PasswordCharsMax int `json:"password_chars_max"`
-	PasswordLowerMin int `json:"password_lower_min"`
-	PasswordUpperMin int `json:"passwrod_upper_min"`
-	PasswordPunctMin int `json:"password_punct_min"`
+	PasswordCharsMin  int `json:"password_chars_min"`
+	PasswordCharsMax  int `json:"password_chars_max"`
+	PasswordLowerMin  int `json:"password_lower_min"`
+	PasswordUpperMin  int `json:"passwrod_upper_min"`
+	PasswordPunctMin  int `json:"password_punct_min"`
+	PasswordNumberMin int `json:"password_number_min"`
 }
 
 type SignupData struct {
@@ -726,19 +738,20 @@ type VerifySocialData struct {
 }
 
 type CommonFlowResult struct {
-	FlowID            string                 `json:"flow_id"`
+	FlowID            string                 `json:"flow_id,omitempty"`
 	NextStep          string                 `json:"next_step"`
 	Error             *string                `json:"error,omitempty"`
-	Complete          *map[string]any        `json:"complete,omitempty"`
+	Complete          map[string]any         `json:"complete,omitempty"`
 	EnrollMFAstart    *EnrollMFAStartData    `json:"enroll_mfa_start,omitempty"`
 	EnrollMFAComplete *EnrollMFACompleteData `json:"enroll_mfa_complete,omitempty"`
 	Signup            *SignupData            `json:"signup,omitempty"`
 	VerifyCaptcha     *VerifyCaptchaData     `json:"verify_captcha,omitempty"`
-	VerifyEmail       *map[string]any        `json:"verify_email,omitempty"`
+	VerifyEmail       map[string]any         `json:"verify_email,omitempty"`
 	VerifyMFAStart    *VerifyMFAStartData    `json:"verify_mfa_start,omitempty"`
-	VerifyMFAComplete *map[string]any        `json:"verify_mfa_complete,omitempty"`
+	VerifyMFAComplete map[string]any         `json:"verify_mfa_complete,omitempty"`
 	VerifyPassword    *VerifyPasswordData    `json:"verify_password,omitempty"`
 	VerifySocial      *VerifySocialData      `json:"verify_social,omitempty"`
+	ResetPassword     *VerifyPasswordData    `json:"reset_password,omitempty"`
 }
 
 type FlowEnrollMFACompleteResult struct {
@@ -904,7 +917,7 @@ func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) 
 type FlowStartRequest struct {
 	CBURI     string      `json:"cb_uri,omitempty"`
 	Email     string      `json:"email,omitempty"`
-	FlowTypes []string    `json:"flow_types,omitempty"`
+	FlowTypes []FlowType  `json:"flow_types,omitempty"`
 	Provider  *IDProvider `json:"provider,omitempty"`
 }
 
@@ -1011,7 +1024,7 @@ type FlowVerifyMFACompleteResult struct {
 }
 
 func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFACompleteRequest) (*pangea.PangeaResponse[FlowVerifyMFACompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/captcha", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/complete", input)
 	if err != nil {
 		return nil, err
 	}
@@ -1068,7 +1081,7 @@ func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartReque
 type FlowVerifyPasswordRequest struct {
 	FlowID   string  `json:"flow_id"`
 	Password *string `json:"password,omitempty"`
-	Cancel   *bool   `json:"cancel,omitempty"`
+	Reset    *bool   `json:"reset,omitempty"`
 }
 
 type FlowVerifyPasswordResult struct {
@@ -1365,7 +1378,7 @@ type ClientSessionListRequest struct {
 type SessionToken struct {
 	ID        string      `json:"id"`
 	Type      string      `json:"type"`
-	Life      int         `json:"list"`
+	Life      int         `json:"life"`
 	Expire    string      `json:"expire"`
 	Email     string      `json:"email"`
 	Scopes    Scopes      `json:"scopes"`
@@ -1376,7 +1389,7 @@ type SessionToken struct {
 type SessionItem struct {
 	ID          string        `json:"id"`
 	Type        string        `json:"type"`
-	Life        int           `json:"list"`
+	Life        int           `json:"life"`
 	Expire      string        `json:"expire"`
 	Identity    string        `json:"identity"`
 	Email       string        `json:"email"`
@@ -1392,7 +1405,7 @@ type SessionListResult struct {
 }
 
 func (a *ClientSession) List(ctx context.Context, input ClientSessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/invalidate", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/session/list", input)
 	if err != nil {
 		return nil, err
 	}
@@ -1447,7 +1460,7 @@ type ClientSessionRefreshRequest struct {
 
 type ClientSessionRefreshResult struct {
 	RefreshToken LoginToken `json:"refresh_token"`
-	ActiveToken  LoginToken `json:"active_token"`
+	UserToken    LoginToken `json:"user_token"`
 }
 
 func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshRequest) (*pangea.PangeaResponse[ClientSessionRefreshResult], error) {
