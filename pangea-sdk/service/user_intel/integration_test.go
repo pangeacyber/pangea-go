@@ -17,7 +17,7 @@ const (
 )
 
 func Test_Integration_UserBreachedByPhone(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -41,7 +41,7 @@ func Test_Integration_UserBreachedByPhone(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedByEmail(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -65,7 +65,7 @@ func Test_Integration_UserBreachedByEmail(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedByUsername(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -89,7 +89,7 @@ func Test_Integration_UserBreachedByUsername(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedByIP(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -113,7 +113,7 @@ func Test_Integration_UserBreachedByIP(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -136,7 +136,7 @@ func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
 }
 
 func Test_Integration_UserBreached_Error_BadToken(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
@@ -157,7 +157,7 @@ func Test_Integration_UserBreached_Error_BadToken(t *testing.T) {
 }
 
 func Test_Integration_PasswordBreached(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -182,7 +182,7 @@ func Test_Integration_PasswordBreached(t *testing.T) {
 }
 
 func Test_Integration_PasswordBreachedDefaultProvider(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))

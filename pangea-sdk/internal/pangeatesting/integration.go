@@ -13,6 +13,11 @@ func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 		HTTPClient: defaults.HTTPClient(),
 		Domain:     GetTestDomain(t, env),
 		Token:      GetTestToken(t, env),
+		Retry:      true,
+		RetryConfig: &pangea.RetryConfig{
+			BackOff:  1.0,
+			RetryMax: 10,
+		},
 	}
 }
 
@@ -21,5 +26,10 @@ func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Conf
 		HTTPClient: defaults.HTTPClient(),
 		Domain:     GetTestDomain(t, env),
 		Token:      GetVaultSignatureTestToken(t, env),
+		Retry:      true,
+		RetryConfig: &pangea.RetryConfig{
+			BackOff:  1.0,
+			RetryMax: 10,
+		},
 	}
 }

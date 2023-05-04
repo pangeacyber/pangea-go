@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"strings"
 	"time"
@@ -28,6 +30,7 @@ type RetryConfig struct {
 	RetryWaitMin time.Duration // Minimum time to wait
 	RetryWaitMax time.Duration // Maximum time to wait
 	RetryMax     int           // Maximum number of retries
+	BackOff      float32       //Exponential back of factor
 }
 
 type Config struct {
@@ -104,6 +107,7 @@ func chooseHTTPClient(cfg *Config) *http.Client {
 			cli.RetryMax = cfg.RetryConfig.RetryMax
 			cli.RetryWaitMin = cfg.RetryConfig.RetryWaitMin
 			cli.RetryWaitMax = cfg.RetryConfig.RetryWaitMax
+			cli.Logger = nil
 			return cli.StandardClient()
 		}
 		return defaults.HTTPClientWithRetries()
@@ -172,17 +176,75 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	if err != nil {
 		return nil, err
 	}
-	if c.token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-	}
+
+	c.SetHeaders(req)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, file io.Reader) (*http.Request, error) {
+	u, err := c.serviceUrl(c.serviceName, urlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	var buf io.ReadWriter
+	if body != nil {
+		buf = &bytes.Buffer{}
+		err := json.NewEncoder(buf).Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Prepare multi part form
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+	var fw io.Writer
+
+	// Write request body
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name=request;`))
+	h.Set("Content-Type", "application/json")
+	if fw, err = w.CreatePart(h); err != nil {
+		return nil, err
+	}
+	if _, err = io.Copy(fw, buf); err != nil {
+		return nil, err
+	}
+
+	// Write file
+	if fw, err = w.CreateFormFile("upload", "filename.exe"); err != nil {
+		return nil, err
+	}
+	if _, err = io.Copy(fw, file); err != nil {
+		return nil, err
+	}
+
+	// close the multipart writer.
+	w.Close()
+	req, err := http.NewRequest(method, u, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	c.SetHeaders(req)
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	return req, nil
+}
+
+func (c *Client) SetHeaders(req *http.Request) {
+	if c.token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	}
 	if c.userAgent != "" {
 		req.Header.Set("User-Agent", c.userAgent)
 	}
 	mergeHeaders(req, c.config.AdditionalHeaders)
-	return req, nil
 }
 
 type PangeaResponse[T any] struct {
@@ -243,6 +305,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		return nil, err
 	}
 
+	response, err = c.checkRetry(ctx, response)
+	if err != nil {
+		return nil, err
+	}
+
 	err = CheckResponse(response)
 	if err != nil {
 		// Return APIError
@@ -261,6 +328,38 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	}
 
 	return response, nil
+}
+
+func (c *Client) checkRetry(ctx context.Context, r *Response) (*Response, error) {
+	if c.config.Retry == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
+		return r, nil
+	}
+
+	var retry = 1
+	for retry <= c.config.RetryConfig.RetryMax && r.HTTPResponse.StatusCode == http.StatusAccepted {
+		req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", *r.RequestID), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if ctx == nil {
+			return nil, errNonNilContext
+		}
+
+		resp, err := c.BareDo(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		r, err = newResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+		time.Sleep(time.Duration((float32(retry*retry) * c.config.RetryConfig.BackOff)) * time.Second)
+		retry++
+	}
+
+	return r, nil
 }
 
 func CheckResponse(r *Response) error {
