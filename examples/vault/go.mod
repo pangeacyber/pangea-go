@@ -1,4 +1,4 @@
-module examples/embargo
+module examples/vault
 
 go 1.19
 

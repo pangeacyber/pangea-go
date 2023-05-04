@@ -17,7 +17,7 @@ import (
 
 // rand.Seed(time.Now().UnixNano())
 var RANDOM_VALUE string
-var USER_IDENTITY string
+var USER_ID string
 var EMAIL_TEST string
 var EMAIL_DELETE string
 var EMAIL_INVITE_DELETE string
@@ -40,12 +40,12 @@ func TestMain(m *testing.M) {
 	// Write code here to run before tests
 	rand.Seed(time.Now().UnixNano())
 	RANDOM_VALUE = strconv.Itoa(rand.Intn(10000000))
-	USER_IDENTITY = ""
-	EMAIL_TEST = "andres.tournour+test" + RANDOM_VALUE + "@pangea.cloud"
-	EMAIL_DELETE = "andres.tournour+delete" + RANDOM_VALUE + "@pangea.cloud"
-	EMAIL_INVITE_DELETE = "andres.tournour+invite_del" + RANDOM_VALUE + "@pangea.cloud"
-	EMAIL_INVITE_KEEP = "andres.tournour+invite_keep" + RANDOM_VALUE + "@pangea.cloud"
-	PROFILE_OLD = map[string]string{
+	USER_ID = ""
+	EMAIL_TEST = "user+test" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_DELETE = "user+delete" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_INVITE_DELETE = "user+invite_del" + RANDOM_VALUE + "@pangea.cloud"
+	EMAIL_INVITE_KEEP = "user+invite_keep" + RANDOM_VALUE + "@pangea.cloud"
+	PROFILE_OLD = authn.ProfileData{
 		"name":    "User name",
 		"country": "Argentina",
 	}
@@ -77,8 +77,8 @@ func Test_Integration_User_Create(t *testing.T) {
 	out, err := client.User.Create(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
-	assert.NotEmpty(t, out.Result.Identity)
-	USER_IDENTITY = out.Result.Identity
+	assert.NotEmpty(t, out.Result.ID)
+	USER_ID = out.Result.ID
 
 	input = authn.UserCreateRequest{
 		Email:         EMAIL_DELETE,
@@ -105,23 +105,7 @@ func Test_Integration_User_Delete(t *testing.T) {
 	assert.Empty(t, out.Result)
 }
 
-func Test_Integration_Password_Update(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	cfg := authnIntegrationCfg(t)
-	client := authn.New(cfg)
-	input := authn.PasswordUpdateRequest{
-		Email:     EMAIL_TEST,
-		OldSecret: PASSWORD_OLD,
-		NewSecret: PASSWORD_NEW,
-	}
-	out, err := client.Password.Update(ctx, input)
-	assert.NoError(t, err)
-	assert.Empty(t, out.Result)
-}
-
-func Test_Integration_User_Login(t *testing.T) {
+func Test_Integration_User_Login_And_Password_Change(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
@@ -129,12 +113,22 @@ func Test_Integration_User_Login(t *testing.T) {
 	client := authn.New(cfg)
 	input := authn.UserLoginPasswordRequest{
 		Email:    EMAIL_TEST,
-		Password: PASSWORD_NEW,
+		Password: PASSWORD_OLD,
 	}
 	resp, err := client.User.Login.Password(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.NotEmpty(t, resp.Result.ActiveToken)
+
+	input2 := authn.ClientPasswordChangeRequest{
+		Token:       resp.Result.ActiveToken.Token,
+		OldPassword: PASSWORD_OLD,
+		NewPassword: PASSWORD_NEW,
+	}
+	resp2, err := client.Client.Password.Change(ctx, input2)
+	assert.NoError(t, err)
+	assert.Empty(t, resp2.Result)
+
 }
 
 func Test_Integration_User_Profile(t *testing.T) {
@@ -149,17 +143,17 @@ func Test_Integration_User_Profile(t *testing.T) {
 	resp, err := client.User.Profile.Get(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
-	assert.Equal(t, USER_IDENTITY, resp.Result.Identity)
+	assert.Equal(t, USER_ID, resp.Result.ID)
 	assert.Equal(t, EMAIL_TEST, resp.Result.Email)
 	assert.Empty(t, resp.Result.Profile)
 
 	input = authn.UserProfileGetRequest{
-		Identity: pangea.String(USER_IDENTITY),
+		ID: pangea.String(USER_ID),
 	}
 	resp, err = client.User.Profile.Get(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
-	assert.Equal(t, USER_IDENTITY, resp.Result.Identity)
+	assert.Equal(t, USER_ID, resp.Result.ID)
 	assert.Equal(t, EMAIL_TEST, resp.Result.Email)
 	assert.Empty(t, resp.Result.Profile)
 
@@ -171,9 +165,9 @@ func Test_Integration_User_Profile(t *testing.T) {
 	resp2, err := client.User.Profile.Update(ctx, input2)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp2.Result)
-	assert.Equal(t, USER_IDENTITY, resp2.Result.Identity)
+	assert.Equal(t, USER_ID, resp2.Result.ID)
 	assert.Equal(t, EMAIL_TEST, resp2.Result.Email)
-	assert.Equal(t, PROFILE_OLD, resp2.Result.Profile)
+	assert.Equal(t, authn.ProfileData(PROFILE_OLD), resp2.Result.Profile)
 
 	input3 := authn.UserProfileUpdateRequest{
 		Email:   pangea.String(EMAIL_TEST),
@@ -192,9 +186,9 @@ func Test_Integration_User_Profile(t *testing.T) {
 		finalProfile[k] = v
 	}
 
-	assert.Equal(t, USER_IDENTITY, resp3.Result.Identity)
+	assert.Equal(t, USER_ID, resp3.Result.ID)
 	assert.Equal(t, EMAIL_TEST, resp3.Result.Email)
-	assert.Equal(t, finalProfile, resp3.Result.Profile)
+	assert.Equal(t, authn.ProfileData(finalProfile), resp3.Result.Profile)
 
 }
 
@@ -212,7 +206,7 @@ func Test_Integration_User_Update(t *testing.T) {
 	resp, err := client.User.Update(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
-	assert.Equal(t, USER_IDENTITY, resp.Result.Identity)
+	assert.Equal(t, USER_ID, resp.Result.ID)
 	assert.Equal(t, EMAIL_TEST, resp.Result.Email)
 	assert.Equal(t, false, resp.Result.Disabled)
 	assert.Equal(t, false, resp.Result.RequireMFA)
@@ -262,7 +256,7 @@ func Test_Integration_User_Invite_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	resp, err := client.User.Invites.List(ctx)
+	resp, err := client.User.Invites.List(ctx, authn.UserInviteListRequest{})
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.Greater(t, len(resp.Result.Invites), 0)
@@ -274,13 +268,9 @@ func Test_Integration_User_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	input := authn.UserListRequest{
-		Scopes:     make([]string, 0),
-		GlobScopes: make([]string, 0),
-	}
+	input := authn.UserListRequest{}
 	resp, err := client.User.List(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
-	// assert.Greater(t, len(resp.Result.Users), 0)
-	assert.Equal(t, 0, len(resp.Result.Users)) //FIXME: remove once fixed and uncomment test above
+	assert.Greater(t, len(resp.Result.Users), 0)
 }
