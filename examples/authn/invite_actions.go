@@ -1,4 +1,4 @@
-// vault sign is an example of how to use the sign/verify methods
+// Here we'll see how to manage user invites
 package main
 
 import (

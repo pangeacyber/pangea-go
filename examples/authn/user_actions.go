@@ -1,4 +1,4 @@
-// vault sign is an example of how to use the sign/verify methods
+// Here we'll see how to manage users. Created, delete, update passwords, list and more.
 package main
 
 import (
