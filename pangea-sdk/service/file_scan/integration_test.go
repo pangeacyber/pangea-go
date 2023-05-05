@@ -22,6 +22,7 @@ func Test_Integration_FileScan(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	cfg.PollResultTimeout = 600 * time.Second
 	client := file_scan.New(cfg)
 
 	input := &file_scan.FileScanRequest{
