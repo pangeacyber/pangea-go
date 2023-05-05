@@ -60,6 +60,12 @@ type Config struct {
 	// if HTTPClient is set in the config this value won't take effect
 	Retry bool
 
+	// Enable queued request retry support
+	QueuedRetryEnabled bool
+
+	// Timeout used to poll results after 202 (in secs)
+	PollResultTimeout time.Duration
+
 	// Retry config defaults to a base retry option
 	RetryConfig *RetryConfig
 }
@@ -305,7 +311,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		return nil, err
 	}
 
-	response, err = c.checkRetry(ctx, response)
+	response, err = c.handledQueued(ctx, response)
 	if err != nil {
 		return nil, err
 	}
@@ -330,13 +336,30 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	return response, nil
 }
 
-func (c *Client) checkRetry(ctx context.Context, r *Response) (*Response, error) {
-	if c.config.Retry == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
+func (c *Client) getDelay(retry_count int, start time.Time) time.Duration {
+	delay := time.Duration(retry_count*retry_count) * time.Second
+	elapsed := time.Since(start)
+	//  if with this delay exceed timeout, reduce delay
+	if elapsed+delay > c.config.PollResultTimeout {
+		delay = c.config.PollResultTimeout - elapsed
+	}
+	return delay
+}
+
+func (c *Client) reachTimeout(start time.Time) bool {
+	return time.Since(start) >= c.config.PollResultTimeout
+}
+
+func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, error) {
+	if c.config.QueuedRetryEnabled == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
 		return r, nil
 	}
-
+	start := time.Now()
 	var retry = 1
-	for retry <= c.config.RetryConfig.RetryMax && r.HTTPResponse.StatusCode == http.StatusAccepted {
+	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
+		delay := c.getDelay(retry, start)
+		time.Sleep(delay)
+
 		req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", *r.RequestID), nil)
 		if err != nil {
 			return nil, err
@@ -355,7 +378,7 @@ func (c *Client) checkRetry(ctx context.Context, r *Response) (*Response, error)
 		if err != nil {
 			return nil, err
 		}
-		time.Sleep(time.Duration((float32(retry*retry) * c.config.RetryConfig.BackOff)) * time.Second)
+
 		retry++
 	}
 
@@ -434,6 +457,9 @@ func mergeInConfig(dst *Config, other *Config) {
 	if other.RetryConfig != nil {
 		dst.RetryConfig = other.RetryConfig
 	}
+
+	dst.QueuedRetryEnabled = other.QueuedRetryEnabled
+	dst.PollResultTimeout = other.PollResultTimeout
 }
 
 // Copy will return a shallow copy of the Config object. If any additional

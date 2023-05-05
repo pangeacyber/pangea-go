@@ -3,6 +3,7 @@ package pangeatesting
 
 import (
 	"testing"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/defaults"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
@@ -10,23 +11,27 @@ import (
 
 func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	return &pangea.Config{
-		HTTPClient: defaults.HTTPClient(),
-		Domain:     GetTestDomain(t, env),
-		Token:      GetTestToken(t, env),
-		Retry:      true,
+		HTTPClient:         defaults.HTTPClient(),
+		Domain:             GetTestDomain(t, env),
+		Token:              GetTestToken(t, env),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
+		Retry:              true,
 		RetryConfig: &pangea.RetryConfig{
 			BackOff:  1.0,
-			RetryMax: 10,
+			RetryMax: 4,
 		},
 	}
 }
 
 func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	return &pangea.Config{
-		HTTPClient: defaults.HTTPClient(),
-		Domain:     GetTestDomain(t, env),
-		Token:      GetVaultSignatureTestToken(t, env),
-		Retry:      true,
+		HTTPClient:         defaults.HTTPClient(),
+		Domain:             GetTestDomain(t, env),
+		Token:              GetVaultSignatureTestToken(t, env),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
+		Retry:              true,
 		RetryConfig: &pangea.RetryConfig{
 			BackOff:  1.0,
 			RetryMax: 10,
