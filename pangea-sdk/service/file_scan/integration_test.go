@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/service/file_scan"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,7 +23,7 @@ func Test_Integration_FileScan(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 600 * time.Second
+	cfg.PollResultTimeout = 60 * time.Second
 	client := file_scan.New(cfg)
 
 	input := &file_scan.FileScanRequest{
@@ -61,4 +62,16 @@ func Test_Integration_FileScan_NoRetry(t *testing.T) {
 	resp, err := client.Scan(ctx, input, file)
 	assert.Error(t, err)
 	assert.Nil(t, resp)
+	ae := err.(*pangea.AcceptedError)
+
+	// Wait until result should be ready
+	time.Sleep(time.Duration(60 * time.Second))
+
+	pr, err := client.PollResult(ctx, *ae)
+	assert.NoError(t, err)
+	assert.NotNil(t, pr)
+	assert.NotNil(t, pr.Result)
+
+	r := (*pr.Result).(file_scan.FileScanResult)
+	assert.Equal(t, r.Data.Verdict, "malicious")
 }

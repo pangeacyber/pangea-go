@@ -316,7 +316,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		return nil, err
 	}
 
-	err = CheckResponse(response)
+	err = CheckResponse(response, v)
 	if err != nil {
 		// Return APIError
 		return nil, err
@@ -385,9 +385,12 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 	return r, nil
 }
 
-func CheckResponse(r *Response) error {
+func CheckResponse(r *Response, v any) error {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted {
-		return &AcceptedError{ResponseHeader: r.ResponseHeader}
+		return &AcceptedError{
+			ResponseHeader: r.ResponseHeader,
+			ResultField:    v,
+		}
 	}
 
 	if r.HTTPResponse.StatusCode == http.StatusOK && *r.ResponseHeader.Status == "Success" {
@@ -486,4 +489,31 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 		return nil, err
 	}
 	return resp, nil
+}
+
+type BaseService struct {
+	Client *Client
+}
+
+func NewBaseService(name string, cfg *Config) BaseService {
+	bs := BaseService{
+		Client: NewClient(name, cfg),
+	}
+	return bs
+}
+
+func (bs *BaseService) PollResult(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
+	if e.RequestID == nil {
+		return nil, errors.New("Request ID is empty")
+	}
+
+	resp, err := bs.Client.FetchAcceptedResponse(ctx, *e.RequestID, e.ResultField)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PangeaResponse[any]{
+		Response: *resp,
+		Result:   &e.ResultField,
+	}, nil
 }

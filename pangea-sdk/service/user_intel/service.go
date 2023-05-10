@@ -9,15 +9,16 @@ import (
 type Client interface {
 	UserBreached(ctx context.Context, input *UserBreachedRequest) (*pangea.PangeaResponse[UserBreachedResult], error)
 	PasswordBreached(ctx context.Context, input *UserPasswordBreachedRequest) (*pangea.PangeaResponse[UserPasswordBreachedResult], error)
+	PollResult(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
 }
 
 type userIntel struct {
-	*pangea.Client
+	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) Client {
 	cli := &userIntel{
-		Client: pangea.NewClient("user-intel", cfg),
+		BaseService: pangea.NewBaseService("user-intel", cfg),
 	}
 	return cli
 }

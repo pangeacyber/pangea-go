@@ -9,15 +9,16 @@ import (
 
 type Client interface {
 	Scan(ctx context.Context, input *FileScanRequest, file io.Reader) (*pangea.PangeaResponse[FileScanResult], error)
+	PollResult(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
 }
 
 type FileScan struct {
-	*pangea.Client
+	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) Client {
 	cli := &FileScan{
-		Client: pangea.NewClient("file-scan", cfg),
+		BaseService: pangea.NewBaseService("file-scan", cfg),
 	}
 	return cli
 }
