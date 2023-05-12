@@ -7,16 +7,16 @@ import (
 )
 
 type Client interface {
-	IPCheck(ctx context.Context, input *IPCheckInput) (*pangea.PangeaResponse[CheckOutput], error)
-	ISOCheck(ctx context.Context, input *ISOCheckInput) (*pangea.PangeaResponse[CheckOutput], error)
+	IPCheck(ctx context.Context, input *IPCheckRequest) (*pangea.PangeaResponse[CheckResult], error)
+	ISOCheck(ctx context.Context, input *ISOCheckRequest) (*pangea.PangeaResponse[CheckResult], error)
 }
 
-type Embargo struct {
+type embargo struct {
 	*pangea.Client
 }
 
-func New(cfg *pangea.Config) *Embargo {
-	cli := &Embargo{
+func New(cfg *pangea.Config) Client {
+	cli := &embargo{
 		Client: pangea.NewClient("embargo", cfg),
 	}
 	return cli

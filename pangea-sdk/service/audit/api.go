@@ -24,24 +24,25 @@ import (
 //	 }
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
-func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
+func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
 	// Overwrite tenant id if user set it on event
-	if a.tenantID != "" {
-		event.TenantID = a.tenantID
+
+	if event.GetTenantID() == "" && a.tenantID != "" {
+		event.SetTenantID(a.tenantID)
 	}
 
-	input := LogInput{
+	input := LogRequest{
 		Event:   event,
 		Verbose: verbose,
 	}
 
-	if a.VerifyProofs {
+	if a.verifyProofs {
 		input.Verbose = true
 		input.PrevRoot = a.lastUnpRootHash
 	}
 
-	if a.SignLogsMode == LocalSign && a.Signer != nil {
-		err := input.SignEvent(*a.Signer, a.publicKeyInfo)
+	if a.signer != nil {
+		err := input.SignEvent(*a.signer, a.publicKeyInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -52,14 +53,14 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		return nil, err
 	}
 
-	var out LogOutput
+	var out LogResult = LogResult{}
 	resp, err := a.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	out.EventEnvelope, err = newEventEnvelopeFromMap(out.RawEnvelope)
+	out.EventEnvelope, err = newEventEnvelopeFromMap(out.RawEnvelope, event)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[LogOutput]{
+	panresp := pangea.PangeaResponse[LogResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -88,12 +89,12 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 //	}
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
-func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
+func (a *audit) Search(ctx context.Context, input *SearchInput, e IEvent) (*pangea.PangeaResponse[SearchOutput], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
 	}
 
-	if a.VerifyProofs {
+	if a.verifyProofs {
 		// Need this info to verify
 		input.Verbose = pangea.Bool(true)
 	}
@@ -109,7 +110,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		return nil, err
 	}
 
-	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, out.Events, e, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +123,7 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
+func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput, e IEvent) (*pangea.PangeaResponse[SearchResultOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, err
@@ -132,7 +133,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	if err != nil {
 		return nil, err
 	}
-	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, out.Events, e, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +157,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 //	}
 //
 //	rootResponse, err := auditcli.Root(ctx, input)
-func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
+func (a *audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/root", input)
 	if err != nil {
 		return nil, err
@@ -176,8 +177,8 @@ func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaRespo
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages
-func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, SearchEvents, error) {
-	resp, err := client.Search(ctx, input)
+func SearchAll(ctx context.Context, client Client, input *SearchInput, e IEvent) (*Root, SearchEvents, error) {
+	resp, err := client.Search(ctx, input, e)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -187,7 +188,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 		s := SearchResultInput{
 			ID: resp.Result.ID,
 		}
-		sOut, err := client.SearchResults(ctx, &s)
+		sOut, err := client.SearchResults(ctx, &s, e)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -199,27 +200,23 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	return resp.Result.Root, events, nil
 }
 
-func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
+func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	if log == nil {
 		return nil
 	}
 
-	nurh := log.UnpublishedRootHash
-	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
-	}
-	if log.EventEnvelope != nil {
-		log.SignatureVerification = log.EventEnvelope.VerifySignature()
-	}
-
-	if log.EventEnvelope != nil {
-		log.SignatureVerification = log.EventEnvelope.VerifySignature()
-	}
-
-	if a.VerifyProofs {
+	if !a.skipEventVerification {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
+			return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 		}
+	}
+
+	nurh := log.UnpublishedRootHash
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
+
+	if a.verifyProofs {
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
@@ -241,18 +238,18 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	return nil
 }
 
-func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
+func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, e IEvent, root *Root, unpRoot *Root) error {
 	var roots map[int]Root
 
 	var err error
 	for _, event := range events {
-		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope)
+		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope, e)
 		if err != nil {
 			return err
 		}
 	}
 
-	if a.VerifyProofs && root != nil {
+	if a.verifyProofs && root != nil {
 		if a.rp == nil {
 			a.rp = NewArweaveRootsProvider(root.TreeName)
 		}
@@ -261,14 +258,14 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 	}
 
 	for _, event := range events {
-		if !a.SkipEventVerification {
+		if !a.skipEventVerification {
 			if VerifyHash(event.RawEnvelope, event.Hash) == Failed {
 				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
 			}
 			event.SignatureVerification = event.EventEnvelope.VerifySignature()
 		}
 
-		if a.VerifyProofs {
+		if a.verifyProofs {
 			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
@@ -280,9 +277,9 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 	return nil
 }
 
-type LogInput struct {
+type LogRequest struct {
 	// A structured event describing an auditable activity.
-	Event Event `json:"event"`
+	Event IEvent `json:"event"`
 
 	// If true, be verbose in the response; include root, membership and consistency proof, etc.
 	// default: false
@@ -299,7 +296,7 @@ type LogInput struct {
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
+func (i *LogRequest) SignEvent(s signer.Signer, pki map[string]string) error {
 	b, err := pu.CanonicalizeStruct(&i.Event)
 	if err != nil {
 		return err
@@ -385,11 +382,28 @@ type Event struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
+func (_ *Event) NewFromJSON(b []byte) (any, error) {
+	var e Event
+
+	if err := json.Unmarshal(b, &e); err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func (e *Event) GetTenantID() string {
+	return e.TenantID
+}
+
+func (e *Event) SetTenantID(tid string) {
+	e.TenantID = tid
+}
+
 type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Event *Event `json:"event"`
+	Event any `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -402,7 +416,7 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
-func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
+func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -418,6 +432,17 @@ func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
 		return nil, err
 	}
 
+	b, err = json.Marshal(ee.Event)
+	if err != nil {
+		return nil, err
+	}
+
+	event, err := e.NewFromJSON(b)
+	if err != nil {
+		return nil, err
+	}
+
+	ee.Event = event
 	return &ee, nil
 }
 
@@ -441,10 +466,10 @@ func (ev EventVerification) String() string {
 	return "unknown"
 }
 
-type LogOutput struct {
+type LogResult struct {
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -560,7 +585,7 @@ type SearchEvent struct {
 	// Include Event data and security information
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes

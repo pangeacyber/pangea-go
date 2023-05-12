@@ -7,16 +7,15 @@ import (
 )
 
 type Client interface {
-	Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error)
 	Reputation(ctx context.Context, input *DomainReputationRequest) (*pangea.PangeaResponse[DomainReputationResult], error)
 }
 
-type DomainIntel struct {
+type domainIntel struct {
 	*pangea.Client
 }
 
 func New(cfg *pangea.Config) Client {
-	cli := &DomainIntel{
+	cli := &domainIntel{
 		Client: pangea.NewClient("domain-intel", cfg),
 	}
 

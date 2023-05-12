@@ -96,14 +96,14 @@ const (
 )
 
 type CommonStoreRequest struct {
-	Type              ItemType `json:"type"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
-	Metadata          Metadata `json:"metadata,omitempty"`
-	Tags              Tags     `json:"tags,omitempty"`
-	RotationFrequency string   `json:"rotation_frequency,omitempty"`
-	RotationState     string   `json:"rotation_state,omitempty"`
-	Expiration        string   `json:"expiration,omitempty"`
+	Type              ItemType         `json:"type"`
+	Name              string           `json:"name,omitempty"`
+	Folder            string           `json:"folder,omitempty"`
+	Metadata          Metadata         `json:"metadata,omitempty"`
+	Tags              Tags             `json:"tags,omitempty"`
+	RotationFrequency string           `json:"rotation_frequency,omitempty"`
+	RotationState     ItemVersionState `json:"rotation_state,omitempty"`
+	Expiration        string           `json:"expiration,omitempty"`
 }
 
 type CommonStoreResult struct {
@@ -113,14 +113,14 @@ type CommonStoreResult struct {
 }
 
 type CommonGenerateRequest struct {
-	Type              ItemType `json:"type"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
-	Metadata          Metadata `json:"metadata,omitempty"`
-	Tags              Tags     `json:"tags,omitempty"`
-	RotationFrequency string   `json:"rotation_frequency,omitempty"`
-	RotationState     string   `json:"rotation_state,omitempty"`
-	Expiration        string   `json:"expiration,omitempty"`
+	Type              ItemType         `json:"type"`
+	Name              string           `json:"name,omitempty"`
+	Folder            string           `json:"folder,omitempty"`
+	Metadata          Metadata         `json:"metadata,omitempty"`
+	Tags              Tags             `json:"tags,omitempty"`
+	RotationFrequency string           `json:"rotation_frequency,omitempty"`
+	RotationState     ItemVersionState `json:"rotation_state,omitempty"`
+	Expiration        string           `json:"expiration,omitempty"`
 }
 
 type CommonGenerateResult struct {
@@ -237,16 +237,16 @@ type DeleteResult struct {
 }
 
 type UpdateRequest struct {
-	ID                  string    `json:"id"`
-	Name                string    `json:"name,omitempty"`
-	Folder              string    `json:"folder,omitempty"`
-	Metadata            Metadata  `json:"metadata,omitempty"`
-	Tags                Tags      `json:"tags,omitempty"`
-	RotationFrequency   string    `json:"rotation_frequency,omitempty"`
-	RotationState       string    `json:"rotation_state,omitempty"`
-	RotationGracePeriod string    `json:"rotation_grace_period,omitempty"`
-	Expiration          string    `json:"expiration,omitempty"`
-	ItemState           ItemState `json:"item_state,omitempty"`
+	ID                  string           `json:"id"`
+	Name                string           `json:"name,omitempty"`
+	Folder              string           `json:"folder,omitempty"`
+	Metadata            Metadata         `json:"metadata,omitempty"`
+	Tags                Tags             `json:"tags,omitempty"`
+	RotationFrequency   string           `json:"rotation_frequency,omitempty"`
+	RotationState       ItemVersionState `json:"rotation_state,omitempty"`
+	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"`
+	Expiration          string           `json:"expiration,omitempty"`
+	ItemState           ItemState        `json:"item_state,omitempty"`
 }
 
 type UpdateResult struct {

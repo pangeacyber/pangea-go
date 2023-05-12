@@ -30,7 +30,7 @@ type rootProofItem struct {
 
 type rootProof []rootProofItem
 
-func VerifyHash(ee *map[string]any, h string) EventVerification {
+func VerifyHash(ee map[string]any, h string) EventVerification {
 	if h == "" || ee == nil {
 		return NotVerified
 	}

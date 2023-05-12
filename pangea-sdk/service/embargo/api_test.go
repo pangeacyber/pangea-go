@@ -48,8 +48,8 @@ func TestISOCheck(t *testing.T) {
 	})
 
 	client := embargo.New(pangeatesting.TestConfig(url))
-	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("CU"),
+	input := &embargo.ISOCheckRequest{
+		ISOCode: "CU",
 	}
 	ctx := context.Background()
 	got, err := client.ISOCheck(ctx, input)
@@ -69,7 +69,7 @@ func TestISOCheck(t *testing.T) {
 			"restriction_name": "ITAR",
 		},
 	}
-	want := &embargo.CheckOutput{
+	want := &embargo.CheckResult{
 		Sanctions: []embargo.Sanction{sanction},
 		Count:     1,
 	}
@@ -112,8 +112,8 @@ func TestIPCheck(t *testing.T) {
 	})
 
 	client := embargo.New(pangeatesting.TestConfig(url))
-	input := &embargo.IPCheckInput{
-		IP: pangea.String("200.0.16.2"),
+	input := &embargo.IPCheckRequest{
+		IP: "200.0.16.2",
 	}
 	ctx := context.Background()
 	got, err := client.IPCheck(ctx, input)
@@ -133,7 +133,7 @@ func TestIPCheck(t *testing.T) {
 			"restriction_name": "ITAR",
 		},
 	}
-	want := &embargo.CheckOutput{
+	want := &embargo.CheckResult{
 		Sanctions: []embargo.Sanction{sanction},
 		Count:     1,
 	}

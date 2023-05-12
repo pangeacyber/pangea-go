@@ -7,16 +7,15 @@ import (
 )
 
 type Client interface {
-	Lookup(ctx context.Context, input *FileLookupInput) (*pangea.PangeaResponse[FileLookupOutput], error)
 	Reputation(ctx context.Context, input *FileReputationRequest) (*pangea.PangeaResponse[FileReputationResult], error)
 }
 
-type FileIntel struct {
+type fileIntel struct {
 	*pangea.Client
 }
 
 func New(cfg *pangea.Config) Client {
-	cli := &FileIntel{
+	cli := &fileIntel{
 		Client: pangea.NewClient("file-intel", cfg),
 	}
 	return cli
