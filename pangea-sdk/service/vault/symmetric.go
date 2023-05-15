@@ -26,9 +26,10 @@ type SymmetricGenerateResult struct {
 }
 
 type EncryptRequest struct {
-	ID        string `json:"id"`
-	PlainText string `json:"plain_text"`
-	Version   *int   `json:"version,omitempty"`
+	ID             string  `json:"id"`
+	PlainText      string  `json:"plain_text"`
+	Version        *int    `json:"version,omitempty"`
+	AdditionalData *string `json:"additional_data,omitempty"`
 }
 
 type EncryptResult struct {
@@ -39,9 +40,10 @@ type EncryptResult struct {
 }
 
 type DecryptRequest struct {
-	ID         string `json:"id"`
-	CipherText string `json:"cipher_text"`
-	Version    *int   `json:"version,omitempty"`
+	ID             string  `json:"id"`
+	CipherText     string  `json:"cipher_text"`
+	Version        *int    `json:"version,omitempty"`
+	AdditionalData *string `json:"additional_data,omitempty"`
 }
 
 type DecryptResult struct {
