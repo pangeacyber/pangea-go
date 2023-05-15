@@ -13,6 +13,7 @@ import (
 // @deprecated Use Reputation instead.
 //
 // @example
+//
 //	input := &url_intel.UrlLookupRequest{
 //		Url: "http://113.235.101.11:54384",
 //		Raw: true,
@@ -20,7 +21,7 @@ import (
 //		Provider: "crowdstrike",
 //	}
 //
-//	checkOutput, _, err := urlintel.Lookup(ctx, input)
+//	resp, err := urlintel.Lookup(ctx, input)
 func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupRequest) (*pangea.PangeaResponse[UrlLookupResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
@@ -63,19 +64,22 @@ type UrlLookupResult struct {
 	RawData    interface{} `json:"raw_data,omitempty"`
 }
 
-// @summary Reputation check
+// @summary Reputation
 //
 // @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
+// @operationId url_intel_post_v1_reputation
+//
 // @example
+//
 //	input := &url_intel.UrlReputationRequest{
-//		Url: "http://113.235.101.11:54384",
-//		Raw: true,
-//		Verbose: true,
+//		Url:      "http://113.235.101.11:54384",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "crowdstrike",
 //	}
 //
-//	checkOutput, _, err := urlintel.Reputation(ctx, input)
+//	resp, err := urlintel.Reputation(ctx, input)
 func (e *UrlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
