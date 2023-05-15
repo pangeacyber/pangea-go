@@ -10,13 +10,15 @@ import (
 //
 // @description Redacts the content of a single text string.
 //
+// @operationId redact_post_v1_redact
+//
 // @example
 //
 //	input := &redact.TextInput{
 //		Text: pangea.String("my phone number is 123-456-7890"),
 //	}
 //
-//	redactResponse, err := redactcli.Redact(ctx, input)
+//	resp, err := redactcli.Redact(ctx, input)
 func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaResponse[TextOutput], error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact", input)
 	if err != nil {
@@ -40,6 +42,8 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaRe
 //
 // @description Redacts text within a structured object.
 //
+// @operationId redact_post_v1_redact_structured
+//
 // @example
 //
 //	data := yourCustomDataStruct{
@@ -50,7 +54,7 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaRe
 //		Data: data,
 //	}
 //
-//	redactResponse, err := redactcli.RedactStructured(ctx, input)
+//	resp, err := redactcli.RedactStructured(ctx, input)
 func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
 	if err != nil {
