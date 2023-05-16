@@ -17,6 +17,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/defaults"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
 )
 
 const (
@@ -354,11 +355,14 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 	if c.config.QueuedRetryEnabled == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
 		return r, nil
 	}
+
 	start := time.Now()
 	var retry = 1
 	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
-		time.Sleep(delay)
+		if pu.Sleep(delay, ctx) == false {
+			return r, nil
+		}
 
 		req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", *r.RequestID), nil)
 		if err != nil {
