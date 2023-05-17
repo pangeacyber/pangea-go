@@ -23,7 +23,7 @@ const (
 )
 
 type Audit struct {
-	*pangea.Client
+	pangea.BaseService
 
 	SignLogsMode          LogSigningMode
 	Signer                *signer.Signer
@@ -37,7 +37,7 @@ type Audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	cli := &Audit{
-		Client:                pangea.NewClient("audit", cfg),
+		BaseService:           pangea.NewBaseService("audit", cfg),
 		SkipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,
