@@ -125,6 +125,6 @@ type UserPasswordBreachedData struct {
 
 type UserPasswordBreachedResult struct {
 	Data       UserPasswordBreachedData `json:"data"`
-	Parameters interface{}              `json:"parameters,omitempty"`
-	RawData    interface{}              `json:"raw_data,omitempty"`
+	Parameters map[string]any           `json:"parameters,omitempty"`
+	RawData    map[string]any           `json:"raw_data,omitempty"`
 }
