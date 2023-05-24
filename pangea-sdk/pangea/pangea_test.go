@@ -131,11 +131,12 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	client := testClient(t, url)
 
 	type reqbody struct {
+		pangea.BaseRequest
 		Key *string `json:"key"`
 	}
 
 	reqBody := reqbody{Key: pangea.String("value")}
-	req, _ := client.NewRequest("POST", "test", reqBody)
+	req, _ := client.NewRequest("POST", "test", &reqBody)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		body := &reqbody{}

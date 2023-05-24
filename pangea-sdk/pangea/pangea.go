@@ -24,6 +24,23 @@ const (
 
 var errNonNilContext = errors.New("context must be non-nil")
 
+type IBaseRequest interface {
+	SetConfigID(configID string)
+	GetConfigID() string
+}
+
+type BaseRequest struct {
+	ConfigID string `json:"config_id,omitempty"`
+}
+
+func (br *BaseRequest) GetConfigID() string {
+	return br.ConfigID
+}
+
+func (br *BaseRequest) SetConfigID(c string) {
+	br.ConfigID = c
+}
+
 type RetryConfig struct {
 	RetryWaitMin time.Duration // Minimum time to wait
 	RetryWaitMax time.Duration // Maximum time to wait
@@ -33,6 +50,9 @@ type RetryConfig struct {
 type Config struct {
 	// The Bearer token used to authenticate requests.
 	Token string
+
+	// Config ID for multi-config projects
+	ConfigID string
 
 	// The HTTP client to be used by the client.
 	//  It defaults to defaults.HTTPClient
@@ -156,10 +176,14 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Request, error) {
 	u, err := c.serviceUrl(c.serviceName, urlStr)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.config.ConfigID != "" && body.GetConfigID() == "" {
+		body.SetConfigID(c.config.ConfigID)
 	}
 
 	var buf io.ReadWriter
@@ -338,6 +362,8 @@ func mergeInConfig(dst *Config, other *Config) {
 	if other.RetryConfig != nil {
 		dst.RetryConfig = other.RetryConfig
 	}
+
+	dst.ConfigID = other.ConfigID
 }
 
 // Copy will return a shallow copy of the Config object. If any additional

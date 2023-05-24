@@ -226,6 +226,9 @@ func (e *IpIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.P
 
 // @deprecated Use IPReputationRequest
 type IpLookupRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -247,6 +250,9 @@ type IpLookupResult struct {
 }
 
 type IpGeolocateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -254,6 +260,9 @@ type IpGeolocateRequest struct {
 }
 
 type IpReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -288,6 +297,9 @@ type GeolocateData struct {
 }
 
 type IpDomainRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -306,6 +318,9 @@ type DomainData struct {
 }
 
 type IpVPNRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -323,6 +338,9 @@ type VPNData struct {
 }
 
 type IpProxyRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Ip       string `json:"ip"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
