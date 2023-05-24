@@ -330,18 +330,18 @@ func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
 		return err
 	}
 
+	if pki == nil {
+		pki = make(map[string]string)
+	}
+
 	pk, err := s.PublicKey()
 	if err != nil {
 		return err
 	}
 
-	if pki != nil {
-		pki["key"] = pk
-	} else {
-		pki = map[string]string{
-			"key": pk,
-		}
-	}
+	pki["key"] = pk
+	pki["algorithm"] = s.GetAlgorithm()
+
 	pkib, err := pu.CanonicalizeStruct(pki)
 	if err != nil {
 		return err
