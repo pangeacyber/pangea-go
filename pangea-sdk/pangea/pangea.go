@@ -124,21 +124,24 @@ func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
 func (c *Client) serviceUrl(service, path string) (string, error) {
 	cfg := c.config
 	endpoint := ""
-
-	scheme := "https://"
-	if cfg.Insecure == true {
-		scheme = "http://"
-	}
-
 	// Remove slashes, just in case
 	path = strings.TrimPrefix(path, "/")
 	domain := strings.TrimSuffix(cfg.Domain, "/")
 
-	if cfg.Enviroment == "local" {
-		// If we are testing locally do not use service
-		endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
+	if strings.HasPrefix(cfg.Domain, "http://") || strings.HasPrefix(cfg.Domain, "https://") {
+		// URL
+		endpoint = fmt.Sprintf("%s/%s", domain, path)
 	} else {
-		endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, service, domain, path)
+		scheme := "https://"
+		if cfg.Insecure == true {
+			scheme = "http://"
+		}
+		if cfg.Enviroment == "local" {
+			// If we are testing locally do not use service
+			endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
+		} else {
+			endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, service, domain, path)
+		}
 	}
 
 	u, err := url.Parse(endpoint)
