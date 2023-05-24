@@ -129,7 +129,7 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 	domain := strings.TrimSuffix(cfg.Domain, "/")
 
 	if strings.HasPrefix(cfg.Domain, "http://") || strings.HasPrefix(cfg.Domain, "https://") {
-		// FQDN
+		// URL
 		endpoint = fmt.Sprintf("%s/%s", domain, path)
 	} else {
 		scheme := "https://"
