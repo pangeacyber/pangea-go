@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 	EICAR              = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n"
 )
 
@@ -45,8 +45,8 @@ func Test_Integration_FileScan(t *testing.T) {
 }
 
 func Test_Integration_FileScanCanceled(t *testing.T) {
-	// In this case we'll setup 7 seconds timeout to context, so, once this timeout is reached, function should return AcceptedError inmediatly
-	ctx, cancelFn := context.WithTimeout(context.Background(), 7*time.Second)
+	// In this case we'll setup 13 seconds timeout to context, so, once this timeout is reached, function should return AcceptedError inmediatly
+	ctx, cancelFn := context.WithTimeout(context.Background(), 13*time.Second)
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
