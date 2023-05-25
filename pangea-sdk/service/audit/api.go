@@ -17,6 +17,8 @@ import (
 //
 // @description Create a log entry in the Secure Audit Log.
 //
+// @operationId audit_post_v1_log
+//
 // @example
 //
 //	event := audit.Event{
@@ -80,6 +82,8 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 //
 // @description Search for events that match the provided search criteria.
 //
+// @operationId audit_post_v1_search
+//
 // @example
 //
 //	input := &audit.SearchInput{
@@ -121,7 +125,21 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 	return &panresp, nil
 }
 
-// SearchResults is used to page through results from a previous search.
+// @summary Results of a search
+//
+// @description Fetch paginated results of a previously executed search.
+//
+// @operationId audit_post_v1_results
+//
+// @example
+//
+//	input := &audit.SearchResultInput{
+//		ID:     "pas_sqilrhruwu54uggihqj3aie24wrctakr",
+//		Limit:  50,
+//		Offset: pangea.Int(100),
+//	}
+//
+//	res, err := auditcli.SearchResults(ctx, input)
 func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
@@ -145,9 +163,11 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 	return &panresp, nil
 }
 
-// @summary Retrieve tamperproof verification
+// @summary Tamperproof verification
 //
-// @description Root returns current root hash and consistency proof.
+// @description Returns current root hash and consistency proof.
+//
+// @operationId audit_post_v1_root
 //
 // @example
 //
@@ -310,18 +330,18 @@ func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
 		return err
 	}
 
+	if pki == nil {
+		pki = make(map[string]string)
+	}
+
 	pk, err := s.PublicKey()
 	if err != nil {
 		return err
 	}
 
-	if pki != nil {
-		pki["key"] = pk
-	} else {
-		pki = map[string]string{
-			"key": pk,
-		}
-	}
+	pki["key"] = pk
+	pki["algorithm"] = s.GetAlgorithm()
+
 	pkib, err := pu.CanonicalizeStruct(pki)
 	if err != nil {
 		return err

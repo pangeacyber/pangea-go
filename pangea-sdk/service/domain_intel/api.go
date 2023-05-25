@@ -89,7 +89,9 @@ type DomainLookupOutput struct {
 
 // @summary Reputation check
 //
-// @description Lookup an internet domain to retrieve reputation data.
+// @description Retrieve reputation for a domain from a provider, including an optional detailed report.
+//
+// @operationId domain_intel_post_v1_reputation
 //
 // @example
 //

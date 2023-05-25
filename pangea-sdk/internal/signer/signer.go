@@ -12,19 +12,21 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/service/vault"
 	"golang.org/x/crypto/ssh"
 )
 
 type Signer interface {
 	Sign(msg []byte) ([]byte, error)
 	PublicKey() (string, error)
+	GetAlgorithm() string
 }
 
 type Verifier interface {
 	Verify(msg, sig []byte) (bool, error)
 }
 
-type signer ed25519.PrivateKey
+type signerEd25519 ed25519.PrivateKey
 type ed25519Verifier struct {
 	pubkey ed25519.PublicKey
 }
@@ -41,18 +43,18 @@ func NewSignerFromPrivateKeyFile(name string) (Signer, error) {
 	}
 
 	privateKey, ok := rawPrivateKey.(ed25519.PrivateKey)
-	if !ok {
-		return nil, fmt.Errorf("signer: cannot convert to ED25519 key")
+	if ok {
+		return (signerEd25519)(privateKey), nil
 	}
 
-	return (signer)(privateKey), nil
+	return nil, fmt.Errorf("Not supported key type")
 }
 
-func (s signer) Sign(msg []byte) ([]byte, error) {
+func (s signerEd25519) Sign(msg []byte) ([]byte, error) {
 	return (ed25519.PrivateKey)(s).Sign(rand.Reader, msg, crypto.Hash(0))
 }
 
-func (s signer) PublicKey() (string, error) {
+func (s signerEd25519) PublicKey() (string, error) {
 	// public key
 	b, err := x509.MarshalPKIXPublicKey((ed25519.PrivateKey)(s).Public())
 	if err != nil {
@@ -68,6 +70,10 @@ func (s signer) PublicKey() (string, error) {
 	return pubPEM, nil
 }
 
+func (s signerEd25519) GetAlgorithm() string {
+	return string(vault.AAed25519)
+}
+
 func NewVerifierFromPubKey(pkPem string) (Verifier, error) {
 	if strings.HasPrefix(pkPem, "-----") {
 		block, _ := pem.Decode([]byte(pkPem))
@@ -81,16 +87,16 @@ func NewVerifierFromPubKey(pkPem string) (Verifier, error) {
 		}
 
 		switch pub := pub.(type) {
-		// TODO: Add support for more kind of signatures
-		// case *rsa.PublicKey:
-		// case *dsa.PublicKey:
-		// case *ecdsa.PublicKey:
 		case ed25519.PublicKey:
 			return ed25519Verifier{
 				pubkey: pub,
 			}, nil
+		// TODO: Add support for more kind of signatures
+		// case *rsa.PublicKey:
+		// case *dsa.PublicKey:
+		// case *ecdsa.PublicKey:
 		default:
-			return nil, errors.New("unknown type of public key")
+			return nil, errors.New("Not supported key type")
 		}
 	} else {
 		// Done to keep backward compatibility with old key format without header

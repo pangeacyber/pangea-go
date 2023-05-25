@@ -124,7 +124,7 @@ func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 
 // @summary JWT Retrieve
 //
-// @description Retrieve a key in JWK format
+// @description Retrieve a key in JWK format.
 //
 // @operationId vault_post_v1_get_jwk
 //
@@ -208,7 +208,7 @@ func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 
 // @summary Update
 //
-// @description Update information associated with a secret or key
+// @description Update information associated with a secret or key.
 //
 // @operationId vault_post_v1_update
 //
