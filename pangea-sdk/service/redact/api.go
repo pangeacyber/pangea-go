@@ -10,6 +10,8 @@ import (
 //
 // @description Redacts the content of a single text string.
 //
+// @operationId redact_post_v1_redact
+//
 // @example
 //
 //	input := &redact.TextInput{
@@ -39,6 +41,8 @@ func (r *redact) Redact(ctx context.Context, input *TextRequest) (*pangea.Pangea
 // @summary Redact structured
 //
 // @description Redacts text within a structured object.
+//
+// @operationId redact_post_v1_redact_structured
 //
 // @example
 //
@@ -106,7 +110,7 @@ type RecognizerResult struct {
 	FieldType string `json:"field_type"`
 
 	// Score is always populated on a successful response.
-	Score int `json:"score"`
+	Score *float64 `json:"score"`
 
 	// Text is always populated on a successful response.
 	Text string `json:"text"`

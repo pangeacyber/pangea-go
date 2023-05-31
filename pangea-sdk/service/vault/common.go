@@ -28,6 +28,19 @@ const (
 	AAes512                   AsymmetricAlgorithm = "ES512"
 	AArsa2048_pkcs1v15_sha256 AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256"
 	AArsa2048_oaep_sha256     AsymmetricAlgorithm = "RSA-OAEP-2048-SHA256"
+	AAes256K                  AsymmetricAlgorithm = "ES256K"
+	AArsa2048_oaep_sha1       AsymmetricAlgorithm = "RSA-OAEP-2048-SHA1"
+	AArsa2048_oaep_sha512     AsymmetricAlgorithm = "RSA-OAEP-2048-SHA512"
+	AArsa3072_oaep_sha1       AsymmetricAlgorithm = "RSA-OAEP-3072-SHA1"
+	AArsa3072_oaep_sha256     AsymmetricAlgorithm = "RSA-OAEP-3072-SHA256"
+	AArsa3072_oaep_sha512     AsymmetricAlgorithm = "RSA-OAEP-3072-SHA512"
+	AArsa4096_oaep_sha1       AsymmetricAlgorithm = "RSA-OAEP-4096-SHA1"
+	AArsa4096_oaep_sha256     AsymmetricAlgorithm = "RSA-OAEP-4096-SHA256"
+	AArsa4096_oaep_sha512     AsymmetricAlgorithm = "RSA-OAEP-4096-SHA512"
+	AArsa2048_pss_sha256      AsymmetricAlgorithm = "RSA-PSS-2048-SHA256"
+	AArsa3072_pss_sha256      AsymmetricAlgorithm = "RSA-PSS-3072-SHA256"
+	AA4096_pss_sha256         AsymmetricAlgorithm = "RSA-PSS-4096-SHA256"
+	AArsa4096_pss_sha512      AsymmetricAlgorithm = "RSA-PSS-4096-SHA512"
 	AArsa                     AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256" // deprecated, use AArsa2048_pkcs1v15_sha256 instead
 )
 
@@ -39,6 +52,7 @@ const (
 	SYAhs512      SymmetricAlgorithm = "HS512"
 	SYAaes128_cfb SymmetricAlgorithm = "AES-CFB-128"
 	SYAaes256_cfb SymmetricAlgorithm = "AES-CFB-256"
+	SYAaes256_gcm SymmetricAlgorithm = "AES-GCM-256"
 	SYAaes        SymmetricAlgorithm = "AES-CFB-128" // deprecated, use SYAaes128_cfb instead
 )
 

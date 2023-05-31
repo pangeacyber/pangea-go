@@ -208,7 +208,7 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.EventEnvelope.Signature)
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 }
 
@@ -243,7 +243,7 @@ func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.EventEnvelope.Signature)
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
 	e := out.Result.EventEnvelope.Event.(audit.Event)
 	assert.Equal(t, e.TenantID, "mytenantid")
@@ -355,7 +355,7 @@ func Test_Integration_CustomSchema_Local_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.EventEnvelope.Signature)
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
-	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
+	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
 	e := out.Result.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)

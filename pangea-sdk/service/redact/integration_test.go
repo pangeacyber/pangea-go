@@ -44,6 +44,35 @@ func Test_Integration_Redact(t *testing.T) {
 	assert.Equal(t, 1, out.Result.Count)
 }
 
+func Test_Integration_Redact_DebugTrue(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancelFn()
+
+	cfg := redactIntegrationCfg(t)
+	client := redact.New(cfg)
+
+	redacted := "My Phone number is <PHONE_NUMBER>"
+
+	input := &redact.TextRequest{
+		Text:  pangea.String("My Phone number is 415-867-5309"),
+		Debug: pangea.Bool(true),
+	}
+	out, err := client.Redact(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.Equal(t, redacted, *out.Result.RedactedText)
+	assert.Equal(t, 1, out.Result.Count)
+	assert.NotNil(t, out.Result.Report.RecognizerResults)
+	assert.NotEmpty(t, out.Result.Report.RecognizerResults)
+	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Score)
+	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Text)
+
+}
+
 func Test_Integration_Redact_NoResult(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancelFn()
@@ -89,6 +118,36 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.Equal(t, redacted, out.Result.RedactedData)
 	assert.Equal(t, 1, out.Result.Count)
+}
+
+func Test_Integration_Redact_Structured_DebugTrue(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancelFn()
+
+	cfg := redactIntegrationCfg(t)
+	cfg.Retry = true
+	client := redact.New(cfg)
+
+	data := map[string]any{"phone": "415-867-5309"}
+	redacted := map[string]any{"phone": "<PHONE_NUMBER>"}
+
+	input := &redact.StructuredRequest{
+		Data:  data,
+		Debug: pangea.Bool(true),
+	}
+	out, err := client.RedactStructured(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.Equal(t, redacted, out.Result.RedactedData)
+	assert.Equal(t, 1, out.Result.Count)
+	assert.NotNil(t, out.Result.Report.RecognizerResults)
+	assert.NotEmpty(t, out.Result.Report.RecognizerResults)
+	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Score)
+	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Text)
 }
 
 func Test_Integration_Redact_Structured_NoResult(t *testing.T) {

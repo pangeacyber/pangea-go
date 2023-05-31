@@ -10,12 +10,14 @@ import (
 //
 // @description Retrieve information about the location of an IP address.
 //
+// @operationId ip_intel_post_v1_geolocate
+//
 // @example
 //
 //	input := &ip_intel.IpGeolocateRequest{
-//		Ip: "93.231.182.110",
-//		Raw: true,
-//		Verbose: true,
+//		Ip:       "93.231.182.110",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "digitalelement",
 //	}
 //
@@ -45,12 +47,14 @@ func (e *ipIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pa
 // @description Retrieve a reputation score for an IP address from a provider,
 // including an optional detailed report.
 //
+// @operationId ip_intel_post_v1_reputation
+//
 // @example
 //
 //	input := &ip_intel.IpReputationRequest{
-//		Ip: "93.231.182.110",
-//		Raw: true,
-//		Verbose: true,
+//		Ip:       "93.231.182.110",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "crowdstrike",
 //	}
 //
@@ -79,12 +83,14 @@ func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 //
 // @description Retrieve the domain name associated with an IP address.
 //
+// @operationId ip_intel_post_v1_domain
+//
 // @example
 //
 //	input := &ip_intel.IpDomainRequest{
-//		Ip: "93.231.182.110",
-//		Raw: true,
-//		Verbose: true,
+//		Ip:       "93.231.182.110",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "digitalelement",
 //	}
 //
@@ -113,12 +119,14 @@ func (e *ipIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pange
 //
 // @description Determine if an IP address is provided by a VPN service.
 //
+// @operationId ip_intel_post_v1_vpn
+//
 // @example
 //
 //	input := &ip_intel.IpVPNRequest{
-//		Ip: "93.231.182.110",
-//		Raw: true,
-//		Verbose: true,
+//		Ip:       "93.231.182.110",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "digitalelement",
 //	}
 //
@@ -147,12 +155,14 @@ func (e *ipIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 //
 // @description Determine if an IP address is provided by a proxy service.
 //
+// @operationId ip_intel_post_v1_proxy
+//
 // @example
 //
 //	input := &ip_intel.IpProxyRequest{
-//		Ip: "93.231.182.110",
-//		Raw: true,
-//		Verbose: true,
+//		Ip:       "93.231.182.110",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "digitalelement",
 //	}
 //

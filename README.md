@@ -17,7 +17,7 @@
 
 # Pangea Go Mono Repo
 
-The Pangea repository for all things Go
+The Pangea repository for all things Go.
 
 ## Pangea Go SDK
 

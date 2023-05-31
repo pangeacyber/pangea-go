@@ -10,10 +10,12 @@ import (
 //
 // @description Check this IP against known sanction and trade embargo lists.
 //
+// @operationId embargo_post_v1_ip_check
+//
 // @example
 //
 //	input := &embargo.IPCheckInput{
-//		IP: pangea.String("213.24.238.26"),
+//		IP: pangea.String("190.6.64.94"),
 //	}
 //
 //	checkResponse, err := embargocli.IPCheck(ctx, input)
@@ -38,6 +40,8 @@ func (e *embargo) IPCheck(ctx context.Context, input *IPCheckRequest) (*pangea.P
 // @summary ISO Code Check
 //
 // @description Check this country against known sanction and trade embargo lists.
+//
+// @operationId embargo_post_v1_iso_check
 //
 // @example
 //

@@ -2,7 +2,6 @@ package signer_test
 
 import (
 	"encoding/base64"
-	"fmt"
 	"testing"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/signer"
@@ -16,10 +15,8 @@ func TestSigner(t *testing.T) {
 	signature, err := s.Sign([]byte(msg))
 	signBase64 := base64.StdEncoding.EncodeToString(signature)
 
-	fmt.Println("Signature base64 is: ", signBase64)
 	pk, err := s.PublicKey()
 	assert.NoError(t, err)
-	fmt.Println("Publick key base64 is: ", pk)
 	assert.Equal(t, pk, "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n")
 	assert.Equal(t, signBase64, "IYmIUBKWu5yLHM1u3bAw7dvVg1MPc7FLDWSz6d9oqn4FoCu9Bk6ta/lXvvXZUpa7hCm6RhU0VdBzh53x3mKiDQ==")
 

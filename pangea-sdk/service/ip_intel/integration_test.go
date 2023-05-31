@@ -194,7 +194,7 @@ func Test_Integration_IpIsProxy_DefaultProvider(t *testing.T) {
 	assert.True(t, resp.Result.Data.IsProxy)
 }
 
-func Test_Integration_IpReputation(t *testing.T) {
+func Test_Integration_IpReputationCrowdstrikeProvider(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
@@ -215,6 +215,28 @@ func Test_Integration_IpReputation(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+}
+
+func Test_Integration_IpReputation_CymruProvider(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpReputationRequest{
+		Ip:       "93.231.182.110",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "cymru",
+	}
+	resp, err := intelcli.Reputation(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
 }
 
 // Unknown IP

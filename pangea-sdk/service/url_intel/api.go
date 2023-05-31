@@ -13,9 +13,9 @@ import (
 // @example
 //
 //	input := &url_intel.UrlReputationRequest{
-//		Url: "http://113.235.101.11:54384",
-//		Raw: true,
-//		Verbose: true,
+//		Url:      "http://113.235.101.11:54384",
+//		Raw:      true,
+//		Verbose:  true,
 //		Provider: "crowdstrike",
 //	}
 //

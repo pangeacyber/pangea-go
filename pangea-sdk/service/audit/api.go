@@ -17,6 +17,8 @@ import (
 //
 // @description Create a log entry in the Secure Audit Log.
 //
+// @operationId audit_post_v1_log
+//
 // @example
 //
 //	event := audit.Event{
@@ -80,6 +82,8 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 // @summary Search for events
 //
 // @description Search for events that match the provided search criteria.
+//
+// @operationId audit_post_v1_search
 //
 // @example
 //
@@ -146,9 +150,11 @@ func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput, e I
 	return &panresp, nil
 }
 
-// @summary Retrieve tamperproof verification
+// @summary Tamperproof verification
 //
-// @description Root returns current root hash and consistency proof.
+// @description Returns current root hash and consistency proof.
+//
+// @operationId audit_post_v1_root
 //
 // @example
 //
@@ -307,18 +313,18 @@ func (i *LogRequest) SignEvent(s signer.Signer, pki map[string]string) error {
 		return err
 	}
 
+	if pki == nil {
+		pki = make(map[string]string)
+	}
+
 	pk, err := s.PublicKey()
 	if err != nil {
 		return err
 	}
 
-	if pki != nil {
-		pki["key"] = pk
-	} else {
-		pki = map[string]string{
-			"key": pk,
-		}
-	}
+	pki["key"] = pk
+	pki["algorithm"] = s.GetAlgorithm()
+
 	pkib, err := pu.CanonicalizeStruct(pki)
 	if err != nil {
 		return err

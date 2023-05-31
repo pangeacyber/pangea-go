@@ -58,6 +58,8 @@ type FileReputationResult struct {
 //
 // @description Lookup a file's hash to retrieve reputation data.
 //
+// @operationId file_intel_post_v1_reputation
+//
 // @example
 //
 //	input := &file_intel.FileReputationRequest{

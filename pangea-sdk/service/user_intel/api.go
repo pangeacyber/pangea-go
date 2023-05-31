@@ -16,7 +16,9 @@ const (
 
 // @summary Look up breached users
 //
-// @description Find out if an email address, username, phone number, or IP address was exposed in a security breach.
+// @description Determine if an email address, username, phone number, or IP address was exposed in a security breach.
+//
+// @operationId user_intel_post_v1_user_breached
 //
 // @example
 //
@@ -73,7 +75,9 @@ type UserBreachedResult struct {
 
 // @summary Look up breached passwords
 //
-// @description Find out if a password has been exposed in security breaches by providing a 5 character prefix of the password hash.
+// @description Determine if a password has been exposed in a security breach using a 5 character prefix of the password hash.
+//
+// @operationId user_intel_post_v1_password_breached
 //
 // @example
 //
@@ -121,6 +125,6 @@ type UserPasswordBreachedData struct {
 
 type UserPasswordBreachedResult struct {
 	Data       UserPasswordBreachedData `json:"data"`
-	Parameters interface{}              `json:"parameters,omitempty"`
-	RawData    interface{}              `json:"raw_data,omitempty"`
+	Parameters map[string]any           `json:"parameters,omitempty"`
+	RawData    map[string]any           `json:"raw_data,omitempty"`
 }
