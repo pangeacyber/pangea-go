@@ -94,9 +94,12 @@ type Client struct {
 
 	// The identifier for the service
 	serviceName string
+
+	// Flag to check config ID on request
+	checkConfigID bool
 }
 
-func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
+func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 	cfg.HTTPClient = chooseHTTPClient(cfg)
@@ -107,10 +110,11 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		userAgent = pangeaUserAgent
 	}
 	return &Client{
-		serviceName: service,
-		token:       cfg.Token,
-		config:      cfg,
-		userAgent:   userAgent,
+		serviceName:   service,
+		token:         cfg.Token,
+		config:        cfg,
+		userAgent:     userAgent,
+		checkConfigID: checkConfigID,
 	}
 }
 
@@ -182,7 +186,7 @@ func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Req
 		return nil, err
 	}
 
-	if c.config.ConfigID != "" && body.GetConfigID() == "" {
+	if c.checkConfigID && c.config.ConfigID != "" && body.GetConfigID() == "" {
 		body.SetConfigID(c.config.ConfigID)
 	}
 

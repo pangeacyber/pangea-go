@@ -16,7 +16,7 @@ import (
 
 func testClient(t *testing.T, url string) *pangea.Client {
 	t.Helper()
-	return pangea.NewClient("service", pangeatesting.TestConfig(url))
+	return pangea.NewClient("service", false, pangeatesting.TestConfig(url))
 }
 
 func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
@@ -221,7 +221,7 @@ func TestDo_With_Retries_Success(t *testing.T) {
 		RetryMax: 1,
 	}
 
-	client := pangea.NewClient("service", cfg)
+	client := pangea.NewClient("service", false, cfg)
 	req, _ := client.NewRequest("POST", "test", nil)
 
 	handler := func() func(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +262,7 @@ func TestDo_With_Retries_Error(t *testing.T) {
 		RetryMax: 1,
 	}
 
-	client := pangea.NewClient("service", cfg)
+	client := pangea.NewClient("service", false, cfg)
 
 	req, _ := client.NewRequest("POST", "test", nil)
 
