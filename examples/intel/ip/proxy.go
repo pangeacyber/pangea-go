@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Geolocating IP...")
+	fmt.Println("Checking if IP is a proxy...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
@@ -24,17 +24,21 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &ip_intel.IpGeolocateRequest{
-		Ip:       "93.231.182.110",
+	input := &ip_intel.IpProxyRequest{
+		Ip:       "34.201.32.172",
 		Raw:      true,
 		Verbose:  true,
 		Provider: "digitalelement",
 	}
 
-	resp, err := intelcli.Geolocate(ctx, input)
+	resp, err := intelcli.IsProxy(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result.Data))
+	if resp.Result.Data.IsProxy {
+		fmt.Println("IP is a proxy")
+	} else {
+		fmt.Println("IP is not a proxy")
+	}
 }

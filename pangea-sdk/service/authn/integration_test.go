@@ -28,7 +28,7 @@ var PASSWORD_OLD string
 var PASSWORD_NEW string
 
 const (
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func authnIntegrationCfg(t *testing.T) *pangea.Config {

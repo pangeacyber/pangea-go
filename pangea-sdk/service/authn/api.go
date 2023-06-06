@@ -363,7 +363,7 @@ type UserInfo struct {
 
 type UserListResult struct {
 	Users []UserInfo `json:"users"`
-	Last  string     `json:"last"`
+	Last  string     `json:"last,omitempty"`
 	Count int        `json:"count"`
 }
 
