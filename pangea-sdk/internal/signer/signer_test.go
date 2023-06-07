@@ -26,6 +26,21 @@ func TestSigner(t *testing.T) {
 	res, err := v.Verify([]byte(msg), sDecoded)
 	assert.NoError(t, err)
 	assert.True(t, res)
+	assert.Equal(t, "ED25519", s.GetAlgorithm())
+}
+
+func TestVerifier(t *testing.T) {
+	pk := "lvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE="
+	s := "IYmIUBKWu5yLHM1u3bAw7dvVg1MPc7FLDWSz6d9oqn4FoCu9Bk6ta/lXvvXZUpa7hCm6RhU0VdBzh53x3mKiDQ=="
+	msg := []byte("Hello signed world")
+	v, err := signer.NewVerifierFromPubKey(pk)
+	assert.NoError(t, err)
+
+	sDecoded, err := base64.StdEncoding.DecodeString(s)
+	res, err := v.Verify([]byte(msg), sDecoded)
+	assert.NoError(t, err)
+	assert.True(t, res)
+
 }
 
 func TestSigner_BadFile(t *testing.T) {
