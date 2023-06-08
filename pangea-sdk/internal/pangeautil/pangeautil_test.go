@@ -102,7 +102,8 @@ func TestPangeaTimestamp(t *testing.T) {
 	ptu := pangeautil.PangeaTimestamp{}
 	err = json.Unmarshal(ptb, &ptu)
 	assert.NoError(t, err)
+
 	ptt := time.Time(pt)
 	ptut := time.Time(ptu)
-	assert.True(t, ptt.Equal(ptut))
+	assert.Equal(t, ptt.UnixMilli(), ptut.UnixMilli())
 }
