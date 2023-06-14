@@ -85,7 +85,7 @@ type ClientTokenCheckResult struct {
 	CreatedAt string      `json:"created_at"`
 }
 
-func (a *ClientToken) check(ctx context.Context, input ClientTokenCheckRequest) (*pangea.PangeaResponse[ClientTokenCheckResult], error) {
+func (a *ClientToken) Check(ctx context.Context, input ClientTokenCheckRequest) (*pangea.PangeaResponse[ClientTokenCheckResult], error) {
 	req, err := a.Client.NewRequest("POST", "v1/client/token/check", &input)
 	if err != nil {
 		return nil, err

@@ -16,7 +16,18 @@ import (
 
 func testClient(t *testing.T, url string) *pangea.Client {
 	t.Helper()
-	return pangea.NewClient("service", false, pangeatesting.TestConfig(url))
+	cfg := pangeatesting.TestConfig(url)
+	headers := make(map[string]string, 0)
+	headers["Key"] = "Value"
+	cfg.AdditionalHeaders = headers
+	return pangea.NewClient("service", false, cfg)
+}
+
+func TestClientCustomUserAgent(t *testing.T) {
+	cfg := pangeatesting.TestConfig("pangea.cloud")
+	cfg.CustomUserAgent = "Test"
+	c := pangea.NewClient("service", false, cfg)
+	assert.NotNil(t, c)
 }
 
 func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
@@ -59,6 +70,8 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 	assert.True(t, ok)
 	assert.NotNil(t, pangeaErr.ResponseHeader)
 	assert.Equal(t, "ValidationError", *pangeaErr.ResponseHeader.Status)
+	assert.NotEmpty(t, pangeaErr.Error())
+	assert.NotEmpty(t, pangeaErr.BaseError.Error())
 }
 
 func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
@@ -301,7 +314,11 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 	}
 
 	var v *pangea.AcceptedError
+	ae := err.(*pangea.AcceptedError)
 	assert.ErrorAs(t, err, &v)
 	assert.NotNil(t, v.ResponseHeader.Status)
 	assert.Equal(t, "Accepted", *v.ResponseHeader.Status)
+	assert.NotEmpty(t, err.Error())
+	assert.True(t, true, ae.Is(err))
+	assert.NotEmpty(t, ae.ReqID())
 }

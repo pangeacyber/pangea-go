@@ -101,6 +101,18 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.Equal(t, 2, rRotate.Result.Version)
 	assert.Equal(t, string(vault.ITsecret), rRotate.Result.Type)
 
+	rUpdate, err := client.Update(ctx,
+		&vault.UpdateRequest{
+			ID:     ID,
+			Folder: "updated",
+		},
+	)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rUpdate)
+	assert.NotNil(t, rUpdate.Result)
+	assert.Equal(t, ID, rUpdate.Result.ID)
+
 	rGet, err := client.Get(ctx,
 		&vault.GetRequest{
 			ID: ID,
@@ -883,4 +895,31 @@ func Test_Integration_Error_BadToken(t *testing.T) {
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
+}
+
+func Test_List_And_Delete(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	client := vault.New(cfg)
+
+	lreq := &vault.ListRequest{}
+	lresp, err := client.List(ctx, lreq)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, lresp)
+
+	assert.Greater(t, lresp.Result.Count, 0)
+	for _, i := range lresp.Result.Items {
+		if i.ID != "" {
+			dresp, err := client.Delete(ctx, &vault.DeleteRequest{
+				ID: i.ID,
+			})
+
+			assert.NoError(t, err)
+			assert.NotNil(t, dresp)
+			assert.NotNil(t, dresp.Result)
+		}
+	}
 }

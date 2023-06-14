@@ -22,3 +22,4 @@ The Pangea repository for all things Go.
 ## Pangea Go SDK
 
 [Pangea SDK](https://github.com/pangeacyber/pangea-go/tree/main/pangea-sdk)
+[Pangea SDK examples](https://github.com/pangeacyber/pangea-go/tree/main/examples)
