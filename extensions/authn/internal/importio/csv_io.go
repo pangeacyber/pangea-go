@@ -1,4 +1,4 @@
-package readers
+package importio
 
 import (
 	"encoding/csv"
@@ -18,7 +18,7 @@ type CSVReader struct {
 
 // NewCSVReader
 // Assumption that provided csv file has header row
-// Create new CSV readers
+// Create new CSV importio
 // filePath - full csv file path
 //
 // */
@@ -63,7 +63,6 @@ func (csvReader *CSVReader) Next() (map[string]interface{}, error) {
 	for idx := range record {
 		rowData[csvReader.headers[idx]] = record[idx]
 	}
-	fmt.Println(rowData)
 	if csvReader.mapping != nil {
 		rowData, err = csvReader.mapping.MappedFields(rowData)
 		if err != nil {
@@ -71,4 +70,47 @@ func (csvReader *CSVReader) Next() (map[string]interface{}, error) {
 		}
 	}
 	return rowData, nil
+}
+
+type CSVWriter struct {
+	writer  *csv.Writer
+	file    *os.File
+	headers []string
+}
+
+func NewCSVWriter(fileName string, headers []string) (*CSVWriter, error) {
+	// Create a new CSV file
+	file, err := os.Create(fileName)
+	if err != nil {
+		return nil, err
+	}
+	// defer file.Close()
+	writer := csv.NewWriter(file)
+	//defer writer.Flush()
+	if len(headers) > 0 {
+		if err := writer.Write(headers); err != nil {
+			return nil, err
+		}
+	}
+	return &CSVWriter{
+		writer:  writer,
+		file:    file,
+		headers: headers,
+	}, nil
+}
+
+func (csvWriter *CSVWriter) Write(colData []string) error {
+	if len(colData) != len(csvWriter.headers) {
+		return errors.New("data and headers length does not match")
+	}
+	return csvWriter.writer.Write(colData)
+}
+
+func (csvWriter *CSVWriter) Close() {
+	if csvWriter.writer != nil {
+		csvWriter.writer.Flush()
+	}
+	if csvWriter.file != nil {
+		csvWriter.file.Close()
+	}
 }

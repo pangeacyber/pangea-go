@@ -2,44 +2,19 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
+	"extensions/authn/internal/utils"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 // Mapping represents the structure of our mapping file.
 type MappedField struct {
-	SourceField string `json:"sourceField"`
-	DestField   string `json:"destField"`
-	SourceType  string `json:"sourceType,omitempty"`
-	DestType    string `json:"destType,omitempty"`
-}
-
-func convertValue(value interface{}, sourceType string, destType string) (interface{}, error) {
-	// If source field is not defined then return as it is
-	if sourceType == "" {
-		return value, nil
-	}
-	// conversion
-	// TODO - Add more conversion
-	switch sourceType {
-	case "string":
-		switch destType {
-		case "integer":
-			return strconv.Atoi(value.(string))
-		default:
-			return value, nil
-		}
-	case "integer":
-		switch destType {
-		case "string":
-			return strconv.Itoa(value.(int)), nil
-		default:
-			return value, nil
-		}
-	default:
-		return nil, fmt.Errorf("unsupported type conversion: %s to %s", sourceType, destType)
-	}
+	SourceField string   `json:"sourceField"`
+	DestField   string   `json:"destField"`
+	SourceType  string   `json:"sourceType,omitempty"`
+	DestType    string   `json:"destType,omitempty"`
+	DestValues  []string `json:"destValues,omitempty""`
 }
 
 type Mappings struct {
@@ -47,6 +22,9 @@ type Mappings struct {
 }
 
 func NewMappings(mappingFile string) (*Mappings, error) {
+	if !utils.IsFileExist(mappingFile) {
+		return nil, errors.New(fmt.Sprintf("file=%s does not exist", mappingFile))
+	}
 	fileData, err := os.ReadFile(mappingFile)
 	if err != nil {
 		// Handle the error
@@ -73,7 +51,7 @@ func (mapping Mappings) MappedFields(data map[string]interface{}) (map[string]in
 			continue
 		}
 
-		convertedValue, err := convertValue(value, mapping.SourceType, mapping.DestType)
+		convertedValue, err := utils.ConvertValue(value, mapping.SourceType, mapping.DestType)
 		if err != nil {
 			fmt.Printf("Could not convert field %s: %v, skipping it\n", mapping.SourceField, err)
 			continue

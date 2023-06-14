@@ -10,7 +10,8 @@ import (
 	"os"
 )
 
-// Execute executes the root command.
+// Init config to read the configuration from config file as well
+// TODO - test it out if we have config with ~/.pangea_token.yaml
 func initConfig(cfgFile string) {
 	if cfgFile != "" {
 		// Use config file from the flag.
@@ -47,53 +48,69 @@ func main() {
 
 	// Don't forget to close and flush the logs before exiting.
 	defer logger.Sync() //nolint:errcheck
+	// Register as global so I can refer it via zap.L()
+	undo := zap.ReplaceGlobals(logger)
+	defer undo()
 
-	var cfgFile string
-	var importFile string
-	var token, domain string
+	// Flags
+	var importFile, mappingFile, cfgFile, token, domain string
+	var isDryRun bool
+	// Root command
 	rootCmd := &cobra.Command{
 		Use:   "authn",
 		Short: "A authn cli tool",
 		Long:  `AuthN is a CLI library for Go that empowers customer to import users to pangea.`,
 	}
+
+	// Sub command
+	// Ideally we should split into different files as per sub commands
+	// TODO: Move to different file when we have more commands
 	importCmd := &cobra.Command{
 		Use:   "import [filePath]",
 		Short: "Import users from given csv or json file",
 		Long:  "One time user import to the pangea.",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Importing Users")
+			logger.Info("Importing Users")
 			if token == "" {
+				// TODO: Add multiple retries
 				fmt.Print("Enter Pangea Token: ")
 				tokenBytes, err := terminal.ReadPassword(int(os.Stdin.Fd()))
 				if err != nil {
-					fmt.Printf("failed to read token, err=%v\n", err)
-					os.Exit(1)
+					logger.Fatal("failed to read token", zap.Error(err))
 				}
 				token = string(tokenBytes)
 			}
-
-			err := imports.ImportUsers(token, domain, importFile)
+			err := imports.ImportUsers(token, domain, importFile, mappingFile, isDryRun)
 			if err != nil {
-				fmt.Printf("failed to import, err=%v\n", err)
-				os.Exit(1)
+				logger.Fatal("failed to import, err=%v\n", zap.Error(err))
 			}
 		},
 	}
-	// Ideally we should split into different files as per sub commands
-	// TODO: Move to different file when we have more commands
+	// Root persist flags which sub command inherits
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c",
 		"", "config file (default is $HOME/.pangea.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "", "pangea token (default is PANGEA_TOKEN env)")
-	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "", "pangea domain (default is PANGEA_DOMAIN env)")
+	rootCmd.PersistentFlags().StringVarP(&token, "token", "t", "",
+		"pangea token (default is PANGEA_TOKEN env)")
+	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "",
+		"pangea domain (default is PANGEA_DOMAIN env)")
 	rootCmd.MarkPersistentFlagRequired("domain")
-	// Binding flag with viper
-	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("author"))
+	// Binding flag with viper config so env variable will work as well
 	viper.BindPFlag("pangea.token", rootCmd.PersistentFlags().Lookup("token"))
 	viper.BindPFlag("pangea.domain", rootCmd.PersistentFlags().Lookup("domain"))
+
+	// Import cmd flags
 	importCmd.PersistentFlags().StringVarP(&importFile, "importFile", "i", "",
 		"import user csv or json file")
-	importCmd.MarkPersistentFlagRequired("importFile")
+	importCmd.PersistentFlags().BoolVarP(&isDryRun, "dry-run", "f", false,
+		"mimic run import workflow (it does not make api call to create users). Default is false")
+	// Flag local to this command
+	importCmd.LocalFlags().StringVarP(&mappingFile, "fieldsMapping", "m", "",
+		"Fields mapping file to map source provider to pangea")
+
+	// Init config
 	initConfig(cfgFile)
+
+	// Register command and run
 	rootCmd.AddCommand(importCmd)
 	rootCmd.Execute()
 }

@@ -3,10 +3,13 @@ package imports
 import (
 	"context"
 	"errors"
-	"extensions/authn/internal/readers"
+	"extensions/authn/internal/importio"
+	"extensions/authn/internal/models"
 	"fmt"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/service/authn"
+	"github.com/sethvargo/go-password/password"
+	"go.uber.org/zap"
 	"io"
 	"strings"
 	"time"
@@ -34,17 +37,36 @@ func convertMapToCreateUserRequest(rawUser map[string]interface{}) (*authn.UserC
 	//bTrue := true
 	//user.Verified = &bTrue
 	fmt.Println("Email", user.Email)
-	user.IDProvider = authn.IDPGoogle    // authn.IDPGoogle
-	user.Authenticator = "My1s+Password" // testMy1s+Password
+	user.IDProvider = authn.IDPGoogle // authn.IDPGoogle
+
+	randomPass, err := password.Generate(64, 10, 10, false, false)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Authenticator = randomPass //"My1s+Password" // testMy1s+Password
 	return user, nil
 }
 
-func ImportUsers(token string, domain string, filePath string) error {
+func ImportUsers(token string, domain string, filePath string, mappingFile string, isDryRun bool) error {
+	// Get global logger
+	logger := zap.L()
 	if token == "" || domain == "" {
 		return errors.New("token or domain is empty")
 	}
 
-	csvReader, err := readers.NewCSVReader(filePath, nil)
+	// Read mapping file
+	var mappings *models.Mappings
+	var err error
+	if mappingFile == "" {
+		mappings, err = models.NewMappings(mappingFile)
+		if err != nil {
+			logger.Error("failed to open mapping file", zap.String("err", err.Error()))
+			return err
+		}
+	}
+
+	csvReader, err := importio.NewCSVReader(filePath, mappings)
 	if err != nil {
 		return err
 	}
@@ -57,6 +79,17 @@ func ImportUsers(token string, domain string, filePath string) error {
 		success: make(map[string]interface{}),
 		failed:  make(map[string]error),
 	}
+
+	t := time.Now()
+	uniqueID := t.UnixNano()
+	outputFileName := fmt.Sprintf("success_userinfo_%d", uniqueID)
+	csvWriter, err := importio.NewCSVWriter(outputFileName, []string{"Id", "Email", "Password"})
+	if err != nil {
+		logger.Error("Failed to write password to a file", zap.Error(err))
+		return err
+	}
+	defer csvWriter.Close()
+
 	for {
 		rawUser, err := csvReader.Next()
 		if err == io.EOF {
@@ -64,35 +97,32 @@ func ImportUsers(token string, domain string, filePath string) error {
 			break
 		}
 		if err != nil {
-			fmt.Printf("failed to read file=%s \n", err)
+			logger.Error("failed to read user record", zap.Error(err))
 			continue
 		}
 		user, err := convertMapToCreateUserRequest(rawUser)
 		if err != nil {
-			fmt.Println("failed to convert map to user object")
+			logger.Error("failed to build user profile object from raw format", zap.Error(err))
 			report.failed[user.Email] = err
 			break
 		}
-		if err != nil {
-			fmt.Println("Failed to read user from file, trying other users")
-			report.failed[user.Email] = err
+		if isDryRun {
+			report.success[user.Email] = "Dry Run"
 			continue
 		}
 		ctx, _ := context.WithTimeout(context.Background(), 60*time.Second)
-		fmt.Printf("creating user=%s \n", user.Email)
+		logger.Info("creating user", zap.String("email", user.Email))
 		resp, err := client.User.Create(ctx, *user)
-		// TODO: Add error summary
 		if err != nil {
-			fmt.Printf("Failed to create user, trying other users, err=%s \n", err)
-			fmt.Println(resp)
+			logger.Info("Failed to create user, trying other users", zap.Error(err))
 			report.failed[user.Email] = err
 			continue
 		}
-		fmt.Println("Create user success. Result: " + pangea.Stringify(resp.Result))
+		logger.Info("successfully created a user", zap.String("Result", pangea.Stringify(resp.Result)))
 		report.success[user.Email] = resp.Result
-		break
+		csvWriter.Write([]string{resp.Result.ID, resp.Result.Email, user.Authenticator})
 	}
-	fmt.Printf("completed import workflow, stats success:%d, failed:%d \n", len(report.success), len(report.failed))
-	fmt.Println(report)
+	logger.Info("completed import workflow, stats", zap.Int("success", len(report.success)),
+		zap.Int("failed", len(report.failed)))
 	return nil
 }
