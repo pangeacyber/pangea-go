@@ -1,0 +1,50 @@
+[
+  {
+    "sourceField": "Email",
+    "destField": "email",
+    "sourceType": "string",
+    "destType": "string"
+  },
+  {
+    "sourceField": "Name",
+    "destField": "profile.full_name",
+    "sourceType": "string",
+    "destType": "string"
+  },
+  {
+    "sourceField": "Given Name",
+    "destField": "profile.first_name",
+    "sourceType": "string",
+    "destType": "string"
+  },
+  {
+    "sourceField": "Family Name",
+    "destField": "profile.last_name",
+    "sourceType": "string",
+    "destType": "string"
+  },
+  {
+    "sourceField": "Nickname",
+    "destField": "profile.nickname",
+    "sourceType": "string",
+    "destType": "string"
+  },
+  {
+    "sourceField": "Picture",
+    "destField": "profile.picture",
+    "sourceType": "string",
+    "destType": "string"
+  },
+  {
+    "sourceField": "Email Verified",
+    "destField": "verified",
+    "sourceType": "bool",
+    "destType": "bool"
+  },
+  {
+    "sourceField": "Connection",
+    "destField": "id_provider",
+    "sourceType": "string",
+    "destType": "string"
+  }
+]

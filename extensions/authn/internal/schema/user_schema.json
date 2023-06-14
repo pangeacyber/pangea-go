@@ -1,0 +1,1559 @@
+{
+  "components": {
+    "schemas": {
+      "authn-branding-resource": {
+        "type": "object",
+        "description": "Login page branding configuration",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-resource-id" },
+          "brand_name": { "type": "string" },
+          "brand_logo": { "type": "string" },
+          "brand_page_logo": { "type": "string" },
+          "brand_logo_height": { "type": "string" },
+          "brand_favicon": { "type": "string" },
+          "brand_url": { "type": "string" },
+          "support_email": { "type": "string" },
+          "font_family": { "type": "string" },
+          "density": { "type": "string" },
+          "bg_color": { "$ref": "#/components/schemas/authn-css" },
+          "bg_image": { "type": "string" },
+          "primary_color": { "$ref": "#/components/schemas/authn-css" },
+          "secondary_color": { "$ref": "#/components/schemas/authn-css" },
+          "text_primary_color": { "$ref": "#/components/schemas/authn-css" },
+          "text_secondary_color": { "$ref": "#/components/schemas/authn-css" },
+          "text_contrast_color": { "$ref": "#/components/schemas/authn-css" },
+          "link_color": { "$ref": "#/components/schemas/authn-css" },
+          "link_style": { "type": "string" },
+          "header_font_size": { "type": "string" },
+          "header_font_weight": { "type": "string" },
+          "body_font_size": { "type": "string" },
+          "body_font_weight": { "type": "string" },
+          "input_bg_color": { "$ref": "#/components/schemas/authn-css" },
+          "input_border_color": { "$ref": "#/components/schemas/authn-css" },
+          "input_border_radius": { "type": "string" },
+          "button_variant": { "type": "string" },
+          "button_border_radius": { "type": "string" },
+          "panel_bg_color": { "$ref": "#/components/schemas/authn-css" },
+          "panel_border_radius": { "type": "string" },
+          "panel_box_shadow": { "$ref": "#/components/schemas/authn-css" },
+          "authn_show_name": { "type": "string" },
+          "login_heading": { "type": "string" },
+          "login_button_label": { "type": "string" },
+          "login_social_heading": { "type": "string" },
+          "signup_heading": { "type": "string" },
+          "signup_button_label": { "type": "string" },
+          "signup_social_heading": { "type": "string" },
+          "social_icon_style": { "type": "string" },
+          "otp_font_size": { "type": "string" },
+          "otp_button_label": { "type": "string" },
+          "custom": { "type": "string" },
+          "custom_metadata": {
+            "type": "object",
+            "patternProperties": {
+              ".*": {
+                "type": ["object"]
+              }
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "authn-branding-resource-result": {
+        "required": [
+          "id",
+          "brand_name",
+          "brand_logo",
+          "brand_page_logo",
+          "brand_logo_height",
+          "brand_favicon",
+          "brand_url",
+          "support_email",
+          "font_family",
+          "density",
+          "bg_color",
+          "bg_image",
+          "primary_color",
+          "secondary_color",
+          "text_primary_color",
+          "text_secondary_color",
+          "text_contrast_color",
+          "link_color",
+          "link_style",
+          "header_font_size",
+          "header_font_weight",
+          "body_font_size",
+          "body_font_weight",
+          "input_bg_color",
+          "input_border_color",
+          "input_border_radius",
+          "button_variant",
+          "button_border_radius",
+          "panel_bg_color",
+          "panel_border_radius",
+          "panel_box_shadow",
+          "authn_show_name",
+          "login_heading",
+          "login_button_label",
+          "login_social_heading",
+          "signup_heading",
+          "signup_button_label",
+          "signup_social_heading",
+          "social_icon_style",
+          "otp_font_size",
+          "otp_button_label"
+        ],
+        "$ref": "#/components/schemas/authn-branding-resource"
+      },
+      "authn-callback": {
+        "type": "string",
+        "description": "A login callback URI",
+        "format": "http-url",
+        "examples": ["https://www.myserver.com/callback"]
+      },
+      "authn-callback-code": {
+        "type": "string",
+        "description": "A social oauth callback code",
+        "pattern": "^[a-zA-Z0-9_-]{8,64}$",
+        "examples": ["poc_fwg3ul4db1jpivexru3wyj354u9ej5e2"]
+      },
+      "authn-callback-state": {
+        "type": "string",
+        "description": "State tracking string for login callbacks",
+        "pattern": "^[a-zA-Z0-9_-]{8,64}$",
+        "examples": ["pcb_zurr3lkcwdp5keq73htsfpcii5k4zgm7"]
+      },
+      "authn-css": {
+        "type": "string",
+        "$comment": "XXX TODO: better validation, perhaps a built-in using golang's CSS parser",
+        "description": "CSS style string",
+        "examples": ["24px"]
+      },
+      "authn-duration-golang": {
+        "type": "string",
+        "$comment": "XXX TODO: better validation, perhaps a built-in using golang's Duration parser",
+        "description": "A positive time duration",
+        "examples": ["5h30m"]
+      },
+      "authn-duration-seconds": {
+        "type": "integer",
+        "description": "A positive time duration in seconds",
+        "exclusiveMinimum": 0,
+        "examples": [86400]
+      },
+      "authn-duration-seconds-nullable": {
+        "type": ["integer", "null"],
+        "description": "A positive time duration in seconds or null"
+      },
+      "authn-email": {
+        "type": "string",
+        "description": "An email address",
+        "$comment": "XXX TODO: come up with a better validation for email formats",
+        "pattern": "^[0-9a-zA-Z+._-]+@[0-9a-zA-Z.-]+$",
+        "examples": ["joe.user@email.com"]
+      },
+      "authn-email-nullable": {
+        "description": "An email address or empty",
+        "oneOf": [
+          { "$ref": "#/components/schemas/authn-email" },
+          { "type": "null" }
+        ]
+      },
+      "authn-empty": {
+        "type": "object",
+        "description": "An empty object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false,
+        "examples": [{}]
+      },
+      "authn-filter-tickets": {
+        "description": "Search ticket records.",
+        "properties": {
+          "filter": {
+            "pattern_properties": {},
+            "properties": {
+              "callback": {
+                "description": "Only records where callback equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "callback__contains": {
+                "descriptions": "Only records where callback includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "created_at": {
+                "description": "Only records where created_at equals this value.",
+                "format": "date-time",
+                "nullable": false,
+                "type": "string"
+              },
+              "created_at__gt": {
+                "description": "Only records where created_at is greater than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__gte": {
+                "description": "Only records where created_at is greater than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lt": {
+                "description": "Only records where created_at is less than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lte": {
+                "description": "Only records where created_at is less than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "email": {
+                "description": "Only records where email equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "email__contains": {
+                "descriptions": "Only records where email includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "expire": {
+                "description": "Only records where expire equals this value.",
+                "format": "date-time",
+                "nullable": false,
+                "type": "string"
+              },
+              "expire__gt": {
+                "description": "Only records where expire is greater than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "expire__gte": {
+                "description": "Only records where expire is greater than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "expire__lt": {
+                "description": "Only records where expire is less than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "expire__lte": {
+                "description": "Only records where expire is less than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "description": "Only records where id equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "id__contains": {
+                "descriptions": "Only records where id includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "invite_org": {
+                "description": "Only records where invite_org equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "invite_org__contains": {
+                "descriptions": "Only records where invite_org includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "inviter": {
+                "description": "Only records where inviter equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "inviter__contains": {
+                "descriptions": "Only records where inviter includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "is_signup": {
+                "description": "Only records where is_signup equals this value.",
+                "nullable": false,
+                "type": "boolean"
+              },
+              "require_mfa": {
+                "description": "Only records where require_mfa equals this value.",
+                "nullable": false,
+                "type": "boolean"
+              },
+              "state": {
+                "description": "Only records where state equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "state__contains": {
+                "descriptions": "Only records where state includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            }
+          },
+          "last": {
+            "description": "Reflected value from a previous response to obtain the next page of results.",
+            "type": "string"
+          },
+          "order": {
+            "description": "Order results asc(ending) or desc(ending).",
+            "enum": ["asc", "desc"],
+            "type": "string"
+          },
+          "order_by": {
+            "description": "Which field to order results by.",
+            "enum": [
+              "id",
+              "created_at",
+              "type",
+              "expire",
+              "callback",
+              "state",
+              "email",
+              "inviter",
+              "invite_org"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "description": "Maximum results to include in the response.",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "authn-filter-tokens": {
+        "description": "Search token records.",
+        "properties": {
+          "filter": {
+            "pattern_properties": {
+              "^profile_([A-Za-z]+)$": {
+                "description": "Only records where metadata field equals this value.",
+                "type": "string"
+              },
+              "^profile_([A-Za-z]+)__contains$": {
+                "description": "Only records where metadata field contains one of these substrings.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "^profile_([A-Za-z]+)__exists$": {
+                "description": "Only records where metadata field exists (true) or doesn't (false).",
+                "type": "boolean"
+              }
+            },
+            "properties": {
+              "active_token_id": {
+                "description": "Only records where active_token_id equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "active_token_id__contains": {
+                "descriptions": "Only records where active_token_id includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "created_at": {
+                "description": "Only records where created_at equals this value.",
+                "format": "date-time",
+                "nullable": false,
+                "type": "string"
+              },
+              "created_at__gt": {
+                "description": "Only records where created_at is greater than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__gte": {
+                "description": "Only records where created_at is greater than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lt": {
+                "description": "Only records where created_at is less than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lte": {
+                "description": "Only records where created_at is less than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "email": {
+                "description": "Only records where email equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "email__contains": {
+                "descriptions": "Only records where email includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "expire": {
+                "description": "Only records where expire equals this value.",
+                "format": "date-time",
+                "nullable": false,
+                "type": "string"
+              },
+              "expire__gt": {
+                "description": "Only records where expire is greater than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "expire__gte": {
+                "description": "Only records where expire is greater than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "expire__lt": {
+                "description": "Only records where expire is less than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "expire__lte": {
+                "description": "Only records where expire is less than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "description": "Only records where id equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "id__contains": {
+                "descriptions": "Only records where id includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "identity": {
+                "description": "Only records where identity equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "identity__contains": {
+                "descriptions": "Only records where identity includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "scopes": {
+                "description": "A list of scopes that all must be present.",
+                "items": {
+                  "description": "Scopes.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "type": {
+                "description": "Only records where type equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "type__contains": {
+                "descriptions": "Only records where type includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            }
+          },
+          "last": {
+            "description": "Reflected value from a previous response to obtain the next page of results.",
+            "type": "string"
+          },
+          "order": {
+            "description": "Order results asc(ending) or desc(ending).",
+            "enum": ["asc", "desc"],
+            "type": "string"
+          },
+          "order_by": {
+            "description": "Which field to order results by.",
+            "enum": [
+              "id",
+              "created_at",
+              "type",
+              "identity",
+              "email",
+              "expire",
+              "active_token_id"
+            ],
+            "type": "string"
+          },
+          "size": {
+            "description": "Maximum results to include in the response.",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "authn-filter-users": {
+        "description": "Search user records.",
+        "properties": {
+          "filter": {
+            "pattern_properties": {
+              "^profile_([A-Za-z]+)$": {
+                "description": "Only records where metadata field equals this value.",
+                "type": "string"
+              },
+              "^profile_([A-Za-z]+)__contains$": {
+                "description": "Only records where metadata field contains one of these substrings.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "^profile_([A-Za-z]+)__exists$": {
+                "description": "Only records where metadata field exists (true) or doesn't (false).",
+                "type": "boolean"
+              }
+            },
+            "properties": {
+              "created_at": {
+                "description": "Only records where created_at equals this value.",
+                "format": "date-time",
+                "nullable": false,
+                "type": "string"
+              },
+              "created_at__gt": {
+                "description": "Only records where created_at is greater than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__gte": {
+                "description": "Only records where created_at is greater than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lt": {
+                "description": "Only records where created_at is less than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "created_at__lte": {
+                "description": "Only records where created_at is less than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "disabled": {
+                "description": "Only records where disabled equals this value.",
+                "nullable": false,
+                "type": "boolean"
+              },
+              "email": {
+                "description": "Only records where email equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "email__contains": {
+                "descriptions": "Only records where email includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "id": {
+                "description": "Only records where id equals this value.",
+                "nullable": false,
+                "type": "string"
+              },
+              "id__contains": {
+                "descriptions": "Only records where id includes each substring.",
+                "items": {
+                  "description": "A substring to check for.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "last_login_at": {
+                "description": "Only records where last_login_at equals this value.",
+                "format": "date-time",
+                "nullable": false,
+                "type": "string"
+              },
+              "last_login_at__gt": {
+                "description": "Only records where last_login_at is greater than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "last_login_at__gte": {
+                "description": "Only records where last_login_at is greater than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "last_login_at__lt": {
+                "description": "Only records where last_login_at is less than this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "last_login_at__lte": {
+                "description": "Only records where last_login_at is less than or equal to this value.",
+                "format": "date-time",
+                "type": "string"
+              },
+              "require_mfa": {
+                "description": "Only records where require_mfa equals this value.",
+                "nullable": false,
+                "type": "boolean"
+              },
+              "scopes": {
+                "x-pangea-ui-schema": {
+                  "isPublic": false
+                },
+                "description": "A list of scopes that all must be present.",
+                "items": {
+                  "description": "Scopes.",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "verified": {
+                "description": "Only records where verified equals this value.",
+                "nullable": false,
+                "type": "boolean"
+              }
+            }
+          },
+          "last": {
+            "description": "Reflected value from a previous response to obtain the next page of results.",
+            "type": "string"
+          },
+          "order": {
+            "description": "Order results asc(ending) or desc(ending).",
+            "enum": ["asc", "desc"],
+            "type": "string"
+          },
+          "order_by": {
+            "description": "Which field to order results by.",
+            "enum": ["id", "created_at", "last_login_at", "email"],
+            "type": "string"
+          },
+          "size": {
+            "description": "Maximum results to include in the response.",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "authn-flow-id": {
+        "type": "string",
+        "description": "An ID for a login or signup flow",
+        "pattern": "^pfl_[a-z2-7]{32}$",
+        "examples": ["pfl_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a"]
+      },
+      "authn-flow-next-step": {
+        "type": "string",
+        "enum": [
+          "start",
+          "verify/captcha",
+          "signup",
+          "verify/email",
+          "verify/password",
+          "verify/password_reset",
+          "verify/social",
+          "enroll/mfa/start",
+          "enroll/mfa/complete",
+          "verify/mfa/start",
+          "verify/mfa/complete",
+          "reset/password",
+          "complete"
+        ]
+      },
+      "authn-social-provider-info": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/authn-provider-id"
+          },
+          "redirect_uri": {
+            "type": "string",
+            "format": "http-url"
+          }
+        },
+        "required": ["provider", "redirect_uri"]
+      },
+      "authn-flow-next": {
+        "type": "object",
+        "description": "Information about next steps needed to complete a flow",
+        "properties": {
+          "error": { "type": "string" },
+          "next_step": {
+            "$ref": "#/components/schemas/authn-flow-next-step"
+          },
+          "complete": {
+            "$ref": "#/components/schemas/authn-empty"
+          },
+          "enroll_mfa_start": {
+            "type": "object",
+            "properties": {
+              "mfa_providers": {
+                "$ref": "#/components/schemas/authn-mfa-providers"
+              }
+            },
+            "required": ["mfa_providers"]
+          },
+          "enroll_mfa_complete": {
+            "type": "object",
+            "properties": {
+              "totp_secret": {
+                "$ref": "#/components/schemas/authn-mfa-totp-secret"
+              }
+            },
+            "required": []
+          },
+          "signup": {
+            "type": "object",
+            "properties": {
+              "social_signup": {
+                "type": "object",
+                "properties": {
+                  "providers": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/authn-social-provider-info"
+                    }
+                  }
+                },
+                "required": ["providers"]
+              },
+              "password_signup": {
+                "$ref": "#/components/schemas/authn-password-policy"
+              }
+            },
+            "required": []
+          },
+          "verify_captcha": {
+            "type": "object",
+            "properties": {
+              "site_key": { "type": "string" }
+            },
+            "required": ["site_key"]
+          },
+          "verify_email": {
+            "$ref": "#/components/schemas/authn-empty"
+          },
+          "verify_mfa_start": {
+            "type": "object",
+            "properties": {
+              "mfa_providers": {
+                "$ref": "#/components/schemas/authn-mfa-providers"
+              }
+            },
+            "required": ["mfa_providers"]
+          },
+          "verify_mfa_complete": {
+            "$ref": "#/components/schemas/authn-empty"
+          },
+          "reset_password": {
+            "$ref": "#/components/schemas/authn-password-policy"
+          },
+          "verify_password_reset": {
+            "$ref": "#/components/schemas/authn-empty"
+          },
+          "verify_password": {
+            "$ref": "#/components/schemas/authn-password-policy"
+          },
+          "verify_social": {
+            "$ref": "#/components/schemas/authn-social-provider-info"
+          }
+        },
+        "required": ["next_step"],
+        "exactlyOne": [
+          "complete",
+          "enroll_mfa_start",
+          "enroll_mfa_complete",
+          "signup",
+          "verify_captcha",
+          "verify_email",
+          "verify_mfa_start",
+          "verify_mfa_complete",
+          "verify_password",
+          "verify_social"
+        ]
+      },
+      "authn-flow-type": {
+        "type": "string",
+        "description": "A flow type",
+        "enum": ["signup", "signin"],
+        "examples": ["signin"]
+      },
+      "authn-flow-types": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/authn-flow-type"
+        },
+        "description": "A list of flow types",
+        "examples": [["signup", "signin"]]
+      },
+      "authn-identity": {
+        "type": "string",
+        "description": "The identity of a user or a service",
+        "pattern": "^[a-zA-Z0-9 '.:/_-]+$",
+        "examples": ["pui_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      },
+      "authn-identity-nullable": {
+        "description": "The identity of a user or a service or empty",
+        "oneOf": [
+          { "$ref": "#/components/schemas/authn-identity" },
+          { "type": "null" }
+        ]
+      },
+      "authn-identity-user": {
+        "type": "string",
+        "description": "The identity of a user",
+        "pattern": "^pui_[a-z2-7]{32}$",
+        "examples": ["pui_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      },
+      "authn-password": {
+        "type": "string",
+        "description": "A password"
+      },
+      "authn-password-policy": {
+        "type": "object",
+        "properties": {
+          "password_chars_min": { "type": "integer" },
+          "password_chars_max": { "type": "integer" },
+          "password_lower_min": { "type": "integer" },
+          "password_upper_min": { "type": "integer" },
+          "password_punct_min": { "type": "integer" },
+          "password_number_min": { "type": "integer" }
+        },
+        "required": [
+          "password_chars_min",
+          "password_chars_max",
+          "password_lower_min",
+          "password_upper_min",
+          "password_punct_min"
+        ]
+      },
+      "authn-provider-id": {
+        "type": "string",
+        "description": "Mechanism for authenticating a user's identity",
+        "enum": [
+          "password",
+          "google",
+          "github",
+          "facebook",
+          "microsoftonline",
+          "webauthn"
+        ],
+        "examples": ["password"]
+      },
+      "authn-social-provider-id": {
+        "type": "string",
+        "description": "Social identity provider for authenticating a user's identity",
+        "enum": ["google", "github", "facebook", "microsoftonline"],
+        "examples": ["github"]
+      },
+      "authn-provider-ids": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/authn-provider-id"
+        },
+        "description": "Mechanisms for authenticating a user's identity",
+        "examples": ["github", "google"]
+      },
+      "authn-mfa-code": {
+        "type": "string",
+        "description": "A six digit MFA code",
+        "pattern": "^[0-9]{6}$",
+        "examples": ["999999"]
+      },
+      "authn-mfa-provider": {
+        "type": "string",
+        "description": "Additional mechanism for authenticating a user's identity",
+        "enum": ["totp", "email_otp", "sms_otp"],
+        "examples": ["totp"]
+      },
+      "authn-mfa-providers": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/authn-mfa-provider"
+        },
+        "description": "Additional mechanisms for authenticating a user's identity",
+        "examples": [["totp", "sms_otp"]]
+      },
+      "authn-mfa-totp-secret": {
+        "type": "object",
+        "description": "TOTP QR code and secret returned during enrollment",
+        "properties": {
+          "qr_image": { "type": "string" },
+          "secret": { "type": "string" }
+        },
+        "required": ["qr_image", "secret"],
+        "additionalProperties": false
+      },
+      "authn-otp-send-provider": {
+        "type": "string",
+        "description": "An email or SMS one-time-password provider",
+        "enum": ["email_otp", "sms_otp"],
+        "examples": ["email_otp"]
+      },
+      "authn-phone": {
+        "type": "string",
+        "description": "A phone number",
+        "pattern": "^\\+?[1-9][. -]?([0-9][. -]?){7,14}$",
+        "examples": ["1-808-555-0173"]
+      },
+      "authn-resource-id": {
+        "type": "string",
+        "description": "An ID for a resource",
+        "pattern": "^pro_[a-z2-7]{32}$",
+        "examples": ["pro_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a"]
+      },
+      "authn-scope": {
+        "type": "string",
+        "description": "A scope",
+        "pattern": "^[a-zA-Z0-9:*/_-]+$",
+        "examples": ["scope1"]
+      },
+      "authn-scopes": {
+        "type": "array",
+        "description": "A list of scopes",
+        "items": {
+          "$ref": "#/components/schemas/authn-scope"
+        },
+        "examples": [["scope1", "scope2"]]
+      },
+      "authn-service-config": {
+        "type": "object",
+        "description": "Authn Service Settings",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/authn-service-config-id"
+          },
+          "name": { "type": "string" },
+          "home_page": { "type": "string" },
+          "allowed_callbacks": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "enable_allowed_ips": { "type": "boolean" },
+          "allowed_ips": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "default_signup_callback": { "type": "string" },
+          "default_signin_callback": { "type": "string" },
+          "default_logout_callback": { "type": "string" },
+          "default_oauth_callback": { "type": "string" },
+          "default_email_verification_callback": { "type": "string" },
+          "default_password_reset_callback": { "type": "string" },
+          "allow_internal": { "type": "bool" },
+          "user_pool_rid": {
+            "$ref": "#/components/schemas/authn-resource-id"
+          },
+          "branding_rid": {
+            "$ref": "#/components/schemas/authn-resource-id"
+          },
+          "login_domain": { "type": "string", "readOnly": true }
+        },
+        "required": ["id"],
+        "additionalProperties": false
+      },
+      "authn-service-config-filled": {
+        "required": [
+          "id",
+          "name",
+          "home_page",
+          "allowed_callbacks",
+          "user_pool_rid",
+          "branding_rid"
+        ],
+        "$ref": "#/components/schemas/authn-service-config"
+      },
+      "authn-service-config-id": {
+        "type": "string",
+        "description": "A service config ID",
+        "pattern": "^pci_[a-z2-7]{32}$",
+        "examples": ["pci_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      },
+      "authn-service-config-result": {
+        "required": [
+          "id",
+          "name",
+          "home_page",
+          "allowed_callbacks",
+          "user_pool_rid",
+          "branding_rid",
+          "login_domain"
+        ],
+        "$ref": "#/components/schemas/authn-service-config"
+      },
+      "authn-ticket": {
+        "type": "object",
+        "description": "Authn ticket state",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-ticket-id" },
+          "created_at": { "$ref": "#/components/schemas/authn-timestamp" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "passwordReset",
+              "mfaReset",
+              "createUser",
+              "invite",
+              "token",
+              "oauth",
+              "emailVerify",
+              "flowPasswordReset"
+            ]
+          },
+          "error": { "type": "string" },
+          "expire": { "$ref": "#/components/schemas/authn-timestamp" },
+          "token": { "$ref": "#/components/schemas/authn-token" },
+          "callback": { "$ref": "#/components/schemas/authn-callback" },
+          "state": { "$ref": "#/components/schemas/authn-callback-state" },
+          "is_signup": { "type": "boolean" },
+          "provider": { "$ref": "#/components/schemas/authn-provider-id" },
+          "user": { "type": "string" },
+          "profile": { "$ref": "#/components/schemas/authn-user-profile" },
+          "invite_user": { "$ref": "#/components/schemas/authn-email" },
+          "from_user": { "$ref": "#/components/schemas/authn-email" },
+          "from_org": { "type": "string" },
+          "auth": { "type": "string" },
+          "require_mfa": { "type": "boolean" },
+          "mfa_provider": { "$ref": "#/components/schemas/authn-mfa-provider" }
+        },
+        "required": ["type"],
+        "additionalProperties": false
+      },
+      "authn-ticket-id": {
+        "type": "string",
+        "description": "A one-time ticket",
+        "pattern": "^p[a-z][a-z]_[a-z2-7]{32}$",
+        "examples": ["pmc_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a"]
+      },
+      "authn-timestamp": {
+        "type": "string",
+        "description": "A time in ISO-8601 format",
+        "examples": ["2022-10-01T19:07:31.314Z"],
+        "format": "date-time"
+      },
+      "authn-timestamp-nullable": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/authn-timestamp" },
+          { "type": "null" }
+        ],
+        "description": "A time in ISO-8601 format or null"
+      },
+      "authn-token": {
+        "type": "string",
+        "description": "A token value",
+        "pattern": "^(p(ti|tr|ts|tu|cl)_[a-z2-7]{32})|([A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)$",
+        "examples": ["pts_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      },
+      "authn-token-refresh": {
+        "type": "string",
+        "description": "A refresh token value",
+        "pattern": "^ptr_[a-z2-7]{32}$",
+        "examples": ["ptr_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      },
+      "authn-token-user": {
+        "type": "string",
+        "description": "A user token value",
+        "pattern": "^(ptu_[a-z2-7]{32})|([A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)$",
+        "examples": ["ptu_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      },
+      "authn-token-id": {
+        "type": "string",
+        "description": "An ID for a token",
+        "pattern": "^pmt_[a-z2-7]{32}$",
+        "examples": ["pmt_rqo2uwlhgxy5gqpfgxjomccovphnfjo6"]
+      },
+      "authn-session-info-creds": {
+        "type": "object",
+        "description": "Credentials for a login session",
+        "properties": {
+          "refresh_token": {
+            "$ref": "#/components/schemas/authn-token-info-creds"
+          },
+          "active_token": {
+            "$ref": "#/components/schemas/authn-token-info-creds"
+          }
+        },
+        "required": ["refresh_token"]
+      },
+      "authn-session-info-nocreds": {
+        "type": "object",
+        "description": "Information for a login session",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-token-id" },
+          "type": { "$ref": "#/components/schemas/authn-token-type" },
+          "life": { "$ref": "#/components/schemas/authn-duration-seconds" },
+          "expire": { "$ref": "#/components/schemas/authn-timestamp" },
+          "identity": { "$ref": "#/components/schemas/authn-identity" },
+          "email": { "type": "string" },
+          "scopes": { "$ref": "#/components/schemas/authn-scopes" },
+          "profile": { "$ref": "#/components/schemas/authn-user-profile" },
+          "created_at": { "$ref": "#/components/schemas/authn-timestamp" },
+          "active_token": {
+            "$ref": "#/components/schemas/authn-token-info-nocreds"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "life",
+          "expire",
+          "identity",
+          "email",
+          "profile",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "authn-session-list": {
+        "type": "array",
+        "description": "A list of sessions",
+        "items": {
+          "$ref": "#/components/schemas/authn-session-info-nocreds"
+        }
+      },
+      "authn-token-info-nocreds": {
+        "type": "object",
+        "description": "A token and its information",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-token-id" },
+          "type": { "$ref": "#/components/schemas/authn-token-type" },
+          "life": { "$ref": "#/components/schemas/authn-duration-seconds" },
+          "expire": { "$ref": "#/components/schemas/authn-timestamp" },
+          "identity": { "$ref": "#/components/schemas/authn-identity" },
+          "email": { "type": "string" },
+          "scopes": { "$ref": "#/components/schemas/authn-scopes" },
+          "profile": { "$ref": "#/components/schemas/authn-user-profile" },
+          "created_at": { "$ref": "#/components/schemas/authn-timestamp" }
+        },
+        "required": [
+          "id",
+          "type",
+          "life",
+          "expire",
+          "identity",
+          "email",
+          "profile",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "authn-token-info-creds": {
+        "type": "object",
+        "properties": {
+          "token": { "$ref": "#/components/schemas/authn-token" },
+          "id": { "$ref": "#/components/schemas/authn-token-id" },
+          "type": { "$ref": "#/components/schemas/authn-token-type" },
+          "life": { "$ref": "#/components/schemas/authn-duration-seconds" },
+          "expire": { "$ref": "#/components/schemas/authn-timestamp" },
+          "identity": { "$ref": "#/components/schemas/authn-identity" },
+          "email": { "type": "string" },
+          "scopes": { "$ref": "#/components/schemas/authn-scopes" },
+          "profile": { "$ref": "#/components/schemas/authn-user-profile" },
+          "created_at": { "$ref": "#/components/schemas/authn-timestamp" }
+        },
+        "required": [
+          "token",
+          "id",
+          "type",
+          "life",
+          "expire",
+          "identity",
+          "email",
+          "profile",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "authn-token-info-user-creds": {
+        "$ref": "#/components/schemas/authn-token-info-creds",
+        "examples": [
+          {
+            "token": "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+            "id": "pmt_xqo2uwlhgxy5gqpfgxjomccovphnfjo6",
+            "type": "user",
+            "life": 172605,
+            "expire": "2022-11-23T21:21:40.256969Z",
+            "identity": "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+            "email": "joe.user@email.com",
+            "scopes": [],
+            "profile": {
+              "first_name": "Joe",
+              "last_name": "User",
+              "image_url": "https://avatars.githubusercontent.com/u/19916952?v=4"
+            },
+            "created_at": "2022-11-21T21:21:40.258033Z"
+          }
+        ]
+      },
+      "authn-token-info-user-nocreds": {
+        "$ref": "#/components/schemas/authn-token-info-nocreds",
+        "examples": [
+          {
+            "token": "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+            "id": "pmt_xqo2uwlhgxy5gqpfgxjomccovphnfjo6",
+            "type": "user",
+            "life": 172605,
+            "expire": "2022-11-23T21:21:40.256969Z",
+            "identity": "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+            "email": "joe.user@email.com",
+            "scopes": [],
+            "profile": {
+              "first_name": "Joe",
+              "last_name": "User",
+              "image_url": "https://avatars.githubusercontent.com/u/19916952?v=4"
+            },
+            "created_at": "2022-11-21T21:21:40.258033Z"
+          }
+        ]
+      },
+      "authn-token-info-service-creds": {
+        "$ref": "#/components/schemas/authn-token-info-creds",
+        "examples": [
+          {
+            "token": "pts_7zzqabqbqymt4stz3ygivieo6bv77z36",
+            "id": "pmt_mhotohiowr2zubwxofp2vdxiojahzqpg",
+            "type": "service",
+            "life": 2591999,
+            "expire": "2022-12-22T01:28:30.822926Z",
+            "identity": "My Service Token",
+            "email": "",
+            "scopes": ["scope1", "scope2"],
+            "profile": {},
+            "created_at": "2022-11-22T01:28:30.824144Z"
+          }
+        ]
+      },
+      "authn-token-list": {
+        "type": "array",
+        "description": "A list of tokens and their information",
+        "items": {
+          "$ref": "#/components/schemas/authn-token-info"
+        },
+        "examples": [
+          [
+            {
+              "token": "pts_7zzqabqbqymt4stz3ygivieo6bv77z36",
+              "id": "pmt_mhotohiowr2zubwxofp2vdxiojahzqpg",
+              "type": "service",
+              "life": 2591999,
+              "expire": "2022-12-22T01:28:30.822926Z",
+              "identity": "My Service Token",
+              "email": "",
+              "scopes": ["scope1", "scope2"],
+              "profile": {},
+              "created_at": "2022-11-22T01:28:30.824144Z"
+            }
+          ]
+        ]
+      },
+      "authn-token-type": {
+        "type": "string",
+        "description": "A token type",
+        "enum": ["user", "service", "client", "session"],
+        "examples": ["user"]
+      },
+      "authn-user-info": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-identity" },
+          "email": { "$ref": "#/components/schemas/authn-email" },
+          "profile": { "$ref": "#/components/schemas/authn-user-profile" },
+          "scopes": { "$ref": "#/components/schemas/authn-scopes" },
+          "id_providers": { "$ref": "#/components/schemas/authn-provider-ids" },
+          "mfa_providers": {
+            "$ref": "#/components/schemas/authn-mfa-providers"
+          },
+          "require_mfa": {
+            "type": "boolean",
+            "description": "True if the user must use MFA during authentication"
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "True if the user's email has been verified"
+          },
+          "disabled": {
+            "type": "boolean",
+            "description": "True if the service administrator has disabled user account"
+          },
+          "last_login_at": { "$ref": "#/components/schemas/authn-timestamp" },
+          "created_at": { "$ref": "#/components/schemas/authn-timestamp" }
+        },
+        "required": [
+          "id",
+          "email",
+          "profile",
+          "scopes",
+          "id_providers",
+          "mfa_providers",
+          "require_mfa",
+          "verified"
+        ],
+        "additionalProperties": false,
+        "examples": [
+          {
+            "id": "pui_ypkhwpnz2cmegsws737xbsqnmnuwtbm9",
+            "email": "joe.user@email.com",
+            "profile": {
+              "first_name": "Joe",
+              "last_name": "User",
+              "image_url": "https://avatars.githubusercontent.com/u/19916453?v=4"
+            },
+            "scopes": [],
+            "id_providers": ["google"],
+            "mfa_providers": [],
+            "require_mfa": false,
+            "verified": false,
+            "disabled": false,
+            "last_login_at": "2022-11-21T21:21:40.256969Z"
+          }
+        ]
+      },
+      "authn-user-profile": {
+        "type": "object",
+        "description": "A user profile as a collection of string properties",
+        "patternProperties": { ".*": { "type": "string" } },
+        "examples": [{ "first_name": "Joe", "last_name": "User" }]
+      },
+      "authn-user-profile-edits": {
+        "type": "object",
+        "description": "Updates to a user profile",
+        "patternProperties": {
+          ".*": {
+            "type": ["string", "null"],
+            "description": "New value, or null to delete the existing value"
+          }
+        }
+      },
+      "authn-social-id-and-secret": {
+        "type": "object",
+        "description": "ID and secret for a social ID provider",
+        "properties": {
+          "use_test_creds": { "type": "boolean" },
+          "id": { "type": "string" },
+          "secret": { "type": "string" }
+        },
+        "required": ["id", "secret"]
+      },
+      "authn-userpool-resource": {
+        "type": "object",
+        "description": "Userpool configuration",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-resource-id" },
+          "auth_providers": {
+            "$ref": "#/components/schemas/authn-provider-ids"
+          },
+          "mfa_providers": {
+            "$ref": "#/components/schemas/authn-mfa-providers"
+          },
+          "allow_signup": { "type": "boolean" },
+          "captcha_verification": { "type": "boolean" },
+          "email_verification": { "type": "boolean" },
+          "require_mfa": { "type": "boolean" },
+          "totp_issuer": { "type": "string" },
+          "default_mfa": {
+            "$ref": "#/components/schemas/authn-mfa-provider"
+          },
+          "user_token_life": {
+            "$ref": "#/components/schemas/authn-duration-golang"
+          },
+          "refresh_token_life": {
+            "$ref": "#/components/schemas/authn-duration-golang"
+          },
+          "service_token_life": {
+            "$ref": "#/components/schemas/authn-duration-golang"
+          },
+          "ticket_life": {
+            "$ref": "#/components/schemas/authn-duration-golang"
+          },
+          "flow_life": {
+            "$ref": "#/components/schemas/authn-duration-golang"
+          },
+          "email_mfa_period": {
+            "$ref": "#/components/schemas/authn-duration-golang"
+          },
+          "user_token_refreshable": { "type": "boolean" },
+          "password_policy": {
+            "$ref": "#/components/schemas/authn-password-policy"
+          },
+          "allow_auto_login": { "type": "integer" },
+          "ticket_url": { "type": "string" },
+          "social": {
+            "type": "object",
+            "properties": {
+              "callback_url": { "type": "string" },
+              "google": {
+                "$ref": "#/components/schemas/authn-social-id-and-secret"
+              },
+              "github": {
+                "$ref": "#/components/schemas/authn-social-id-and-secret"
+              },
+              "facebook": {
+                "$ref": "#/components/schemas/authn-social-id-and-secret"
+              },
+              "microsoftonline": {
+                "$ref": "#/components/schemas/authn-social-id-and-secret"
+              }
+            },
+            "required": []
+          },
+          "jwt_signing": {
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "vault_config_id": {
+                "$refs": "#/components/schemas/authn-service-config-id"
+              },
+              "vault_key_id": { "$refs": "#/components/schemas/vault-key-id" },
+              "issuer": { "type": "string" }
+            },
+            "required": []
+          },
+          "webauthn": {
+            "type": "object",
+            "required": ["rpid", "rpname", "rporigins"],
+            "properties": {
+              "rpid": { "type": "string" },
+              "rpname": { "type": "string" },
+              "rporigins": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "hostname"
+                }
+              }
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "authn-userpool-resource-result": {
+        "required": [
+          "id",
+          "auth_providers",
+          "mfa_providers",
+          "allow_signup",
+          "captcha_verification",
+          "email_verification",
+          "require_mfa",
+          "totp_issuer",
+          "default_mfa",
+          "user_token_life",
+          "refresh_token_life",
+          "service_token_life",
+          "ticket_life",
+          "email_mfa_period",
+          "user_token_refreshable",
+          "password_chars_min",
+          "password_chars_max",
+          "password_lower_min",
+          "password_upper_min",
+          "password_punct_min",
+          "allow_auto_login",
+          "ticket_url",
+          "social"
+        ],
+        "$ref": "#/components/schemas/authn-userpool-resource"
+      },
+      "authn-invite-info": {
+        "type": "object",
+        "description": "A pending user invitation",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/authn-ticket-id" },
+          "inviter": {
+            "$ref": "#/components/schemas/authn-email"
+          },
+          "invite_org": { "type": "string" },
+          "email": { "$ref": "#/components/schemas/authn-email" },
+          "callback": {
+            "$ref": "#/components/schemas/authn-callback"
+          },
+          "state": {
+            "$ref": "#/components/schemas/authn-callback-state"
+          },
+          "require_mfa": {
+            "type": "boolean",
+            "description": "Require the user to authenticate with MFA"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/authn-timestamp"
+          },
+          "expire": {
+            "$ref": "#/components/schemas/authn-timestamp"
+          }
+        },
+        "examples": [
+          {
+            "id": "pmi_vjb237phymwzzlulrtxegapha5lqevxy",
+            "inviter": "joe.user@email.com",
+            "invite_org": "",
+            "email": "bob.user@email.com",
+            "callback": "https://www.myserver.com/callback",
+            "state": "C8VTNjY2icUMeiDHFHUxBwiAstEGqaayU4",
+            "require_mfa": false,
+            "created_at": "2022-11-22T22:26:56.860720Z",
+            "expire": "2022-11-24T22:26:56.859258Z"
+          }
+        ]
+      },
+      "authn-invite-infos": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/authn-invite-info"
+        },
+        "description": "A list of pending user invitations"
+      },
+      "vault-key-id": {
+        "type": "string",
+        "description": "A vault key ID",
+        "pattern": "^pvi_[a-z2-7]{32}$",
+        "examples": ["pvi_xpkhwpnz2cmegsws737xbsqnmnuwtbm5"]
+      }
+    }
+  }
+}
