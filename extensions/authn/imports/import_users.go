@@ -5,47 +5,18 @@ import (
 	"errors"
 	"extensions/authn/internal/importio"
 	"extensions/authn/internal/models"
+	"extensions/authn/internal/utils"
 	"fmt"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/service/authn"
-	"github.com/sethvargo/go-password/password"
 	"go.uber.org/zap"
 	"io"
-	"strings"
 	"time"
-)
-
-const (
-	EmailField = "Email"
-	FirstName  = ""
 )
 
 type Report struct {
 	success map[string]interface{}
 	failed  map[string]error
-}
-
-func convertMapToCreateUserRequest(rawUser map[string]interface{}) (*authn.UserCreateRequest, error) {
-	user := new(authn.UserCreateRequest)
-	// TODO - Fix this. Convert to builder
-	user.Email = strings.Trim(rawUser[EmailField].(string), "'")
-	//user.Profile = &authn.ProfileData{
-	//	"NickName":   "",
-	//	"FamilyName": "",
-	//	"Name":       "",
-	//}
-	//bTrue := true
-	//user.Verified = &bTrue
-	fmt.Println("Email", user.Email)
-	user.IDProvider = authn.IDPGoogle // authn.IDPGoogle
-
-	randomPass, err := password.Generate(64, 10, 10, false, false)
-	if err != nil {
-		return nil, err
-	}
-
-	user.Authenticator = randomPass //"My1s+Password" // testMy1s+Password
-	return user, nil
 }
 
 func ImportUsers(token string, domain string, filePath string, mappingFile string, isDryRun bool) error {
@@ -58,7 +29,7 @@ func ImportUsers(token string, domain string, filePath string, mappingFile strin
 	// Read mapping file
 	var mappings *models.Mappings
 	var err error
-	if mappingFile == "" {
+	if mappingFile != "" {
 		mappings, err = models.NewMappings(mappingFile)
 		if err != nil {
 			logger.Error("failed to open mapping file", zap.String("err", err.Error()))
@@ -66,20 +37,26 @@ func ImportUsers(token string, domain string, filePath string, mappingFile strin
 		}
 	}
 
-	csvReader, err := importio.NewCSVReader(filePath, mappings)
+	// Create CSV Reader (TODO - Add JSON reader here)
+	reader, err := importio.NewCSVReader(filePath, mappings)
 	if err != nil {
 		return err
 	}
 
+	// Init Auth Client
 	client := authn.New(&pangea.Config{
 		Token:  token,
 		Domain: domain,
 	})
+
+	// Generate Report
 	report := Report{
 		success: make(map[string]interface{}),
 		failed:  make(map[string]error),
 	}
 
+	// create_unique_file
+	// TODO: Create file as os does when it find existing file
 	t := time.Now()
 	uniqueID := t.UnixNano()
 	outputFileName := fmt.Sprintf("success_userinfo_%d", uniqueID)
@@ -90,8 +67,9 @@ func ImportUsers(token string, domain string, filePath string, mappingFile strin
 	}
 	defer csvWriter.Close()
 
+	// Read a user record from csv and create it in the pangea user pool
 	for {
-		rawUser, err := csvReader.Next()
+		rawUser, err := reader.Next()
 		if err == io.EOF {
 			// Successfully process all users
 			break
@@ -100,7 +78,7 @@ func ImportUsers(token string, domain string, filePath string, mappingFile strin
 			logger.Error("failed to read user record", zap.Error(err))
 			continue
 		}
-		user, err := convertMapToCreateUserRequest(rawUser)
+		user, err := utils.ConvertMapToCreateUserRequest(rawUser)
 		if err != nil {
 			logger.Error("failed to build user profile object from raw format", zap.Error(err))
 			report.failed[user.Email] = err

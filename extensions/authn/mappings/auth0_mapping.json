@@ -31,7 +31,7 @@
   },
   {
     "sourceField": "Picture",
-    "destField": "profile.picture",
+    "destField": "profile.image_url",
     "sourceType": "string",
     "destType": "string"
   },
@@ -45,7 +45,7 @@
     "sourceField": "Connection",
     "destField": "id_provider",
     "sourceType": "string",
-    "destType": "enum",
-    "destValues": ["password", "google", "github"]
+    "destType": "regex",
+    "destValueExtract": "(?i)(password|google|github)"
   }
 ]

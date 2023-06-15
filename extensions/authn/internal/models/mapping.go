@@ -10,11 +10,11 @@ import (
 
 // Mapping represents the structure of our mapping file.
 type MappedField struct {
-	SourceField string   `json:"sourceField"`
-	DestField   string   `json:"destField"`
-	SourceType  string   `json:"sourceType,omitempty"`
-	DestType    string   `json:"destType,omitempty"`
-	DestValues  []string `json:"destValues,omitempty""`
+	SourceField      string `json:"sourceField"`
+	DestField        string `json:"destField"`
+	SourceType       string `json:"sourceType,omitempty"`
+	DestType         string `json:"destType,omitempty"`
+	DestValueExtract string `json:"destValueExtract,omitempty""`
 }
 
 type Mappings struct {
