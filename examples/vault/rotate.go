@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
@@ -30,10 +31,11 @@ func main() {
 	ctx := context.Background()
 
 	fmt.Println("Store secret...")
+	name := "Go rotate example " + time.Now().Format(time.RFC3339)
 	storeInput := &vault.SecretStoreRequest{
 		Secret: secretV1,
 		CommonStoreRequest: vault.CommonStoreRequest{
-			Name: "My secret's name",
+			Name: name,
 		},
 	}
 	storeResponse, err := vaultcli.SecretStore(ctx, storeInput)

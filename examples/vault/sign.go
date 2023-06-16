@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
@@ -26,11 +27,12 @@ func main() {
 	ctx := context.Background()
 
 	fmt.Println("Generate key...")
+	name := "Go sign example " + time.Now().Format(time.RFC3339)
 	generateInput := &vault.AsymmetricGenerateRequest{
 		Algorithm: vault.AAed25519,
 		Purpose:   vault.KPsigning,
 		CommonGenerateRequest: vault.CommonGenerateRequest{
-			Name: "My key's name",
+			Name: name,
 		},
 	}
 	generateResponse, err := vaultcli.AsymmetricGenerate(ctx, generateInput)

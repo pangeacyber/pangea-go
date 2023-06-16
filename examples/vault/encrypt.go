@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
@@ -26,11 +27,12 @@ func main() {
 	ctx := context.Background()
 
 	fmt.Println("Generate key...")
+	name := "Go encrypt example " + time.Now().Format(time.RFC3339)
 	generateInput := &vault.SymmetricGenerateRequest{
 		Algorithm: vault.SYAaes128_cfb,
 		Purpose:   vault.KPencryption,
 		CommonGenerateRequest: vault.CommonGenerateRequest{
-			Name: "My key's name",
+			Name: name,
 		},
 	}
 	generateResponse, err := vaultcli.SymmetricGenerate(ctx, generateInput)
