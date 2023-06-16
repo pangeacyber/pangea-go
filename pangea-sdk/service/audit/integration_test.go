@@ -22,9 +22,9 @@ const (
 	STATUS_NO_SIGNED               = "no-signed"
 	ACTION_VAULT                   = "vault-sign"
 	ACTION_LOCAL                   = "local-sign"
-	MSG_CUSTOM_SCHEMA_NO_SIGNED    = "python-sdk-custom-schema-no-signed"
-	MSG_CUSTOM_SCHEMA_SIGNED_LOCAL = "python-sdk-custom-schema-sign-local"
-	MSG_CUSTOM_SCHEMA_SIGNED_VAULT = "python-sdk-custom-schema-sign-vault"
+	MSG_CUSTOM_SCHEMA_NO_SIGNED    = "go-sdk-custom-schema-no-signed"
+	MSG_CUSTOM_SCHEMA_SIGNED_LOCAL = "go-sdk-custom-schema-sign-local"
+	MSG_CUSTOM_SCHEMA_SIGNED_VAULT = "go-sdk-custom-schema-sign-vault"
 	LONG_FIELD                     = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia, orci eget commodo commodo non."
 
 	testingEnvironment = pangeatesting.Develop
@@ -470,7 +470,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 
 	// Test results
 	resultsLimit := 2
-	searchResultInput := &audit.SearchResultInput{
+	searchResultInput := &audit.SearchResultsInput{
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
@@ -525,7 +525,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 
 	// Test results
 	resultsLimit := 2
-	searchResultInput := &audit.SearchResultInput{
+	searchResultInput := &audit.SearchResultsInput{
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
@@ -599,7 +599,7 @@ func Test_Integration_CustomSchema_Search_Results_NoVerify(t *testing.T) {
 
 	// Test results
 	resultsLimit := 2
-	searchResultInput := &audit.SearchResultInput{
+	searchResultInput := &audit.SearchResultsInput{
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
@@ -656,7 +656,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 
 	// Test results
 	resultsLimit := 2
-	searchResultInput := &audit.SearchResultInput{
+	searchResultInput := &audit.SearchResultsInput{
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}

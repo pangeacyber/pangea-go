@@ -11,7 +11,7 @@ import (
 type Client interface {
 	Log(context.Context, IEvent, bool) (*pangea.PangeaResponse[LogResult], error)
 	Search(context.Context, *SearchInput, IEvent) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultInput, IEvent) (*pangea.PangeaResponse[SearchResultOutput], error)
+	SearchResults(context.Context, *SearchResultsInput, IEvent) (*pangea.PangeaResponse[SearchResultsOutput], error)
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 }
 

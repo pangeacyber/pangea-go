@@ -26,10 +26,12 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.SearchInput{
-		Query: "message:Hello, World",
+		Query:   "message:\"\"",
+		Limit:   2,
+		Verbose: pangea.Bool(false),
 	}
 
-	searchResponse, err := auditcli.Search(ctx, input)
+	searchResponse, err := auditcli.Search(ctx, input, &audit.Event{})
 	if err != nil {
 		log.Fatal(err)
 	}
