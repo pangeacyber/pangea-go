@@ -17,7 +17,7 @@ const (
 )
 
 func Test_Integration_UserBreachedByPhone(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -41,7 +41,7 @@ func Test_Integration_UserBreachedByPhone(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedByEmail(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -65,7 +65,7 @@ func Test_Integration_UserBreachedByEmail(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedByUsername(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -89,7 +89,7 @@ func Test_Integration_UserBreachedByUsername(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedByIP(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -113,7 +113,7 @@ func Test_Integration_UserBreachedByIP(t *testing.T) {
 }
 
 func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -136,7 +136,7 @@ func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
 }
 
 func Test_Integration_UserBreached_Error_BadToken(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
@@ -157,7 +157,7 @@ func Test_Integration_UserBreached_Error_BadToken(t *testing.T) {
 }
 
 func Test_Integration_PasswordBreached(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -182,7 +182,7 @@ func Test_Integration_PasswordBreached(t *testing.T) {
 }
 
 func Test_Integration_PasswordBreachedDefaultProvider(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -203,4 +203,35 @@ func Test_Integration_PasswordBreachedDefaultProvider(t *testing.T) {
 	assert.NotNil(t, resp.Result.Data)
 	assert.True(t, resp.Result.Data.FoundInBreach)
 	assert.Greater(t, resp.Result.Data.BreachCount, 0)
+}
+
+func Test_Integration_PasswordBreachedFullWorkflow(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+	password := "admin123"
+	h := pangea.HashSHA256(password)
+	hp := pangea.GetHashPrefix(h, 5)
+
+	input := &user_intel.UserPasswordBreachedRequest{
+		HashType:   user_intel.HTsha265,
+		HashPrefix: hp,
+		Raw:        pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
+	}
+	resp, err := intelcli.PasswordBreached(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.True(t, resp.Result.Data.FoundInBreach)
+	assert.Greater(t, resp.Result.Data.BreachCount, 0)
+
+	s, err := user_intel.IsPasswordBreached(resp, h)
+	assert.NoError(t, err)
+	assert.Equal(t, user_intel.PSbreached, s)
 }
