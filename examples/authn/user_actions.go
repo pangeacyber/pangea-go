@@ -154,7 +154,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("User list success. There is %d users", resp8.Result.Count)
+	fmt.Printf("User list success. There is %d users\n", resp8.Result.Count)
 
 	// User delete
 	fmt.Println("User delete...")
@@ -178,5 +178,5 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("User list success. There is %d users", resp10.Result.Count)
+	fmt.Printf("User list success. There is %d users\n", resp10.Result.Count)
 }
