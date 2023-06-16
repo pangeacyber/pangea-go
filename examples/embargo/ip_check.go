@@ -23,8 +23,8 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &embargo.IPCheckInput{
-		IP: pangea.String("213.24.238.26"),
+	input := &embargo.IPCheckRequest{
+		IP: "213.24.238.26",
 	}
 
 	checkResponse, err := embargocli.IPCheck(ctx, input)

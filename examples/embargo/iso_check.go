@@ -23,11 +23,11 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &embargo.ISOCheckInput{
-		ISOCode: pangea.String("CU"),
+	input := &embargo.ISOCheckRequest{
+		ISOCode: "CU",
 	}
 
-	fmt.Printf("Checking Embargo ISO code: '%s'\n", *input.ISOCode)
+	fmt.Printf("Checking Embargo ISO code: '%s'\n", input.ISOCode)
 
 	checkResponse, err := embargocli.ISOCheck(ctx, input)
 	if err != nil {
