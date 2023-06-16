@@ -2,7 +2,7 @@ module examples/audit
 
 go 1.19
 
-require github.com/pangeacyber/pangea-go/pangea-sdk v1.8.0
+require github.com/pangeacyber/pangea-go/pangea-sdk/v2 v1.8.0
 
 require (
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect

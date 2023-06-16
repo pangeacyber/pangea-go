@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,7 +1,7 @@
 package authn
 
 import (
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // TODO: Do we need this interface?

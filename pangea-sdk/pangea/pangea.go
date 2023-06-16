@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/defaults"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
 )
 
 const (

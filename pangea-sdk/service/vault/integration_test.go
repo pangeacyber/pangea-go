@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/vault"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
 	"github.com/stretchr/testify/assert"
 )
 

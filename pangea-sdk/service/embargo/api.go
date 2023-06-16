@@ -3,7 +3,7 @@ package embargo
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // @summary Check IP

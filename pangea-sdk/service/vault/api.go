@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // @summary State change

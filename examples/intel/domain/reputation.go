@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/domain_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/domain_intel"
 )
 
 func main() {
