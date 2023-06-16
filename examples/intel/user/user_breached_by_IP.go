@@ -25,8 +25,8 @@ func main() {
 	ctx := context.Background()
 	input := &user_intel.UserBreachedRequest{
 		IP:       "192.168.140.37",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "spycloud",
 	}
 
@@ -35,5 +35,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result))
+	fmt.Println(pangea.Stringify(resp.Result.Data))
 }

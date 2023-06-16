@@ -56,8 +56,8 @@ func main() {
 	ctx := context.Background()
 	urlReq := &url_intel.UrlReputationRequest{
 		Url:      url,
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 
@@ -88,8 +88,8 @@ func main() {
 	ctx = context.Background()
 	domainReq := &domain_intel.DomainReputationRequest{
 		Domain:   domain,
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "domaintools",
 	}
 

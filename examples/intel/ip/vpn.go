@@ -26,8 +26,8 @@ func main() {
 	ctx := context.Background()
 	input := &ip_intel.IpVPNRequest{
 		Ip:       "2.56.189.74",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "digitalelement",
 	}
 

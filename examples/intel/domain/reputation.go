@@ -25,8 +25,8 @@ func main() {
 	ctx := context.Background()
 	input := &domain_intel.DomainReputationRequest{
 		Domain:   "737updatesboeing.com",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "domaintools",
 	}
 
@@ -35,5 +35,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result))
+	fmt.Println(pangea.Stringify(resp.Result.Data))
 }

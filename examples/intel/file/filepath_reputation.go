@@ -29,13 +29,13 @@ func main() {
 		return
 	}
 
-	input.Raw = true
-	input.Verbose = true
+	input.Raw = pangea.Bool(true)
+	input.Verbose = pangea.Bool(true)
 
 	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result))
+	fmt.Println(pangea.Stringify(resp.Result.Data))
 }

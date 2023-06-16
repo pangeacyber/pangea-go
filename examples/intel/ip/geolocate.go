@@ -26,8 +26,8 @@ func main() {
 	ctx := context.Background()
 	input := &ip_intel.IpGeolocateRequest{
 		Ip:       "93.231.182.110",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "digitalelement",
 	}
 

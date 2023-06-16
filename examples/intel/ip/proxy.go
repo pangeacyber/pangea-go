@@ -26,8 +26,8 @@ func main() {
 	ctx := context.Background()
 	input := &ip_intel.IpProxyRequest{
 		Ip:       "34.201.32.172",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "digitalelement",
 	}
 
