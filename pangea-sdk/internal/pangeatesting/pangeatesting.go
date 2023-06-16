@@ -1,6 +1,7 @@
 package pangeatesting
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -131,5 +132,17 @@ func GetTestToken(t *testing.T, env TestEnvironment) string {
 func GetVaultSignatureTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_VAULT_TOKEN_" + string(env)
+	return GetEnvVarOrSkip(t, varname)
+}
+
+func GetMultiConfigTestToken(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_" + string(env)
+	return GetEnvVarOrSkip(t, varname)
+}
+
+func GetConfigID(t *testing.T, env TestEnvironment, service string, configNumber int) string {
+	t.Helper()
+	varname := fmt.Sprintf("PANGEA_%s_CONFIG_ID_%d_%s", strings.ToUpper(service), configNumber, string(env))
 	return GetEnvVarOrSkip(t, varname)
 }

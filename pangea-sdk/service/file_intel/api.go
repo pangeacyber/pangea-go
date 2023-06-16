@@ -12,6 +12,9 @@ import (
 
 // @deprecated Use Reputation instead.
 type FileLookupInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Hash string `json:"hash"`
 
 	// One of "sha256", "sha", "md5".
@@ -114,6 +117,9 @@ func NewFileLookupInputFromFilepath(fp string) (*FileLookupInput, error) {
 }
 
 type FileReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Hash string `json:"hash"`
 
 	// One of "sha256", "sha", "md5".

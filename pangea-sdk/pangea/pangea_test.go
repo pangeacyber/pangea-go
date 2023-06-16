@@ -20,13 +20,13 @@ func testClient(t *testing.T, url string) *pangea.Client {
 	headers := make(map[string]string, 0)
 	headers["Key"] = "Value"
 	cfg.AdditionalHeaders = headers
-	return pangea.NewClient("service", cfg)
+	return pangea.NewClient("service", false, cfg)
 }
 
 func TestClientCustomUserAgent(t *testing.T) {
 	cfg := pangeatesting.TestConfig("pangea.cloud")
 	cfg.CustomUserAgent = "Test"
-	c := pangea.NewClient("service", cfg)
+	c := pangea.NewClient("service", false, cfg)
 	assert.NotNil(t, c)
 }
 
@@ -144,11 +144,12 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	client := testClient(t, url)
 
 	type reqbody struct {
+		pangea.BaseRequest
 		Key *string `json:"key"`
 	}
 
 	reqBody := reqbody{Key: pangea.String("value")}
-	req, _ := client.NewRequest("POST", "test", reqBody)
+	req, _ := client.NewRequest("POST", "test", &reqBody)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		body := &reqbody{}
@@ -233,7 +234,7 @@ func TestDo_With_Retries_Success(t *testing.T) {
 		RetryMax: 1,
 	}
 
-	client := pangea.NewClient("service", cfg)
+	client := pangea.NewClient("service", false, cfg)
 	req, _ := client.NewRequest("POST", "test", nil)
 
 	handler := func() func(w http.ResponseWriter, r *http.Request) {
@@ -274,7 +275,7 @@ func TestDo_With_Retries_Error(t *testing.T) {
 		RetryMax: 1,
 	}
 
-	client := pangea.NewClient("service", cfg)
+	client := pangea.NewClient("service", false, cfg)
 
 	req, _ := client.NewRequest("POST", "test", nil)
 

@@ -37,7 +37,7 @@ type Audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	cli := &Audit{
-		Client:                pangea.NewClient("audit", cfg),
+		Client:                pangea.NewClient("audit", true, cfg),
 		SkipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,

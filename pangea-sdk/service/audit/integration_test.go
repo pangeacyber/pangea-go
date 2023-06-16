@@ -22,7 +22,7 @@ const (
 	STATUS_NO_SIGNED   = "no-signed"
 	ACTION_VAULT       = "vault-sign"
 	ACTION_LOCAL       = "local-sign"
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func auditIntegrationCfg(t *testing.T) *pangea.Config {
@@ -442,6 +442,79 @@ func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 	assert.NotEmpty(t, apiErr.Error())
+}
+
+func Test_Integration_Multi_Config_1_Log(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
+	client, _ := audit.New(cfg)
+
+	event := audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.ConsistencyProof)
+	assert.Nil(t, out.Result.MembershipProof)
+	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.MembershipVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
+}
+
+func Test_Integration_Multi_Config_2_Log(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
+	client, _ := audit.New(cfg)
+
+	event := audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.ConsistencyProof)
+	assert.Nil(t, out.Result.MembershipProof)
+	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.MembershipVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
+}
+
+func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	// We will leave config ID empty now
+	cfg.ConfigID = ""
+	client, _ := audit.New(cfg)
+
+	event := audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, false)
+
+	assert.Error(t, err)
+	assert.Nil(t, out)
 }
 
 // Fails because empty message
