@@ -31,7 +31,7 @@ func main() {
 		"Secret": "My phone number is 415-867-5309",
 	}
 
-	input := &redact.StructuredInput{
+	input := &redact.StructuredRequest{
 		Data: data,
 	}
 

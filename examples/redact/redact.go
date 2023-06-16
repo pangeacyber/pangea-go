@@ -26,7 +26,7 @@ func main() {
 	fmt.Printf("Redacting PII from: '%s'\n", text)
 
 	ctx := context.Background()
-	input := &redact.TextInput{
+	input := &redact.TextRequest{
 		Text: pangea.String(text),
 	}
 
@@ -35,5 +35,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Response: %s", pangea.Stringify(redactResponse.Result))
+	fmt.Printf("Redacted text: %s", pangea.Stringify(redactResponse.Result.RedactedText))
 }
