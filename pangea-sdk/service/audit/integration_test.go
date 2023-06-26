@@ -412,7 +412,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	searchInput := &audit.SearchInput{
-		Query:   "message:test-message",
+		Query:   "message:test",
 		Verbose: pangea.Bool(true),
 		Limit:   10,
 	}
