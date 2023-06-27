@@ -20,7 +20,7 @@ type ipIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &ipIntel{
-		Client: pangea.NewClient("ip-intel", cfg),
+		Client: pangea.NewClient("ip-intel", false, cfg),
 	}
 	return cli
 }

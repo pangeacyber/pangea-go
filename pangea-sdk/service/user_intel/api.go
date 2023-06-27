@@ -51,6 +51,9 @@ func (e *userIntel) UserBreached(ctx context.Context, input *UserBreachedRequest
 }
 
 type UserBreachedRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Email       string `json:"email,omitempty"`
 	Username    string `json:"username,omitempty"`
 	PhoneNumber string `json:"phone_number,omitempty"`
@@ -111,6 +114,9 @@ func (e *userIntel) PasswordBreached(ctx context.Context, input *UserPasswordBre
 }
 
 type UserPasswordBreachedRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	HashType   HashType `json:"hash_type,omitempty"`
 	HashPrefix string   `json:"hash_prefix,omitempty"`
 	Verbose    *bool    `json:"verbose,omitempty"`

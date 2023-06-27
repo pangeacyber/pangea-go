@@ -16,7 +16,7 @@ type urlIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &urlIntel{
-		Client: pangea.NewClient("url-intel", cfg),
+		Client: pangea.NewClient("url-intel", false, cfg),
 	}
 	return cli
 }

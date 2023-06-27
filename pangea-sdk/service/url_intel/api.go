@@ -41,6 +41,9 @@ func (e *urlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) 
 }
 
 type UrlReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Url      string `json:"url"`
 	Verbose  *bool  `json:"verbose,omitempty"`
 	Raw      *bool  `json:"raw,omitempty"`

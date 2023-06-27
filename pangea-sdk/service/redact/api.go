@@ -76,6 +76,9 @@ func (r *redact) RedactStructured(ctx context.Context, input *StructuredRequest)
 }
 
 type TextRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// The text to be redacted.
 	// Text is a required field.
 	Text *string `json:"text"`
@@ -129,6 +132,9 @@ type RecognizerResult struct {
 }
 
 type StructuredRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// Structured data to redact
 	// Data is a required field.
 	Data map[string]any `json:"data"`

@@ -33,7 +33,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 		event.SetTenantID(a.tenantID)
 	}
 
-	input := LogRequest{
+	input := &LogRequest{
 		Event:   event,
 		Verbose: verbose,
 	}
@@ -284,6 +284,9 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, e 
 }
 
 type LogRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// A structured event describing an auditable activity.
 	Event IEvent `json:"event"`
 
@@ -490,6 +493,9 @@ type LogResult struct {
 }
 
 type SearchInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// Natural search string; list of keywords with optional `<option>:<value>` qualifiers.
 	//
 	// Query is a required field.
@@ -731,6 +737,9 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 }
 
 type SearchResultInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// A search results identifier returned by the search call
 	// ID is a required field
 	ID string `json:"id"`
@@ -759,6 +768,9 @@ type SearchResultOutput struct {
 }
 
 type RootInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// The size of the tree (the number of records)
 	TreeSize int `json:"tree_size,omitempty"`
 }

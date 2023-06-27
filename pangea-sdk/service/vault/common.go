@@ -1,5 +1,7 @@
 package vault
 
+import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+
 // EncodedPublicKey is a PEM public key, with no further encoding (i.e. no base64)
 // It may be used for example in openssh with no further processing
 type EncodedPublicKey string
@@ -110,6 +112,9 @@ const (
 )
 
 type CommonStoreRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Type              ItemType         `json:"type"`
 	Name              string           `json:"name,omitempty"`
 	Folder            string           `json:"folder,omitempty"`
@@ -127,6 +132,9 @@ type CommonStoreResult struct {
 }
 
 type CommonGenerateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Type              ItemType         `json:"type"`
 	Name              string           `json:"name,omitempty"`
 	Folder            string           `json:"folder,omitempty"`
@@ -144,6 +152,9 @@ type CommonGenerateResult struct {
 }
 
 type GetRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID           string            `json:"id"`
 	Version      string            `json:"version,omitempty"`
 	Verbose      *bool             `json:"verbose,omitempty"`
@@ -196,6 +207,9 @@ type ListResult struct {
 }
 
 type ListRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Filter  map[string]string `json:"filter,omitempty"`
 	Last    string            `json:"last,omitempty"`
 	Size    int               `json:"size,omitempty"`
@@ -204,6 +218,9 @@ type ListRequest struct {
 }
 
 type CommonRotateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID            string           `json:"id"`
 	RotationState ItemVersionState `json:"rotation_state,omitempty"`
 }
@@ -229,6 +246,9 @@ type KeyRotateResult struct {
 }
 
 type StateChangeRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID            string           `json:"id"`
 	State         ItemVersionState `json:"state"`
 	Version       *int             `json:"version,omitempty"`
@@ -243,6 +263,9 @@ type StateChangeResult struct {
 }
 
 type DeleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID string `json:"id"`
 }
 
@@ -251,6 +274,9 @@ type DeleteResult struct {
 }
 
 type UpdateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID                  string           `json:"id"`
 	Name                string           `json:"name,omitempty"`
 	Folder              string           `json:"folder,omitempty"`

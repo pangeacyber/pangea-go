@@ -1,5 +1,7 @@
 package vault
 
+import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+
 type SymmetricStoreRequest struct {
 	CommonStoreRequest
 	Key       EncodedSymmetricKey `json:"key"`
@@ -26,6 +28,9 @@ type SymmetricGenerateResult struct {
 }
 
 type EncryptRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID             string  `json:"id"`
 	PlainText      string  `json:"plain_text"`
 	Version        *int    `json:"version,omitempty"`
@@ -40,6 +45,9 @@ type EncryptResult struct {
 }
 
 type DecryptRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID             string  `json:"id"`
 	CipherText     string  `json:"cipher_text"`
 	Version        *int    `json:"version,omitempty"`

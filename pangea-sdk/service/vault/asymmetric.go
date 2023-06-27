@@ -1,5 +1,7 @@
 package vault
 
+import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+
 type AsymmetricGenerateRequest struct {
 	CommonGenerateRequest
 	Algorithm AsymmetricAlgorithm `json:"algorithm,omitempty"`
@@ -29,6 +31,9 @@ type AsymmetricStoreResult struct {
 }
 
 type SignRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID      string `json:"id"`
 	Message string `json:"message"`
 	Version *int   `json:"version,omitempty"`
@@ -43,6 +48,9 @@ type SignResult struct {
 }
 
 type VerifyRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID        string `json:"id"`
 	Version   *int   `json:"version,omitempty"`
 	Message   string `json:"message"`
