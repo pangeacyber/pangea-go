@@ -66,6 +66,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 	if err != nil {
 		return nil, err
 	}
+
 	err = a.processLogResponse(ctx, &out)
 	if err != nil {
 		return nil, err
@@ -391,13 +392,13 @@ type Event struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (_ *Event) NewFromJSON(b []byte) (any, error) {
+func (_ *Event) NewFromJSON(b []byte) (IEvent, error) {
 	var e Event
 
 	if err := json.Unmarshal(b, &e); err != nil {
 		return nil, err
 	}
-	return e, nil
+	return &e, nil
 }
 
 func (e *Event) GetTenantID() string {
@@ -412,7 +413,9 @@ type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Event any `json:"event"`
+	Event *IEvent
+
+	RawEvent any `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -441,7 +444,7 @@ func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error)
 		return nil, err
 	}
 
-	b, err = json.Marshal(ee.Event)
+	b, err = json.Marshal(ee.RawEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -451,7 +454,7 @@ func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error)
 		return nil, err
 	}
 
-	ee.Event = event
+	ee.Event = &event
 	return &ee, nil
 }
 
