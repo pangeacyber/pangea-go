@@ -50,9 +50,8 @@ func TestLog(t *testing.T) {
 	want := &audit.LogResult{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
-			Event: audit.Event{
-				Message: "test",
-			},
+			Event:    got.Result.EventEnvelope.Event,
+			RawEvent: got.Result.EventEnvelope.RawEvent,
 		},
 		RawEnvelope: got.Result.RawEnvelope,
 	}
@@ -143,9 +142,8 @@ func TestDomainTrailingSlash(t *testing.T) {
 	want := &audit.LogResult{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
-			Event: audit.Event{
-				Message: "test",
-			},
+			Event:    got.Result.EventEnvelope.Event,
+			RawEvent: got.Result.EventEnvelope.RawEvent,
 		},
 		RawEnvelope: got.Result.RawEnvelope,
 	}
@@ -214,10 +212,9 @@ func TestSearch(t *testing.T) {
 		Events: audit.SearchEvents{
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: audit.Event{
-						Message: "test_2",
-					},
-					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
+					Event:      got.Result.Events[0].EventEnvelope.Event,
+					ReceivedAt: got.Result.Events[0].EventEnvelope.ReceivedAt,
+					RawEvent:   got.Result.Events[0].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
@@ -225,10 +222,9 @@ func TestSearch(t *testing.T) {
 			},
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: audit.Event{
-						Message: "test_1",
-					},
+					Event:      got.Result.Events[1].EventEnvelope.Event,
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
+					RawEvent:   got.Result.Events[1].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -1072,10 +1068,9 @@ func TestSearchResults(t *testing.T) {
 		Events: audit.SearchEvents{
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: audit.Event{
-						Message: "test_2",
-					},
-					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
+					Event:      got.Result.Events[0].EventEnvelope.Event,
+					ReceivedAt: got.Result.Events[0].EventEnvelope.ReceivedAt,
+					RawEvent:   got.Result.Events[0].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
@@ -1083,10 +1078,9 @@ func TestSearchResults(t *testing.T) {
 			},
 			{
 				EventEnvelope: &audit.EventEnvelope{
-					Event: audit.Event{
-						Message: "test_1",
-					},
+					Event:      got.Result.Events[1].EventEnvelope.Event,
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
+					RawEvent:   got.Result.Events[1].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
