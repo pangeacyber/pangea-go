@@ -18,7 +18,7 @@ type Client interface {
 type IEvent interface {
 	GetTenantID() string
 	SetTenantID(string)
-	NewFromJSON([]byte) (any, error)
+	NewFromJSON([]byte) (IEvent, error)
 }
 
 type LogSigningMode int
