@@ -722,7 +722,7 @@ func Test_Integration_Multi_Config_1_Log(t *testing.T) {
 	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
 	client, _ := audit.New(cfg)
 
-	event := audit.Event{
+	event := &audit.Event{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -748,7 +748,7 @@ func Test_Integration_Multi_Config_2_Log(t *testing.T) {
 	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
 	client, _ := audit.New(cfg)
 
-	event := audit.Event{
+	event := &audit.Event{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -775,7 +775,7 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 	cfg.ConfigID = ""
 	client, _ := audit.New(cfg)
 
-	event := audit.Event{
+	event := &audit.Event{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
