@@ -1566,12 +1566,12 @@ type ClientSessionRefreshRequest struct {
 	pangea.BaseRequest
 
 	RefreshToken string `json:"refresh_token"`
-	ActiveToken  string `json:"active_token"`
+	UserToken    string `json:"user_token,omitempty"`
 }
 
 type ClientSessionRefreshResult struct {
 	RefreshToken LoginToken `json:"refresh_token"`
-	UserToken    LoginToken `json:"user_token"`
+	ActiveToken  LoginToken `json:"active_token"`
 }
 
 func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshRequest) (*pangea.PangeaResponse[ClientSessionRefreshResult], error) {
@@ -1668,7 +1668,7 @@ type SessionLogoutResult struct {
 }
 
 func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", &input)
+	req, err := a.Client.NewRequest("POST", "v1/session/logout", &input)
 	if err != nil {
 		return nil, err
 	}
