@@ -39,7 +39,7 @@ func TestLog(t *testing.T) {
 	})
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: "test",
 	}
 	ctx := context.Background()
@@ -50,8 +50,7 @@ func TestLog(t *testing.T) {
 	want := &audit.LogResult{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
-			Event:    got.Result.EventEnvelope.Event,
-			RawEvent: got.Result.EventEnvelope.RawEvent,
+			Event: got.Result.EventEnvelope.Event,
 		},
 		RawEnvelope: got.Result.RawEnvelope,
 	}
@@ -84,7 +83,7 @@ func TestLog_FailHashVerification(t *testing.T) {
 	})
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: "test",
 	}
 	ctx := context.Background()
@@ -131,7 +130,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 	url = url + "/" // Add trailing slash to domain
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: "test",
 	}
 	ctx := context.Background()
@@ -142,8 +141,7 @@ func TestDomainTrailingSlash(t *testing.T) {
 	want := &audit.LogResult{
 		Hash: "9c9c3b5a627cce035d517c14c10779656e900532bf6e76a5d2c69148e45fdb8d",
 		EventEnvelope: &audit.EventEnvelope{
-			Event:    got.Result.EventEnvelope.Event,
-			RawEvent: got.Result.EventEnvelope.RawEvent,
+			Event: got.Result.EventEnvelope.Event,
 		},
 		RawEnvelope: got.Result.RawEnvelope,
 	}
@@ -201,7 +199,7 @@ func TestSearch(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -214,7 +212,6 @@ func TestSearch(t *testing.T) {
 				EventEnvelope: &audit.EventEnvelope{
 					Event:      got.Result.Events[0].EventEnvelope.Event,
 					ReceivedAt: got.Result.Events[0].EventEnvelope.ReceivedAt,
-					RawEvent:   got.Result.Events[0].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
@@ -224,7 +221,6 @@ func TestSearch(t *testing.T) {
 				EventEnvelope: &audit.EventEnvelope{
 					Event:      got.Result.Events[1].EventEnvelope.Event,
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
-					RawEvent:   got.Result.Events[1].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -299,7 +295,7 @@ func TestSearch_Verify(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -370,7 +366,7 @@ func TestSearch_InvalidEventHash(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -441,7 +437,7 @@ func TestSearch_InvalidSideInMembershipProof(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -512,7 +508,7 @@ func TestSearch_InvalidHashInMembershipProof(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -584,7 +580,7 @@ func TestSearch_InvalidRootHash(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, got)
@@ -637,7 +633,7 @@ func TestSearch_FailedToUnmarshall(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
 	assert.Nil(t, got)
@@ -707,7 +703,7 @@ func TestSearch_VerifyFailSignature(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
@@ -779,7 +775,7 @@ func TestSearch_VerifyFailPublicKey(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
@@ -850,7 +846,7 @@ func TestSearch_VerifyFailMembershipProof(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
@@ -922,7 +918,7 @@ func TestSearch_VerifyFailHash(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "audit: cannot verify hash of record. Hash: [notarealhash]")
@@ -992,7 +988,7 @@ func TestSearch_VerifyFailHashEmpty(t *testing.T) {
 		Verbose: pangea.Bool(true),
 	}
 	ctx := context.Background()
-	got, err := client.Search(ctx, input, &audit.Event{})
+	got, err := client.Search(ctx, input)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, got)
@@ -1059,7 +1055,7 @@ func TestSearchResults(t *testing.T) {
 		Limit: 50,
 	}
 	ctx := context.Background()
-	got, err := client.SearchResults(ctx, input, &audit.Event{})
+	got, err := client.SearchResults(ctx, input)
 
 	assert.NoError(t, err)
 
@@ -1070,7 +1066,6 @@ func TestSearchResults(t *testing.T) {
 				EventEnvelope: &audit.EventEnvelope{
 					Event:      got.Result.Events[0].EventEnvelope.Event,
 					ReceivedAt: got.Result.Events[0].EventEnvelope.ReceivedAt,
-					RawEvent:   got.Result.Events[0].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(2),
 				MembershipProof: pangea.String("some-proof"),
@@ -1080,7 +1075,6 @@ func TestSearchResults(t *testing.T) {
 				EventEnvelope: &audit.EventEnvelope{
 					Event:      got.Result.Events[1].EventEnvelope.Event,
 					ReceivedAt: got.Result.Events[1].EventEnvelope.ReceivedAt,
-					RawEvent:   got.Result.Events[1].EventEnvelope.RawEvent,
 				},
 				LeafIndex:       pangea.Int(3),
 				MembershipProof: pangea.String("some-proof"),
@@ -1160,7 +1154,7 @@ func Test_BadDomain(t *testing.T) {
 	cfg := pangeatesting.TestConfig(url)
 	cfg.Domain = "fakedomain^^"
 	client, _ := audit.New(cfg)
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: "test",
 	}
 	ctx := context.Background()
@@ -1168,11 +1162,11 @@ func Test_BadDomain(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, got)
 
-	got2, err := client.Search(ctx, &audit.SearchInput{}, &audit.Event{})
+	got2, err := client.Search(ctx, &audit.SearchInput{})
 	assert.Error(t, err)
 	assert.Nil(t, got2)
 
-	got3, err := client.SearchResults(ctx, &audit.SearchResultInput{}, &audit.Event{})
+	got3, err := client.SearchResults(ctx, &audit.SearchResultInput{})
 	assert.Error(t, err)
 	assert.Nil(t, got3)
 
@@ -1191,11 +1185,11 @@ func Test_NilRequest(t *testing.T) {
 
 	ctx := context.Background()
 
-	got2, err := client.Search(ctx, nil, &audit.Event{})
+	got2, err := client.Search(ctx, nil)
 	assert.Error(t, err)
 	assert.Nil(t, got2)
 
-	got3, err := client.SearchResults(ctx, nil, &audit.Event{})
+	got3, err := client.SearchResults(ctx, nil)
 	assert.Error(t, err)
 	assert.Nil(t, got3)
 
@@ -1208,7 +1202,7 @@ func Test_NilRequest(t *testing.T) {
 func TestLogError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.Log(context.Background(), &audit.Event{}, true)
+		_, err := client.Log(context.Background(), &audit.StandardEvent{}, true)
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Log", f)
@@ -1217,7 +1211,7 @@ func TestLogError(t *testing.T) {
 func TestSearchError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.Search(context.Background(), &audit.SearchInput{}, &audit.Event{})
+		_, err := client.Search(context.Background(), &audit.SearchInput{})
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.Search", f)
@@ -1226,7 +1220,7 @@ func TestSearchError(t *testing.T) {
 func TestSearchResultsError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.SearchResults(context.Background(), &audit.SearchResultInput{}, &audit.Event{})
+		_, err := client.SearchResults(context.Background(), &audit.SearchResultInput{})
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.SearchResults", f)

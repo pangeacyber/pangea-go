@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
@@ -26,11 +27,12 @@ import (
 //	 }
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
-func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
+func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
 	// Overwrite tenant id if user set it on event
-
-	if event.GetTenantID() == "" && a.tenantID != "" {
-		event.SetTenantID(a.tenantID)
+	if st, ok := event.(Tenanter); ok {
+		if st.GetTenantID() == "" && a.tenantID != "" {
+			st.SetTenantID(a.tenantID)
+		}
 	}
 
 	input := &LogRequest{
@@ -62,7 +64,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 		return nil, err
 	}
 
-	out.EventEnvelope, err = newEventEnvelopeFromMap(out.RawEnvelope, event)
+	out.EventEnvelope, err = a.newEventEnvelopeFromMap(out.RawEnvelope)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +96,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 //	}
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
-func (a *audit) Search(ctx context.Context, input *SearchInput, e IEvent) (*pangea.PangeaResponse[SearchOutput], error) {
+func (a *audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
 	}
@@ -115,7 +117,7 @@ func (a *audit) Search(ctx context.Context, input *SearchInput, e IEvent) (*pang
 		return nil, err
 	}
 
-	err = a.processSearchEvents(ctx, out.Events, e, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +130,7 @@ func (a *audit) Search(ctx context.Context, input *SearchInput, e IEvent) (*pang
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput, e IEvent) (*pangea.PangeaResponse[SearchResultOutput], error) {
+func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, err
@@ -138,7 +140,7 @@ func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput, e I
 	if err != nil {
 		return nil, err
 	}
-	err = a.processSearchEvents(ctx, out.Events, e, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
@@ -184,8 +186,8 @@ func (a *audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaRespo
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages
-func SearchAll(ctx context.Context, client Client, input *SearchInput, e IEvent) (*Root, SearchEvents, error) {
-	resp, err := client.Search(ctx, input, e)
+func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, SearchEvents, error) {
+	resp, err := client.Search(ctx, input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -195,7 +197,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput, e IEvent)
 		s := SearchResultInput{
 			ID: resp.Result.ID,
 		}
-		sOut, err := client.SearchResults(ctx, &s, e)
+		sOut, err := client.SearchResults(ctx, &s)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -245,12 +247,12 @@ func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	return nil
 }
 
-func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, e IEvent, root *Root, unpRoot *Root) error {
+func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
 	var roots map[int]Root
 
 	var err error
 	for _, event := range events {
-		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope, e)
+		event.EventEnvelope, err = a.newEventEnvelopeFromMap(event.RawEnvelope)
 		if err != nil {
 			return err
 		}
@@ -289,7 +291,7 @@ type LogRequest struct {
 	pangea.BaseRequest
 
 	// A structured event describing an auditable activity.
-	Event IEvent `json:"event"`
+	Event any `json:"event"`
 
 	// If true, be verbose in the response; include root, membership and consistency proof, etc.
 	// default: false
@@ -339,7 +341,7 @@ func (i *LogRequest) SignEvent(s signer.Signer, pki map[string]string) error {
 	return nil
 }
 
-type Event struct {
+type StandardEvent struct {
 	// Record who performed the auditable activity.
 	// max len is 128 bytes
 	// examples:
@@ -392,20 +394,11 @@ type Event struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (_ *Event) NewFromJSON(b []byte) (IEvent, error) {
-	var e Event
-
-	if err := json.Unmarshal(b, &e); err != nil {
-		return nil, err
-	}
-	return &e, nil
-}
-
-func (e *Event) GetTenantID() string {
+func (e *StandardEvent) GetTenantID() string {
 	return e.TenantID
 }
 
-func (e *Event) SetTenantID(tid string) {
+func (e *StandardEvent) SetTenantID(tid string) {
 	e.TenantID = tid
 }
 
@@ -413,9 +406,7 @@ type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Event *IEvent
-
-	RawEvent any `json:"event"`
+	Event any `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -428,7 +419,7 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
-func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error) {
+func (a *audit) newEventEnvelopeFromMap(m map[string]any) (*EventEnvelope, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -444,17 +435,21 @@ func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error)
 		return nil, err
 	}
 
-	b, err = json.Marshal(ee.RawEvent)
-	if err != nil {
-		return nil, err
-	}
+	if ee.Event != nil {
+		b, err = json.Marshal(ee.Event)
+		if err != nil {
+			return nil, err
+		}
 
-	event, err := e.NewFromJSON(b)
-	if err != nil {
-		return nil, err
-	}
+		v := reflect.New(reflect.TypeOf(a.schema)).Interface()
 
-	ee.Event = &event
+		err = json.Unmarshal(b, &v)
+		if err != nil {
+			return nil, err
+		}
+
+		ee.Event = v
+	}
 	return &ee, nil
 }
 
