@@ -7,11 +7,12 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/url_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/url_intel"
 )
 
 func main() {
+	fmt.Println("Checking URL...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
@@ -25,8 +26,8 @@ func main() {
 	ctx := context.Background()
 	input := &url_intel.UrlReputationRequest{
 		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 
@@ -35,5 +36,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result))
+	fmt.Println(pangea.Stringify(resp.Result.Data))
 }

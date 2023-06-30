@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"examples/audit/util"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
 )
 
 func main() {
@@ -26,10 +27,12 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.SearchInput{
-		Query: "message:Hello, World",
+		Query:   "message:\"\"",
+		Limit:   2,
+		Verbose: pangea.Bool(false),
 	}
 
-	searchResponse, err := auditcli.Search(ctx, input)
+	searchResponse, err := auditcli.Search(ctx, input, &util.CustomSchemaEvent{})
 	if err != nil {
 		log.Fatal(err)
 	}

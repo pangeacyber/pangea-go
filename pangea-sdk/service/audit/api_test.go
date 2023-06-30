@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1054,7 +1054,7 @@ func TestSearchResults(t *testing.T) {
 	})
 
 	client, _ := audit.New(pangeatesting.TestConfig(url))
-	input := &audit.SearchResultInput{
+	input := &audit.SearchResultsInput{
 		ID:    "some-id",
 		Limit: 50,
 	}
@@ -1063,7 +1063,7 @@ func TestSearchResults(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	want := &audit.SearchResultOutput{
+	want := &audit.SearchResultsOutput{
 		Count: 2,
 		Events: audit.SearchEvents{
 			{
@@ -1172,7 +1172,7 @@ func Test_BadDomain(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, got2)
 
-	got3, err := client.SearchResults(ctx, &audit.SearchResultInput{}, &audit.Event{})
+	got3, err := client.SearchResults(ctx, &audit.SearchResultsInput{}, &audit.Event{})
 	assert.Error(t, err)
 	assert.Nil(t, got3)
 
@@ -1226,7 +1226,7 @@ func TestSearchError(t *testing.T) {
 func TestSearchResultsError(t *testing.T) {
 	f := func(cfg *pangea.Config) error {
 		client, _ := audit.New(cfg)
-		_, err := client.SearchResults(context.Background(), &audit.SearchResultInput{}, &audit.Event{})
+		_, err := client.SearchResults(context.Background(), &audit.SearchResultsInput{}, &audit.Event{})
 		return err
 	}
 	pangeatesting.TestNewRequestAndDoFailure(t, "Audit.SearchResults", f)

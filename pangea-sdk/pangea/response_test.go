@@ -3,7 +3,7 @@ package pangea_test
 import (
 	"testing"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 func TestResponseHeader_String(t *testing.T) {

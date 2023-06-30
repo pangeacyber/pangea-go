@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 type Client interface {
 	Log(context.Context, IEvent, bool) (*pangea.PangeaResponse[LogResult], error)
 	Search(context.Context, *SearchInput, IEvent) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultInput, IEvent) (*pangea.PangeaResponse[SearchResultOutput], error)
+	SearchResults(context.Context, *SearchResultsInput, IEvent) (*pangea.PangeaResponse[SearchResultsOutput], error)
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 }
 

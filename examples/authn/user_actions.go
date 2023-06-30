@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/authn"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/authn"
 )
 
 func main() {
@@ -154,7 +154,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("User list success. There is %d users", resp8.Result.Count)
+	fmt.Printf("User list success. There is %d users\n", resp8.Result.Count)
 
 	// User delete
 	fmt.Println("User delete...")
@@ -178,5 +178,5 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("User list success. There is %d users", resp10.Result.Count)
+	fmt.Printf("User list success. There is %d users\n", resp10.Result.Count)
 }

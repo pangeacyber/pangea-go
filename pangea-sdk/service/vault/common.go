@@ -1,6 +1,6 @@
 package vault
 
-import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+import "github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 
 // EncodedPublicKey is a PEM public key, with no further encoding (i.e. no base64)
 // It may be used for example in openssh with no further processing

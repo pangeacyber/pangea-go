@@ -11,6 +11,7 @@ Set up environment variables ([Instructions](https://pangea.cloud/docs/getting-s
 To run examples, move to service folder:
 ```
 cd examples/intel
+go mod tidy
 ```
 
 and from service folder run:
