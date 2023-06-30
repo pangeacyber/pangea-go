@@ -16,8 +16,8 @@ type Client interface {
 }
 
 type Tenanter interface {
-	GetTenantID() string
-	SetTenantID(string)
+	Tenant() string
+	SetTenant(string)
 }
 
 type LogSigningMode int

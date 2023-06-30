@@ -30,8 +30,8 @@ import (
 func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
 	// Overwrite tenant id if user set it on event
 	if st, ok := event.(Tenanter); ok {
-		if st.GetTenantID() == "" && a.tenantID != "" {
-			st.SetTenantID(a.tenantID)
+		if st.Tenant() == "" && a.tenantID != "" {
+			st.SetTenant(a.tenantID)
 		}
 	}
 
@@ -394,11 +394,11 @@ type StandardEvent struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (e *StandardEvent) GetTenantID() string {
+func (e *StandardEvent) Tenant() string {
 	return e.TenantID
 }
 
-func (e *StandardEvent) SetTenantID(tid string) {
+func (e *StandardEvent) SetTenant(tid string) {
 	e.TenantID = tid
 }
 

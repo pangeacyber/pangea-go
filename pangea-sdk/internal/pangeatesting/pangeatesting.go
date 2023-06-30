@@ -166,10 +166,10 @@ type CustomSchemaEvent struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (e *CustomSchemaEvent) GetTenantID() string {
+func (e *CustomSchemaEvent) Tenant() string {
 	return e.TenantID
 }
 
-func (e *CustomSchemaEvent) SetTenantID(tid string) {
+func (e *CustomSchemaEvent) SetTenant(tid string) {
 	e.TenantID = tid
 }
