@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"time"
 )
 
@@ -17,15 +16,6 @@ type CustomSchemaEvent struct {
 
 	// TenantID field
 	TenantID string `json:"tenant_id,omitempty"`
-}
-
-func (_ *CustomSchemaEvent) NewFromJSON(b []byte) (any, error) {
-	var e CustomSchemaEvent
-
-	if err := json.Unmarshal(b, &e); err != nil {
-		return nil, err
-	}
-	return e, nil
 }
 
 func (e *CustomSchemaEvent) GetTenantID() string {

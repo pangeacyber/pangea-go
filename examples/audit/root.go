@@ -34,5 +34,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(rootResponse.Result))
+	fmt.Println("Result: ", pangea.Stringify(rootResponse.Result))
 }

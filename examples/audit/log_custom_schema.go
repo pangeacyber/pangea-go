@@ -19,10 +19,13 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	auditcli, err := audit.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	})
+	auditcli, err := audit.New(
+		&pangea.Config{
+			Token:  token,
+			Domain: os.Getenv("PANGEA_DOMAIN"),
+		},
+		audit.WithCustomSchema(util.CustomSchemaEvent{}),
+	)
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}
@@ -40,10 +43,11 @@ func main() {
 
 	fmt.Printf("Logging: %s\n", event.Message)
 
-	logResponse, err := auditcli.Log(ctx, event, false)
+	lr, err := auditcli.Log(ctx, event, true)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Response: %s", pangea.Stringify(logResponse.Result))
+	e := (lr.Result.EventEnvelope.Event).(*util.CustomSchemaEvent)
+	fmt.Printf("Logged event: %s", pangea.Stringify(e))
 }
