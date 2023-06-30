@@ -16,22 +16,24 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	auditcli, err := audit.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	})
+	auditcli, err := audit.New(
+		&pangea.Config{
+			Token:  token,
+			Domain: os.Getenv("PANGEA_DOMAIN"),
+		},
+	)
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}
 
 	ctx := context.Background()
 	si := &audit.SearchInput{
-		Query:   "message:\"\"",
+		Query:   `message:""`,
 		Limit:   10,
 		Verbose: pangea.Bool(false),
 	}
 
-	sr, err := auditcli.Search(ctx, si, &audit.Event{})
+	sr, err := auditcli.Search(ctx, si)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,11 +43,14 @@ func main() {
 		Limit: 2,
 	}
 
-	rr, err := auditcli.SearchResults(ctx, ri, &audit.Event{})
+	rr, err := auditcli.SearchResults(ctx, ri)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(rr.Result))
+	for i, se := range rr.Result.Events {
+		ec := (se.EventEnvelope.Event).(*audit.StandardEvent)
+		fmt.Printf("Event %d:\n %s\n", i, pangea.Stringify(*ec))
+	}
 
 }

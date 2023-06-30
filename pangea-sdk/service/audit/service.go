@@ -9,16 +9,15 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, IEvent, bool) (*pangea.PangeaResponse[LogResult], error)
-	Search(context.Context, *SearchInput, IEvent) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultsInput, IEvent) (*pangea.PangeaResponse[SearchResultsOutput], error)
+	Log(context.Context, any, bool) (*pangea.PangeaResponse[LogResult], error)
+	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
+	SearchResults(context.Context, *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 }
 
-type IEvent interface {
-	GetTenantID() string
-	SetTenantID(string)
-	NewFromJSON([]byte) (IEvent, error)
+type Tenanter interface {
+	Tenant() string
+	SetTenant(string)
 }
 
 type LogSigningMode int
@@ -38,6 +37,7 @@ type audit struct {
 	rp                    RootsProvider
 	lastUnpRootHash       *string
 	tenantID              string
+	schema                any
 }
 
 func New(cfg *pangea.Config, opts ...Option) (Client, error) {
@@ -49,6 +49,7 @@ func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 		signer:                nil,
 		publicKeyInfo:         nil,
 		tenantID:              "",
+		schema:                StandardEvent{},
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -82,6 +83,13 @@ func WithLogLocalSigning(filename string) Option {
 func WithTenantID(tenantID string) Option {
 	return func(a *audit) error {
 		a.tenantID = tenantID
+		return nil
+	}
+}
+
+func WithCustomSchema(schema any) Option {
+	return func(a *audit) error {
+		a.schema = schema
 		return nil
 	}
 }

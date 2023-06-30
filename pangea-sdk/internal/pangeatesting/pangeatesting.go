@@ -1,7 +1,6 @@
 package pangeatesting
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +12,6 @@ import (
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
 )
 
 const baseURLPath = "/api"
@@ -168,19 +166,10 @@ type CustomSchemaEvent struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (_ *CustomSchemaEvent) NewFromJSON(b []byte) (audit.IEvent, error) {
-	var e CustomSchemaEvent
-
-	if err := json.Unmarshal(b, &e); err != nil {
-		return nil, err
-	}
-	return &e, nil
-}
-
-func (e *CustomSchemaEvent) GetTenantID() string {
+func (e *CustomSchemaEvent) Tenant() string {
 	return e.TenantID
 }
 
-func (e *CustomSchemaEvent) SetTenantID(tid string) {
+func (e *CustomSchemaEvent) SetTenant(tid string) {
 	e.TenantID = tid
 }

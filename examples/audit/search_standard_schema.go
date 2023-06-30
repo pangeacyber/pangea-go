@@ -26,16 +26,19 @@ func main() {
 
 	ctx := context.Background()
 	input := &audit.SearchInput{
-		Query:   "message:\"\"",
-		Limit:   2,
+		Query:   `message:""`,
+		Limit:   3,
 		Verbose: pangea.Bool(false),
 	}
 
-	searchResponse, err := auditcli.Search(ctx, input, &audit.Event{})
+	sr, err := auditcli.Search(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(searchResponse.Result))
+	for i, se := range sr.Result.Events {
+		ec := (se.EventEnvelope.Event).(*audit.StandardEvent)
+		fmt.Printf("Event %d:\n %s\n", i, pangea.Stringify(*ec))
+	}
 
 }

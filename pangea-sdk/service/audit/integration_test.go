@@ -61,7 +61,7 @@ func Test_Integration_Log_NoVerbose(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -86,7 +86,7 @@ func Test_Integration_Log_VerboseNoVerify(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -98,8 +98,9 @@ func Test_Integration_Log_VerboseNoVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
+	e := (out.Result.EventEnvelope.Event).(*audit.StandardEvent)
 	assert.NotNil(t, e.Message)
+	assert.Equal(t, e.Message, MSG_NO_SIGNED)
 	assert.Nil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
 	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
@@ -114,7 +115,7 @@ func Test_Integration_Log_TenantID(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg, audit.WithTenantID("mytenantid"))
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -126,7 +127,7 @@ func Test_Integration_Log_TenantID(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
+	e := (out.Result.EventEnvelope.Event).(*audit.StandardEvent)
 	assert.NotNil(t, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -143,7 +144,7 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -155,7 +156,7 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
+	e := (out.Result.EventEnvelope.Event).(*audit.StandardEvent)
 	assert.NotNil(t, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -169,7 +170,7 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e = (*out.Result.EventEnvelope.Event).(*audit.Event)
+	e = (out.Result.EventEnvelope.Event).(*audit.StandardEvent)
 	assert.NotNil(t, e.Message)
 	assert.NotNil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -190,7 +191,7 @@ func Test_Integration_Local_Signatures(t *testing.T) {
 
 	ts := pu.PangeaTimestamp(time.Date(2022, time.Month(11), 27, 12, 23, 37, 123456, time.UTC))
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message:   MSG_SIGNED,
 		Source:    "Source",
 		Status:    STATUS_SIGNED,
@@ -225,7 +226,7 @@ func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
 
 	ts := pu.PangeaTimestamp(time.Date(2022, time.Month(11), 27, 12, 23, 37, 123456, time.UTC))
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message:   MSG_SIGNED,
 		Source:    "Source",
 		Status:    STATUS_SIGNED,
@@ -245,7 +246,7 @@ func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
 	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
-	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
+	e := (out.Result.EventEnvelope.Event).(*audit.StandardEvent)
 	assert.Equal(t, e.TenantID, "mytenantid")
 }
 
@@ -274,7 +275,7 @@ func Test_Integration_CustomSchema_Log_VerboseNoVerify(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditCustomSchemaCfg(t)
-	client, _ := audit.New(cfg)
+	client, _ := audit.New(cfg, audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
 
 	out, err := client.Log(ctx, &customSchemaEvent, true)
 	assert.NoError(t, err)
@@ -282,7 +283,7 @@ func Test_Integration_CustomSchema_Log_VerboseNoVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
+	e := (out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_NO_SIGNED, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
@@ -297,7 +298,7 @@ func Test_Integration_CustomSchema_Log_VerboseAndVerify(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditCustomSchemaCfg(t)
-	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
+	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled(), audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
 
 	out, err := client.Log(ctx, &customSchemaEvent, true)
 	assert.NoError(t, err)
@@ -305,7 +306,7 @@ func Test_Integration_CustomSchema_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
+	e := (out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_NO_SIGNED, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
@@ -320,7 +321,7 @@ func Test_Integration_CustomSchema_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e = (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
+	e = (out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_NO_SIGNED, e.Message)
 	assert.NotNil(t, out.Result.ConsistencyProof)
@@ -338,6 +339,7 @@ func Test_Integration_CustomSchema_Local_Signatures(t *testing.T) {
 	client, _ := audit.New(cfg,
 		audit.WithLogLocalSigning("./testdata/privkey"),
 		audit.WithLogProofVerificationEnabled(),
+		audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}),
 	)
 
 	var event = pangeatesting.CustomSchemaEvent{
@@ -357,7 +359,7 @@ func Test_Integration_CustomSchema_Local_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
 	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
-	e := (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
+	e := (out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_SIGNED_LOCAL, e.Message)
 }
@@ -373,7 +375,7 @@ func Test_Integration_Vault_Signatures(t *testing.T) {
 
 	ts := pu.PangeaTimestamp(time.Date(2022, time.Month(11), 27, 12, 23, 37, 123456, time.UTC))
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message:   MSG_SIGNED,
 		Source:    "Source",
 		Status:    STATUS_SIGNED,
@@ -438,7 +440,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
-	client, _ := audit.New(cfg)
+	client, _ := audit.New(cfg, audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
 	maxResults := 10
 	limit := 2
 
@@ -450,7 +452,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 		Verbose:    pangea.Bool(false),
 	}
 
-	outSearch, err := client.Search(ctx, input, &audit.Event{})
+	outSearch, err := client.Search(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, outSearch.Result)
 	assert.NotNil(t, outSearch.Result.ID)
@@ -474,7 +476,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
-	outResults, err := client.SearchResults(ctx, searchResultInput, &audit.Event{})
+	outResults, err := client.SearchResults(ctx, searchResultInput)
 	assert.NoError(t, err)
 	assert.LessOrEqual(t, outResults.Result.Count, maxResults)
 	assert.Greater(t, outResults.Result.Count, 0)
@@ -506,7 +508,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 		Limit:      limit,
 	}
 
-	outSearch, err := client.Search(ctx, input, &audit.Event{})
+	outSearch, err := client.Search(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, outSearch)
 	assert.NotNil(t, outSearch.Result)
@@ -529,7 +531,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
-	outResults, err := client.SearchResults(ctx, searchResultInput, &audit.Event{})
+	outResults, err := client.SearchResults(ctx, searchResultInput)
 	assert.NoError(t, err)
 	assert.LessOrEqual(t, outResults.Result.Count, maxResults)
 	assert.Greater(t, outResults.Result.Count, 0)
@@ -553,7 +555,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 		Verbose: pangea.Bool(true),
 		Limit:   10,
 	}
-	_, se, err := audit.SearchAll(ctx, client, searchInput, &audit.Event{})
+	_, se, err := audit.SearchAll(ctx, client, searchInput)
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, se)
@@ -567,7 +569,7 @@ func Test_Integration_CustomSchema_Search_Results_NoVerify(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditCustomSchemaCfg(t)
-	client, _ := audit.New(cfg)
+	client, _ := audit.New(cfg, audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
 	maxResults := 10
 	limit := 2
 
@@ -579,7 +581,7 @@ func Test_Integration_CustomSchema_Search_Results_NoVerify(t *testing.T) {
 		Verbose:    pangea.Bool(false),
 	}
 
-	outSearch, err := client.Search(ctx, input, &pangeatesting.CustomSchemaEvent{})
+	outSearch, err := client.Search(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, outSearch.Result)
 	assert.NotNil(t, outSearch.Result.ID)
@@ -603,7 +605,7 @@ func Test_Integration_CustomSchema_Search_Results_NoVerify(t *testing.T) {
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
-	outResults, err := client.SearchResults(ctx, searchResultInput, &pangeatesting.CustomSchemaEvent{})
+	outResults, err := client.SearchResults(ctx, searchResultInput)
 	assert.NoError(t, err)
 	assert.LessOrEqual(t, outResults.Result.Count, maxResults)
 	assert.Greater(t, outResults.Result.Count, 0)
@@ -624,7 +626,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditCustomSchemaCfg(t)
-	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
+	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled(), audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
 	maxResults := 10
 	limit := 2
 
@@ -635,7 +637,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 		Limit:      limit,
 	}
 
-	outSearch, err := client.Search(ctx, input, &pangeatesting.CustomSchemaEvent{})
+	outSearch, err := client.Search(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, outSearch)
 	assert.NotNil(t, outSearch.Result)
@@ -650,7 +652,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 		assert.Equal(t, audit.Success, se.MembershipVerification)
 		assert.Equal(t, audit.Success, se.SignatureVerification)
 		assert.Equal(t, "Success", se.SignatureVerification.String())
-		e := (*se.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
+		e := (se.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 		assert.Equal(t, MSG_CUSTOM_SCHEMA_SIGNED_LOCAL, e.Message)
 	}
 
@@ -660,7 +662,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 		ID:    outSearch.Result.ID,
 		Limit: resultsLimit,
 	}
-	outResults, err := client.SearchResults(ctx, searchResultInput, &pangeatesting.CustomSchemaEvent{})
+	outResults, err := client.SearchResults(ctx, searchResultInput)
 	assert.NoError(t, err)
 	assert.LessOrEqual(t, outResults.Result.Count, maxResults)
 	assert.Greater(t, outResults.Result.Count, 0)
@@ -669,7 +671,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 		assert.NotEmpty(t, se.MembershipProof)
 		assert.Equal(t, audit.Success, se.MembershipVerification)
 		assert.Equal(t, audit.Success, se.SignatureVerification)
-		e := (*se.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
+		e := (se.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 		assert.Equal(t, MSG_CUSTOM_SCHEMA_SIGNED_LOCAL, e.Message)
 	}
 
@@ -686,7 +688,7 @@ func Test_Integration_CustomSchema_SearchAll(t *testing.T) {
 		Verbose: pangea.Bool(true),
 		Limit:   10,
 	}
-	_, se, err := audit.SearchAll(ctx, client, searchInput, &pangeatesting.CustomSchemaEvent{})
+	_, se, err := audit.SearchAll(ctx, client, searchInput)
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, se)
@@ -702,7 +704,7 @@ func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
 	cfg.Token = "notavalidtoken"
 	client, _ := audit.New(cfg)
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: "Integration test msg",
 	}
 
@@ -722,7 +724,7 @@ func Test_Integration_Multi_Config_1_Log(t *testing.T) {
 	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
 	client, _ := audit.New(cfg)
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -748,7 +750,7 @@ func Test_Integration_Multi_Config_2_Log(t *testing.T) {
 	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
 	client, _ := audit.New(cfg)
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,
@@ -775,7 +777,7 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 	cfg.ConfigID = ""
 	client, _ := audit.New(cfg)
 
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
 		Status:  MSG_NO_SIGNED,

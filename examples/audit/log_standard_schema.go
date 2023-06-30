@@ -25,16 +25,17 @@ func main() {
 	}
 
 	ctx := context.Background()
-	event := &audit.Event{
+	event := &audit.StandardEvent{
 		Message: "Hello, World!",
 	}
 
 	fmt.Printf("Logging: %s\n", event.Message)
 
-	logResponse, err := auditcli.Log(ctx, event, false)
+	lr, err := auditcli.Log(ctx, event, true)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Response: %s", pangea.Stringify(logResponse.Result))
+	e := (lr.Result.EventEnvelope.Event).(*audit.StandardEvent)
+	fmt.Printf("Logged event: %s", pangea.Stringify(e))
 }
