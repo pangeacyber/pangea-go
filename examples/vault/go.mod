@@ -2,7 +2,7 @@ module examples/vault
 
 go 1.19
 
-require github.com/pangeacyber/pangea-go/pangea-sdk v1.9.0
+require github.com/pangeacyber/pangea-go/pangea-sdk/v2 v2.0.0
 
 require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

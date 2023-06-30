@@ -9,9 +9,9 @@ import (
 	"reflect"
 	"time"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // @summary Log an entry
@@ -130,12 +130,12 @@ func (a *audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 }
 
 // SearchResults is used to page through results from a previous search.
-func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
+func (a *audit) SearchResults(ctx context.Context, input *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, err
 	}
-	out := SearchResultOutput{}
+	out := SearchResultsOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func (a *audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[SearchResultOutput]{
+	panresp := pangea.PangeaResponse[SearchResultsOutput]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -194,7 +194,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	events := make(SearchEvents, 0, resp.Result.Count)
 	events = append(events, resp.Result.Events...)
 	for resp.Result.Count > len(events) {
-		s := SearchResultInput{
+		s := SearchResultsInput{
 			ID: resp.Result.ID,
 		}
 		sOut, err := client.SearchResults(ctx, &s)
@@ -734,7 +734,7 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 	return ret, nil
 }
 
-type SearchResultInput struct {
+type SearchResultsInput struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
@@ -749,7 +749,7 @@ type SearchResultInput struct {
 	Offset *int `json:"offset,omitempty"`
 }
 
-type SearchResultOutput struct {
+type SearchResultsOutput struct {
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
 	Count int `json:"count"`

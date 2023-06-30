@@ -3,7 +3,7 @@ package user_intel
 import (
 	"errors"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 type PasswordStatus int

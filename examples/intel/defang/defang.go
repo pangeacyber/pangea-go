@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/domain_intel"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/url_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/domain_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/url_intel"
 )
 
 var defangedSchemes = map[string]string{
@@ -56,8 +56,8 @@ func main() {
 	ctx := context.Background()
 	urlReq := &url_intel.UrlReputationRequest{
 		Url:      url,
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 
@@ -88,8 +88,8 @@ func main() {
 	ctx = context.Background()
 	domainReq := &domain_intel.DomainReputationRequest{
 		Domain:   domain,
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "domaintools",
 	}
 

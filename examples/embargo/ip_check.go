@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/embargo"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/embargo"
 )
 
 func main() {
@@ -23,8 +23,8 @@ func main() {
 	})
 
 	ctx := context.Background()
-	input := &embargo.IPCheckInput{
-		IP: pangea.String("213.24.238.26"),
+	input := &embargo.IPCheckRequest{
+		IP: "213.24.238.26",
 	}
 
 	checkResponse, err := embargocli.IPCheck(ctx, input)

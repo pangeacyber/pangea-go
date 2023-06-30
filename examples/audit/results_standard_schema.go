@@ -25,14 +25,27 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &audit.RootInput{
-		TreeSize: 10,
+	si := &audit.SearchInput{
+		Query:   "message:\"\"",
+		Limit:   10,
+		Verbose: pangea.Bool(false),
 	}
 
-	rootResponse, err := auditcli.Root(ctx, input)
+	sr, err := auditcli.Search(ctx, si, &audit.Event{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(rootResponse.Result))
+	ri := &audit.SearchResultsInput{
+		ID:    sr.Result.ID,
+		Limit: 2,
+	}
+
+	rr, err := auditcli.SearchResults(ctx, ri, &audit.Event{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(pangea.Stringify(rr.Result))
+
 }
