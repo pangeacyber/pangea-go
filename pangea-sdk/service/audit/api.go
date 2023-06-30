@@ -739,7 +739,7 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 	return ret, nil
 }
 
-type SearchResultInput struct {
+type SearchResultsInput struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
