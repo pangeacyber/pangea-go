@@ -17,7 +17,7 @@ type redact struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &redact{
-		Client: pangea.NewClient("redact", cfg),
+		Client: pangea.NewClient("redact", false, cfg),
 	}
 	return cli
 }

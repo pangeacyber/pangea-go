@@ -14,11 +14,14 @@ type ClientUserinfoResult struct {
 }
 
 type ClientUserinfoRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Code string `json:"code"`
 }
 
 func (a *Client) Userinfo(ctx context.Context, input ClientUserinfoRequest) (*pangea.PangeaResponse[ClientUserinfoResult], error) {
-	req, err := a.client.NewRequest("POST", "v1/client/userinfo", input)
+	req, err := a.client.NewRequest("POST", "v1/client/userinfo", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +46,7 @@ type ClientJWKSResult struct {
 }
 
 func (a *Client) JWKS(ctx context.Context) (*pangea.PangeaResponse[ClientJWKSResult], error) {
-	req, err := a.client.NewRequest("POST", "v1/client/jwks", make(map[string]string))
+	req, err := a.client.NewRequest("POST", "v1/client/jwks", &pangea.BaseRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +67,9 @@ func (a *Client) JWKS(ctx context.Context) (*pangea.PangeaResponse[ClientJWKSRes
 }
 
 type ClientTokenCheckRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Token string `json:"token"`
 }
 
@@ -80,7 +86,7 @@ type ClientTokenCheckResult struct {
 }
 
 func (a *ClientToken) Check(ctx context.Context, input ClientTokenCheckRequest) (*pangea.PangeaResponse[ClientTokenCheckResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/token/check", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/token/check", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +107,9 @@ func (a *ClientToken) Check(ctx context.Context, input ClientTokenCheckRequest) 
 }
 
 type ClientPasswordChangeRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Token       string `json:"token"`
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
@@ -110,7 +119,7 @@ type ClientPasswordChangeResult struct {
 }
 
 func (a *ClientPassword) Change(ctx context.Context, input ClientPasswordChangeRequest) (*pangea.PangeaResponse[ClientPasswordChangeResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/password/change", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/password/change", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -160,6 +169,9 @@ type Scopes []string
 type Filter map[string]any
 
 type UserCreateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Email         string       `json:"email"`
 	Authenticator string       `json:"authenticator"`
 	IDProvider    IDProvider   `json:"id_provider"`
@@ -183,7 +195,7 @@ type UserCreateResult struct {
 }
 
 func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.PangeaResponse[UserCreateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/create", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/create", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -204,6 +216,9 @@ func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.Pan
 }
 
 type UserDeleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Email string `json:"email,omitempty"`
 	ID    string `json:"id,omitempty"`
 }
@@ -212,7 +227,7 @@ type UserDeleteResult struct {
 }
 
 func (a *User) Delete(ctx context.Context, input UserDeleteRequest) (*pangea.PangeaResponse[UserDeleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/delete", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/delete", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -233,6 +248,9 @@ func (a *User) Delete(ctx context.Context, input UserDeleteRequest) (*pangea.Pan
 }
 
 type UserUpdateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID            *string `json:"id,omitempty"`
 	Email         *string `json:"email,omitempty"`
 	Authenticator *string `json:"authenticator,omitempty"`
@@ -255,7 +273,7 @@ type UserUpdateResult struct {
 }
 
 func (a *User) Update(ctx context.Context, input UserUpdateRequest) (*pangea.PangeaResponse[UserUpdateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/update", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/update", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -276,6 +294,9 @@ func (a *User) Update(ctx context.Context, input UserUpdateRequest) (*pangea.Pan
 }
 
 type UserInviteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Inviter    string `json:"inviter"`
 	Email      string `json:"email"`
 	Callback   string `json:"callback"`
@@ -296,7 +317,7 @@ type UserInviteResult struct {
 }
 
 func (a *User) Invite(ctx context.Context, input UserInviteRequest) (*pangea.PangeaResponse[UserInviteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/invite", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/invite", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -340,6 +361,9 @@ const (
 )
 
 type UserListRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Filter  Filter          `json:"filter,omitempty"`
 	Last    string          `json:"last,omitempty"`
 	Order   ItemOrder       `json:"order,omitempty"`
@@ -368,7 +392,7 @@ type UserListResult struct {
 }
 
 func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaResponse[UserListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/list", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/list", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -407,12 +431,18 @@ type UserLoginResult struct {
 }
 
 type UserLoginPasswordRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Email        string       `json:"email"`
 	Password     string       `json:"password"`
 	ExtraProfile *ProfileData `json:"extra_profile,omitempty"`
 }
 
 type UserLoginSocialRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Email        string       `json:"email"`
 	Provider     IDProvider   `json:"provider"`
 	SocialID     string       `json:"social_id"`
@@ -420,7 +450,7 @@ type UserLoginSocialRequest struct {
 }
 
 func (a *UserLogin) Password(ctx context.Context, input UserLoginPasswordRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/login/password", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/login/password", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -441,7 +471,7 @@ func (a *UserLogin) Password(ctx context.Context, input UserLoginPasswordRequest
 }
 
 func (a *UserLogin) Social(ctx context.Context, input UserLoginSocialRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/login/social", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/login/social", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -462,6 +492,9 @@ func (a *UserLogin) Social(ctx context.Context, input UserLoginSocialRequest) (*
 }
 
 type UserProfileGetRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID    *string `json:"id,omitempty"`
 	Email *string `json:"email,omitempty"`
 }
@@ -480,7 +513,7 @@ type UserProfileGetResult struct {
 }
 
 func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea.PangeaResponse[UserProfileGetResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/profile/get", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/profile/get", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -501,6 +534,9 @@ func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pa
 }
 
 type UserProfileUpdateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Profile ProfileData `json:"profile"`
 	ID      *string     `json:"id,omitempty"`
 	Email   *string     `json:"email,omitempty"`
@@ -520,7 +556,7 @@ type UserProfileUpdateResult struct {
 }
 
 func (a *UserProfile) Update(ctx context.Context, input UserProfileUpdateRequest) (*pangea.PangeaResponse[UserProfileUpdateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/profile/update", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/profile/update", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -553,6 +589,9 @@ type UserInviteData struct {
 }
 
 type UserInviteListRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Filter  Filter                `json:"filter,omitempty"`
 	Last    string                `json:"last,omitempty"`
 	Order   ItemOrder             `json:"order,omitempty"`
@@ -567,7 +606,7 @@ type UserInviteListResult struct {
 }
 
 func (a *UserInvite) List(ctx context.Context, input UserInviteListRequest) (*pangea.PangeaResponse[UserInviteListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/invite/list", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/invite/list", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -588,6 +627,9 @@ func (a *UserInvite) List(ctx context.Context, input UserInviteListRequest) (*pa
 }
 
 type UserInviteDeleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID string `json:"id"`
 }
 
@@ -595,7 +637,7 @@ type UserInviteDeleteResult struct {
 }
 
 func (a *UserInvite) Delete(ctx context.Context, input UserInviteDeleteRequest) (*pangea.PangeaResponse[UserInviteDeleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/invite/delete", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/invite/delete", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -616,6 +658,9 @@ func (a *UserInvite) Delete(ctx context.Context, input UserInviteDeleteRequest) 
 }
 
 type UserPasswordResetRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	UserID      string `json:"user_id"`
 	NewPassword string `json:"new_password"`
 }
@@ -624,7 +669,7 @@ type UserPasswordResetResult struct {
 }
 
 func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest) (*pangea.PangeaResponse[UserPasswordResetResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/password/reset", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/password/reset", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -647,6 +692,9 @@ func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest
 // #   - path: authn::/v1/flow/complete
 // # https://dev.pangea.cloud/docs/api/authn#complete-a-login-or-signup-flow
 type FlowCompleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID string `json:"flow_id"`
 }
 
@@ -656,7 +704,7 @@ type FlowCompleteResult struct {
 }
 
 func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/complete", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/complete", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -680,6 +728,9 @@ func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea
 // # https://dev.pangea.cloud/docs/api/authn#complete-mfa-enrollment-by-verifying-a-trial-mfa-code
 
 type FlowEnrollMFACompleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID string `json:"flow_id"`
 	Code   string `json:"code"`
 	Cancel *bool  `json:"cancel,omitempty"`
@@ -759,7 +810,7 @@ type FlowEnrollMFACompleteResult struct {
 }
 
 func (a *FlowEnrollMFA) Complete(ctx context.Context, input FlowEnrollMFACompleteRequest) (*pangea.PangeaResponse[FlowEnrollMFACompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/complete", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/complete", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -780,6 +831,9 @@ func (a *FlowEnrollMFA) Complete(ctx context.Context, input FlowEnrollMFAComplet
 }
 
 type FlowResetPasswordRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID   string `json:"flow_id"`
 	Password string `json:"password"`
 	Cancel   *bool  `json:"cancel,omitempty"`
@@ -792,7 +846,7 @@ type FlowResetPasswordResult struct {
 }
 
 func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest) (*pangea.PangeaResponse[FlowResetPasswordResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/reset/password", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/reset/password", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -815,6 +869,9 @@ func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest
 // #   - path: authn::/v1/flow/enroll/mfa/start
 // # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-enrolling-an-mfa
 type FlowEnrollMFAStartRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID      string      `json:"flow_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 	Phone       string      `json:"phone,omitempty"`
@@ -825,7 +882,7 @@ type FlowEnrollMFAStartResult struct {
 }
 
 func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartRequest) (*pangea.PangeaResponse[FlowEnrollMFAStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/start", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/start", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -848,6 +905,9 @@ func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartReque
 // #   - path: authn::/v1/flow/signup/password
 // # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-password
 type FlowSignupPasswordRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID    string `json:"flow_id"`
 	Password  string `json:"password"`
 	FirstName string `json:"first_name"`
@@ -859,7 +919,7 @@ type FlowSignupPasswordResult struct {
 }
 
 func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordRequest) (*pangea.PangeaResponse[FlowSignupPasswordResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/signup/password", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/signup/password", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -882,6 +942,9 @@ func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordReque
 // #   - path: authn::/v1/flow/signup/social
 // # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-social-provider
 type FlowSignupSocialRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID  string `json:"flow_id"`
 	CBState string `json:"cb_state"`
 	CBCode  string `json:"cb_code"`
@@ -892,7 +955,7 @@ type FlowSignupSocialResult struct {
 }
 
 func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) (*pangea.PangeaResponse[FlowSignupSocialResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/signup/social", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/signup/social", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -915,6 +978,9 @@ func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) 
 // #   - path: authn::/v1/flow/start
 // # https://dev.pangea.cloud/docs/api/authn#start-a-new-signup-or-signin-flow
 type FlowStartRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	CBURI     string      `json:"cb_uri,omitempty"`
 	Email     string      `json:"email,omitempty"`
 	FlowTypes []FlowType  `json:"flow_types,omitempty"`
@@ -926,7 +992,7 @@ type FlowStartResult struct {
 }
 
 func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.PangeaResponse[FlowStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/start", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/start", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -949,6 +1015,9 @@ func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.Pange
 // #   - path: authn::/v1/flow/verify/captcha
 // # https://dev.pangea.cloud/docs/api/authn#verify-a-captcha-during-a-signup-or-signin-flow
 type FlowVerifyCaptchaRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID string `json:"flow_id"`
 	Code   string `json:"code"`
 }
@@ -958,7 +1027,7 @@ type FlowVerifyCaptchaResult struct {
 }
 
 func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest) (*pangea.PangeaResponse[FlowVerifyCaptchaResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/captcha", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/captcha", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -981,6 +1050,9 @@ func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest
 // #   - path: authn::/v1/flow/verify/email
 // # https://dev.pangea.cloud/docs/api/authn#verify-an-email-address-during-a-signup-or-signin-flow
 type FlowVerifyEmailRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID  string `json:"flow_id"`
 	CBState string `json:"cb_state,omitempty"`
 	CBCode  string `json:"cb_code,omitempty"`
@@ -991,7 +1063,7 @@ type FlowVerifyEmailResult struct {
 }
 
 func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*pangea.PangeaResponse[FlowVerifyEmailResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/email", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/email", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1014,6 +1086,9 @@ func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*
 // #   - path: authn::/v1/flow/verify/mfa/complete
 // # https://dev.pangea.cloud/docs/api/authn#complete-mfa-verification
 type FlowVerifyMFACompleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID string  `json:"flow_id"`
 	Code   *string `json:"code,omitempty"`
 	Cancel *bool   `json:"cancel,omitempty"`
@@ -1024,7 +1099,7 @@ type FlowVerifyMFACompleteResult struct {
 }
 
 func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFACompleteRequest) (*pangea.PangeaResponse[FlowVerifyMFACompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/complete", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/complete", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1047,6 +1122,9 @@ func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFAComplet
 // #   - path: authn::/v1/flow/verify/mfa/start
 // # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-mfa-verification
 type FlowVerifyMFAStartRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID      string      `json:"flow_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 }
@@ -1056,7 +1134,7 @@ type FlowVerifyMFAStartResult struct {
 }
 
 func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartRequest) (*pangea.PangeaResponse[FlowVerifyMFAStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/start", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/start", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1079,6 +1157,9 @@ func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartReque
 // #   - path: authn::/v1/flow/verify/password
 // # https://dev.pangea.cloud/docs/api/authn#sign-in-with-a-password
 type FlowVerifyPasswordRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID   string  `json:"flow_id"`
 	Password *string `json:"password,omitempty"`
 	Reset    *bool   `json:"reset,omitempty"`
@@ -1089,7 +1170,7 @@ type FlowVerifyPasswordResult struct {
 }
 
 func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordRequest) (*pangea.PangeaResponse[FlowVerifyPasswordResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/password", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/password", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1112,6 +1193,9 @@ func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordReque
 // #   - path: authn::/v1/flow/verify/social
 // # https://dev.pangea.cloud/docs/api/authn#signin-with-a-social-provider
 type FlowVerifySocialRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	FlowID  string `json:"flow_id"`
 	CBState string `json:"cb_state"`
 	CBCode  string `json:"cb_code"`
@@ -1122,7 +1206,7 @@ type FlowVerifySocialResult struct {
 }
 
 func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) (*pangea.PangeaResponse[FlowVerifySocialResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/social", input)
+	req, err := a.Client.NewRequest("POST", "v1/flow/verify/social", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1145,6 +1229,9 @@ func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) 
 // #   - path: authn::/v1/user/mfa/delete
 // # https://dev.pangea.cloud/docs/api/authn#delete-mfa-enrollment-for-a-user
 type UserMFADeleteRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	UserID      string      `json:"user_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 }
@@ -1153,7 +1240,7 @@ type UserMFADeleteResult struct {
 }
 
 func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pangea.PangeaResponse[UserMFADeleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/delete", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/delete", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1176,6 +1263,9 @@ func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pang
 // #   - path: authn::/v1/user/mfa/enroll
 // # https://dev.pangea.cloud/docs/api/authn#enroll-mfa-for-a-user
 type UserMFAEnrollRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	UserID      string      `json:"user_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 	Code        string      `json:"code"`
@@ -1185,7 +1275,7 @@ type UserMFAEnrollResult struct {
 }
 
 func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pangea.PangeaResponse[UserMFAEnrollResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/enroll", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/enroll", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1208,6 +1298,9 @@ func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pang
 // #   - path: authn::/v1/user/mfa/start
 // # https://dev.pangea.cloud/docs/api/authn#start-mfa-verification-for-a-user
 type UserMFAStartRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	UserID      string      `json:"user_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 	Enroll      *bool       `json:"enroll,omitempty"`
@@ -1224,7 +1317,7 @@ type UserMFAStartResult struct {
 }
 
 func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea.PangeaResponse[UserMFAStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/start", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/start", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1247,6 +1340,9 @@ func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea
 // #   - path: authn::/v1/user/mfa/verify
 // # https://dev.pangea.cloud/docs/api/authn#verify-an-mfa-code
 type UserMFAVerifyRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	UserID      string      `json:"user_id"`
 	MFAProvider MFAProvider `json:"mfa_provider"`
 	Code        string      `json:"code"`
@@ -1256,7 +1352,7 @@ type UserMFAVerifyResult struct {
 }
 
 func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pangea.PangeaResponse[UserMFAVerifyResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/verify", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/mfa/verify", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1279,6 +1375,9 @@ func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pang
 // #   - path: authn::/v1/user/verify
 // # https://dev.pangea.cloud/docs/api/authn#verify-a-user
 type UserVerifyRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	IDProvider    IDProvider `json:"id_provider"`
 	Email         string     `json:"email"`
 	Authenticator string     `json:"authenticator"`
@@ -1299,7 +1398,7 @@ type UserVerifyResult struct {
 }
 
 func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.PangeaResponse[UserVerifyResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/verify", input)
+	req, err := a.Client.NewRequest("POST", "v1/user/verify", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1320,6 +1419,9 @@ func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.Pan
 }
 
 type ClientSessionInvalidateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Token     string `json:"token"`
 	SessionID string `json:"session_id"`
 }
@@ -1328,7 +1430,7 @@ type ClientSessionInvalidateResult struct {
 }
 
 func (a *ClientSession) Invalidate(ctx context.Context, input ClientSessionInvalidateRequest) (*pangea.PangeaResponse[ClientSessionInvalidateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/invalidate", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/session/invalidate", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1368,6 +1470,9 @@ const (
 )
 
 type ClientSessionListRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Token   string             `json:"token"`
 	Filter  Filter             `json:"filter,omitempty"`
 	Last    string             `json:"last,omitempty"`
@@ -1405,7 +1510,7 @@ type SessionListResult struct {
 }
 
 func (a *ClientSession) List(ctx context.Context, input ClientSessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/list", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/session/list", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1426,6 +1531,9 @@ func (a *ClientSession) List(ctx context.Context, input ClientSessionListRequest
 }
 
 type ClientSessionLogoutRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Token string `json:"token"`
 }
 
@@ -1433,7 +1541,7 @@ type ClientSessionLogoutResult struct {
 }
 
 func (a *ClientSession) Logout(ctx context.Context, input ClientSessionLogoutRequest) (*pangea.PangeaResponse[ClientSessionLogoutResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/logout", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/session/logout", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1454,6 +1562,9 @@ func (a *ClientSession) Logout(ctx context.Context, input ClientSessionLogoutReq
 }
 
 type ClientSessionRefreshRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	RefreshToken string `json:"refresh_token"`
 	ActiveToken  string `json:"active_token"`
 }
@@ -1464,7 +1575,7 @@ type ClientSessionRefreshResult struct {
 }
 
 func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshRequest) (*pangea.PangeaResponse[ClientSessionRefreshResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/refresh", input)
+	req, err := a.Client.NewRequest("POST", "v1/client/session/refresh", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1485,6 +1596,9 @@ func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshR
 }
 
 type SessionListRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Filter  Filter             `json:"filter,omitempty"`
 	Last    string             `json:"last,omitempty"`
 	Order   ItemOrder          `json:"order,omitempty"`
@@ -1492,7 +1606,7 @@ type SessionListRequest struct {
 }
 
 func (a *Session) List(ctx context.Context, input SessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/list", input)
+	req, err := a.Client.NewRequest("POST", "v1/session/list", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1513,6 +1627,9 @@ func (a *Session) List(ctx context.Context, input SessionListRequest) (*pangea.P
 }
 
 type SessionInvalidateRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	SessionID string `json:"session_id"`
 }
 
@@ -1520,7 +1637,7 @@ type SessionInvalidateResult struct {
 }
 
 func (a *Session) Invalidate(ctx context.Context, input SessionInvalidateRequest) (*pangea.PangeaResponse[SessionInvalidateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", input)
+	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", &input)
 	if err != nil {
 		return nil, err
 	}
@@ -1541,6 +1658,9 @@ func (a *Session) Invalidate(ctx context.Context, input SessionInvalidateRequest
 }
 
 type SessionLogoutRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	UserID string `json:"user_id"`
 }
 
@@ -1548,7 +1668,7 @@ type SessionLogoutResult struct {
 }
 
 func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", input)
+	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", &input)
 	if err != nil {
 		return nil, err
 	}

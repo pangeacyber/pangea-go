@@ -18,11 +18,28 @@ import (
 )
 
 const (
-	version         = "1.9.1"
+	version         = "1.10.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
+
+type IBaseRequest interface {
+	SetConfigID(configID string)
+	GetConfigID() string
+}
+
+type BaseRequest struct {
+	ConfigID string `json:"config_id,omitempty"`
+}
+
+func (br *BaseRequest) GetConfigID() string {
+	return br.ConfigID
+}
+
+func (br *BaseRequest) SetConfigID(c string) {
+	br.ConfigID = c
+}
 
 type RetryConfig struct {
 	RetryWaitMin time.Duration // Minimum time to wait
@@ -33,6 +50,9 @@ type RetryConfig struct {
 type Config struct {
 	// The Bearer token used to authenticate requests.
 	Token string
+
+	// Config ID for multi-config projects
+	ConfigID string
 
 	// The HTTP client to be used by the client.
 	//  It defaults to defaults.HTTPClient
@@ -74,9 +94,12 @@ type Client struct {
 
 	// The identifier for the service
 	serviceName string
+
+	// Flag to check config ID on request
+	checkConfigID bool
 }
 
-func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
+func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 	cfg.HTTPClient = chooseHTTPClient(cfg)
@@ -87,10 +110,11 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		userAgent = pangeaUserAgent
 	}
 	return &Client{
-		serviceName: service,
-		token:       cfg.Token,
-		config:      cfg,
-		userAgent:   userAgent,
+		serviceName:   service,
+		token:         cfg.Token,
+		config:        cfg,
+		userAgent:     userAgent,
+		checkConfigID: checkConfigID,
 	}
 }
 
@@ -156,10 +180,14 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Request, error) {
 	u, err := c.serviceUrl(c.serviceName, urlStr)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.checkConfigID && c.config.ConfigID != "" && body.GetConfigID() == "" {
+		body.SetConfigID(c.config.ConfigID)
 	}
 
 	var buf io.ReadWriter
@@ -338,6 +366,8 @@ func mergeInConfig(dst *Config, other *Config) {
 	if other.RetryConfig != nil {
 		dst.RetryConfig = other.RetryConfig
 	}
+
+	dst.ConfigID = other.ConfigID
 }
 
 // Copy will return a shallow copy of the Config object. If any additional

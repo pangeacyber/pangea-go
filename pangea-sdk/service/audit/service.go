@@ -18,7 +18,7 @@ type Client interface {
 type IEvent interface {
 	GetTenantID() string
 	SetTenantID(string)
-	NewFromJSON([]byte) (any, error)
+	NewFromJSON([]byte) (IEvent, error)
 }
 
 type LogSigningMode int
@@ -42,7 +42,7 @@ type audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 	cli := &audit{
-		Client:                pangea.NewClient("audit", cfg),
+		Client:                pangea.NewClient("audit", true, cfg),
 		skipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,

@@ -237,7 +237,7 @@ func newUser(cli *pangea.Client) *User {
 }
 
 func New(cfg *pangea.Config) *AuthN {
-	pc := pangea.NewClient("authn", cfg)
+	pc := pangea.NewClient("authn", false, cfg)
 	cli := &AuthN{
 		client:   pc,
 		Password: newPassword(pc),

@@ -1,5 +1,7 @@
 package vault
 
+import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+
 type JWT struct {
 	Alg string  `json:"alg"`
 	Kid *string `json:"kid,omitempty"`
@@ -14,6 +16,9 @@ type JWT struct {
 }
 
 type JWKGetRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID      string  `json:"id"`
 	Version *string `json:"version,omitempty"`
 }
@@ -23,6 +28,9 @@ type JWKGetResult struct {
 }
 
 type JWTSignRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	ID      string `json:"id"`
 	Payload string `json:"payload"`
 }
@@ -32,6 +40,9 @@ type JWTSignResult struct {
 }
 
 type JWTVerifyRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	JWS string `json:"jws"`
 }
 

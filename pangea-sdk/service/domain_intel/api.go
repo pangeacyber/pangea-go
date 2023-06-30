@@ -41,6 +41,9 @@ func (e *domainIntel) Reputation(ctx context.Context, input *DomainReputationReq
 }
 
 type DomainReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// The domain to be looked up.
 	Domain string `json:"domain"`
 

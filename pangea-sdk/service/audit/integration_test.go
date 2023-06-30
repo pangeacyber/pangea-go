@@ -98,7 +98,7 @@ func Test_Integration_Log_VerboseNoVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := out.Result.EventEnvelope.Event.(audit.Event)
+	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
 	assert.NotNil(t, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -126,7 +126,7 @@ func Test_Integration_Log_TenantID(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := out.Result.EventEnvelope.Event.(audit.Event)
+	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
 	assert.NotNil(t, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -155,7 +155,7 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := out.Result.EventEnvelope.Event.(audit.Event)
+	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
 	assert.NotNil(t, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -169,7 +169,7 @@ func Test_Integration_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e = out.Result.EventEnvelope.Event.(audit.Event)
+	e = (*out.Result.EventEnvelope.Event).(*audit.Event)
 	assert.NotNil(t, e.Message)
 	assert.NotNil(t, out.Result.ConsistencyProof)
 	assert.NotNil(t, out.Result.MembershipProof)
@@ -245,7 +245,7 @@ func Test_Integration_Local_Signatures_and_TenantID(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
 	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, out.Result.SignatureVerification, audit.Success)
-	e := out.Result.EventEnvelope.Event.(audit.Event)
+	e := (*out.Result.EventEnvelope.Event).(*audit.Event)
 	assert.Equal(t, e.TenantID, "mytenantid")
 }
 
@@ -282,7 +282,7 @@ func Test_Integration_CustomSchema_Log_VerboseNoVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := out.Result.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
+	e := (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_NO_SIGNED, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
@@ -305,7 +305,7 @@ func Test_Integration_CustomSchema_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e := out.Result.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
+	e := (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_NO_SIGNED, e.Message)
 	assert.Nil(t, out.Result.ConsistencyProof)
@@ -320,7 +320,7 @@ func Test_Integration_CustomSchema_Log_VerboseAndVerify(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Hash)
 	assert.NotNil(t, out.Result.EventEnvelope)
 	assert.NotNil(t, out.Result.EventEnvelope.Event)
-	e = out.Result.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
+	e = (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_NO_SIGNED, e.Message)
 	assert.NotNil(t, out.Result.ConsistencyProof)
@@ -357,7 +357,7 @@ func Test_Integration_CustomSchema_Local_Signatures(t *testing.T) {
 	assert.NotNil(t, out.Result.EventEnvelope.PublicKey)
 	assert.Equal(t, *out.Result.EventEnvelope.PublicKey, `{"algorithm":"ED25519","key":"-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAlvOyDMpK2DQ16NI8G41yINl01wMHzINBahtDPoh4+mE=\n-----END PUBLIC KEY-----\n"}`)
 	assert.Equal(t, audit.Success, out.Result.SignatureVerification)
-	e := out.Result.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
+	e := (*out.Result.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 	assert.NotNil(t, e.Message)
 	assert.Equal(t, MSG_CUSTOM_SCHEMA_SIGNED_LOCAL, e.Message)
 }
@@ -549,7 +549,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	searchInput := &audit.SearchInput{
-		Query:   "message:test-message",
+		Query:   "message:test",
 		Verbose: pangea.Bool(true),
 		Limit:   10,
 	}
@@ -650,7 +650,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 		assert.Equal(t, audit.Success, se.MembershipVerification)
 		assert.Equal(t, audit.Success, se.SignatureVerification)
 		assert.Equal(t, "Success", se.SignatureVerification.String())
-		e := se.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
+		e := (*se.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 		assert.Equal(t, MSG_CUSTOM_SCHEMA_SIGNED_LOCAL, e.Message)
 	}
 
@@ -669,7 +669,7 @@ func Test_Integration_CustomSchema_Search_Results_Verify(t *testing.T) {
 		assert.NotEmpty(t, se.MembershipProof)
 		assert.Equal(t, audit.Success, se.MembershipVerification)
 		assert.Equal(t, audit.Success, se.SignatureVerification)
-		e := se.EventEnvelope.Event.(pangeatesting.CustomSchemaEvent)
+		e := (*se.EventEnvelope.Event).(*pangeatesting.CustomSchemaEvent)
 		assert.Equal(t, MSG_CUSTOM_SCHEMA_SIGNED_LOCAL, e.Message)
 	}
 
@@ -712,6 +712,79 @@ func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 	assert.NotEmpty(t, apiErr.Error())
+}
+
+func Test_Integration_Multi_Config_1_Log(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
+	client, _ := audit.New(cfg)
+
+	event := &audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.ConsistencyProof)
+	assert.Nil(t, out.Result.MembershipProof)
+	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.MembershipVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
+}
+
+func Test_Integration_Multi_Config_2_Log(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
+	client, _ := audit.New(cfg)
+
+	event := &audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, false)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Hash)
+	assert.Nil(t, out.Result.EventEnvelope)
+	assert.Nil(t, out.Result.ConsistencyProof)
+	assert.Nil(t, out.Result.MembershipProof)
+	assert.Equal(t, out.Result.ConcistencyVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.MembershipVerification, audit.NotVerified)
+	assert.Equal(t, out.Result.SignatureVerification, audit.NotVerified)
+}
+
+func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	// We will leave config ID empty now
+	cfg.ConfigID = ""
+	client, _ := audit.New(cfg)
+
+	event := &audit.Event{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.Log(ctx, event, false)
+
+	assert.Error(t, err)
+	assert.Nil(t, out)
 }
 
 // Fails because empty message

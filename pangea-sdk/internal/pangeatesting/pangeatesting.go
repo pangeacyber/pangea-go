@@ -2,6 +2,7 @@ package pangeatesting
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,7 @@ import (
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
 )
 
 const baseURLPath = "/api"
@@ -142,6 +144,18 @@ func GetCustomSchemaTestToken(t *testing.T, env TestEnvironment) string {
 	return GetEnvVarOrSkip(t, varname)
 }
 
+func GetMultiConfigTestToken(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_" + string(env)
+	return GetEnvVarOrSkip(t, varname)
+}
+
+func GetConfigID(t *testing.T, env TestEnvironment, service string, configNumber int) string {
+	t.Helper()
+	varname := fmt.Sprintf("PANGEA_%s_CONFIG_ID_%d_%s", strings.ToUpper(service), configNumber, string(env))
+	return GetEnvVarOrSkip(t, varname)
+}
+
 type CustomSchemaEvent struct {
 	Message       string              `json:"message"`
 	FieldInt      int                 `json:"field_int,omitempty"`
@@ -154,13 +168,13 @@ type CustomSchemaEvent struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (_ *CustomSchemaEvent) NewFromJSON(b []byte) (any, error) {
+func (_ *CustomSchemaEvent) NewFromJSON(b []byte) (audit.IEvent, error) {
 	var e CustomSchemaEvent
 
 	if err := json.Unmarshal(b, &e); err != nil {
 		return nil, err
 	}
-	return e, nil
+	return &e, nil
 }
 
 func (e *CustomSchemaEvent) GetTenantID() string {

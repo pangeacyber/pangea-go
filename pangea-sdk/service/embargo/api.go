@@ -71,12 +71,16 @@ func (e *embargo) ISOCheck(ctx context.Context, input *ISOCheckRequest) (*pangea
 }
 
 type IPCheckRequest struct {
+	pangea.BaseRequest
+
 	// Check this IP against the enabled embargo lists.
 	// Accepts both IPV4 and IPV6 strings.
 	IP string `json:"ip,omitempty"`
 }
 
 type ISOCheckRequest struct {
+	pangea.BaseRequest
+
 	// Check this two character country ISO-code against the enabled embargo lists.
 	ISOCode string `json:"iso_code,omitempty"`
 }

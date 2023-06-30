@@ -33,7 +33,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 		event.SetTenantID(a.tenantID)
 	}
 
-	input := LogRequest{
+	input := &LogRequest{
 		Event:   event,
 		Verbose: verbose,
 	}
@@ -66,6 +66,7 @@ func (a *audit) Log(ctx context.Context, event IEvent, verbose bool) (*pangea.Pa
 	if err != nil {
 		return nil, err
 	}
+
 	err = a.processLogResponse(ctx, &out)
 	if err != nil {
 		return nil, err
@@ -284,6 +285,9 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, e 
 }
 
 type LogRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// A structured event describing an auditable activity.
 	Event IEvent `json:"event"`
 
@@ -388,13 +392,13 @@ type Event struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
-func (_ *Event) NewFromJSON(b []byte) (any, error) {
+func (_ *Event) NewFromJSON(b []byte) (IEvent, error) {
 	var e Event
 
 	if err := json.Unmarshal(b, &e); err != nil {
 		return nil, err
 	}
-	return e, nil
+	return &e, nil
 }
 
 func (e *Event) GetTenantID() string {
@@ -409,7 +413,9 @@ type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Event any `json:"event"`
+	Event *IEvent
+
+	RawEvent any `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -438,7 +444,7 @@ func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error)
 		return nil, err
 	}
 
-	b, err = json.Marshal(ee.Event)
+	b, err = json.Marshal(ee.RawEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -448,7 +454,7 @@ func newEventEnvelopeFromMap(m map[string]any, e IEvent) (*EventEnvelope, error)
 		return nil, err
 	}
 
-	ee.Event = event
+	ee.Event = &event
 	return &ee, nil
 }
 
@@ -490,6 +496,9 @@ type LogResult struct {
 }
 
 type SearchInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// Natural search string; list of keywords with optional `<option>:<value>` qualifiers.
 	//
 	// Query is a required field.
@@ -730,7 +739,10 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 	return ret, nil
 }
 
-type SearchResultsInput struct {
+type SearchResultInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// A search results identifier returned by the search call
 	// ID is a required field
 	ID string `json:"id"`
@@ -759,6 +771,9 @@ type SearchResultsOutput struct {
 }
 
 type RootInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// The size of the tree (the number of records)
 	TreeSize int `json:"tree_size,omitempty"`
 }

@@ -11,6 +11,9 @@ import (
 )
 
 type FileReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Hash string `json:"hash"`
 
 	// One of "sha256", "sha", "md5".
