@@ -105,12 +105,14 @@ func Test_Integration_User_Delete(t *testing.T) {
 	assert.Empty(t, out.Result)
 }
 
-func Test_Integration_User_Login_And_Password_Change(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+func Test_Integration_User_Login_And_User_Stuff(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
+
+	// Login with password
 	input := authn.UserLoginPasswordRequest{
 		Email:    EMAIL_TEST,
 		Password: PASSWORD_OLD,
@@ -119,7 +121,9 @@ func Test_Integration_User_Login_And_Password_Change(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.NotEmpty(t, resp.Result.ActiveToken)
+	assert.NotEmpty(t, resp.Result.RefreshToken)
 
+	// Change password
 	input2 := authn.ClientPasswordChangeRequest{
 		Token:       resp.Result.ActiveToken.Token,
 		OldPassword: PASSWORD_OLD,
@@ -129,6 +133,70 @@ func Test_Integration_User_Login_And_Password_Change(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, resp2.Result)
 
+	// Verify
+	input3 := authn.UserVerifyRequest{
+		IDProvider:    authn.IDPPassword,
+		Email:         EMAIL_TEST,
+		Authenticator: PASSWORD_NEW,
+	}
+	resp3, err := client.User.Verify(ctx, input3)
+	assert.NoError(t, err)
+	assert.Equal(t, USER_ID, resp3.Result.ID)
+
+	// Check token
+	input6 := authn.ClientTokenCheckRequest{
+		Token: resp.Result.ActiveToken.Token,
+	}
+	resp6, err := client.Client.Token.Check(ctx, input6)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resp6.Result)
+
+	// Refresh token
+	input4 := authn.ClientSessionRefreshRequest{
+		UserToken:    resp.Result.ActiveToken.Token,
+		RefreshToken: resp.Result.RefreshToken.Token,
+	}
+	resp4, err := client.Client.Session.Refresh(ctx, input4)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp4.Result)
+	assert.NotEmpty(t, resp4.Result.ActiveToken)
+	assert.NotEmpty(t, resp4.Result.RefreshToken)
+
+	// Reset password
+	input5 := authn.UserPasswordResetRequest{
+		UserID:      USER_ID,
+		NewPassword: PASSWORD_NEW,
+	}
+	resp5, err := client.User.Password.Reset(ctx, input5)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp5)
+
+	// Client session logout
+	input7 := authn.ClientSessionLogoutRequest{
+		Token: resp4.Result.ActiveToken.Token,
+	}
+	resp7, err := client.Client.Session.Logout(ctx, input7)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp7)
+
+	// Re-Login with password
+	input = authn.UserLoginPasswordRequest{
+		Email:    EMAIL_TEST,
+		Password: PASSWORD_NEW,
+	}
+	resp, err = client.User.Login.Password(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Result)
+	assert.NotEmpty(t, resp.Result.ActiveToken)
+	assert.NotEmpty(t, resp.Result.RefreshToken)
+
+	// Session logout
+	input8 := authn.SessionLogoutRequest{
+		UserID: USER_ID,
+	}
+	resp8, err := client.Session.Logout(ctx, input8)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp8)
 }
 
 func Test_Integration_User_Profile(t *testing.T) {
@@ -137,6 +205,8 @@ func Test_Integration_User_Profile(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
+
+	// Get profile by email
 	input := authn.UserProfileGetRequest{
 		Email: pangea.String(EMAIL_TEST),
 	}
@@ -147,6 +217,7 @@ func Test_Integration_User_Profile(t *testing.T) {
 	assert.Equal(t, EMAIL_TEST, resp.Result.Email)
 	assert.Empty(t, resp.Result.Profile)
 
+	// Get profile by user_id
 	input = authn.UserProfileGetRequest{
 		ID: pangea.String(USER_ID),
 	}
@@ -157,11 +228,11 @@ func Test_Integration_User_Profile(t *testing.T) {
 	assert.Equal(t, EMAIL_TEST, resp.Result.Email)
 	assert.Empty(t, resp.Result.Profile)
 
+	// Update request by email
 	input2 := authn.UserProfileUpdateRequest{
 		Email:   pangea.String(EMAIL_TEST),
 		Profile: PROFILE_OLD,
 	}
-
 	resp2, err := client.User.Profile.Update(ctx, input2)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp2.Result)
@@ -169,11 +240,11 @@ func Test_Integration_User_Profile(t *testing.T) {
 	assert.Equal(t, EMAIL_TEST, resp2.Result.Email)
 	assert.Equal(t, authn.ProfileData(PROFILE_OLD), resp2.Result.Profile)
 
+	// Update request by email
 	input3 := authn.UserProfileUpdateRequest{
 		Email:   pangea.String(EMAIL_TEST),
 		Profile: PROFILE_NEW,
 	}
-
 	resp3, err := client.User.Profile.Update(ctx, input3)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp3.Result)
@@ -210,6 +281,77 @@ func Test_Integration_User_Update(t *testing.T) {
 	assert.Equal(t, EMAIL_TEST, resp.Result.Email)
 	assert.Equal(t, false, resp.Result.Disabled)
 	assert.Equal(t, false, resp.Result.RequireMFA)
+}
+
+func Test_Integration_Client_Session(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+
+	// Login with password
+	input := authn.UserLoginPasswordRequest{
+		Email:    EMAIL_TEST,
+		Password: PASSWORD_NEW,
+	}
+	resp, err := client.User.Login.Password(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Result)
+	assert.NotEmpty(t, resp.Result.ActiveToken)
+	assert.NotEmpty(t, resp.Result.RefreshToken)
+
+	// Client session list
+	input2 := authn.ClientSessionListRequest{
+		Token: resp.Result.ActiveToken.Token,
+	}
+	resp2, err := client.Client.Session.List(ctx, input2)
+	assert.NoError(t, err)
+	assert.Greater(t, len(resp2.Result.Sessions), 0)
+
+	for _, s := range resp2.Result.Sessions {
+		input3 := authn.ClientSessionInvalidateRequest{
+			Token:     resp.Result.ActiveToken.Token,
+			SessionID: s.ID,
+		}
+		resp3, err := client.Client.Session.Invalidate(ctx, input3)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp3)
+	}
+}
+
+func Test_Integration_Session(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+
+	// Login with password
+	input := authn.UserLoginPasswordRequest{
+		Email:    EMAIL_TEST,
+		Password: PASSWORD_NEW,
+	}
+	resp, err := client.User.Login.Password(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp.Result)
+	assert.NotEmpty(t, resp.Result.ActiveToken)
+	assert.NotEmpty(t, resp.Result.RefreshToken)
+
+	// Client session list
+	input2 := authn.SessionListRequest{}
+	resp2, err := client.Session.List(ctx, input2)
+	assert.NoError(t, err)
+	assert.Greater(t, len(resp2.Result.Sessions), 0)
+
+	for _, s := range resp2.Result.Sessions {
+		input3 := authn.SessionInvalidateRequest{
+			SessionID: s.ID,
+		}
+		resp3, err := client.Session.Invalidate(ctx, input3)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp3)
+	}
 }
 
 func Test_Integration_User_Invite(t *testing.T) {
@@ -273,4 +415,13 @@ func Test_Integration_User_List(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.Greater(t, len(resp.Result.Users), 0)
+
+	for _, u := range resp.Result.Users {
+		input := authn.UserDeleteRequest{
+			ID: u.ID,
+		}
+		rDel, err := client.User.Delete(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, rDel)
+	}
 }

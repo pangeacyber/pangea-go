@@ -17,7 +17,7 @@ type Redact struct {
 
 func New(cfg *pangea.Config) *Redact {
 	cli := &Redact{
-		BaseService: pangea.NewBaseService("redact", cfg),
+		BaseService: pangea.NewBaseService("redact", false, cfg),
 	}
 	return cli
 }

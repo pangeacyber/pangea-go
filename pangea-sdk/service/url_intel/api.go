@@ -44,6 +44,9 @@ func (e *UrlIntel) Lookup(ctx context.Context, input *UrlLookupRequest) (*pangea
 
 // @deprecated Use UrlReputationRequest instead.
 type UrlLookupRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Url      string `json:"url"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -101,6 +104,9 @@ func (e *UrlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) 
 }
 
 type UrlReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	Url      string `json:"url"`
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`

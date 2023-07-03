@@ -17,7 +17,7 @@ type Embargo struct {
 
 func New(cfg *pangea.Config) *Embargo {
 	cli := &Embargo{
-		BaseService: pangea.NewBaseService("embargo", cfg),
+		BaseService: pangea.NewBaseService("embargo", false, cfg),
 	}
 	return cli
 }

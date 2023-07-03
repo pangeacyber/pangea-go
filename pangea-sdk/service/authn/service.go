@@ -61,10 +61,11 @@ type FlowEnrollMFA struct {
 
 type User struct {
 	*pangea.Client
-	Profile *UserProfile
-	Invites *UserInvite
-	MFA     *UserMFA
-	Login   *UserLogin
+	Profile  *UserProfile
+	Invites  *UserInvite
+	MFA      *UserMFA
+	Login    *UserLogin
+	Password *UserPassword
 }
 
 type Session struct {
@@ -75,6 +76,7 @@ type Client struct {
 	client   *pangea.Client
 	Session  *ClientSession
 	Password *ClientPassword
+	Token    *ClientToken
 }
 
 type ClientSession struct {
@@ -103,6 +105,7 @@ type AuthN struct {
 	User     *User
 	Flow     *Flow
 	Client   *Client
+	Session  *Session
 }
 
 func newPassword(cli *pangea.Client) *Password {
@@ -120,6 +123,7 @@ func newFlowEnrollMFA(cli *pangea.Client) *FlowEnrollMFA {
 func newFlowEnroll(cli *pangea.Client) *FlowEnroll {
 	return &FlowEnroll{
 		Client: cli,
+		MFA:    newFlowEnrollMFA(cli),
 	}
 }
 
@@ -163,6 +167,7 @@ func newClient(cli *pangea.Client) *Client {
 		client:   cli,
 		Session:  newClientSession(cli),
 		Password: newClientPassword(cli),
+		Token:    newClientToken(cli),
 	}
 }
 
@@ -222,22 +227,24 @@ func newUserPassword(cli *pangea.Client) *UserPassword {
 
 func newUser(cli *pangea.Client) *User {
 	return &User{
-		Client:  cli,
-		Profile: newUserProfile(cli),
-		Invites: newUserInvites(cli),
-		MFA:     newUserMFA(cli),
-		Login:   newUserLogin(cli),
+		Client:   cli,
+		Profile:  newUserProfile(cli),
+		Invites:  newUserInvites(cli),
+		MFA:      newUserMFA(cli),
+		Login:    newUserLogin(cli),
+		Password: newUserPassword(cli),
 	}
 }
 
 func New(cfg *pangea.Config) *AuthN {
-	pc := pangea.NewClient("authn", cfg)
+	pc := pangea.NewClient("authn", false, cfg)
 	cli := &AuthN{
 		client:   pc,
 		Password: newPassword(pc),
 		User:     newUser(pc),
 		Flow:     newFlow(pc),
 		Client:   newClient(pc),
+		Session:  newSession(pc),
 	}
 	return cli
 }

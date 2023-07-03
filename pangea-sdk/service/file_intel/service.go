@@ -17,7 +17,7 @@ type FileIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &FileIntel{
-		BaseService: pangea.NewBaseService("file-intel", cfg),
+		BaseService: pangea.NewBaseService("file-intel", false, cfg),
 	}
 	return cli
 }

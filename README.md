@@ -15,10 +15,28 @@
 <br />
 </p>
 
+
 # Pangea Go Mono Repo
+This is the Pangea repository for all things Go
 
-The Pangea repository for all things Go.
+## Pangea Go Tools
 
-## Pangea Go SDK
+This is a list of tools or useful stuff that you will found out in this repository and their links
 
-[Pangea SDK](https://github.com/pangeacyber/pangea-go/tree/main/pangea-sdk)
+- Pangea Go SDK [Click here](/pangea-sdk)  
+- List of Pangea Go SDK examples per service [Click here](/examples)  
+
+## Repository structure
+
+|- **README.md**: This readme file [Click here](/README.md)  
+|- **CHANGELOG.md**: SDK version changes tracking [Click here](/CHANGELOG.md)  
+|- **examples**: SDK examples folder [Clik here](/examples)  
+|----- **audit**: Audit service examples [Click here](/examples/audit)  
+|----- **authn**: AuthN service examples [Click here](/examples/authn)  
+|----- **embargo**: Embargo service examples [Click here](/examples/embargo)  
+|----- **intel**: Intel services (IP, File, Domain, URL, User) examples [Click here](/examples/intel)  
+|----- **redact**: Redact service examples [Click here](/examples/redact)  
+|----- **vault**: Vault service examples [Click here](/examples/vault)  
+|----- **README.md**: Example's instructions to install and run [Click here](/examples/README.md)  
+|- **pangea-sdk**: Pangea Java Go folder. Also available through `go get` [Click here](/pangea-sdk)  
+|----- **README.md**: Pangea Go SDK install and usage instructions [Click here](/pangea-sdk/README.md)  

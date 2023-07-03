@@ -17,7 +17,7 @@ type DomainIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &DomainIntel{
-		BaseService: pangea.NewBaseService("domain-intel", cfg),
+		BaseService: pangea.NewBaseService("domain-intel", false, cfg),
 	}
 
 	return cli
