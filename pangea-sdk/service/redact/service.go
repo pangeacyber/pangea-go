@@ -12,12 +12,12 @@ type Client interface {
 }
 
 type Redact struct {
-	*pangea.Client
+	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) *Redact {
 	cli := &Redact{
-		Client: pangea.NewClient("redact", false, cfg),
+		BaseService: pangea.NewBaseService("redact", false, cfg),
 	}
 	return cli
 }

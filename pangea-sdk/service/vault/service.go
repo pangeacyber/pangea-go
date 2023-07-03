@@ -28,15 +28,16 @@ type Client interface {
 	Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error)
 	JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error)
 	JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error)
+	PollResult(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
 }
 
 type vault struct {
-	*pangea.Client
+	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) Client {
 	cli := &vault{
-		Client: pangea.NewClient("vault", false, cfg),
+		BaseService: pangea.NewBaseService("vault", false, cfg),
 	}
 	return cli
 }

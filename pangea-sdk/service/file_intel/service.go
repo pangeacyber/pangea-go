@@ -12,12 +12,12 @@ type Client interface {
 }
 
 type FileIntel struct {
-	*pangea.Client
+	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) Client {
 	cli := &FileIntel{
-		Client: pangea.NewClient("file-intel", false, cfg),
+		BaseService: pangea.NewBaseService("file-intel", false, cfg),
 	}
 	return cli
 }

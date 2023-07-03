@@ -119,6 +119,7 @@ func pad(b *bytes.Buffer, str string) {
 
 type AcceptedError struct {
 	ResponseHeader
+	ResultField any
 }
 
 func (e *AcceptedError) Error() string {
