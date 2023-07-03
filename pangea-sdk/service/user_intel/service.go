@@ -18,7 +18,7 @@ type userIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &userIntel{
-		BaseService: pangea.NewBaseService("user-intel", cfg),
+		BaseService: pangea.NewBaseService("user-intel", false, cfg),
 	}
 	return cli
 }

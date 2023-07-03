@@ -18,7 +18,7 @@ type FileScan struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &FileScan{
-		BaseService: pangea.NewBaseService("file-scan", cfg),
+		BaseService: pangea.NewBaseService("file-scan", false, cfg),
 	}
 	return cli
 }

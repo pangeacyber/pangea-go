@@ -38,3 +38,11 @@ func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Conf
 		},
 	}
 }
+
+func IntegrationMultiConfigConfig(t *testing.T, env TestEnvironment) *pangea.Config {
+	return &pangea.Config{
+		HTTPClient: defaults.HTTPClient(),
+		Domain:     GetTestDomain(t, env),
+		Token:      GetMultiConfigTestToken(t, env),
+	}
+}

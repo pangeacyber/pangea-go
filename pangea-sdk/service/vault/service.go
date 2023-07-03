@@ -37,7 +37,7 @@ type vault struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &vault{
-		BaseService: pangea.NewBaseService("vault", cfg),
+		BaseService: pangea.NewBaseService("vault", false, cfg),
 	}
 	return cli
 }

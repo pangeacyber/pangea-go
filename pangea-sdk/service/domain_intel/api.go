@@ -44,6 +44,9 @@ func (e *DomainIntel) Lookup(ctx context.Context, input *DomainLookupInput) (*pa
 
 // @deprecated Use DomainReputationRequest instead.
 type DomainLookupInput struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// The domain to be looked up.
 	Domain string `json:"domain"`
 
@@ -124,6 +127,9 @@ func (e *DomainIntel) Reputation(ctx context.Context, input *DomainReputationReq
 }
 
 type DomainReputationRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
 	// The domain to be looked up.
 	Domain string `json:"domain"`
 

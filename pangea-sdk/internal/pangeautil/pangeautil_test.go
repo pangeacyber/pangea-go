@@ -1,7 +1,9 @@
 package pangeautil_test
 
 import (
+	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
 	"github.com/stretchr/testify/assert"
@@ -76,4 +78,32 @@ func TestCanonicalizeJSONMarshall_Given_UnTagged_Struct_Fields_It_Returns_Empty_
 	}
 	b := pangeautil.CanonicalizeJSONMarshall(&input)
 	assert.Equal(t, `{}`, string(b))
+}
+
+func TestCanonicalizeStruct(t *testing.T) {
+	input := struct {
+		A string `json:"b"`
+		B string `json:"a"`
+	}{
+		A: "some-string",
+		B: "another-string",
+	}
+
+	b, err := pangeautil.CanonicalizeStruct(input)
+	assert.NoError(t, err)
+	assert.NotNil(t, b)
+}
+
+func TestPangeaTimestamp(t *testing.T) {
+	pt := pangeautil.PangeaTimestamp(time.Now())
+	ptb, err := pt.MarshalJSON()
+	assert.NoError(t, err)
+
+	ptu := pangeautil.PangeaTimestamp{}
+	err = json.Unmarshal(ptb, &ptu)
+	assert.NoError(t, err)
+
+	ptt := time.Time(pt)
+	ptut := time.Time(ptu)
+	assert.Equal(t, ptt.UnixMilli(), ptut.UnixMilli())
 }
