@@ -556,7 +556,7 @@ func NewBaseService(name string, checkConfigID bool, cfg *Config) BaseService {
 	return bs
 }
 
-func (bs *BaseService) PollResultByException(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
+func (bs *BaseService) PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
 	if e.RequestID == nil {
 		return nil, errors.New("Request ID is empty")
 	}
