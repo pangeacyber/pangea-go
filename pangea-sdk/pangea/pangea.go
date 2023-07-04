@@ -48,6 +48,7 @@ type RetryConfig struct {
 	RetryWaitMin time.Duration // Minimum time to wait
 	RetryWaitMax time.Duration // Maximum time to wait
 	RetryMax     int           // Maximum number of retries
+	BackOff      float32       //Exponential back of factor
 }
 
 type Config struct {
@@ -104,6 +105,8 @@ type Client struct {
 	// The identifier for the service
 	serviceName string
 
+	// Map to save pending requests id
+	pendingRequestID map[string]bool
 	// Flag to check config ID on request
 	checkConfigID bool
 }
@@ -119,11 +122,12 @@ func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalCo
 		userAgent = pangeaUserAgent
 	}
 	return &Client{
-		serviceName:   service,
-		token:         cfg.Token,
-		config:        cfg,
-		userAgent:     userAgent,
-		checkConfigID: checkConfigID,
+		serviceName:      service,
+		token:            cfg.Token,
+		config:           cfg,
+		userAgent:        userAgent,
+		checkConfigID:    checkConfigID,
+		pendingRequestID: make(map[string]bool),
 	}
 }
 
@@ -382,15 +386,23 @@ func (c *Client) reachTimeout(start time.Time) bool {
 }
 
 func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, error) {
+	if r.HTTPResponse.StatusCode == http.StatusAccepted && (r != nil && r.RequestID != nil) {
+		c.addPendingRequestID(*r.RequestID)
+	} else {
+		return r, nil
+	}
+
 	if c.config.QueuedRetryEnabled == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
 		return r, nil
 	}
 
 	start := time.Now()
 	var retry = 1
+
 	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
 		if pu.Sleep(delay, ctx) == false {
+			// If context closed, return inmediatly
 			return r, nil
 		}
 
@@ -414,6 +426,10 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 		}
 
 		retry++
+	}
+
+	if r.HTTPResponse.StatusCode != http.StatusAccepted {
+		c.removePendingRequestID(*r.RequestID)
 	}
 
 	return r, nil
@@ -523,6 +539,9 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	if err != nil {
 		return nil, err
 	}
+
+	c.removePendingRequestID(reqID)
+
 	return resp, nil
 }
 
@@ -537,18 +556,62 @@ func NewBaseService(name string, checkConfigID bool, cfg *Config) BaseService {
 	return bs
 }
 
-func (bs *BaseService) PollResult(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
+func (bs *BaseService) PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
 	if e.RequestID == nil {
 		return nil, errors.New("Request ID is empty")
 	}
 
-	resp, err := bs.Client.FetchAcceptedResponse(ctx, *e.RequestID, e.ResultField)
+	resp, err := bs.PollResultByID(ctx, *e.RequestID, e.ResultField)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (bs *BaseService) PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error) {
+	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, v)
 	if err != nil {
 		return nil, err
 	}
 
 	return &PangeaResponse[any]{
 		Response: *resp,
-		Result:   &e.ResultField,
+		Result:   &v,
 	}, nil
+}
+
+func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaResponse[map[string]any], error) {
+	r := make(map[string]any)
+	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, &r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PangeaResponse[map[string]any]{
+		Response: *resp,
+		Result:   &r,
+	}, nil
+}
+
+func (c *Client) GetPendingRequestID() []string {
+	keys := make([]string, len(c.pendingRequestID))
+	i := 0
+	for k := range c.pendingRequestID {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
+func (bs *BaseService) GetPendingRequestID() []string {
+	return bs.Client.GetPendingRequestID()
+}
+
+func (c *Client) addPendingRequestID(rid string) {
+	c.pendingRequestID[rid] = true
+}
+
+func (c *Client) removePendingRequestID(rid string) {
+	delete(c.pendingRequestID, rid)
 }

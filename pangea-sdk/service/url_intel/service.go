@@ -8,6 +8,12 @@ import (
 
 type Client interface {
 	Reputation(ctx context.Context, input *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error)
+
+	// Base service methods
+	GetPendingRequestID() []string
+	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
+	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
+	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
 }
 
 type urlIntel struct {
