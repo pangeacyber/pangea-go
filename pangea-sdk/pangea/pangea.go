@@ -24,7 +24,7 @@ const (
 
 var errNonNilContext = errors.New("context must be non-nil")
 
-type IBaseRequest interface {
+type ConfigIDer interface {
 	SetConfigID(configID string)
 	GetConfigID() string
 }
@@ -180,7 +180,7 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Request, error) {
+func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Request, error) {
 	u, err := c.serviceUrl(c.serviceName, urlStr)
 	if err != nil {
 		return nil, err
