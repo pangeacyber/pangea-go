@@ -28,7 +28,7 @@ const (
 )
 
 type audit struct {
-	*pangea.Client
+	pangea.BaseService
 
 	signer                *signer.Signer
 	verifyProofs          bool
@@ -42,7 +42,7 @@ type audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 	cli := &audit{
-		Client:                pangea.NewClient("audit", true, cfg),
+		BaseService:           pangea.NewBaseService("audit", true, cfg),
 		skipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,

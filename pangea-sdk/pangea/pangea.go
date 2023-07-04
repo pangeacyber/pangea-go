@@ -8,13 +8,16 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
 )
 
 const (
@@ -77,6 +80,12 @@ type Config struct {
 	// if HTTPClient is set in the config this value won't take effect
 	Retry bool
 
+	// Enable queued request retry support
+	QueuedRetryEnabled bool
+
+	// Timeout used to poll results after 202 (in secs)
+	PollResultTimeout time.Duration
+
 	// Retry config defaults to a base retry option
 	RetryConfig *RetryConfig
 }
@@ -128,6 +137,7 @@ func chooseHTTPClient(cfg *Config) *http.Client {
 			cli.RetryMax = cfg.RetryConfig.RetryMax
 			cli.RetryWaitMin = cfg.RetryConfig.RetryWaitMin
 			cli.RetryWaitMax = cfg.RetryConfig.RetryWaitMax
+			cli.Logger = nil
 			return cli.StandardClient()
 		}
 		return defaults.HTTPClientWithRetries()
@@ -203,17 +213,75 @@ func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Reque
 	if err != nil {
 		return nil, err
 	}
-	if c.token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-	}
+
+	c.SetHeaders(req)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, file io.Reader) (*http.Request, error) {
+	u, err := c.serviceUrl(c.serviceName, urlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	var buf io.ReadWriter
+	if body != nil {
+		buf = &bytes.Buffer{}
+		err := json.NewEncoder(buf).Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Prepare multi part form
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+	var fw io.Writer
+
+	// Write request body
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name=request;`))
+	h.Set("Content-Type", "application/json")
+	if fw, err = w.CreatePart(h); err != nil {
+		return nil, err
+	}
+	if _, err = io.Copy(fw, buf); err != nil {
+		return nil, err
+	}
+
+	// Write file
+	if fw, err = w.CreateFormFile("upload", "filename.exe"); err != nil {
+		return nil, err
+	}
+	if _, err = io.Copy(fw, file); err != nil {
+		return nil, err
+	}
+
+	// close the multipart writer.
+	w.Close()
+	req, err := http.NewRequest(method, u, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	c.SetHeaders(req)
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	return req, nil
+}
+
+func (c *Client) SetHeaders(req *http.Request) {
+	if c.token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
 	}
 	if c.userAgent != "" {
 		req.Header.Set("User-Agent", c.userAgent)
 	}
 	mergeHeaders(req, c.config.AdditionalHeaders)
-	return req, nil
 }
 
 type PangeaResponse[T any] struct {
@@ -274,7 +342,12 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		return nil, err
 	}
 
-	err = CheckResponse(response)
+	response, err = c.handledQueued(ctx, response)
+	if err != nil {
+		return nil, err
+	}
+
+	err = CheckResponse(response, v)
 	if err != nil {
 		// Return APIError
 		return nil, err
@@ -294,9 +367,64 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	return response, nil
 }
 
-func CheckResponse(r *Response) error {
+func (c *Client) getDelay(retry_count int, start time.Time) time.Duration {
+	delay := time.Duration(retry_count*retry_count) * time.Second
+	elapsed := time.Since(start)
+	//  if with this delay exceed timeout, reduce delay
+	if elapsed+delay > c.config.PollResultTimeout {
+		delay = c.config.PollResultTimeout - elapsed
+	}
+	return delay
+}
+
+func (c *Client) reachTimeout(start time.Time) bool {
+	return time.Since(start) >= c.config.PollResultTimeout
+}
+
+func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, error) {
+	if c.config.QueuedRetryEnabled == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
+		return r, nil
+	}
+
+	start := time.Now()
+	var retry = 1
+	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
+		delay := c.getDelay(retry, start)
+		if pu.Sleep(delay, ctx) == false {
+			return r, nil
+		}
+
+		req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", *r.RequestID), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if ctx == nil {
+			return nil, errNonNilContext
+		}
+
+		resp, err := c.BareDo(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		r, err = newResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+
+		retry++
+	}
+
+	return r, nil
+}
+
+func CheckResponse(r *Response, v any) error {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted {
-		return &AcceptedError{ResponseHeader: r.ResponseHeader}
+		return &AcceptedError{
+			ResponseHeader: r.ResponseHeader,
+			ResultField:    v,
+		}
 	}
 
 	if r.HTTPResponse.StatusCode == http.StatusOK && *r.ResponseHeader.Status == "Success" {
@@ -367,6 +495,8 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.RetryConfig = other.RetryConfig
 	}
 
+	dst.QueuedRetryEnabled = other.QueuedRetryEnabled
+	dst.PollResultTimeout = other.PollResultTimeout
 	dst.ConfigID = other.ConfigID
 }
 
@@ -394,4 +524,31 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 		return nil, err
 	}
 	return resp, nil
+}
+
+type BaseService struct {
+	Client *Client
+}
+
+func NewBaseService(name string, checkConfigID bool, cfg *Config) BaseService {
+	bs := BaseService{
+		Client: NewClient(name, checkConfigID, cfg),
+	}
+	return bs
+}
+
+func (bs *BaseService) PollResult(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
+	if e.RequestID == nil {
+		return nil, errors.New("Request ID is empty")
+	}
+
+	resp, err := bs.Client.FetchAcceptedResponse(ctx, *e.RequestID, e.ResultField)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PangeaResponse[any]{
+		Response: *resp,
+		Result:   &e.ResultField,
+	}, nil
 }

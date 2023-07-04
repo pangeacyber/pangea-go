@@ -2,6 +2,7 @@ package pangeautil
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -111,5 +112,16 @@ func canonicalizeJSONMarshall(v reflect.Value, buf *bytes.Buffer) {
 		buf.WriteString("}")
 	default:
 		fmt.Fprintf(buf, `"%v"`, v.Interface())
+	}
+}
+
+// Sleep t time, but also listen to ctx Done() signal
+// Return true if timeout was reached correctly, false if it was interrupted by ctx signal
+func Sleep(t time.Duration, ctx context.Context) bool {
+	select {
+	case <-ctx.Done(): //context cancelled
+		return false
+	case <-time.After(t): //timeout
+		return true
 	}
 }
