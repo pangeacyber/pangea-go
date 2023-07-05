@@ -9,19 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Added
 
+- Logger support on each service
+
 # Changed
 
+- Audit service now allow user to setup CustomEvent format
 - Audit.Log() now receive a IEvent interface instead of Event to log
-- Audit.Search() and .Result() receive an additional param IEvent to unmarshal events
 - Make service structs private to force using its interface
 - Rename Request/Result structs to user Request/Result postfix instead of Input/Output
-- Update multiple fields to do not be pointers unnecesarily
+- Update multiple fields to not be pointers unnecesarily
 - Vault field RotationState is now a ItemVersionState
 
 # Deleted
 
 - All Intel deprecated methods
-
 
 
 ## [1.10.0] - 2023-06-26
