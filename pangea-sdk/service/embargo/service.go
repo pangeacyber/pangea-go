@@ -12,12 +12,12 @@ type Client interface {
 }
 
 type Embargo struct {
-	*pangea.Client
+	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) *Embargo {
 	cli := &Embargo{
-		Client: pangea.NewClient("embargo", false, cfg),
+		BaseService: pangea.NewBaseService("embargo", false, cfg),
 	}
 	return cli
 }
