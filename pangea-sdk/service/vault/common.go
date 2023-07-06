@@ -1,6 +1,6 @@
 package vault
 
-import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+import "github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 
 // EncodedPublicKey is a PEM public key, with no further encoding (i.e. no base64)
 // It may be used for example in openssh with no further processing
@@ -115,14 +115,14 @@ type CommonStoreRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Type              ItemType `json:"type"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
-	Metadata          Metadata `json:"metadata,omitempty"`
-	Tags              Tags     `json:"tags,omitempty"`
-	RotationFrequency string   `json:"rotation_frequency,omitempty"`
-	RotationState     string   `json:"rotation_state,omitempty"`
-	Expiration        string   `json:"expiration,omitempty"`
+	Type              ItemType         `json:"type"`
+	Name              string           `json:"name,omitempty"`
+	Folder            string           `json:"folder,omitempty"`
+	Metadata          Metadata         `json:"metadata,omitempty"`
+	Tags              Tags             `json:"tags,omitempty"`
+	RotationFrequency string           `json:"rotation_frequency,omitempty"`
+	RotationState     ItemVersionState `json:"rotation_state,omitempty"`
+	Expiration        string           `json:"expiration,omitempty"`
 }
 
 type CommonStoreResult struct {
@@ -135,14 +135,14 @@ type CommonGenerateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Type              ItemType `json:"type"`
-	Name              string   `json:"name,omitempty"`
-	Folder            string   `json:"folder,omitempty"`
-	Metadata          Metadata `json:"metadata,omitempty"`
-	Tags              Tags     `json:"tags,omitempty"`
-	RotationFrequency string   `json:"rotation_frequency,omitempty"`
-	RotationState     string   `json:"rotation_state,omitempty"`
-	Expiration        string   `json:"expiration,omitempty"`
+	Type              ItemType         `json:"type"`
+	Name              string           `json:"name,omitempty"`
+	Folder            string           `json:"folder,omitempty"`
+	Metadata          Metadata         `json:"metadata,omitempty"`
+	Tags              Tags             `json:"tags,omitempty"`
+	RotationFrequency string           `json:"rotation_frequency,omitempty"`
+	RotationState     ItemVersionState `json:"rotation_state,omitempty"`
+	Expiration        string           `json:"expiration,omitempty"`
 }
 
 type CommonGenerateResult struct {
@@ -277,16 +277,16 @@ type UpdateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID                  string    `json:"id"`
-	Name                string    `json:"name,omitempty"`
-	Folder              string    `json:"folder,omitempty"`
-	Metadata            Metadata  `json:"metadata,omitempty"`
-	Tags                Tags      `json:"tags,omitempty"`
-	RotationFrequency   string    `json:"rotation_frequency,omitempty"`
-	RotationState       string    `json:"rotation_state,omitempty"`
-	RotationGracePeriod string    `json:"rotation_grace_period,omitempty"`
-	Expiration          string    `json:"expiration,omitempty"`
-	ItemState           ItemState `json:"item_state,omitempty"`
+	ID                  string           `json:"id"`
+	Name                string           `json:"name,omitempty"`
+	Folder              string           `json:"folder,omitempty"`
+	Metadata            Metadata         `json:"metadata,omitempty"`
+	Tags                Tags             `json:"tags,omitempty"`
+	RotationFrequency   string           `json:"rotation_frequency,omitempty"`
+	RotationState       ItemVersionState `json:"rotation_state,omitempty"`
+	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"`
+	Expiration          string           `json:"expiration,omitempty"`
+	ItemState           ItemState        `json:"item_state,omitempty"`
 }
 
 type UpdateResult struct {

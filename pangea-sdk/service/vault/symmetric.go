@@ -1,6 +1,6 @@
 package vault
 
-import "github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+import "github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 
 type SymmetricStoreRequest struct {
 	CommonStoreRequest

@@ -6,84 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/url_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/url_intel"
 	"github.com/stretchr/testify/assert"
 )
 
 const (
 	testingEnvironment = pangeatesting.Live
 )
-
-func Test_Integration_UrlLookup(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	intelcli := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
-
-	input := &url_intel.UrlLookupRequest{
-		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
-		Provider: "crowdstrike",
-	}
-	resp, err := intelcli.Lookup(ctx, input)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
-	assert.NotNil(t, resp)
-	assert.NotNil(t, resp.Result)
-	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
-}
-
-func Test_Integration_UrlLookup_2(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	intelcli := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
-
-	input := &url_intel.UrlLookupRequest{
-		Url:      "http://google.com",
-		Raw:      true,
-		Verbose:  true,
-		Provider: "crowdstrike",
-	}
-	resp, err := intelcli.Lookup(ctx, input)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
-	assert.NotNil(t, resp)
-	assert.NotNil(t, resp.Result)
-	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, resp.Result.Data.Verdict, "unknown")
-}
-
-func Test_Integration_UrlLookup_Error_BadToken(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
-	cfg.Token = "notarealtoken"
-	intelcli := url_intel.New(cfg)
-
-	input := &url_intel.UrlLookupRequest{
-		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
-		Provider: "crowdstrike",
-	}
-
-	resp, err := intelcli.Lookup(ctx, input)
-
-	assert.Error(t, err)
-	assert.Nil(t, resp)
-	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
-}
 
 func Test_Integration_UrlReputation(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
@@ -93,8 +24,8 @@ func Test_Integration_UrlReputation(t *testing.T) {
 
 	input := &url_intel.UrlReputationRequest{
 		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	resp, err := intelcli.Reputation(ctx, input)
@@ -116,8 +47,8 @@ func Test_Integration_UrlReputation_2(t *testing.T) {
 
 	input := &url_intel.UrlReputationRequest{
 		Url:      "http://google.com",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 	resp, err := intelcli.Reputation(ctx, input)
@@ -141,8 +72,8 @@ func Test_Integration_UrlReputation_Error_BadToken(t *testing.T) {
 
 	input := &url_intel.UrlReputationRequest{
 		Url:      "http://113.235.101.11:54384",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 

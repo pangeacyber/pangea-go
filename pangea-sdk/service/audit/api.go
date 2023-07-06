@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // @summary Log an entry
@@ -26,24 +27,26 @@ import (
 //	 }
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
-func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.PangeaResponse[LogOutput], error) {
+func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
 	// Overwrite tenant id if user set it on event
-	if a.tenantID != "" {
-		event.TenantID = a.tenantID
+	if st, ok := event.(Tenanter); ok {
+		if st.Tenant() == "" && a.tenantID != "" {
+			st.SetTenant(a.tenantID)
+		}
 	}
 
-	input := &LogInput{
+	input := &LogRequest{
 		Event:   event,
 		Verbose: verbose,
 	}
 
-	if a.VerifyProofs {
+	if a.verifyProofs {
 		input.Verbose = true
 		input.PrevRoot = a.lastUnpRootHash
 	}
 
-	if a.SignLogsMode == LocalSign && a.Signer != nil {
-		err := input.SignEvent(*a.Signer, a.publicKeyInfo)
+	if a.signer != nil {
+		err := input.SignEvent(*a.signer, a.publicKeyInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -54,23 +57,24 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 		return nil, err
 	}
 
-	var out LogOutput
+	var out LogResult = LogResult{}
 	resp, err := a.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	out.EventEnvelope, err = newEventEnvelopeFromMap(out.RawEnvelope)
+	out.EventEnvelope, err = a.newEventEnvelopeFromMap(out.RawEnvelope)
 	if err != nil {
 		return nil, err
 	}
+
 	err = a.processLogResponse(ctx, &out)
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[LogOutput]{
+	panresp := pangea.PangeaResponse[LogResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -92,12 +96,12 @@ func (a *Audit) Log(ctx context.Context, event Event, verbose bool) (*pangea.Pan
 //	}
 //
 //	searchResponse, err := auditcli.Search(ctx, input)
-func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
+func (a *audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaResponse[SearchOutput], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
 	}
 
-	if a.VerifyProofs {
+	if a.verifyProofs {
 		// Need this info to verify
 		input.Verbose = pangea.Bool(true)
 	}
@@ -125,27 +129,13 @@ func (a *Audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 	return &panresp, nil
 }
 
-// @summary Results of a search
-//
-// @description Fetch paginated results of a previously executed search.
-//
-// @operationId audit_post_v1_results
-//
-// @example
-//
-//	input := &audit.SearchResultInput{
-//		ID:     "pas_sqilrhruwu54uggihqj3aie24wrctakr",
-//		Limit:  50,
-//		Offset: pangea.Int(100),
-//	}
-//
-//	res, err := auditcli.SearchResults(ctx, input)
-func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error) {
+// SearchResults is used to page through results from a previous search.
+func (a *audit) SearchResults(ctx context.Context, input *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/results", input)
 	if err != nil {
 		return nil, err
 	}
-	out := SearchResultOutput{}
+	out := SearchResultsOutput{}
 	resp, err := a.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, err
@@ -155,7 +145,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[SearchResultOutput]{
+	panresp := pangea.PangeaResponse[SearchResultsOutput]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -176,7 +166,7 @@ func (a *Audit) SearchResults(ctx context.Context, input *SearchResultInput) (*p
 //	}
 //
 //	rootResponse, err := auditcli.Root(ctx, input)
-func (a *Audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
+func (a *audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
 	req, err := a.Client.NewRequest("POST", "v1/root", input)
 	if err != nil {
 		return nil, err
@@ -204,7 +194,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	events := make(SearchEvents, 0, resp.Result.Count)
 	events = append(events, resp.Result.Events...)
 	for resp.Result.Count > len(events) {
-		s := SearchResultInput{
+		s := SearchResultsInput{
 			ID: resp.Result.ID,
 		}
 		sOut, err := client.SearchResults(ctx, &s)
@@ -219,27 +209,23 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	return resp.Result.Root, events, nil
 }
 
-func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
+func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	if log == nil {
 		return nil
 	}
 
-	nurh := log.UnpublishedRootHash
-	if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-		return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
-	}
-	if log.EventEnvelope != nil {
-		log.SignatureVerification = log.EventEnvelope.VerifySignature()
-	}
-
-	if log.EventEnvelope != nil {
-		log.SignatureVerification = log.EventEnvelope.VerifySignature()
-	}
-
-	if a.VerifyProofs {
+	if !a.skipEventVerification {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
-			return fmt.Errorf("audit: cannot verify hash of event. Hash: [%s]", log.Hash)
+			return fmt.Errorf("audit: Failed hash verification of event. Hash: [%s]", log.Hash)
 		}
+	}
+
+	nurh := log.UnpublishedRootHash
+	if log.EventEnvelope != nil {
+		log.SignatureVerification = log.EventEnvelope.VerifySignature()
+	}
+
+	if a.verifyProofs {
 		if nurh != nil && log.MembershipProof != nil {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
@@ -261,18 +247,18 @@ func (a *Audit) processLogResponse(ctx context.Context, log *LogOutput) error {
 	return nil
 }
 
-func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
+func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, root *Root, unpRoot *Root) error {
 	var roots map[int]Root
 
 	var err error
 	for _, event := range events {
-		event.EventEnvelope, err = newEventEnvelopeFromMap(event.RawEnvelope)
+		event.EventEnvelope, err = a.newEventEnvelopeFromMap(event.RawEnvelope)
 		if err != nil {
 			return err
 		}
 	}
 
-	if a.VerifyProofs && root != nil {
+	if a.verifyProofs && root != nil {
 		if a.rp == nil {
 			a.rp = NewArweaveRootsProvider(root.TreeName)
 		}
@@ -281,14 +267,14 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 	}
 
 	for _, event := range events {
-		if !a.SkipEventVerification {
+		if !a.skipEventVerification {
 			if VerifyHash(event.RawEnvelope, event.Hash) == Failed {
 				return fmt.Errorf("audit: cannot verify hash of record. Hash: [%s]", event.Hash)
 			}
 			event.SignatureVerification = event.EventEnvelope.VerifySignature()
 		}
 
-		if a.VerifyProofs {
+		if a.verifyProofs {
 			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
@@ -300,12 +286,12 @@ func (a *Audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 	return nil
 }
 
-type LogInput struct {
+type LogRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
 	// A structured event describing an auditable activity.
-	Event Event `json:"event"`
+	Event any `json:"event"`
 
 	// If true, be verbose in the response; include root, membership and consistency proof, etc.
 	// default: false
@@ -322,7 +308,7 @@ type LogInput struct {
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
+func (i *LogRequest) SignEvent(s signer.Signer, pki map[string]string) error {
 	b, err := pu.CanonicalizeStruct(&i.Event)
 	if err != nil {
 		return err
@@ -355,7 +341,7 @@ func (i *LogInput) SignEvent(s signer.Signer, pki map[string]string) error {
 	return nil
 }
 
-type Event struct {
+type StandardEvent struct {
 	// Record who performed the auditable activity.
 	// max len is 128 bytes
 	// examples:
@@ -408,11 +394,19 @@ type Event struct {
 	TenantID string `json:"tenant_id,omitempty"`
 }
 
+func (e *StandardEvent) Tenant() string {
+	return e.TenantID
+}
+
+func (e *StandardEvent) SetTenant(tid string) {
+	e.TenantID = tid
+}
+
 type EventEnvelope struct {
 	// A structured record describing that <actor> did <action> on <target>
 	// changing it from <old> to <new> and the operation was <status>,
 	// and/or a free-form <message>.
-	Event *Event `json:"event"`
+	Event any `json:"event"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -425,7 +419,7 @@ type EventEnvelope struct {
 	ReceivedAt *pu.PangeaTimestamp `json:"received_at,omitempty"`
 }
 
-func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
+func (a *audit) newEventEnvelopeFromMap(m map[string]any) (*EventEnvelope, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -441,6 +435,21 @@ func newEventEnvelopeFromMap(m *map[string]any) (*EventEnvelope, error) {
 		return nil, err
 	}
 
+	if ee.Event != nil {
+		b, err = json.Marshal(ee.Event)
+		if err != nil {
+			return nil, err
+		}
+
+		v := reflect.New(reflect.TypeOf(a.schema)).Interface()
+
+		err = json.Unmarshal(b, &v)
+		if err != nil {
+			return nil, err
+		}
+
+		ee.Event = v
+	}
 	return &ee, nil
 }
 
@@ -464,10 +473,10 @@ func (ev EventVerification) String() string {
 	return "unknown"
 }
 
-type LogOutput struct {
+type LogResult struct {
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The hash of the event data.
 	// max len of 64 bytes
@@ -586,7 +595,7 @@ type SearchEvent struct {
 	// Include Event data and security information
 	EventEnvelope *EventEnvelope
 
-	RawEnvelope *map[string]any `json:"envelope"`
+	RawEnvelope map[string]any `json:"envelope"`
 
 	// The record's hash
 	// len of 64 bytes
@@ -725,7 +734,7 @@ func (ee EventEnvelope) getPublicKey() (string, error) {
 	return ret, nil
 }
 
-type SearchResultInput struct {
+type SearchResultsInput struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
@@ -740,7 +749,7 @@ type SearchResultInput struct {
 	Offset *int `json:"offset,omitempty"`
 }
 
-type SearchResultOutput struct {
+type SearchResultsOutput struct {
 	// The total number of results that were returned by the search.
 	// Count is always populated on a successful response.
 	Count int `json:"count"`

@@ -10,7 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 const baseURLPath = "/api"
@@ -135,6 +136,12 @@ func GetVaultSignatureTestToken(t *testing.T, env TestEnvironment) string {
 	return GetEnvVarOrSkip(t, varname)
 }
 
+func GetCustomSchemaTestToken(t *testing.T, env TestEnvironment) string {
+	t.Helper()
+	varname := "PANGEA_INTEGRATION_CUSTOM_SCHEMA_TOKEN_" + string(env)
+	return GetEnvVarOrSkip(t, varname)
+}
+
 func GetMultiConfigTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_" + string(env)
@@ -145,4 +152,24 @@ func GetConfigID(t *testing.T, env TestEnvironment, service string, configNumber
 	t.Helper()
 	varname := fmt.Sprintf("PANGEA_%s_CONFIG_ID_%d_%s", strings.ToUpper(service), configNumber, string(env))
 	return GetEnvVarOrSkip(t, varname)
+}
+
+type CustomSchemaEvent struct {
+	Message       string              `json:"message"`
+	FieldInt      int                 `json:"field_int,omitempty"`
+	FieldBool     bool                `json:"field_bool,omitempty"`
+	FieldStrShort string              `json:"field_str_short,omitempty"`
+	FieldStrLong  string              `json:"field_str_long,omitempty"`
+	FieldTime     *pu.PangeaTimestamp `json:"field_time,omitempty"`
+
+	// TenantID field
+	TenantID string `json:"tenant_id,omitempty"`
+}
+
+func (e *CustomSchemaEvent) Tenant() string {
+	return e.TenantID
+}
+
+func (e *CustomSchemaEvent) SetTenant(tid string) {
+	e.TenantID = tid
 }

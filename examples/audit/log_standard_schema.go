@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
 )
 
 func main() {
@@ -25,14 +25,17 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &audit.SearchInput{
-		Query: "message: Hello, World!",
+	event := &audit.StandardEvent{
+		Message: "Hello, World!",
 	}
 
-	searchResponse, err := auditcli.Search(ctx, input)
+	fmt.Printf("Logging: %s\n", event.Message)
+
+	lr, err := auditcli.Log(ctx, event, true)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(searchResponse.Result))
+	e := (lr.Result.EventEnvelope.Event).(*audit.StandardEvent)
+	fmt.Printf("Logged event: %s", pangea.Stringify(e))
 }

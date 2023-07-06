@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/user_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/user_intel"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,8 +24,8 @@ func Test_Integration_UserBreachedByPhone(t *testing.T) {
 
 	input := &user_intel.UserBreachedRequest{
 		PhoneNumber: "8005550123",
-		Raw:         true,
-		Verbose:     true,
+		Raw:         pangea.Bool(true),
+		Verbose:     pangea.Bool(true),
 		Provider:    "spycloud",
 	}
 	resp, err := intelcli.UserBreached(ctx, input)
@@ -48,8 +48,8 @@ func Test_Integration_UserBreachedByEmail(t *testing.T) {
 
 	input := &user_intel.UserBreachedRequest{
 		Email:    "test@example.com",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "spycloud",
 	}
 	resp, err := intelcli.UserBreached(ctx, input)
@@ -72,8 +72,8 @@ func Test_Integration_UserBreachedByUsername(t *testing.T) {
 
 	input := &user_intel.UserBreachedRequest{
 		Username: "shortpatrick",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "spycloud",
 	}
 	resp, err := intelcli.UserBreached(ctx, input)
@@ -96,8 +96,8 @@ func Test_Integration_UserBreachedByIP(t *testing.T) {
 
 	input := &user_intel.UserBreachedRequest{
 		IP:       "192.168.140.37",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "spycloud",
 	}
 	resp, err := intelcli.UserBreached(ctx, input)
@@ -120,8 +120,8 @@ func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
 
 	input := &user_intel.UserBreachedRequest{
 		PhoneNumber: "8005550123",
-		Raw:         true,
-		Verbose:     true,
+		Raw:         pangea.Bool(true),
+		Verbose:     pangea.Bool(true),
 	}
 	resp, err := intelcli.UserBreached(ctx, input)
 	if err != nil {
@@ -145,8 +145,8 @@ func Test_Integration_UserBreached_Error_BadToken(t *testing.T) {
 
 	input := &user_intel.UserBreachedRequest{
 		PhoneNumber: "8005550123",
-		Raw:         true,
-		Verbose:     true,
+		Raw:         pangea.Bool(true),
+		Verbose:     pangea.Bool(true),
 	}
 	resp, err := intelcli.UserBreached(ctx, input)
 
@@ -165,8 +165,8 @@ func Test_Integration_PasswordBreached(t *testing.T) {
 	input := &user_intel.UserPasswordBreachedRequest{
 		HashType:   user_intel.HTsha265,
 		HashPrefix: "5baa6",
-		Raw:        true,
-		Verbose:    true,
+		Raw:        pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
 		Provider:   "spycloud",
 	}
 	resp, err := intelcli.PasswordBreached(ctx, input)
@@ -190,8 +190,8 @@ func Test_Integration_PasswordBreachedDefaultProvider(t *testing.T) {
 	input := &user_intel.UserPasswordBreachedRequest{
 		HashType:   user_intel.HTsha265,
 		HashPrefix: "5baa6",
-		Raw:        true,
-		Verbose:    true,
+		Raw:        pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
 	}
 	resp, err := intelcli.PasswordBreached(ctx, input)
 	if err != nil {
@@ -217,8 +217,8 @@ func Test_Integration_PasswordBreachedFullWorkflow(t *testing.T) {
 	input := &user_intel.UserPasswordBreachedRequest{
 		HashType:   user_intel.HTsha265,
 		HashPrefix: hp,
-		Raw:        true,
-		Verbose:    true,
+		Raw:        pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
 	}
 	resp, err := intelcli.PasswordBreached(ctx, input)
 	if err != nil {

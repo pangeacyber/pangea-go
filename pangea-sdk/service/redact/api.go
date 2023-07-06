@@ -3,7 +3,7 @@ package redact
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // @summary Redact
@@ -18,19 +18,19 @@ import (
 //		Text: pangea.String("my phone number is 123-456-7890"),
 //	}
 //
-//	resp, err := redactcli.Redact(ctx, input)
-func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaResponse[TextOutput], error) {
+//	redactResponse, err := redactcli.Redact(ctx, input)
+func (r *redact) Redact(ctx context.Context, input *TextRequest) (*pangea.PangeaResponse[TextResult], error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact", input)
 	if err != nil {
 		return nil, err
 	}
-	out := TextOutput{}
+	out := TextResult{}
 	resp, err := r.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
-	panresp := pangea.PangeaResponse[TextOutput]{
+	panresp := pangea.PangeaResponse[TextResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -54,20 +54,20 @@ func (r *Redact) Redact(ctx context.Context, input *TextInput) (*pangea.PangeaRe
 //		Data: data,
 //	}
 //
-//	resp, err := redactcli.RedactStructured(ctx, input)
-func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (*pangea.PangeaResponse[StructuredOutput], error) {
+//	redactResponse, err := redactcli.RedactStructured(ctx, input)
+func (r *redact) RedactStructured(ctx context.Context, input *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error) {
 	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
 	if err != nil {
 		return nil, err
 	}
-	out := StructuredOutput{}
+	out := StructuredResult{}
 	resp, err := r.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[StructuredOutput]{
+	panresp := pangea.PangeaResponse[StructuredResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -75,7 +75,7 @@ func (r *Redact) RedactStructured(ctx context.Context, input *StructuredInput) (
 	return &panresp, nil
 }
 
-type TextInput struct {
+type TextRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
@@ -93,7 +93,7 @@ type TextInput struct {
 	ReturnResult *bool `json:"return_result,omitempty"`
 }
 
-type TextOutput struct {
+type TextResult struct {
 	// The redacted text.
 	RedactedText *string `json:"redacted_text"`
 
@@ -104,33 +104,34 @@ type TextOutput struct {
 }
 
 type DebugReport struct {
-	SummaryCounts     map[string]int      `json:"summary_counts"`
-	RecognizerResults []*RecognizerResult `json:"recognizer_results"`
+	SummaryCounts     map[string]int     `json:"summary_counts"`
+	RecognizerResults []RecognizerResult `json:"recognizer_results"`
 }
 
 type RecognizerResult struct {
 	// FieldType is always populated on a successful response.
-	FieldType *string `json:"field_type"`
+	FieldType string `json:"field_type"`
 
 	// Score is always populated on a successful response.
 	Score *float64 `json:"score"`
 
 	// Text is always populated on a successful response.
-	Text *string `json:"text"`
+	Text string `json:"text"`
 
 	// Start is always populated on a successful response.
-	Start *int `json:"start"`
+	Start int `json:"start"`
 
 	// End is always populated on a successful response.
-	End *int `json:"end"`
+	End int `json:"end"`
 
 	// Redacted is always populated on a successful response.
-	Redacted *bool `json:"redacted"` // FieldType is always populated on a successful response.
+	Redacted bool `json:"redacted"`
 
-	DataKey *string `json:"data_key"`
+	// DataKey is always populated on a successful response.
+	DataKey string `json:"data_key"`
 }
 
-type StructuredInput struct {
+type StructuredRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
@@ -155,7 +156,7 @@ type StructuredInput struct {
 	ReturnResult *bool `json:"return_result,omitempty"`
 }
 
-type StructuredOutput struct {
+type StructuredResult struct {
 	// RedactedData is always populated on a successful response.
 	RedactedData map[string]any `json:"redacted_data"`
 

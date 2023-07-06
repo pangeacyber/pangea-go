@@ -3,45 +3,8 @@ package ip_intel
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
-
-// @summary Reputation
-//
-// @deprecated Use Reputation instead.
-//
-// @description Retrieve a reputation score for an IP address from a provider,
-// including an optional detailed report.
-//
-// @example
-//
-//	input := &ip_intel.IpLookupRequest{
-//		Ip: "93.231.182.110",
-//		Raw: true,
-//		Verbose: true,
-//		Provider: "crowdstrike",
-//	}
-//
-//	resp, err := ipintel.Lookup(ctx, input)
-func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.PangeaResponse[IpLookupResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
-	if err != nil {
-		return nil, err
-	}
-	out := IpLookupResult{}
-	resp, err := e.Client.Do(ctx, req, &out)
-
-	if resp == nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[IpLookupResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, err
-}
 
 // @summary Geolocate
 //
@@ -58,8 +21,8 @@ func (e *IpIntel) Lookup(ctx context.Context, input *IpLookupRequest) (*pangea.P
 //		Provider: "digitalelement",
 //	}
 //
-//	resp, err := ipintel.geolocate(ctx, input)
-func (e *IpIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error) {
+//	checkOutput, _, err := ipintel.geolocate(ctx, input)
+func (e *ipIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/geolocate", input)
 	if err != nil {
 		return nil, err
@@ -95,8 +58,8 @@ func (e *IpIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pa
 //		Provider: "crowdstrike",
 //	}
 //
-//	resp, err := ipintel.Reputation(ctx, input)
-func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error) {
+//	checkOutput, _, err := ipintel.Reputation(ctx, input)
+func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
 	if err != nil {
 		return nil, err
@@ -131,8 +94,8 @@ func (e *IpIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 //		Provider: "digitalelement",
 //	}
 //
-//	resp, err := ipintel.GetDomain(ctx, input)
-func (e *IpIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error) {
+//	checkOutput, _, err := ipintel.GetDomain(ctx, input)
+func (e *ipIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/domain", input)
 	if err != nil {
 		return nil, err
@@ -167,8 +130,8 @@ func (e *IpIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pange
 //		Provider: "digitalelement",
 //	}
 //
-//	resp, err := ipintel.IsVPN(ctx, input)
-func (e *IpIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error) {
+//	checkOutput, _, err := ipintel.IsVPN(ctx, input)
+func (e *ipIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/vpn", input)
 	if err != nil {
 		return nil, err
@@ -203,8 +166,8 @@ func (e *IpIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 //		Provider: "digitalelement",
 //	}
 //
-//	resp, err := ipintel.IsProxy(ctx, input)
-func (e *IpIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error) {
+//	checkOutput, _, err := ipintel.IsProxy(ctx, input)
+func (e *ipIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/proxy", input)
 	if err != nil {
 		return nil, err
@@ -224,38 +187,13 @@ func (e *IpIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.P
 	return &panresp, err
 }
 
-// @deprecated Use IPReputationRequest
-type IpLookupRequest struct {
-	// Base request has ConfigID for multi-config projects
-	pangea.BaseRequest
-
-	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
-	Provider string `json:"provider,omitempty"`
-}
-
-// @deprecated Use ReputationData
-type LookupData struct {
-	Category []string `json:"category"`
-	Score    int      `json:"score"`
-	Verdict  string   `json:"verdict"`
-}
-
-// @deprecated Use IpReputationResult
-type IpLookupResult struct {
-	Data       LookupData  `json:"data"`
-	Parameters interface{} `json:"parameters,omitempty"`
-	RawData    interface{} `json:"raw_data,omitempty"`
-}
-
 type IpGeolocateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
 	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 
@@ -264,8 +202,8 @@ type IpReputationRequest struct {
 	pangea.BaseRequest
 
 	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 
@@ -301,8 +239,8 @@ type IpDomainRequest struct {
 	pangea.BaseRequest
 
 	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 
@@ -322,8 +260,8 @@ type IpVPNRequest struct {
 	pangea.BaseRequest
 
 	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 
@@ -342,8 +280,8 @@ type IpProxyRequest struct {
 	pangea.BaseRequest
 
 	Ip       string `json:"ip"`
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
+	Verbose  *bool  `json:"verbose,omitempty"`
+	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
 }
 

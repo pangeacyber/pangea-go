@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/file_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/file_intel"
 )
 
 func main() {
@@ -29,13 +29,13 @@ func main() {
 		return
 	}
 
-	input.Raw = true
-	input.Verbose = true
+	input.Raw = pangea.Bool(true)
+	input.Verbose = pangea.Bool(true)
 
 	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result))
+	fmt.Println(pangea.Stringify(resp.Result.Data))
 }

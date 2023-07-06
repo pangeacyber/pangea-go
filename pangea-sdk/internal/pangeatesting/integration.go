@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/defaults"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
@@ -18,7 +18,6 @@ func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 		PollResultTimeout:  60 * time.Second,
 		Retry:              true,
 		RetryConfig: &pangea.RetryConfig{
-			BackOff:  1.0,
 			RetryMax: 4,
 		},
 	}
@@ -33,9 +32,16 @@ func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Conf
 		PollResultTimeout:  60 * time.Second,
 		Retry:              true,
 		RetryConfig: &pangea.RetryConfig{
-			BackOff:  1.0,
-			RetryMax: 10,
+			RetryMax: 4,
 		},
+	}
+}
+
+func IntegrationCustomSchemaConfig(t *testing.T, env TestEnvironment) *pangea.Config {
+	return &pangea.Config{
+		HTTPClient: defaults.HTTPClient(),
+		Domain:     GetTestDomain(t, env),
+		Token:      GetCustomSchemaTestToken(t, env),
 	}
 }
 

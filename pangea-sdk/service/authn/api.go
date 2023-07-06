@@ -3,9 +3,9 @@ package authn
 import (
 	"context"
 
-	v "github.com/pangeacyber/pangea-go/pangea-sdk/service/vault"
+	v "github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 type ClientUserinfoResult struct {

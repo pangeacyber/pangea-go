@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea/hash"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea/hash"
 )
 
 type proofSide uint
@@ -30,7 +30,7 @@ type rootProofItem struct {
 
 type rootProof []rootProofItem
 
-func VerifyHash(ee *map[string]any, h string) EventVerification {
+func VerifyHash(ee map[string]any, h string) EventVerification {
 	if h == "" || ee == nil {
 		return NotVerified
 	}

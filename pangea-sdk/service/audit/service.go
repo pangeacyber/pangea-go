@@ -4,15 +4,26 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 type Client interface {
-	Log(context.Context, Event, bool) (*pangea.PangeaResponse[LogOutput], error)
+	Log(context.Context, any, bool) (*pangea.PangeaResponse[LogResult], error)
 	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultInput) (*pangea.PangeaResponse[SearchResultOutput], error)
+	SearchResults(context.Context, *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
 	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
+
+	// Base service methods
+	GetPendingRequestID() []string
+	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
+	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
+	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+}
+
+type Tenanter interface {
+	Tenant() string
+	SetTenant(string)
 }
 
 type LogSigningMode int
@@ -22,29 +33,29 @@ const (
 	LocalSign                = 1
 )
 
-type Audit struct {
+type audit struct {
 	pangea.BaseService
 
-	SignLogsMode          LogSigningMode
-	Signer                *signer.Signer
-	VerifyProofs          bool
-	SkipEventVerification bool
+	signer                *signer.Signer
+	verifyProofs          bool
+	skipEventVerification bool
 	publicKeyInfo         map[string]string
 	rp                    RootsProvider
 	lastUnpRootHash       *string
 	tenantID              string
+	schema                any
 }
 
-func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
-	cli := &Audit{
+func New(cfg *pangea.Config, opts ...Option) (Client, error) {
+	cli := &audit{
 		BaseService:           pangea.NewBaseService("audit", true, cfg),
-		SkipEventVerification: false,
+		skipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,
-		SignLogsMode:          Unsigned,
-		Signer:                nil,
+		signer:                nil,
 		publicKeyInfo:         nil,
 		tenantID:              "",
+		schema:                StandardEvent{},
 	}
 	for _, opt := range opts {
 		err := opt(cli)
@@ -55,43 +66,49 @@ func New(cfg *pangea.Config, opts ...Option) (*Audit, error) {
 	return cli, nil
 }
 
-type Option func(*Audit) error
+type Option func(*audit) error
 
 func WithLogProofVerificationEnabled() Option {
-	return func(a *Audit) error {
-		a.VerifyProofs = true
+	return func(a *audit) error {
+		a.verifyProofs = true
 		return nil
 	}
 }
 
 func WithLogLocalSigning(filename string) Option {
-	return func(a *Audit) error {
-		a.SignLogsMode = LocalSign
+	return func(a *audit) error {
 		s, err := signer.NewSignerFromPrivateKeyFile(filename)
 		if err != nil {
 			return fmt.Errorf("audit: failed signer creation: %w", err)
 		}
-		a.Signer = &s
+		a.signer = &s
 		return nil
 	}
 }
 
 func WithTenantID(tenantID string) Option {
-	return func(a *Audit) error {
+	return func(a *audit) error {
 		a.tenantID = tenantID
 		return nil
 	}
 }
 
+func WithCustomSchema(schema any) Option {
+	return func(a *audit) error {
+		a.schema = schema
+		return nil
+	}
+}
+
 func DisableEventVerification() Option {
-	return func(a *Audit) error {
-		a.SkipEventVerification = true
+	return func(a *audit) error {
+		a.skipEventVerification = true
 		return nil
 	}
 }
 
 func SetPublicKeyInfo(pkinfo map[string]string) Option {
-	return func(a *Audit) error {
+	return func(a *audit) error {
 		a.publicKeyInfo = pkinfo
 		return nil
 	}

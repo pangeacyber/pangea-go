@@ -12,22 +12,30 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/internal/defaults"
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/rs/zerolog"
 )
 
 const (
-	version         = "1.10.0"
+	version         = "2.0.0"
 	pangeaUserAgent = "pangea-go/" + version
+)
+
+var (
+	initFileWriterOnce sync.Once
+	file               *os.File
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
 
-type IBaseRequest interface {
+type ConfigIDer interface {
 	SetConfigID(configID string)
 	GetConfigID() string
 }
@@ -89,6 +97,9 @@ type Config struct {
 
 	// Retry config defaults to a base retry option
 	RetryConfig *RetryConfig
+
+	// Logger
+	Logger *zerolog.Logger
 }
 
 // A Client manages communication with the Pangea API.
@@ -105,6 +116,12 @@ type Client struct {
 	// The identifier for the service
 	serviceName string
 
+	// Map to save pending requests id
+	pendingRequestID map[string]bool
+
+	// Client logger
+	Logger zerolog.Logger
+
 	// Flag to check config ID on request
 	checkConfigID bool
 }
@@ -112,19 +129,28 @@ type Client struct {
 func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
+
+	if cfg.Logger == nil {
+		cfg.Logger = GetDefaultPangeaLogger()
+	}
+
 	cfg.HTTPClient = chooseHTTPClient(cfg)
+
 	var userAgent string
 	if len(baseCfg.CustomUserAgent) > 0 {
 		userAgent = pangeaUserAgent + " " + baseCfg.CustomUserAgent
 	} else {
 		userAgent = pangeaUserAgent
 	}
+
 	return &Client{
-		serviceName:   service,
-		token:         cfg.Token,
-		config:        cfg,
-		userAgent:     userAgent,
-		checkConfigID: checkConfigID,
+		serviceName:      service,
+		token:            cfg.Token,
+		config:           cfg,
+		userAgent:        userAgent,
+		checkConfigID:    checkConfigID,
+		pendingRequestID: make(map[string]bool),
+		Logger:           *cfg.Logger,
 	}
 }
 
@@ -191,11 +217,22 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Request, error) {
+func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Request, error) {
 	u, err := c.serviceUrl(c.serviceName, urlStr)
 	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "NewRequest").
+			Err(err)
 		return nil, err
 	}
+
+	c.Logger.Info().
+		Str("service", c.serviceName).
+		Str("method", "NewRequest").
+		Str("action", method).
+		Str("url", u).
+		Send()
 
 	if c.checkConfigID && c.config.ConfigID != "" && body.GetConfigID() == "" {
 		body.SetConfigID(c.config.ConfigID)
@@ -210,8 +247,20 @@ func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Req
 		}
 	}
 
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "NewRequest").
+		Str("action", method).
+		Str("url", u).
+		Interface("data", body).
+		Send()
+
 	req, err := http.NewRequest(method, u, buf)
 	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "NewRequest.http").
+			Err(err)
 		return nil, err
 	}
 
@@ -226,6 +275,10 @@ func (c *Client) NewRequest(method, urlStr string, body IBaseRequest) (*http.Req
 func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, file io.Reader) (*http.Request, error) {
 	u, err := c.serviceUrl(c.serviceName, urlStr)
 	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "NewRequestMultPart").
+			Err(err)
 		return nil, err
 	}
 
@@ -237,6 +290,14 @@ func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, fil
 			return nil, err
 		}
 	}
+
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "NewRequestMultPart").
+		Str("action", method).
+		Str("url", u).
+		Interface("data", body).
+		Send()
 
 	// Prepare multi part form
 	var b bytes.Buffer
@@ -330,26 +391,57 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response,
 // canceled or times out, ctx.Err() will be returned.
 func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, error) {
 	if ctx == nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "Do").
+			Err(errNonNilContext)
 		return nil, errNonNilContext
 	}
 
 	resp, err := c.BareDo(ctx, req)
 	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "Do.BareDo").
+			Err(err)
 		return nil, err
 	}
 
-	response, err := newResponse(resp)
+	r, err := newResponse(resp)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "Do.newResponse").
+			Err(err)
+		return nil, err
+	}
+
+	r, err = c.handledQueued(ctx, r)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err = c.handledQueued(ctx, response)
+	err = c.CheckResponse(r, v)
 	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "Do.handleQueued").
+			Err(err)
 		return nil, err
 	}
 
-	err = CheckResponse(response, v)
+	u := ""
+	if r != nil && r.HTTPResponse != nil && r.HTTPResponse.Request != nil && r.HTTPResponse.Request.URL != nil {
+		u = r.HTTPResponse.Request.URL.String()
+	}
+
+	err = c.CheckResponse(r, v)
 	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "Do.CheckResponse").
+			Str("url", u).
+			Err(err)
 		// Return APIError
 		return nil, err
 	}
@@ -357,15 +449,25 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 	switch v.(type) {
 	case nil:
 		// This should never be fired to user because Client is to internal use
-		return response, fmt.Errorf("Not initialized struct. Can't unmarshal result from response")
+		err := fmt.Errorf("Not initialized struct. Can't unmarshal result from response")
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "Do").
+			Err(err)
+		return r, err
 	default:
-		err = response.UnmarshalResult(v)
+		err = r.UnmarshalResult(v)
 		if err != nil {
-			return nil, NewAPIError(err, response)
+			c.Logger.Error().
+				Str("service", c.serviceName).
+				Str("method", "Do.UnmarshalResult").
+				Str("url", u).
+				Err(err)
+			return nil, NewAPIError(err, r)
 		}
 	}
 
-	return response, nil
+	return r, nil
 }
 
 func (c *Client) getDelay(retry_count int, start time.Time) time.Duration {
@@ -383,15 +485,30 @@ func (c *Client) reachTimeout(start time.Time) bool {
 }
 
 func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, error) {
+	if r.HTTPResponse.StatusCode == http.StatusAccepted && (r != nil && r.RequestID != nil) {
+		c.addPendingRequestID(*r.RequestID)
+	} else {
+		return r, nil
+	}
+
 	if c.config.QueuedRetryEnabled == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
 		return r, nil
 	}
 
 	start := time.Now()
 	var retry = 1
+	u := fmt.Sprintf("request/%v", *r.RequestID)
+
+	c.Logger.Info().
+		Str("service", c.serviceName).
+		Str("method", "handledQueued.Start").
+		Str("url", u).
+		Send()
+
 	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
 		if pu.Sleep(delay, ctx) == false {
+			// If context closed, return inmediatly
 			return r, nil
 		}
 
@@ -417,10 +534,20 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 		retry++
 	}
 
+	if r.HTTPResponse.StatusCode != http.StatusAccepted {
+		c.removePendingRequestID(*r.RequestID)
+	}
+
+	c.Logger.Info().
+		Str("service", c.serviceName).
+		Str("method", "handledQueued.Exit").
+		Str("url", u).
+		Send()
+
 	return r, nil
 }
 
-func CheckResponse(r *Response, v any) error {
+func (c *Client) CheckResponse(r *Response, v any) error {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted {
 		return &AcceptedError{
 			ResponseHeader: r.ResponseHeader,
@@ -436,11 +563,14 @@ func CheckResponse(r *Response, v any) error {
 
 	var pa PangeaErrors
 	err := r.UnmarshalResult(&pa)
+	em := ""
 	if err != nil {
 		pa = PangeaErrors{}
-		apiError = fmt.Errorf("API error: %s. Unmarshall Error: %s.", *r.ResponseHeader.Summary, err.Error())
+		em = fmt.Sprintf("API error: %s. Unmarshall Error: %s.", *r.ResponseHeader.Summary, err.Error())
+		apiError = fmt.Errorf(em)
 	} else {
-		apiError = fmt.Errorf("API error: %s.", *r.ResponseHeader.Summary)
+		em = fmt.Sprintf("API error: %s.", *r.ResponseHeader.Summary)
+		apiError = fmt.Errorf(em)
 	}
 
 	return &APIError{
@@ -498,6 +628,7 @@ func mergeInConfig(dst *Config, other *Config) {
 
 	dst.QueuedRetryEnabled = other.QueuedRetryEnabled
 	dst.PollResultTimeout = other.PollResultTimeout
+	dst.Logger = other.Logger
 	dst.ConfigID = other.ConfigID
 }
 
@@ -516,7 +647,14 @@ func (c *Config) Copy(cfgs ...*Config) *Config {
 
 // FetchAcceptedResponse retries the
 func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v interface{}) (*Response, error) {
-	req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", reqID), nil)
+	u := fmt.Sprintf("request/%v", reqID)
+	c.Logger.Info().
+		Str("service", c.serviceName).
+		Str("method", "FetchAcceptedResponse").
+		Str("url", u).
+		Send()
+
+	req, err := c.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -524,6 +662,9 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	if err != nil {
 		return nil, err
 	}
+
+	c.removePendingRequestID(reqID)
+
 	return resp, nil
 }
 
@@ -531,25 +672,98 @@ type BaseService struct {
 	Client *Client
 }
 
-func NewBaseService(name string, checkConfigID bool, cfg *Config) BaseService {
+func NewBaseService(name string, checkConfigID bool, baseCfg *Config) BaseService {
+	cfg := baseCfg.Copy()
+	if cfg.Logger == nil {
+		cfg.Logger = GetDefaultPangeaLogger()
+	}
 	bs := BaseService{
 		Client: NewClient(name, checkConfigID, cfg),
 	}
 	return bs
 }
 
-func (bs *BaseService) PollResult(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
+func (bs *BaseService) PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
 	if e.RequestID == nil {
 		return nil, errors.New("Request ID is empty")
 	}
 
-	resp, err := bs.Client.FetchAcceptedResponse(ctx, *e.RequestID, e.ResultField)
+	resp, err := bs.PollResultByID(ctx, *e.RequestID, e.ResultField)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (bs *BaseService) PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error) {
+	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, v)
 	if err != nil {
 		return nil, err
 	}
 
 	return &PangeaResponse[any]{
 		Response: *resp,
-		Result:   &e.ResultField,
+		Result:   &v,
 	}, nil
+}
+
+func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaResponse[map[string]any], error) {
+	r := make(map[string]any)
+	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, &r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PangeaResponse[map[string]any]{
+		Response: *resp,
+		Result:   &r,
+	}, nil
+}
+
+func (c *Client) GetPendingRequestID() []string {
+	keys := make([]string, len(c.pendingRequestID))
+	i := 0
+	for k := range c.pendingRequestID {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
+func (bs *BaseService) GetPendingRequestID() []string {
+	return bs.Client.GetPendingRequestID()
+}
+
+func (c *Client) addPendingRequestID(rid string) {
+	c.pendingRequestID[rid] = true
+}
+
+func (c *Client) removePendingRequestID(rid string) {
+	delete(c.pendingRequestID, rid)
+}
+
+func initFileWriter() {
+	// Open the output file
+	filename := "pangea_sdk_log.json"
+	var err error
+	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// Where should we close this file?
+	if err != nil {
+		fmt.Printf("Failed to open log file: %s. Logger will go to stdout", filename)
+		file = os.Stdout
+	}
+}
+
+func GetDefaultPangeaLogger() *zerolog.Logger {
+	// Set up the logger
+	initFileWriterOnce.Do(initFileWriter)
+
+	zerolog.TimestampFieldName = "time"
+	zerolog.LevelFieldName = "level"
+	zerolog.MessageFieldName = "message"
+
+	// Set up the JSON file writer as the output
+	logger := zerolog.New(file).With().Timestamp().Logger()
+	return &logger
 }

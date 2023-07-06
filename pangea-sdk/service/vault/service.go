@@ -3,7 +3,7 @@ package vault
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 type Client interface {
@@ -28,7 +28,12 @@ type Client interface {
 	Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error)
 	JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error)
 	JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error)
-	PollResult(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
+
+	// Base service methods
+	GetPendingRequestID() []string
+	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
+	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
+	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
 }
 
 type vault struct {

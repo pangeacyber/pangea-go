@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/ip_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/ip_intel"
 )
 
 func main() {
@@ -26,8 +26,8 @@ func main() {
 	ctx := context.Background()
 	input := &ip_intel.IpVPNRequest{
 		Ip:       "2.56.189.74",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "digitalelement",
 	}
 

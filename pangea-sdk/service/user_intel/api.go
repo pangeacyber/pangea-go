@@ -3,7 +3,7 @@ package user_intel
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 type HashType string
@@ -60,8 +60,8 @@ type UserBreachedRequest struct {
 	IP          string `json:"ip,omitempty"`
 	Start       string `json:"start,omitempty"`
 	End         string `json:"end,omitempty"`
-	Verbose     bool   `json:"verbose,omitempty"`
-	Raw         bool   `json:"raw,omitempty"`
+	Verbose     *bool  `json:"verbose,omitempty"`
+	Raw         *bool  `json:"raw,omitempty"`
 	Provider    string `json:"provider,omitempty"`
 }
 
@@ -119,8 +119,8 @@ type UserPasswordBreachedRequest struct {
 
 	HashType   HashType `json:"hash_type,omitempty"`
 	HashPrefix string   `json:"hash_prefix,omitempty"`
-	Verbose    bool     `json:"verbose,omitempty"`
-	Raw        bool     `json:"raw,omitempty"`
+	Verbose    *bool    `json:"verbose,omitempty"`
+	Raw        *bool    `json:"raw,omitempty"`
 	Provider   string   `json:"provider,omitempty"`
 }
 

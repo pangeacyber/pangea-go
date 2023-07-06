@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/redact"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/redact"
 )
 
 type yourCustomDataStruct struct {
@@ -31,7 +31,7 @@ func main() {
 		"Secret": "My phone number is 415-867-5309",
 	}
 
-	input := &redact.StructuredInput{
+	input := &redact.StructuredRequest{
 		Data: data,
 	}
 

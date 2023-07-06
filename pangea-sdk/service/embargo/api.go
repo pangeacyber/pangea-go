@@ -3,7 +3,7 @@ package embargo
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
 // @summary Check IP
@@ -19,18 +19,18 @@ import (
 //	}
 //
 //	checkResponse, err := embargocli.IPCheck(ctx, input)
-func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*pangea.PangeaResponse[CheckOutput], error) {
+func (e *embargo) IPCheck(ctx context.Context, input *IPCheckRequest) (*pangea.PangeaResponse[CheckResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/ip/check", input)
 	if err != nil {
 		return nil, err
 	}
-	out := CheckOutput{}
+	out := CheckResult{}
 	resp, err := e.Client.Do(ctx, req, &out)
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[CheckOutput]{
+	panresp := pangea.PangeaResponse[CheckResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -50,19 +50,19 @@ func (e *Embargo) IPCheck(ctx context.Context, input *IPCheckInput) (*pangea.Pan
 //	}
 //
 //	checkResponse, err := embargocli.ISOCheck(ctx, input)
-func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*pangea.PangeaResponse[CheckOutput], error) {
+func (e *embargo) ISOCheck(ctx context.Context, input *ISOCheckRequest) (*pangea.PangeaResponse[CheckResult], error) {
 	req, err := e.Client.NewRequest("POST", "v1/iso/check", input)
 	if err != nil {
 		return nil, err
 	}
-	out := CheckOutput{}
+	out := CheckResult{}
 	resp, err := e.Client.Do(ctx, req, &out)
 
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[CheckOutput]{
+	panresp := pangea.PangeaResponse[CheckResult]{
 		Response: *resp,
 		Result:   &out,
 	}
@@ -70,19 +70,19 @@ func (e *Embargo) ISOCheck(ctx context.Context, input *ISOCheckInput) (*pangea.P
 	return &panresp, nil
 }
 
-type IPCheckInput struct {
+type IPCheckRequest struct {
 	pangea.BaseRequest
 
 	// Check this IP against the enabled embargo lists.
 	// Accepts both IPV4 and IPV6 strings.
-	IP *string `json:"ip,omitempty"`
+	IP string `json:"ip,omitempty"`
 }
 
-type ISOCheckInput struct {
+type ISOCheckRequest struct {
 	pangea.BaseRequest
 
 	// Check this two character country ISO-code against the enabled embargo lists.
-	ISOCode *string `json:"iso_code,omitempty"`
+	ISOCode string `json:"iso_code,omitempty"`
 }
 
 type Sanction struct {
@@ -93,7 +93,7 @@ type Sanction struct {
 	Annotations             map[string]interface{} `json:"annotations"`
 }
 
-type CheckOutput struct {
+type CheckResult struct {
 	Count     int        `json:"count"`
 	Sanctions []Sanction `json:"sanctions"`
 }
