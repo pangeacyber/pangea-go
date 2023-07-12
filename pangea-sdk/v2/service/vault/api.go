@@ -948,7 +948,20 @@ func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea
 	return &panresp, err
 }
 
-// FIXME: add docs
+// @summary Create
+//
+// @description Creates a folder.
+//
+// @operationId vault_post_v1_folder_create
+//
+// @example
+//
+//	input := &vault.FolderCreateRequest{
+//	 	Name:   "folder_name",
+//	 	Folder: "parent/folder/name",
+//	}
+//
+//	enc, err := vaultcli.FolderCreate(ctx, input)
 func (v *vault) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
 	if input == nil {
 		return nil, errors.New("nil pointer to struct")
