@@ -28,6 +28,7 @@ type Client interface {
 	Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error)
 	JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error)
 	JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error)
+	FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error)
 
 	// Base service methods
 	GetPendingRequestID() []string

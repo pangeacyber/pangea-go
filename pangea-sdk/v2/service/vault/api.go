@@ -947,3 +947,28 @@ func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea
 
 	return &panresp, err
 }
+
+// FIXME: add docs
+func (v *vault) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := v.Client.NewRequest("POST", "v1/folder/create", input)
+	if err != nil {
+		return nil, err
+	}
+	out := FolderCreateResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FolderCreateResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
