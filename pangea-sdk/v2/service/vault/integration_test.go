@@ -923,3 +923,81 @@ func Test_List_And_Delete(t *testing.T) {
 		}
 	}
 }
+
+func Test_Integration_Folders(t *testing.T) {
+	var FOLDER_PARENT = "test_parent_folder_" + timeStr
+	var FOLDER_NAME = "test_folder_name"
+	var FOLDER_NAME_NEW = "test_folder_name_new"
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	client := vault.New(cfg)
+
+	// Create parent
+	pcr, err := client.FolderCreate(
+		ctx,
+		&vault.FolderCreateRequest{
+			Name:   FOLDER_PARENT,
+			Folder: "/",
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, pcr.Result.ID)
+
+	// Create folder
+	fcr, err := client.FolderCreate(
+		ctx,
+		&vault.FolderCreateRequest{
+			Name:   FOLDER_NAME,
+			Folder: FOLDER_PARENT,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, fcr.Result.ID)
+
+	// Update
+	ur, err := client.Update(
+		ctx,
+		&vault.UpdateRequest{
+			ID:   fcr.Result.ID,
+			Name: FOLDER_NAME_NEW,
+		},
+	)
+	assert.NoError(t, err)
+	assert.Equal(t, fcr.Result.ID, ur.Result.ID)
+
+	// List
+	lr, err := client.List(
+		ctx,
+		&vault.ListRequest{
+			Filter: map[string]string{"folder": FOLDER_PARENT},
+		},
+	)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, lr.Result.Count)
+	assert.Equal(t, FOLDER_NAME_NEW, lr.Result.Items[0].Name)
+	assert.Equal(t, fcr.Result.ID, lr.Result.Items[0].ID)
+
+	// Delete folder
+	dfr, err := client.Delete(
+		ctx,
+		&vault.DeleteRequest{
+			ID: fcr.Result.ID,
+		},
+	)
+	assert.NoError(t, err)
+	assert.Equal(t, dfr.Result.ID, fcr.Result.ID)
+
+	// Delete parent
+	dpr, err := client.Delete(
+		ctx,
+		&vault.DeleteRequest{
+			ID: pcr.Result.ID,
+		},
+	)
+	assert.NoError(t, err)
+	assert.Equal(t, pcr.Result.ID, dpr.Result.ID)
+
+}

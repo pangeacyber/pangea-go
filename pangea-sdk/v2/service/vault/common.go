@@ -292,3 +292,16 @@ type UpdateRequest struct {
 type UpdateResult struct {
 	ID string `json:"id"`
 }
+
+type FolderCreateRequest struct {
+	pangea.BaseRequest
+
+	Name     string   `json:"name"`
+	Folder   string   `json:"folder"`
+	Metadata Metadata `json:"metadata,omitempty"`
+	Tags     Tags     `json:"tags,omitempty"`
+}
+
+type FolderCreateResult struct {
+	ID string `json:"id"`
+}

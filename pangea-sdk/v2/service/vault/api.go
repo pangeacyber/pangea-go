@@ -947,3 +947,41 @@ func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea
 
 	return &panresp, err
 }
+
+// @summary Create
+//
+// @description Creates a folder.
+//
+// @operationId vault_post_v1_folder_create
+//
+// @example
+//
+//	input := &vault.FolderCreateRequest{
+//	 	Name:   "folder_name",
+//	 	Folder: "parent/folder/name",
+//	}
+//
+//	enc, err := vaultcli.FolderCreate(ctx, input)
+func (v *vault) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
+	if input == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := v.Client.NewRequest("POST", "v1/folder/create", input)
+	if err != nil {
+		return nil, err
+	}
+	out := FolderCreateResult{}
+	resp, err := v.Client.Do(ctx, req, &out)
+
+	if resp == nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[FolderCreateResult]{
+		Response: *resp,
+		Result:   &out,
+	}
+
+	return &panresp, err
+}
