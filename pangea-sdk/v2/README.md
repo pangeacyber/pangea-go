@@ -46,12 +46,14 @@ Let's walkthrough an example using:
 - Service: [Secure Audit Log](https://pangea.cloud/services/secure-audit-log/)
 - Endpoint: [/v1/log](https://pangea.cloud/docs/api/audit#log-an-entry)
 
-We need two things to initialize your client -- a `Token` and `Domain`. These can be found on the service overview page. For the Secure Audit Log service, go to [https://console.pangea.cloud/service/audit](https://console.pangea.cloud/service/audit) and take a look at the "Configuration Details" box where it has "Default Token" and "Domain" listed. 
+We need two things to initialize your client -- a `Token` and `Domain`. These can be found on the service overview page. For the Secure Audit Log service, go to [https://console.pangea.cloud/service/audit](https://console.pangea.cloud/service/audit) and take a look at the "Configuration Details" box where it has "Default Token" and "Domain" listed.
 
 Go ahead and set the token and domain as environment variables in our terminal.
+
 ```sh
 $ export PANGEA_AUDIT_TOKEN=pts_mytokenvaluehere
 ```
+
 ```sh
 $ export PANGEA_DOMAIN=aws.us.pangea.cloud
 ```
@@ -59,6 +61,7 @@ $ export PANGEA_DOMAIN=aws.us.pangea.cloud
 Now let's add the SDK to our code.
 
 Import statements:
+
 ```go
 import (
   "context"
@@ -72,6 +75,7 @@ import (
 ```
 
 Initialize your client:
+
 ```go
 // Initialize the Secure Audit Log client
 auditcli, err := audit.New(&pangea.Config{
@@ -82,9 +86,11 @@ if err != nil {
   log.Fatal("failed to create audit client")
 }
 ```
-IMPORTANT! Never hardcode your token. [Use environment variables](https://gobyexample.com/environment-variables) to [avoid committing secrets in your codebase](https://www.thisdot.co/blog/a-guide-to-keeping-secrets-out-of-git-repositories/).  
+
+IMPORTANT! Never hardcode your token. [Use environment variables](https://gobyexample.com/environment-variables) to [avoid committing secrets in your codebase](https://www.thisdot.co/blog/a-guide-to-keeping-secrets-out-of-git-repositories/).
 
 Make a call to the `/v1/log` endpoint using the SDK
+
 ```go
 // Set up our parameters
 ctx := context.Background()
@@ -110,7 +116,6 @@ Full code for the above example available in [the examples directory](https://gi
 If faced some issue using or testing this SDK or a new feature request feel free to open an issue [clicking here](https://github.com/pangeacyber/pangea-go/issues).
 We would need you to provide some basic information like what SDK's version you are using, stack trace if you got it, framework used, and steps to reproduce the issue.
 Also feel free to contact [Pangea support](mailto:support@pangea.cloud) by email or send us a message on [Slack](https://pangea.cloud/join-slack/)
-
 
 ## Contributing
 
