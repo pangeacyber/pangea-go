@@ -19,7 +19,7 @@
 
 A Go SDK for integrating with Pangea Services.
 
-## Instalation
+## Installation
 
 To add Pangea Go SDK to your project, will need to run next command on your project root directory where you should have `go.mod` file:
 
@@ -30,7 +30,7 @@ go get github.com/pangeacyber/pangea-go/pangea-sdk
 
 ## Usage
 
-For samples apps look at [/examples](https://github.com/pangeacyber/pangea-go/tree/main/examples) folder in this repository. There you will find basic samples apps for each services supported on this SDK. Each service folder has a README.md with intructions to install, setup and run.
+For samples apps look at [/examples](https://github.com/pangeacyber/pangea-go/tree/main/examples) folder in this repository. There you will find basic samples apps for each services supported on this SDK. Each service folder has a README.md with instructions to install, setup and run.
 
 
 ## Reporting issues and new features
@@ -51,60 +51,3 @@ These linters will run on every `git commit` operation.
 ### Send a PR
 
 If you would like to [send a PR](https://github.com/pangeacyber/pangea-go/pulls) including a new feature or fixing a bug in code or an error in documents we will really appreciate it and after review and approval you will be included in our [contributors list](./CONTRIBUTING.md)
-
-
-## Writing Docs
-
-To maintain parity with documentation across all our SDKs, please follow this format when writing a doc comment for a *published* function or method. Published means the function or method is listed as an endpoint in our API Reference docs.
-
-Published Doc Example:
-```
-// @summary Redact
-//
-// @description Redacts the content of a single text string.
-//
-// @example
-//
-//	input := &redact.TextInput{
-//  		Text: pangea.String("my phone number is 123-456-7890"),
-//  }
-//
-//  redactOutput, _, err := redactcli.Redact(ctx, input)
-//
-```
-
-Example breakdown:
-```
-// @summary Redact <-- Displayed as the Summary/Heading field in docs
-//
-// @description Redacts the content of a single text string. <-- Displayed as the Description field in docs
-//
-// @example <-- All lines below this are used as the code snippet field in docs
-//
-//  input := &redact.TextInput{
-//  	Text: pangea.String("my phone number is 123-456-7890"),
-//  }
-//
-//  redactOutput, _, err := redactcli.Redact(ctx, input)
-//
-```
-
-Example with deprecation message:
-```
-// @summary Lookup a domain
-//
-// @description Lookup an internet domain to retrieve reputation data.
-//
-// @deprecated Use Reputation instead.
-//
-// @example
-//
-//	input := &domain_intel.DomainLookupInput{
-//		Domain: "737updatesboeing.com",
-//		Raw: true,
-//		Verbose: true,
-//		Provider: "domaintools",
-//	}
-//
-//	checkResponse, err := domainintel.Lookup(ctx, input)
-```

@@ -10,6 +10,8 @@ import (
 //
 // @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
 //
+// @operationId url_intel_post_v1_reputation
+//
 // @example
 //
 //	input := &url_intel.UrlReputationRequest{

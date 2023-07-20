@@ -17,12 +17,73 @@ The documentation pipeline here looks like:
 
 ## Running the autogen sdk doc script
 
-From the root of the `go-pangea` repo run:
+From the directory `pangea-go/pangea-sdk/v2` run:
 ```sh
-go run dev/autogendoc/main.go
+go run ./dev/autogendoc/main.go
 ```
 That will output the script in the terminal. If you're on a mac, you can do
 ```sh
-go run dev/autogendoc/main.go | pbcopy
+go run ./dev/autogendoc/main.go | pbcopy
 ```
 to copy the output from the script into your clipboard.
+
+## Writing Docs
+
+To maintain parity with documentation across all our SDKs, please follow this format when writing a doc comment for a *published* function or method. Published means the function or method is listed as an endpoint in our API Reference docs.
+
+Published Doc Example:
+```
+// @summary Redact
+//
+// @description Redacts the content of a single text string.
+//
+// @operationId redact_post_v1_redact
+//
+// @example
+//
+//	input := &redact.TextInput{
+//  		Text: pangea.String("my phone number is 123-456-7890"),
+//  }
+//
+//  redactOutput, _, err := redactcli.Redact(ctx, input)
+//
+```
+
+Example breakdown:
+```
+// @summary Redact <-- Displayed as the Summary/Heading field in docs
+//
+// @description Redacts the content of a single text string. <-- Displayed as the Description field in docs
+//
+// @operationId redact_post_v1_redact <-- The operationId from the OpenAPI spec
+//
+// @example <-- All lines below this are used as the code snippet field in docs
+//
+//  input := &redact.TextInput{
+//  	Text: pangea.String("my phone number is 123-456-7890"),
+//  }
+//
+//  redactOutput, _, err := redactcli.Redact(ctx, input)
+//
+```
+
+Example with deprecation message:
+```
+// @summary Lookup a domain
+//
+// @description Lookup an internet domain to retrieve reputation data.
+//
+// @deprecated Use Reputation instead.
+//
+// @example
+//
+//	input := &domain_intel.DomainLookupInput{
+//		Domain: "737updatesboeing.com",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "domaintools",
+//	}
+//
+//	checkResponse, err := domainintel.Lookup(ctx, input)
+```
+
