@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
 )
 
 func main() {
@@ -34,5 +34,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(rootResponse.Result))
+	fmt.Println("Result: ", pangea.Stringify(rootResponse.Result))
 }

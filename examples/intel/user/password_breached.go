@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/user_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/user_intel"
 )
 
 func main() {
@@ -34,8 +34,8 @@ func main() {
 		// should setup right hash_type here, sha256 or sha1
 		HashType:   user_intel.HTsha265,
 		HashPrefix: hashPrefix,
-		Raw:        true,
-		Verbose:    true,
+		Raw:        pangea.Bool(true),
+		Verbose:    pangea.Bool(true),
 		Provider:   "spycloud",
 	}
 

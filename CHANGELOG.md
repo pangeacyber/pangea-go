@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2023-07-14
+
+# Added
+
+- Vault /folder/create endpoint support
+
+
+## [2.0.0] - 2023-07-06
+
+# Added
+
+- Logger support on each service
+- Service methods to fetch async request's results
+
+# Changed
+
+- Audit service now allow user to setup CustomEvent format
+- Audit.Log() now receive a IEvent interface instead of Event to log
+- Make service structs private to force using its interface
+- Rename Request/Result structs to user Request/Result postfix instead of Input/Output
+- Update multiple fields to not be pointers unnecesarily
+- Vault field RotationState is now a ItemVersionState
+
+# Deleted
+
+- All Intel deprecated methods
+
+
 ## [1.10.0] - 2023-06-26
 
 # Added
@@ -144,7 +172,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redact client
 
 
-[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.10.0...main
+[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v2.1.0...main
+[2.1.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.10.0...v2.0.0
 [1.10.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.9.1...v1.10.0
 [1.9.1]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v1.8.0...v1.9.0

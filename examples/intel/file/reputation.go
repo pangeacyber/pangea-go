@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/file_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/file_intel"
 )
 
 func main() {
@@ -26,8 +26,8 @@ func main() {
 	input := &file_intel.FileReputationRequest{
 		Hash:     "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e",
 		HashType: "sha256",
-		Raw:      true,
-		Verbose:  true,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
 		Provider: "reversinglabs",
 	}
 	resp, err := intelcli.Reputation(ctx, input)
@@ -35,5 +35,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result))
+	fmt.Println(pangea.Stringify(resp.Result.Data))
 }

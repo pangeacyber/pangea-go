@@ -38,5 +38,5 @@ This is a list of tools or useful stuff that you will found out in this reposito
 |----- **redact**: Redact service examples [Click here](/examples/redact)  
 |----- **vault**: Vault service examples [Click here](/examples/vault)  
 |----- **README.md**: Example's instructions to install and run [Click here](/examples/README.md)  
-|- **pangea-sdk**: Pangea Java Go folder. Also available through `go get` [Click here](/pangea-sdk)  
-|----- **README.md**: Pangea Go SDK install and usage instructions [Click here](/pangea-sdk/README.md)  
+|- **pangea-sdk**: Pangea Go SDK folder. Also available through `go get` [Click here](/pangea-sdk)  
+|----- **README.md**: Pangea Go SDK install and usage instructions [Click here](/pangea-sdk/v2/README.md)  
