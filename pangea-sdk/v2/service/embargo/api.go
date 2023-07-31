@@ -3,6 +3,7 @@ package embargo
 import (
 	"context"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/request"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
@@ -20,21 +21,7 @@ import (
 //
 //	checkResponse, err := embargocli.IPCheck(ctx, input)
 func (e *embargo) IPCheck(ctx context.Context, input *IPCheckRequest) (*pangea.PangeaResponse[CheckResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/ip/check", input)
-	if err != nil {
-		return nil, err
-	}
-	out := CheckResult{}
-	resp, err := e.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[CheckResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-	return &panresp, nil
+	return request.DoPost(ctx, e.Client, "v1/ip/check", input, &CheckResult{})
 }
 
 // @summary ISO Code Check
@@ -51,23 +38,7 @@ func (e *embargo) IPCheck(ctx context.Context, input *IPCheckRequest) (*pangea.P
 //
 //	checkResponse, err := embargocli.ISOCheck(ctx, input)
 func (e *embargo) ISOCheck(ctx context.Context, input *ISOCheckRequest) (*pangea.PangeaResponse[CheckResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/iso/check", input)
-	if err != nil {
-		return nil, err
-	}
-	out := CheckResult{}
-	resp, err := e.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[CheckResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, e.Client, "v1/iso/check", input, &CheckResult{})
 }
 
 type IPCheckRequest struct {

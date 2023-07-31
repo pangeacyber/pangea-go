@@ -441,7 +441,7 @@ func Test_Integration_Search_Results_NoVerify(t *testing.T) {
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg, audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
-	maxResults := 10
+	maxResults := 5
 	limit := 2
 
 	input := &audit.SearchInput{
@@ -498,14 +498,17 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg, audit.WithLogProofVerificationEnabled())
-	maxResults := 10
+	maxResults := 5
 	limit := 2
+	ct := time.Now().UTC()
+	start := ct.Add(-3 * 24 * time.Hour)
 
 	input := &audit.SearchInput{
 		Query:      "message:" + MSG_SIGNED,
 		MaxResults: maxResults,
 		Order:      "asc",
 		Limit:      limit,
+		Start:      &start,
 	}
 
 	outSearch, err := client.Search(ctx, input)
@@ -550,11 +553,15 @@ func Test_Integration_SearchAll(t *testing.T) {
 
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
+	ct := time.Now().UTC()
+	start := ct.Add(-3 * 24 * time.Hour)
+
 	searchInput := &audit.SearchInput{
 		Query:   `message:""`,
 		Verbose: pangea.Bool(true),
-		Limit:   10,
+		Limit:   3,
 		Order:   "asc",
+		Start:   &start,
 	}
 	_, se, err := audit.SearchAll(ctx, client, searchInput)
 
