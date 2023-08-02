@@ -466,11 +466,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 
 	r, err = c.handledQueued(ctx, r)
 	if err != nil {
-		return nil, err
-	}
-
-	err = c.CheckResponse(r, v)
-	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
 			Str("method", "Do.handleQueued").
