@@ -3,6 +3,7 @@ package redact
 import (
 	"context"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/request"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
@@ -20,22 +21,7 @@ import (
 //
 //	redactResponse, err := redactcli.Redact(ctx, input)
 func (r *redact) Redact(ctx context.Context, input *TextRequest) (*pangea.PangeaResponse[TextResult], error) {
-	req, err := r.Client.NewRequest("POST", "v1/redact", input)
-	if err != nil {
-		return nil, err
-	}
-	out := TextResult{}
-	resp, err := r.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-	panresp := pangea.PangeaResponse[TextResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, r.Client, "v1/redact", input, &TextResult{})
 }
 
 // @summary Redact structured
@@ -56,23 +42,7 @@ func (r *redact) Redact(ctx context.Context, input *TextRequest) (*pangea.Pangea
 //
 //	redactResponse, err := redactcli.RedactStructured(ctx, input)
 func (r *redact) RedactStructured(ctx context.Context, input *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error) {
-	req, err := r.Client.NewRequest("POST", "v1/redact_structured", input)
-	if err != nil {
-		return nil, err
-	}
-	out := StructuredResult{}
-	resp, err := r.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[StructuredResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, r.Client, "v1/redact_structured", input, &StructuredResult{})
 }
 
 type TextRequest struct {

@@ -3,6 +3,7 @@ package domain_intel
 import (
 	"context"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/request"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
@@ -21,23 +22,7 @@ import (
 //
 //	checkResponse, err := domainintel.Reputation(ctx, input)
 func (e *domainIntel) Reputation(ctx context.Context, input *DomainReputationRequest) (*pangea.PangeaResponse[DomainReputationResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/reputation", input)
-	if err != nil {
-		return nil, err
-	}
-	out := DomainReputationResult{}
-	resp, err := e.Client.Do(ctx, req, &out)
-
-	if resp == nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[DomainReputationResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, err
+	return request.DoPost(ctx, e.Client, "v1/reputation", input, &DomainReputationResult{})
 }
 
 type DomainReputationRequest struct {
