@@ -489,6 +489,13 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		return nil, err
 	}
 
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "Do").
+		Str("url", u).
+		Interface("RawResult", r.RawResult).
+		Send()
+
 	switch v.(type) {
 	case nil:
 		// This should never be fired to user because Client is to internal use
@@ -848,6 +855,7 @@ func GetDefaultPangeaLogger() *zerolog.Logger {
 	// Set up the logger
 	initFileWriterOnce.Do(initFileWriter)
 
+	zerolog.TimeFieldFormat = "2006-01-02T15:04:05.000000Z07:00"
 	zerolog.TimestampFieldName = "time"
 	zerolog.LevelFieldName = "level"
 	zerolog.MessageFieldName = "message"
