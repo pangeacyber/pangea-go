@@ -15,6 +15,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -50,6 +51,12 @@ func (br *BaseRequest) GetConfigID() string {
 
 func (br *BaseRequest) SetConfigID(c string) {
 	br.ConfigID = c
+}
+
+// We should remember that if we kill context we are going to kill go rutine.
+// Do not defer cancel right after calling CallAsync
+func CallAsync[T any, R any](f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
+	return NewPromise(f, ctx, input)
 }
 
 type RetryConfig struct {
@@ -102,6 +109,11 @@ type Config struct {
 	Logger *zerolog.Logger
 }
 
+type CtxNCancel struct {
+	Ctx    context.Context
+	Cancel context.CancelCauseFunc
+}
+
 // A Client manages communication with the Pangea API.
 type Client struct {
 	// The auth token of the user.
@@ -117,13 +129,22 @@ type Client struct {
 	serviceName string
 
 	// Map to save pending requests id
-	pendingRequestID map[string]bool
+	prid sync.Map
 
 	// Client logger
 	Logger zerolog.Logger
 
 	// Flag to check config ID on request
 	checkConfigID bool
+
+	// wait group in case of async calls
+	wg sync.WaitGroup
+
+	// unique incremental ID
+	uiid atomic.Int64
+
+	// context in progress with cancel function
+	cip sync.Map
 }
 
 func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalConfigs ...*Config) *Client {
@@ -144,13 +165,16 @@ func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalCo
 	}
 
 	return &Client{
-		serviceName:      service,
-		token:            cfg.Token,
-		config:           cfg,
-		userAgent:        userAgent,
-		checkConfigID:    checkConfigID,
-		pendingRequestID: make(map[string]bool),
-		Logger:           *cfg.Logger,
+		serviceName:   service,
+		token:         cfg.Token,
+		config:        cfg,
+		userAgent:     userAgent,
+		checkConfigID: checkConfigID,
+		prid:          sync.Map{},
+		Logger:        *cfg.Logger,
+		uiid:          atomic.Int64{},
+		cip:           sync.Map{},
+		wg:            sync.WaitGroup{},
 	}
 }
 
@@ -210,6 +234,11 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 		return "", err
 	}
 	return u.String(), nil
+}
+
+func (c *Client) incUIID() int64 {
+	v := c.uiid.Add(1)
+	return v
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr,
@@ -381,6 +410,20 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response,
 	return resp, nil
 }
 
+func (c *Client) saveCtx(ctx context.Context) (nctx context.Context, rmCtx func()) {
+	id := c.incUIID()
+	nctx, cancel := context.WithCancelCause(ctx)
+	v := CtxNCancel{
+		Ctx:    nctx,
+		Cancel: cancel,
+	}
+	c.cip.Store(id, &v)
+
+	return nctx, func() {
+		c.cip.Delete(id)
+	}
+}
+
 // Do sends an API request and returns the API response. The API response is
 // JSON decoded and stored in the value pointed to by v, or returned as an
 // error if an API error has occurred. If v is nil, and no error hapens, the response is returned as is.
@@ -397,6 +440,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 			Err(errNonNilContext)
 		return nil, errNonNilContext
 	}
+
+	ctx, rmCtx := c.saveCtx(ctx)
+	defer rmCtx()
+	c.wg.Add(1)
+	defer c.wg.Done()
 
 	resp, err := c.BareDo(ctx, req)
 	if err != nil {
@@ -722,13 +770,59 @@ func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaRe
 }
 
 func (c *Client) GetPendingRequestID() []string {
-	keys := make([]string, len(c.pendingRequestID))
-	i := 0
-	for k := range c.pendingRequestID {
-		keys[i] = k
-		i++
-	}
+	keys := []string{}
+	c.prid.Range(func(key, value any) bool {
+		v, ok := value.(string)
+		if ok {
+			keys = append(keys, v)
+		}
+		return true
+	})
 	return keys
+}
+
+func (c *Client) GetNumRequestsInProgress() int {
+	count := 0
+	c.cip.Range(func(key, value any) bool {
+		count++
+		return true
+	})
+	return count
+}
+
+func (bs *BaseService) GetNumRequestsInProgress() int {
+	return bs.Client.GetNumRequestsInProgress()
+}
+
+func (c *Client) WaitGroup() {
+	c.wg.Wait()
+}
+
+func (bs *BaseService) WaitGroup() {
+	bs.Client.WaitGroup()
+}
+
+// Requests in progress
+func (c *Client) KillRequestsInProgress() {
+	// Cancel all requests in progress
+	c.cip.Range(func(key, value any) bool {
+		ctxNcancel, ok := value.(*CtxNCancel)
+		if ok && ctxNcancel.Cancel != nil {
+			ctxNcancel.Cancel(errors.New("canceled in shutdown"))
+		}
+		c.cip.Delete(key)
+		return true
+	})
+}
+
+func (bs *BaseService) Close() {
+	// Shall we do anything else here?
+	bs.Client.KillRequestsInProgress()
+}
+
+func (bs *BaseService) KillRequestsInProgress() {
+	bs.Client.KillRequestsInProgress()
+	bs.Client.WaitGroup()
 }
 
 func (bs *BaseService) GetPendingRequestID() []string {
@@ -736,11 +830,11 @@ func (bs *BaseService) GetPendingRequestID() []string {
 }
 
 func (c *Client) addPendingRequestID(rid string) {
-	c.pendingRequestID[rid] = true
+	c.prid.Store(rid, true)
 }
 
 func (c *Client) removePendingRequestID(rid string) {
-	delete(c.pendingRequestID, rid)
+	c.prid.Delete(rid)
 }
 
 func initFileWriter() {
