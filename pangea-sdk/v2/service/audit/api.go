@@ -43,11 +43,14 @@ func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.Pange
 
 	if a.verifyProofs {
 		input.Verbose = true
-		input.PrevRoot = a.lastUnpRootHash
+		input.PrevRoot = a.lastUnpRootHash.Load()
 	}
 
 	if a.signer != nil {
+		a.muSigner.Lock()
 		err := input.SignEvent(*a.signer, a.publicKeyInfo)
+		a.muSigner.Unlock()
+
 		if err != nil {
 			return nil, err
 		}
@@ -185,8 +188,8 @@ func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 			res, _ := VerifyMembershipProof(*nurh, log.Hash, *log.MembershipProof)
 			log.MembershipVerification = res
 
-			if log.ConsistencyProof != nil && a.lastUnpRootHash != nil {
-				b, _ := verifyConsistencyProof(*a.lastUnpRootHash, *nurh, *log.ConsistencyProof)
+			if log.ConsistencyProof != nil && a.lastUnpRootHash.Load() != nil {
+				b, _ := verifyConsistencyProof(*(a.lastUnpRootHash.Load()), *nurh, *log.ConsistencyProof)
 				if b {
 					log.ConcistencyVerification = Success
 				} else {
@@ -197,7 +200,7 @@ func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
 	}
 
 	if nurh != nil {
-		a.lastUnpRootHash = nurh
+		a.lastUnpRootHash.Store(nurh)
 	}
 	return nil
 }

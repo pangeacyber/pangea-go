@@ -3,6 +3,8 @@ package audit
 import (
 	"context"
 	"fmt"
+	"sync"
+	"sync/atomic"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
@@ -37,11 +39,12 @@ type audit struct {
 	pangea.BaseService
 
 	signer                *signer.Signer
+	muSigner              sync.Mutex
 	verifyProofs          bool
 	skipEventVerification bool
 	publicKeyInfo         map[string]string
 	rp                    RootsProvider
-	lastUnpRootHash       *string
+	lastUnpRootHash       atomic.Pointer[string]
 	tenantID              string
 	schema                any
 }
@@ -51,12 +54,12 @@ func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 		BaseService:           pangea.NewBaseService("audit", true, cfg),
 		skipEventVerification: false,
 		rp:                    nil,
-		lastUnpRootHash:       nil,
 		signer:                nil,
 		publicKeyInfo:         nil,
 		tenantID:              "",
 		schema:                StandardEvent{},
 	}
+	cli.lastUnpRootHash.Store(nil)
 	for _, opt := range opts {
 		err := opt(cli)
 		if err != nil {
