@@ -3,6 +3,7 @@ package user_intel
 import (
 	"context"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/request"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
@@ -31,23 +32,7 @@ const (
 //
 // out, err := userintel.UserBreached(ctx, input)
 func (e *userIntel) UserBreached(ctx context.Context, input *UserBreachedRequest) (*pangea.PangeaResponse[UserBreachedResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/user/breached", input)
-	if err != nil {
-		return nil, err
-	}
-	out := UserBreachedResult{}
-	resp, err := e.Client.Do(ctx, req, &out)
-
-	if resp == nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserBreachedResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, err
+	return request.DoPost(ctx, e.Client, "v1/user/breached", input, &UserBreachedResult{})
 }
 
 type UserBreachedRequest struct {
@@ -94,23 +79,7 @@ type UserBreachedResult struct {
 //
 // out, err := userintel.PasswordBreached(ctx, input)
 func (e *userIntel) PasswordBreached(ctx context.Context, input *UserPasswordBreachedRequest) (*pangea.PangeaResponse[UserPasswordBreachedResult], error) {
-	req, err := e.Client.NewRequest("POST", "v1/password/breached", input)
-	if err != nil {
-		return nil, err
-	}
-	out := UserPasswordBreachedResult{}
-	resp, err := e.Client.Do(ctx, req, &out)
-
-	if resp == nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserPasswordBreachedResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, err
+	return request.DoPost(ctx, e.Client, "v1/password/breached", input, &UserPasswordBreachedResult{})
 }
 
 type UserPasswordBreachedRequest struct {
