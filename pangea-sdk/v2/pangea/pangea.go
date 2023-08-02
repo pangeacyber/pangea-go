@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -51,12 +50,6 @@ func (br *BaseRequest) GetConfigID() string {
 
 func (br *BaseRequest) SetConfigID(c string) {
 	br.ConfigID = c
-}
-
-// We should remember that if we kill context we are going to kill go rutine.
-// Do not defer cancel right after calling CallAsync
-func CallAsync[T any, R any](f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
-	return NewPromise(f, ctx, input)
 }
 
 type RetryConfig struct {
@@ -373,29 +366,6 @@ func (c *Client) SetHeaders(req *http.Request) {
 		req.Header.Set("User-Agent", c.userAgent)
 	}
 	mergeHeaders(req, c.config.AdditionalHeaders)
-}
-
-type PangeaResponse[T any] struct {
-	Response
-	Result *T
-}
-
-func (r *Response) UnmarshalResult(target interface{}) error {
-	return json.Unmarshal(r.RawResult, target)
-}
-
-// newResponse takes a http.Response and tries to parse the body into a base pangea API response.
-func newResponse(r *http.Response) (*Response, error) {
-	response := &Response{HTTPResponse: r}
-	defer r.Body.Close()
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil, NewUnmarshalError(err, []byte{}, r)
-	}
-	if err := json.Unmarshal(data, response); err != nil {
-		return nil, NewUnmarshalError(err, data, r)
-	}
-	return response, nil
 }
 
 // BareDo sends an API request and lets you handle the api response.
@@ -718,59 +688,6 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	return resp, nil
 }
 
-type BaseService struct {
-	Client *Client
-}
-
-func NewBaseService(name string, checkConfigID bool, baseCfg *Config) BaseService {
-	cfg := baseCfg.Copy()
-	if cfg.Logger == nil {
-		cfg.Logger = GetDefaultPangeaLogger()
-	}
-	bs := BaseService{
-		Client: NewClient(name, checkConfigID, cfg),
-	}
-	return bs
-}
-
-func (bs *BaseService) PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
-	if e.RequestID == nil {
-		return nil, errors.New("Request ID is empty")
-	}
-
-	resp, err := bs.PollResultByID(ctx, *e.RequestID, e.ResultField)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (bs *BaseService) PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error) {
-	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, v)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PangeaResponse[any]{
-		Response: *resp,
-		Result:   &v,
-	}, nil
-}
-
-func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaResponse[map[string]any], error) {
-	r := make(map[string]any)
-	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, &r)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PangeaResponse[map[string]any]{
-		Response: *resp,
-		Result:   &r,
-	}, nil
-}
-
 func (c *Client) GetPendingRequestID() []string {
 	keys := []string{}
 	c.prid.Range(func(key, value any) bool {
@@ -792,16 +709,8 @@ func (c *Client) GetNumRequestsInProgress() int {
 	return count
 }
 
-func (bs *BaseService) GetNumRequestsInProgress() int {
-	return bs.Client.GetNumRequestsInProgress()
-}
-
 func (c *Client) WaitGroup() {
 	c.wg.Wait()
-}
-
-func (bs *BaseService) WaitGroup() {
-	bs.Client.WaitGroup()
 }
 
 // Requests in progress
@@ -817,50 +726,10 @@ func (c *Client) KillRequestsInProgress() {
 	})
 }
 
-func (bs *BaseService) Close() {
-	// Shall we do anything else here?
-	bs.Client.KillRequestsInProgress()
-}
-
-func (bs *BaseService) KillRequestsInProgress() {
-	bs.Client.KillRequestsInProgress()
-	bs.Client.WaitGroup()
-}
-
-func (bs *BaseService) GetPendingRequestID() []string {
-	return bs.Client.GetPendingRequestID()
-}
-
 func (c *Client) addPendingRequestID(rid string) {
 	c.prid.Store(rid, true)
 }
 
 func (c *Client) removePendingRequestID(rid string) {
 	c.prid.Delete(rid)
-}
-
-func initFileWriter() {
-	// Open the output file
-	filename := "pangea_sdk_log.json"
-	var err error
-	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// Where should we close this file?
-	if err != nil {
-		fmt.Printf("Failed to open log file: %s. Logger will go to stdout", filename)
-		file = os.Stdout
-	}
-}
-
-func GetDefaultPangeaLogger() *zerolog.Logger {
-	// Set up the logger
-	initFileWriterOnce.Do(initFileWriter)
-
-	zerolog.TimeFieldFormat = "2006-01-02T15:04:05.000000Z07:00"
-	zerolog.TimestampFieldName = "time"
-	zerolog.LevelFieldName = "level"
-	zerolog.MessageFieldName = "message"
-
-	// Set up the JSON file writer as the output
-	logger := zerolog.New(file).With().Timestamp().Logger()
-	return &logger
 }

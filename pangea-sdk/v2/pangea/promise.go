@@ -69,3 +69,9 @@ func (p *Promise[T]) Get() (*PangeaResponse[T], error) {
 	p.Wait()
 	return p.res, p.err
 }
+
+// We should remember that if we kill context we are going to kill go rutine.
+// Do not defer cancel right after calling CallAsync
+func CallAsync[T any, R any](f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
+	return NewPromise(f, ctx, input)
+}

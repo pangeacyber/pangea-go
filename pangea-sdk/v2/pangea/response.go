@@ -3,6 +3,7 @@ package pangea
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -37,4 +38,27 @@ func (r *ResponseHeader) String() string {
 	return fmt.Sprintf("request_id: %v, request_time: %v, response_time: %v, status: %v, summary: %v",
 		StringValue(r.RequestID), StringValue(r.RequestTime), StringValue(r.ResponseTime),
 		StringValue(r.Status), StringValue(r.Summary))
+}
+
+type PangeaResponse[T any] struct {
+	Response
+	Result *T
+}
+
+func (r *Response) UnmarshalResult(target interface{}) error {
+	return json.Unmarshal(r.RawResult, target)
+}
+
+// newResponse takes a http.Response and tries to parse the body into a base pangea API response.
+func newResponse(r *http.Response) (*Response, error) {
+	response := &Response{HTTPResponse: r}
+	defer r.Body.Close()
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, NewUnmarshalError(err, []byte{}, r)
+	}
+	if err := json.Unmarshal(data, response); err != nil {
+		return nil, NewUnmarshalError(err, data, r)
+	}
+	return response, nil
 }
