@@ -27,6 +27,8 @@ func Test_Integration_Async_CallAndWait(t *testing.T) {
 	client := embargo.New(cfg)
 	defer client.Close()
 
+	w := pangea.NewWorker(5)
+
 	// Call 1
 	ctx1, cancelFn1 := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn1()
@@ -34,7 +36,7 @@ func Test_Integration_Async_CallAndWait(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p1 := pangea.CallAsync(client.ISOCheck, ctx1, input1)
+	p1 := pangea.CallAsync(w, client.ISOCheck, ctx1, input1)
 	assert.NotNil(t, p1)
 
 	p1.Wait()
@@ -52,6 +54,8 @@ func Test_Integration_Async_CancelCall(t *testing.T) {
 	client := embargo.New(cfg)
 	defer client.Close()
 
+	w := pangea.NewWorker(5)
+
 	// Call 1
 	ctx1, cancelFn1 := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn1()
@@ -59,7 +63,7 @@ func Test_Integration_Async_CancelCall(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p1 := pangea.CallAsync(client.ISOCheck, ctx1, input1)
+	p1 := pangea.CallAsync(w, client.ISOCheck, ctx1, input1)
 	assert.NotNil(t, p1)
 
 	time.Sleep(300 * time.Millisecond) // Wait for the call to be sent
@@ -76,6 +80,8 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 	client := embargo.New(cfg)
 	defer client.Close()
 
+	w := pangea.NewWorker(5)
+
 	// Call 1
 	ctx1, cancelFn1 := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn1()
@@ -83,7 +89,7 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p1 := pangea.CallAsync(client.ISOCheck, ctx1, input1)
+	p1 := pangea.CallAsync(w, client.ISOCheck, ctx1, input1)
 	assert.NotNil(t, p1)
 
 	// Call 2
@@ -93,7 +99,7 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p2 := pangea.CallAsync(client.ISOCheck, ctx2, input2)
+	p2 := pangea.CallAsync(w, client.ISOCheck, ctx2, input2)
 	assert.NotNil(t, p2)
 
 	// Call 3
@@ -103,7 +109,7 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p3 := pangea.CallAsync(client.ISOCheck, ctx3, input3)
+	p3 := pangea.CallAsync(w, client.ISOCheck, ctx3, input3)
 	assert.NotNil(t, p3)
 
 	time.Sleep(300 * time.Millisecond) // Wait for the calls to be sent
