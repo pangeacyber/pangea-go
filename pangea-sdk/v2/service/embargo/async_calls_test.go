@@ -28,6 +28,7 @@ func Test_Integration_Async_CallAndWait(t *testing.T) {
 	defer client.Close()
 
 	w := pangea.NewWorker(5)
+	defer w.Close()
 
 	// Call 1
 	ctx1, cancelFn1 := context.WithTimeout(context.Background(), 5*time.Second)
@@ -36,8 +37,9 @@ func Test_Integration_Async_CallAndWait(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p1 := pangea.CallAsync(w, client.ISOCheck, ctx1, input1)
+	p1 := pangea.NewPromise(client.ISOCheck, ctx1, input1)
 	assert.NotNil(t, p1)
+	w.Run(p1.Execute)
 
 	p1.Wait()
 
@@ -55,6 +57,7 @@ func Test_Integration_Async_CancelCall(t *testing.T) {
 	defer client.Close()
 
 	w := pangea.NewWorker(5)
+	defer w.Close()
 
 	// Call 1
 	ctx1, cancelFn1 := context.WithTimeout(context.Background(), 5*time.Second)
@@ -63,8 +66,9 @@ func Test_Integration_Async_CancelCall(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p1 := pangea.CallAsync(w, client.ISOCheck, ctx1, input1)
+	p1 := pangea.NewPromise(client.ISOCheck, ctx1, input1)
 	assert.NotNil(t, p1)
+	w.Run(p1.Execute)
 
 	time.Sleep(300 * time.Millisecond) // Wait for the call to be sent
 	p1.Cancel()                        // Cancel the call
@@ -81,6 +85,7 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 	defer client.Close()
 
 	w := pangea.NewWorker(5)
+	defer w.Close()
 
 	// Call 1
 	ctx1, cancelFn1 := context.WithTimeout(context.Background(), 5*time.Second)
@@ -89,8 +94,9 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p1 := pangea.CallAsync(w, client.ISOCheck, ctx1, input1)
+	p1 := pangea.NewPromise(client.ISOCheck, ctx1, input1)
 	assert.NotNil(t, p1)
+	w.Run(p1.Execute)
 
 	// Call 2
 	ctx2, cancelFn2 := context.WithTimeout(context.Background(), 5*time.Second)
@@ -99,8 +105,9 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p2 := pangea.CallAsync(w, client.ISOCheck, ctx2, input2)
+	p2 := pangea.NewPromise(client.ISOCheck, ctx2, input2)
 	assert.NotNil(t, p2)
+	w.Run(p2.Execute)
 
 	// Call 3
 	ctx3, cancelFn3 := context.WithTimeout(context.Background(), 5*time.Second)
@@ -109,10 +116,13 @@ func Test_Integration_Async_MultipleCalls(t *testing.T) {
 		ISOCode: "CU",
 	}
 
-	p3 := pangea.CallAsync(w, client.ISOCheck, ctx3, input3)
+	p3 := pangea.NewPromise(client.ISOCheck, ctx3, input3)
 	assert.NotNil(t, p3)
+	w.Run(p3.Execute)
 
-	time.Sleep(300 * time.Millisecond) // Wait for the calls to be sent
+	time.Sleep(100 * time.Millisecond) // Wait for the calls to be sent
+	assert.Equal(t, uint(3), w.ThreadsRunning())
+	assert.Equal(t, uint(0), w.ThreadsPending())
 	assert.Equal(t, 3, client.GetNumRequestsInProgress())
 
 	// Wait for the calls to finish

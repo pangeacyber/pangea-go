@@ -18,7 +18,7 @@ type Promise[T any] struct {
 	running atomic.Bool
 }
 
-func newPromise[T any, R any](f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
+func NewPromise[T any, R any](f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
 	ctx, cancel := context.WithCancelCause(ctx)
 
 	p := &Promise[T]{
@@ -87,18 +87,19 @@ func (p *Promise[T]) Get() (*PangeaResponse[T], error) {
 
 // We should remember that if we kill context we are going to kill go rutine.
 // Do not defer cancel right after calling CallAsync
-func CallAsync[T any, R any](w *Worker, f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
-	p := newPromise(f, ctx, input)
-	w.Run(p.Execute)
-	return p
-}
+// func CallAsync[T any, R any](w *Worker, f func(ctx context.Context, input R) (*PangeaResponse[T], error), ctx context.Context, input R) *Promise[T] {
+// 	p := newPromise(f, ctx, input)
+// 	w.Run(p.Execute)
+// 	return p
+// }
 
 type Worker struct {
-	maxThreads     uint
-	currentThreads atomic.Int32
-	ready          chan bool
-	functions      chan func()
-	maxLock        sync.Mutex
+	maxThreads uint
+	inprogress chan int
+	functions  chan func()
+	wg         sync.WaitGroup
+	stop       chan bool // To stop runner go rutine
+	closed     bool
 }
 
 func NewWorker(maxThreads uint) *Worker {
@@ -109,52 +110,77 @@ func NewWorker(maxThreads uint) *Worker {
 	w := Worker{
 		maxThreads: maxThreads,
 		functions:  make(chan func()),
-		ready:      make(chan bool),
+		inprogress: make(chan int, maxThreads),
+		stop:       make(chan bool),
+		closed:     false,
 	}
-	w.currentThreads.Store(0)
-	w.maxLock = sync.Mutex{}
 	go w.runner()
-	go w.releaser()
 	return &w
 }
 
+func (w *Worker) MaxThreads() uint {
+	return w.maxThreads
+}
+
+func (w *Worker) ThreadsRunning() uint {
+	return uint(len(w.inprogress))
+}
+
+func (w *Worker) ThreadsPending() uint {
+	return uint(len(w.functions))
+}
+
 func (w *Worker) Run(f func()) {
+	if w.closed {
+		return
+	}
 	w.functions <- f
 }
 
 func (w *Worker) runner() {
+	var f func()
+	defer func() {
+		if r := recover(); r != nil {
+			go w.runner()
+		} else {
+			w.closed = true
+		}
+	}()
+
 	for {
-		if (uint(w.currentThreads.Load())) >= w.maxThreads {
-			w.maxLock.Lock()
+		select {
+		case <-w.stop:
+			return // Stop the worker
+		case f = <-w.functions:
+			// do nothing
 		}
 
-		w.maxLock.Lock() // Wait until we have a slot
-		w.maxLock.Unlock()
-		f := <-w.functions
+		select {
+		case <-w.stop:
+			return // Stop the worker
+		case w.inprogress <- 1:
+			// do nothing
+		}
 		w.run(f)
-	}
-}
-
-func (w *Worker) releaser() {
-	for {
-		<-w.ready
-		w.currentThreads.Add(-1)
-		if !w.maxLock.TryLock() {
-			w.maxLock.Unlock()
-		}
 	}
 }
 
 func (w *Worker) finish() {
 	if r := recover(); r != nil {
 	}
-	w.ready <- true
+	w.wg.Done()
+	<-w.inprogress
 }
 
 func (w *Worker) run(f func()) {
-	w.currentThreads.Add(1)
+	w.wg.Add(1)
 	go func() {
 		defer w.finish()
 		f()
 	}()
+}
+
+func (w *Worker) Close() {
+	w.stop <- true
+	w.wg.Wait()
 }
