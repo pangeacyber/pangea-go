@@ -3,6 +3,7 @@ package authn
 import (
 	"context"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/request"
 	v "github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
@@ -21,24 +22,7 @@ type ClientUserinfoRequest struct {
 }
 
 func (a *Client) Userinfo(ctx context.Context, input ClientUserinfoRequest) (*pangea.PangeaResponse[ClientUserinfoResult], error) {
-	req, err := a.client.NewRequest("POST", "v1/client/userinfo", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientUserinfoResult
-	resp, err := a.client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientUserinfoResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.client, "v1/client/userinfo", &input, &ClientUserinfoResult{})
 }
 
 type ClientJWKSResult struct {
@@ -46,24 +30,7 @@ type ClientJWKSResult struct {
 }
 
 func (a *Client) JWKS(ctx context.Context) (*pangea.PangeaResponse[ClientJWKSResult], error) {
-	req, err := a.client.NewRequest("POST", "v1/client/jwks", &pangea.BaseRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientJWKSResult
-	resp, err := a.client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientJWKSResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.client, "v1/client/jwks", &pangea.BaseRequest{}, &ClientJWKSResult{})
 }
 
 type ClientTokenCheckRequest struct {
@@ -86,24 +53,7 @@ type ClientTokenCheckResult struct {
 }
 
 func (a *ClientToken) Check(ctx context.Context, input ClientTokenCheckRequest) (*pangea.PangeaResponse[ClientTokenCheckResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/token/check", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientTokenCheckResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientTokenCheckResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/client/token/check", &input, &ClientTokenCheckResult{})
 }
 
 type ClientPasswordChangeRequest struct {
@@ -119,24 +69,7 @@ type ClientPasswordChangeResult struct {
 }
 
 func (a *ClientPassword) Change(ctx context.Context, input ClientPasswordChangeRequest) (*pangea.PangeaResponse[ClientPasswordChangeResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/password/change", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientPasswordChangeResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientPasswordChangeResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/client/password/change", &input, &ClientPasswordChangeResult{})
 }
 
 type IDProvider string
@@ -195,24 +128,7 @@ type UserCreateResult struct {
 }
 
 func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.PangeaResponse[UserCreateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/create", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserCreateResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserCreateResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/create", &input, &UserCreateResult{})
 }
 
 type UserDeleteRequest struct {
@@ -227,24 +143,7 @@ type UserDeleteResult struct {
 }
 
 func (a *User) Delete(ctx context.Context, input UserDeleteRequest) (*pangea.PangeaResponse[UserDeleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/delete", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserDeleteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserDeleteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/delete", &input, &UserDeleteResult{})
 }
 
 type UserUpdateRequest struct {
@@ -273,24 +172,7 @@ type UserUpdateResult struct {
 }
 
 func (a *User) Update(ctx context.Context, input UserUpdateRequest) (*pangea.PangeaResponse[UserUpdateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/update", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserUpdateResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserUpdateResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/update", &input, &UserUpdateResult{})
 }
 
 type UserInviteRequest struct {
@@ -317,24 +199,7 @@ type UserInviteResult struct {
 }
 
 func (a *User) Invite(ctx context.Context, input UserInviteRequest) (*pangea.PangeaResponse[UserInviteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/invite", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserInviteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserInviteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/invite", &input, &UserInviteResult{})
 }
 
 type UserListOrderBy string
@@ -392,24 +257,7 @@ type UserListResult struct {
 }
 
 func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaResponse[UserListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/list", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserListResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserListResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/list", &input, &UserListResult{})
 }
 
 type LoginToken struct {
@@ -450,45 +298,11 @@ type UserLoginSocialRequest struct {
 }
 
 func (a *UserLogin) Password(ctx context.Context, input UserLoginPasswordRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/login/password", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserLoginResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserLoginResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/login/password", &input, &UserLoginResult{})
 }
 
 func (a *UserLogin) Social(ctx context.Context, input UserLoginSocialRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/login/social", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserLoginResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserLoginResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/login/social", &input, &UserLoginResult{})
 }
 
 type UserProfileGetRequest struct {
@@ -513,24 +327,7 @@ type UserProfileGetResult struct {
 }
 
 func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea.PangeaResponse[UserProfileGetResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/profile/get", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserProfileGetResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserProfileGetResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/profile/get", &input, &UserProfileGetResult{})
 }
 
 type UserProfileUpdateRequest struct {
@@ -556,24 +353,7 @@ type UserProfileUpdateResult struct {
 }
 
 func (a *UserProfile) Update(ctx context.Context, input UserProfileUpdateRequest) (*pangea.PangeaResponse[UserProfileUpdateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/profile/update", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserProfileUpdateResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserProfileUpdateResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/profile/update", &input, &UserProfileUpdateResult{})
 }
 
 type UserInviteData struct {
@@ -606,24 +386,7 @@ type UserInviteListResult struct {
 }
 
 func (a *UserInvite) List(ctx context.Context, input UserInviteListRequest) (*pangea.PangeaResponse[UserInviteListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/invite/list", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserInviteListResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserInviteListResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/invite/list", &input, &UserInviteListResult{})
 }
 
 type UserInviteDeleteRequest struct {
@@ -637,24 +400,7 @@ type UserInviteDeleteResult struct {
 }
 
 func (a *UserInvite) Delete(ctx context.Context, input UserInviteDeleteRequest) (*pangea.PangeaResponse[UserInviteDeleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/invite/delete", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserInviteDeleteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserInviteDeleteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/invite/delete", &input, &UserInviteDeleteResult{})
 }
 
 type UserPasswordResetRequest struct {
@@ -669,24 +415,7 @@ type UserPasswordResetResult struct {
 }
 
 func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest) (*pangea.PangeaResponse[UserPasswordResetResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/password/reset", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserPasswordResetResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserPasswordResetResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/password/reset", &input, &UserPasswordResetResult{})
 }
 
 // #   - path: authn::/v1/flow/complete
@@ -704,24 +433,7 @@ type FlowCompleteResult struct {
 }
 
 func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/complete", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowCompleteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowCompleteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/complete", &input, &FlowCompleteResult{})
 }
 
 // #   - path: authn::/v1/flow/enroll/mfa/complete
@@ -810,24 +522,7 @@ type FlowEnrollMFACompleteResult struct {
 }
 
 func (a *FlowEnrollMFA) Complete(ctx context.Context, input FlowEnrollMFACompleteRequest) (*pangea.PangeaResponse[FlowEnrollMFACompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/complete", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowEnrollMFACompleteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowEnrollMFACompleteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/enroll/mfa/complete", &input, &FlowEnrollMFACompleteResult{})
 }
 
 type FlowResetPasswordRequest struct {
@@ -846,24 +541,7 @@ type FlowResetPasswordResult struct {
 }
 
 func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest) (*pangea.PangeaResponse[FlowResetPasswordResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/reset/password", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowResetPasswordResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowResetPasswordResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/reset/password", &input, &FlowResetPasswordResult{})
 }
 
 // #   - path: authn::/v1/flow/enroll/mfa/start
@@ -882,24 +560,7 @@ type FlowEnrollMFAStartResult struct {
 }
 
 func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartRequest) (*pangea.PangeaResponse[FlowEnrollMFAStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/enroll/mfa/start", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowEnrollMFAStartResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowEnrollMFAStartResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/enroll/mfa/start", &input, &FlowEnrollMFAStartResult{})
 }
 
 // #   - path: authn::/v1/flow/signup/password
@@ -919,24 +580,7 @@ type FlowSignupPasswordResult struct {
 }
 
 func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordRequest) (*pangea.PangeaResponse[FlowSignupPasswordResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/signup/password", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowSignupPasswordResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowSignupPasswordResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/signup/password", &input, &FlowSignupPasswordResult{})
 }
 
 // #   - path: authn::/v1/flow/signup/social
@@ -955,24 +599,7 @@ type FlowSignupSocialResult struct {
 }
 
 func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) (*pangea.PangeaResponse[FlowSignupSocialResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/signup/social", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowSignupSocialResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowSignupSocialResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/signup/social", &input, &FlowSignupSocialResult{})
 }
 
 // #   - path: authn::/v1/flow/start
@@ -992,24 +619,7 @@ type FlowStartResult struct {
 }
 
 func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.PangeaResponse[FlowStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/start", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowStartResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowStartResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/start", &input, &FlowStartResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/captcha
@@ -1027,24 +637,7 @@ type FlowVerifyCaptchaResult struct {
 }
 
 func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest) (*pangea.PangeaResponse[FlowVerifyCaptchaResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/captcha", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowVerifyCaptchaResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowVerifyCaptchaResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/verify/captcha", &input, &FlowVerifyCaptchaResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/email
@@ -1063,24 +656,7 @@ type FlowVerifyEmailResult struct {
 }
 
 func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*pangea.PangeaResponse[FlowVerifyEmailResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/email", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowVerifyEmailResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowVerifyEmailResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/verify/email", &input, &FlowVerifyEmailResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/mfa/complete
@@ -1099,24 +675,7 @@ type FlowVerifyMFACompleteResult struct {
 }
 
 func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFACompleteRequest) (*pangea.PangeaResponse[FlowVerifyMFACompleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/complete", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowVerifyMFACompleteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowVerifyMFACompleteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/complete", &input, &FlowVerifyMFACompleteResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/mfa/start
@@ -1134,24 +693,7 @@ type FlowVerifyMFAStartResult struct {
 }
 
 func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartRequest) (*pangea.PangeaResponse[FlowVerifyMFAStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/mfa/start", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowVerifyMFAStartResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowVerifyMFAStartResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/start", &input, &FlowVerifyMFAStartResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/password
@@ -1170,24 +712,7 @@ type FlowVerifyPasswordResult struct {
 }
 
 func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordRequest) (*pangea.PangeaResponse[FlowVerifyPasswordResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/password", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowVerifyPasswordResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowVerifyPasswordResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/verify/password", &input, &FlowVerifyPasswordResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/social
@@ -1206,24 +731,7 @@ type FlowVerifySocialResult struct {
 }
 
 func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) (*pangea.PangeaResponse[FlowVerifySocialResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/flow/verify/social", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out FlowVerifySocialResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[FlowVerifySocialResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/flow/verify/social", &input, &FlowVerifySocialResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/delete
@@ -1240,24 +748,7 @@ type UserMFADeleteResult struct {
 }
 
 func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pangea.PangeaResponse[UserMFADeleteResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/delete", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserMFADeleteResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserMFADeleteResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/mfa/delete", &input, &UserMFADeleteResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/enroll
@@ -1275,24 +766,7 @@ type UserMFAEnrollResult struct {
 }
 
 func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pangea.PangeaResponse[UserMFAEnrollResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/enroll", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserMFAEnrollResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserMFAEnrollResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/mfa/enroll", &input, &UserMFAEnrollResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/start
@@ -1317,24 +791,7 @@ type UserMFAStartResult struct {
 }
 
 func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea.PangeaResponse[UserMFAStartResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/start", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserMFAStartResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserMFAStartResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/mfa/start", &input, &UserMFAStartResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/verify
@@ -1352,24 +809,7 @@ type UserMFAVerifyResult struct {
 }
 
 func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pangea.PangeaResponse[UserMFAVerifyResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/mfa/verify", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserMFAVerifyResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserMFAVerifyResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/mfa/verify", &input, &UserMFAVerifyResult{})
 }
 
 // #   - path: authn::/v1/user/verify
@@ -1398,24 +838,7 @@ type UserVerifyResult struct {
 }
 
 func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.PangeaResponse[UserVerifyResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/user/verify", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out UserVerifyResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[UserVerifyResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/user/verify", &input, &UserVerifyResult{})
 }
 
 type ClientSessionInvalidateRequest struct {
@@ -1430,24 +853,7 @@ type ClientSessionInvalidateResult struct {
 }
 
 func (a *ClientSession) Invalidate(ctx context.Context, input ClientSessionInvalidateRequest) (*pangea.PangeaResponse[ClientSessionInvalidateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/invalidate", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientSessionInvalidateResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientSessionInvalidateResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/client/session/invalidate", &input, &ClientSessionInvalidateResult{})
 }
 
 type SessionListOrderBy string
@@ -1510,24 +916,7 @@ type SessionListResult struct {
 }
 
 func (a *ClientSession) List(ctx context.Context, input ClientSessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/list", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out SessionListResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[SessionListResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/client/session/list", &input, &SessionListResult{})
 }
 
 type ClientSessionLogoutRequest struct {
@@ -1541,24 +930,7 @@ type ClientSessionLogoutResult struct {
 }
 
 func (a *ClientSession) Logout(ctx context.Context, input ClientSessionLogoutRequest) (*pangea.PangeaResponse[ClientSessionLogoutResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/logout", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientSessionLogoutResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientSessionLogoutResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/client/session/logout", &input, &ClientSessionLogoutResult{})
 }
 
 type ClientSessionRefreshRequest struct {
@@ -1575,24 +947,7 @@ type ClientSessionRefreshResult struct {
 }
 
 func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshRequest) (*pangea.PangeaResponse[ClientSessionRefreshResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/client/session/refresh", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out ClientSessionRefreshResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[ClientSessionRefreshResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/client/session/refresh", &input, &ClientSessionRefreshResult{})
 }
 
 type SessionListRequest struct {
@@ -1606,24 +961,7 @@ type SessionListRequest struct {
 }
 
 func (a *Session) List(ctx context.Context, input SessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/list", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out SessionListResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[SessionListResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/session/list", &input, &SessionListResult{})
 }
 
 type SessionInvalidateRequest struct {
@@ -1637,24 +975,7 @@ type SessionInvalidateResult struct {
 }
 
 func (a *Session) Invalidate(ctx context.Context, input SessionInvalidateRequest) (*pangea.PangeaResponse[SessionInvalidateResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/invalidate", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out SessionInvalidateResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[SessionInvalidateResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/session/invalidate", &input, &SessionInvalidateResult{})
 }
 
 type SessionLogoutRequest struct {
@@ -1668,22 +989,5 @@ type SessionLogoutResult struct {
 }
 
 func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
-	req, err := a.Client.NewRequest("POST", "v1/session/logout", &input)
-	if err != nil {
-		return nil, err
-	}
-
-	var out SessionLogoutResult
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[SessionLogoutResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/session/logout", &input, &SessionLogoutResult{})
 }

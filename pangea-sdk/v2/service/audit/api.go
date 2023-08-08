@@ -10,6 +10,7 @@ import (
 	"time"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/request"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
@@ -52,34 +53,22 @@ func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.Pange
 		}
 	}
 
-	req, err := a.Client.NewRequest("POST", "v1/log", input)
+	resp, err := request.DoPost(ctx, a.Client, "v1/log", input, &LogResult{})
 	if err != nil {
 		return nil, err
 	}
 
-	var out LogResult = LogResult{}
-	resp, err := a.Client.Do(ctx, req, &out)
-
+	resp.Result.EventEnvelope, err = a.newEventEnvelopeFromMap(resp.Result.RawEnvelope)
 	if err != nil {
 		return nil, err
 	}
 
-	out.EventEnvelope, err = a.newEventEnvelopeFromMap(out.RawEnvelope)
+	err = a.processLogResponse(ctx, resp.Result)
 	if err != nil {
 		return nil, err
 	}
 
-	err = a.processLogResponse(ctx, &out)
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[LogResult]{
-		Response: *resp,
-		Result:   &out,
-	}
-
-	return &panresp, nil
+	return resp, nil
 }
 
 // @summary Search for events
@@ -106,51 +95,32 @@ func (a *audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 		input.Verbose = pangea.Bool(true)
 	}
 
-	req, err := a.Client.NewRequest("POST", "v1/search", input)
-	if err != nil {
-		return nil, err
-	}
-	out := SearchOutput{}
-	resp, err := a.Client.Do(ctx, req, &out)
-
+	resp, err := request.DoPost(ctx, a.Client, "v1/search", input, &SearchOutput{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
+	err = a.processSearchEvents(ctx, resp.Result.Events, resp.Result.Root, resp.Result.UnpublishedRoot)
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[SearchOutput]{
-		Response: *resp,
-		Result:   &out,
-	}
-	return &panresp, nil
+	return resp, nil
 }
 
 // SearchResults is used to page through results from a previous search.
 func (a *audit) SearchResults(ctx context.Context, input *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error) {
-	req, err := a.Client.NewRequest("POST", "v1/results", input)
-	if err != nil {
-		return nil, err
-	}
-	out := SearchResultsOutput{}
-	resp, err := a.Client.Do(ctx, req, &out)
-	if err != nil {
-		return nil, err
-	}
-	err = a.processSearchEvents(ctx, out.Events, out.Root, out.UnpublishedRoot)
+	resp, err := request.DoPost(ctx, a.Client, "v1/results", input, &SearchResultsOutput{})
 	if err != nil {
 		return nil, err
 	}
 
-	panresp := pangea.PangeaResponse[SearchResultsOutput]{
-		Response: *resp,
-		Result:   &out,
+	err = a.processSearchEvents(ctx, resp.Result.Events, resp.Result.Root, resp.Result.UnpublishedRoot)
+	if err != nil {
+		return nil, err
 	}
 
-	return &panresp, nil
+	return resp, nil
 }
 
 // @summary Tamperproof verification
@@ -167,22 +137,7 @@ func (a *audit) SearchResults(ctx context.Context, input *SearchResultsInput) (*
 //
 //	rootResponse, err := auditcli.Root(ctx, input)
 func (a *audit) Root(ctx context.Context, input *RootInput) (*pangea.PangeaResponse[RootOutput], error) {
-	req, err := a.Client.NewRequest("POST", "v1/root", input)
-	if err != nil {
-		return nil, err
-	}
-	var out RootOutput
-	resp, err := a.Client.Do(ctx, req, &out)
-
-	if err != nil {
-		return nil, err
-	}
-
-	panresp := pangea.PangeaResponse[RootOutput]{
-		Response: *resp,
-		Result:   &out,
-	}
-	return &panresp, nil
+	return request.DoPost(ctx, a.Client, "v1/root", input, &RootOutput{})
 }
 
 // SearchAll is a helper function to return all the search results for a search with pages
