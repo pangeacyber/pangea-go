@@ -3,7 +3,7 @@ package file_scan_test
 
 import (
 	"context"
-	"strings"
+	"os"
 	"testing"
 	"time"
 
@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Develop
-	EICAR              = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n"
+	testingEnvironment = pangeatesting.Live
+	TESTFILE_PATH      = "./testdata/testfile.pdf"
 )
 
 func Test_Integration_FileScan(t *testing.T) {
@@ -29,24 +29,28 @@ func Test_Integration_FileScan(t *testing.T) {
 	input := &file_scan.FileScanRequest{
 		Raw:      true,
 		Verbose:  true,
-		Provider: "reversinglabs",
+		Provider: "crowdstrike",
 	}
-	file := strings.NewReader(EICAR)
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
 
 	resp, err := client.Scan(ctx, input, file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("expected no error got: %v", err.Error())
 	}
 
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+	assert.Equal(t, resp.Result.Data.Verdict, "benign")
 }
 
 func Test_Integration_FileScanCanceled(t *testing.T) {
 	// In this case we'll setup 13 seconds timeout to context, so, once this timeout is reached, function should return AcceptedError inmediatly
-	ctx, cancelFn := context.WithTimeout(context.Background(), 13*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
@@ -56,9 +60,13 @@ func Test_Integration_FileScanCanceled(t *testing.T) {
 	input := &file_scan.FileScanRequest{
 		Raw:      true,
 		Verbose:  true,
-		Provider: "reversinglabs",
+		Provider: "crowdstrike",
 	}
-	file := strings.NewReader(EICAR)
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
 
 	resp, err := client.Scan(ctx, input, file)
 	assert.Error(t, err)
@@ -78,9 +86,13 @@ func Test_Integration_FileScan_NoRetry(t *testing.T) {
 	input := &file_scan.FileScanRequest{
 		Raw:      true,
 		Verbose:  true,
-		Provider: "reversinglabs",
+		Provider: "crowdstrike",
 	}
-	file := strings.NewReader(EICAR)
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
 
 	resp, err := client.Scan(ctx, input, file)
 	assert.Error(t, err)
@@ -88,7 +100,7 @@ func Test_Integration_FileScan_NoRetry(t *testing.T) {
 	ae := err.(*pangea.AcceptedError)
 
 	// Wait until result should be ready
-	time.Sleep(time.Duration(60 * time.Second))
+	time.Sleep(time.Duration(10 * time.Second))
 
 	pr, err := client.PollResultByError(ctx, *ae)
 	assert.NoError(t, err)
@@ -96,5 +108,5 @@ func Test_Integration_FileScan_NoRetry(t *testing.T) {
 	assert.NotNil(t, pr.Result)
 
 	r := (*pr.Result).(*file_scan.FileScanResult)
-	assert.Equal(t, r.Data.Verdict, "malicious")
+	assert.Equal(t, r.Data.Verdict, "benign")
 }

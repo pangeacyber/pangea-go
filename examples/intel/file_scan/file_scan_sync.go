@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/service/file_scan"
 )
 
-const EICAR = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*\n"
+const TESTFILE_PATH = "./testdata/testfile.pdf"
 
 func main() {
 	fmt.Println("File Scan sync start...")
@@ -40,9 +39,11 @@ func main() {
 		Provider: "reversinglabs",
 	}
 
-	// Here we create a file that will give us a malicious result as example,
 	// This should be your own file to scan
-	file := strings.NewReader(EICAR)
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		log.Fatal("expected no error got: %v", err)
+	}
 
 	fmt.Println("File Scan request...")
 	resp, err := client.Scan(ctx, input, file)
