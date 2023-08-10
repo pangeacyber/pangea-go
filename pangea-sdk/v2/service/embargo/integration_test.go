@@ -3,6 +3,7 @@ package embargo_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -77,6 +78,7 @@ func Test_Integration_Check_Error_BadISO(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Nil(t, out)
+	fmt.Println(err.Error())
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "DoesNotMatchPattern")
@@ -99,7 +101,7 @@ func Test_Integration_Check_Error_BadToken(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Nil(t, out)
+	fmt.Println(err.Error())
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
-
 }
