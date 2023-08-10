@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/service/file_scan"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/file_scan"
 )
 
 const TESTFILE_PATH = "./testdata/testfile.pdf"
@@ -36,7 +36,7 @@ func main() {
 	input := &file_scan.FileScanRequest{
 		Raw:      true,
 		Verbose:  true,
-		Provider: "reversinglabs",
+		Provider: "crowdstrike",
 	}
 
 	// This should be your own file to scan
