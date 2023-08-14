@@ -501,7 +501,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 	maxResults := 5
 	limit := 2
 	ct := time.Now().UTC()
-	start := ct.Add(-3 * 24 * time.Hour)
+	start := ct.Add(-3 * 24 * time.Hour).Truncate(1 * time.Microsecond)
 
 	input := &audit.SearchInput{
 		Query:      "message:" + MSG_SIGNED,
@@ -554,7 +554,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	ct := time.Now().UTC()
-	start := ct.Add(-3 * 24 * time.Hour)
+	start := ct.Add(-3 * 24 * time.Hour).Truncate(1 * time.Microsecond)
 
 	searchInput := &audit.SearchInput{
 		Query:   `message:""`,
