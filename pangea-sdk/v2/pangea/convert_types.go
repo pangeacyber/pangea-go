@@ -54,6 +54,17 @@ func Stringify(obj interface{}) string {
 	return b.String()
 }
 
+// Stringify returns the string representation of a json object.
+func StringifyIndented(obj interface{}) string {
+	b := new(strings.Builder)
+	enc := json.NewEncoder(b)
+	enc.SetIndent("", "  ")
+	if err := enc.Encode(obj); err != nil {
+		return ""
+	}
+	return b.String()
+}
+
 // Time is a helper routine that allocates a new time.Time value
 // to store v and returns a pointer to it.
 func Time(v time.Time) *time.Time {

@@ -67,18 +67,20 @@ func (e *BaseError) Error() string {
 
 func (e *APIError) Error() string {
 	b := new(bytes.Buffer)
+	if e.Err != nil {
+		b.WriteString(fmt.Sprintf("%s\n", e.Err.Error()))
+	}
 	if e.HTTPResponse != nil {
-		b.WriteString(fmt.Sprintf("pangea: %v %v", e.HTTPResponse.Request.Method, e.HTTPResponse.Request.URL))
-		pad(b, ": ")
+		b.WriteString(fmt.Sprintf("%v %v\n", e.HTTPResponse.Request.Method, e.HTTPResponse.Request.URL))
 		if e.ResponseHeader != nil {
-			b.WriteString(fmt.Sprintf("%v", e.ResponseHeader.String()))
+			b.WriteString(StringifyIndented(e.ResponseHeader))
 		} else {
-			b.WriteString(fmt.Sprintf("%v", e.HTTPResponse.StatusCode))
+			b.WriteString(fmt.Sprintf("Status code: %v\n", e.HTTPResponse.StatusCode))
 		}
 	}
-	if e.Err != nil {
-		pad(b, ": ")
-		b.WriteString(e.Err.Error())
+	if len(e.PangeaErrors.Errors) > 0 {
+		b.WriteString("Errors:\n")
+		b.WriteString(StringifyIndented(e.PangeaErrors.Errors))
 	}
 	return b.String()
 }
