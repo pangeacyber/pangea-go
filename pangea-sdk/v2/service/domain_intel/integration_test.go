@@ -42,7 +42,7 @@ func Test_Integration_DomainReputation(t *testing.T) {
 
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+	assert.Equal(t, resp.Result.Data.Verdict, "suspicious")
 }
 
 // Reputation domain unknown
