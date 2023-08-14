@@ -190,9 +190,9 @@ type ItemData struct {
 }
 
 type InheritedSettings struct {
-	RotationFrequency   string `json:"rotation_frequency"`
-	RotationState       string `json:"rotation_state"`
-	RotationGracePeriod string `json:"rotation_grace_period"`
+	RotationFrequency   bool `json:"rotation_frequency"`
+	RotationState       bool `json:"rotation_state"`
+	RotationGracePeriod bool `json:"rotation_grace_period"`
 }
 
 type GetResult struct {
