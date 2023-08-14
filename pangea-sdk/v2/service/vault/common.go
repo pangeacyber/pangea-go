@@ -189,10 +189,17 @@ type ItemData struct {
 	Purpose           string          `json:"purpose,omitempty"`
 }
 
+type InheritedSettings struct {
+	RotationFrequency   string `json:"rotation_frequency"`
+	RotationState       string `json:"rotation_state"`
+	RotationGracePeriod string `json:"rotation_grace_period"`
+}
+
 type GetResult struct {
 	ItemData
 	Versions            []ItemVersionData `json:"versions"`
 	RotationGracePeriod string            `json:"rotation_grace_period,omitempty"`
+	InheritedSettings   InheritedSettings `json:"inherited_settings"`
 }
 
 type ListItemData struct {
