@@ -7,8 +7,8 @@ import (
 )
 
 type Client interface {
-	UserBreached(ctx context.Context, input *UserBreachedRequest) (*pangea.PangeaResponse[UserBreachedResult], error)
-	PasswordBreached(ctx context.Context, input *UserPasswordBreachedRequest) (*pangea.PangeaResponse[UserPasswordBreachedResult], error)
+	UserBreached(ctx context.Context, req *UserBreachedRequest) (*pangea.PangeaResponse[UserBreachedResult], error)
+	PasswordBreached(ctx context.Context, req *UserPasswordBreachedRequest) (*pangea.PangeaResponse[UserPasswordBreachedResult], error)
 
 	// Base service methods
 	GetPendingRequestID() []string

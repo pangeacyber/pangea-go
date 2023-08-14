@@ -7,8 +7,8 @@ import (
 )
 
 type Client interface {
-	Redact(ctx context.Context, input *TextRequest) (*pangea.PangeaResponse[TextResult], error)
-	RedactStructured(ctx context.Context, input *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error)
+	Redact(ctx context.Context, req *TextRequest) (*pangea.PangeaResponse[TextResult], error)
+	RedactStructured(ctx context.Context, req *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error)
 	// Base service methods
 	GetPendingRequestID() []string
 	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
