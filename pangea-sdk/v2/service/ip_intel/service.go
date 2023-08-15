@@ -7,11 +7,11 @@ import (
 )
 
 type Client interface {
-	Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error)
-	Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error)
-	GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error)
-	IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error)
-	IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error)
+	Reputation(ctx context.Context, req *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error)
+	Geolocate(ctx context.Context, req *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error)
+	GetDomain(ctx context.Context, req *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error)
+	IsVPN(ctx context.Context, req *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error)
+	IsProxy(ctx context.Context, req *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error)
 
 	// Base service methods
 	GetPendingRequestID() []string
