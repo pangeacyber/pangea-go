@@ -641,7 +641,7 @@ func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest
 }
 
 // #   - path: authn::/v1/flow/complete
-// # https://dev.pangea.cloud/docs/api/authn#complete-a-login-or-signup-flow
+// # https://pangea.cloud/docs/api/authn#complete-sign-up-in
 type FlowCompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -672,7 +672,7 @@ func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea
 }
 
 // #   - path: authn::/v1/flow/enroll/mfa/complete
-// # https://dev.pangea.cloud/docs/api/authn#complete-mfa-enrollment-by-verifying-a-trial-mfa-code
+// # https://pangea.cloud/docs/api/authn#complete-mfa-enrollment
 
 type FlowEnrollMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
@@ -808,7 +808,7 @@ func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest
 }
 
 // #   - path: authn::/v1/flow/enroll/mfa/start
-// # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-enrolling-an-mfa
+// # https://pangea.cloud/docs/api/authn#start-mfa-enrollment
 type FlowEnrollMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -842,7 +842,7 @@ func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartReque
 }
 
 // #   - path: authn::/v1/flow/signup/password
-// # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-password
+// # https://pangea.cloud/docs/api/authn#password-sign-up
 type FlowSignupPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -878,7 +878,7 @@ func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordReque
 }
 
 // #   - path: authn::/v1/flow/signup/social
-// # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-social-provider
+// # https://pangea.cloud/docs/api/authn#social-sign-up
 type FlowSignupSocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -912,7 +912,7 @@ func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) 
 }
 
 // #   - path: authn::/v1/flow/start
-// # https://dev.pangea.cloud/docs/api/authn#start-a-new-signup-or-signin-flow
+// # https://pangea.cloud/docs/api/authn#start-a-sign-up-in
 type FlowStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -949,7 +949,7 @@ func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.Pange
 }
 
 // #   - path: authn::/v1/flow/verify/captcha
-// # https://dev.pangea.cloud/docs/api/authn#verify-a-captcha-during-a-signup-or-signin-flow
+// # https://pangea.cloud/docs/api/authn#verify-captcha
 type FlowVerifyCaptchaRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -981,7 +981,7 @@ func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest
 }
 
 // #   - path: authn::/v1/flow/verify/email
-// # https://dev.pangea.cloud/docs/api/authn#verify-an-email-address-during-a-signup-or-signin-flow
+// # https://pangea.cloud/docs/api/authn#verify-email-address
 type FlowVerifyEmailRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1015,7 +1015,7 @@ func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*
 }
 
 // #   - path: authn::/v1/flow/verify/mfa/complete
-// # https://dev.pangea.cloud/docs/api/authn#complete-mfa-verification
+// # https://pangea.cloud/docs/api/authn#complete-mfa-verification
 type FlowVerifyMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1048,7 +1048,7 @@ func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFAComplet
 }
 
 // #   - path: authn::/v1/flow/verify/mfa/start
-// # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-mfa-verification
+// # https://pangea.cloud/docs/api/authn#start-mfa-verification
 type FlowVerifyMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1080,7 +1080,7 @@ func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartReque
 }
 
 // #   - path: authn::/v1/flow/verify/password
-// # https://dev.pangea.cloud/docs/api/authn#sign-in-with-a-password
+// # https://pangea.cloud/docs/api/authn#password-sign-in
 type FlowVerifyPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1113,7 +1113,7 @@ func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordReque
 }
 
 // #   - path: authn::/v1/flow/verify/social
-// # https://dev.pangea.cloud/docs/api/authn#signin-with-a-social-provider
+// # https://pangea.cloud/docs/api/authn#social-sign-in
 type FlowVerifySocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1147,7 +1147,7 @@ func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) 
 }
 
 // #   - path: authn::/v1/user/mfa/delete
-// # https://dev.pangea.cloud/docs/api/authn#delete-mfa-enrollment-for-a-user
+// # https://pangea.cloud/docs/api/authn#delete-mfa-enrollment
 type UserMFADeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1178,7 +1178,7 @@ func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pang
 }
 
 // #   - path: authn::/v1/user/mfa/enroll
-// # https://dev.pangea.cloud/docs/api/authn#enroll-mfa-for-a-user
+// # https://pangea.cloud/docs/api/authn#enroll-in-mfa
 type UserMFAEnrollRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1211,7 +1211,7 @@ func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pang
 }
 
 // #   - path: authn::/v1/user/mfa/start
-// # https://dev.pangea.cloud/docs/api/authn#start-mfa-verification-for-a-user
+// # https://pangea.cloud/docs/api/authn#user-start-mfa-verification
 type UserMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1250,7 +1250,7 @@ func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea
 }
 
 // #   - path: authn::/v1/user/mfa/verify
-// # https://dev.pangea.cloud/docs/api/authn#verify-an-mfa-code
+// # https://pangea.cloud/docs/api/authn#verify-an-mfa-code
 type UserMFAVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1283,7 +1283,7 @@ func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pang
 }
 
 // #   - path: authn::/v1/user/verify
-// # https://dev.pangea.cloud/docs/api/authn#verify-a-user
+// # https://pangea.cloud/docs/api/authn#verify-user
 type UserVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
