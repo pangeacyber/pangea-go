@@ -197,9 +197,9 @@ type InheritedSettings struct {
 
 type GetResult struct {
 	ItemData
-	Versions            []ItemVersionData `json:"versions"`
-	RotationGracePeriod string            `json:"rotation_grace_period,omitempty"`
-	InheritedSettings   InheritedSettings `json:"inherited_settings"`
+	Versions            []ItemVersionData  `json:"versions"`
+	RotationGracePeriod string             `json:"rotation_grace_period,omitempty"`
+	InheritedSettings   *InheritedSettings `json:"inherited_settings,omitempty"`
 }
 
 type ListItemData struct {
