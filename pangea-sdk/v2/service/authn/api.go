@@ -640,8 +640,6 @@ func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest
 	return request.DoPost(ctx, a.Client, "v1/user/password/reset", &input, &UserPasswordResetResult{})
 }
 
-// #   - path: authn::/v1/flow/complete
-// # https://pangea.cloud/docs/api/authn#complete-sign-up-in
 type FlowCompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -670,9 +668,6 @@ type FlowCompleteResult struct {
 func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/complete", &input, &FlowCompleteResult{})
 }
-
-// #   - path: authn::/v1/flow/enroll/mfa/complete
-// # https://pangea.cloud/docs/api/authn#complete-mfa-enrollment
 
 type FlowEnrollMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
@@ -807,8 +802,6 @@ func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest
 	return request.DoPost(ctx, a.Client, "v1/flow/reset/password", &input, &FlowResetPasswordResult{})
 }
 
-// #   - path: authn::/v1/flow/enroll/mfa/start
-// # https://pangea.cloud/docs/api/authn#start-mfa-enrollment
 type FlowEnrollMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -841,8 +834,6 @@ func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartReque
 	return request.DoPost(ctx, a.Client, "v1/flow/enroll/mfa/start", &input, &FlowEnrollMFAStartResult{})
 }
 
-// #   - path: authn::/v1/flow/signup/password
-// # https://pangea.cloud/docs/api/authn#password-sign-up
 type FlowSignupPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -877,8 +868,6 @@ func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordReque
 	return request.DoPost(ctx, a.Client, "v1/flow/signup/password", &input, &FlowSignupPasswordResult{})
 }
 
-// #   - path: authn::/v1/flow/signup/social
-// # https://pangea.cloud/docs/api/authn#social-sign-up
 type FlowSignupSocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -911,8 +900,6 @@ func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) 
 	return request.DoPost(ctx, a.Client, "v1/flow/signup/social", &input, &FlowSignupSocialResult{})
 }
 
-// #   - path: authn::/v1/flow/start
-// # https://pangea.cloud/docs/api/authn#start-a-sign-up-in
 type FlowStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -948,8 +935,6 @@ func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.Pange
 	return request.DoPost(ctx, a.Client, "v1/flow/start", &input, &FlowStartResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/captcha
-// # https://pangea.cloud/docs/api/authn#verify-captcha
 type FlowVerifyCaptchaRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -980,8 +965,6 @@ func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/captcha", &input, &FlowVerifyCaptchaResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/email
-// # https://pangea.cloud/docs/api/authn#verify-email-address
 type FlowVerifyEmailRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1014,8 +997,6 @@ func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/email", &input, &FlowVerifyEmailResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/mfa/complete
-// # https://pangea.cloud/docs/api/authn#complete-mfa-verification
 type FlowVerifyMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1047,8 +1028,6 @@ func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFAComplet
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/complete", &input, &FlowVerifyMFACompleteResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/mfa/start
-// # https://pangea.cloud/docs/api/authn#start-mfa-verification
 type FlowVerifyMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1079,8 +1058,6 @@ func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartReque
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/start", &input, &FlowVerifyMFAStartResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/password
-// # https://pangea.cloud/docs/api/authn#password-sign-in
 type FlowVerifyPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1112,8 +1089,6 @@ func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordReque
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/password", &input, &FlowVerifyPasswordResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/social
-// # https://pangea.cloud/docs/api/authn#social-sign-in
 type FlowVerifySocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1146,8 +1121,6 @@ func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) 
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/social", &input, &FlowVerifySocialResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/delete
-// # https://pangea.cloud/docs/api/authn#delete-mfa-enrollment
 type UserMFADeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1177,8 +1150,6 @@ func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pang
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/delete", &input, &UserMFADeleteResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/enroll
-// # https://pangea.cloud/docs/api/authn#enroll-in-mfa
 type UserMFAEnrollRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1210,8 +1181,6 @@ func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pang
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/enroll", &input, &UserMFAEnrollResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/start
-// # https://pangea.cloud/docs/api/authn#user-start-mfa-verification
 type UserMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1249,8 +1218,6 @@ func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/start", &input, &UserMFAStartResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/verify
-// # https://pangea.cloud/docs/api/authn#verify-an-mfa-code
 type UserMFAVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1282,8 +1249,6 @@ func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pang
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/verify", &input, &UserMFAVerifyResult{})
 }
 
-// #   - path: authn::/v1/user/verify
-// # https://pangea.cloud/docs/api/authn#verify-user
 type UserVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
