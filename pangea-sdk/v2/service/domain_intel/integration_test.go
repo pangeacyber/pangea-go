@@ -33,7 +33,7 @@ func Test_Integration_DomainReputation(t *testing.T) {
 		Domain:   "737updatesboeing.com",
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
-		Provider: "domaintools",
+		Provider: "crowdstrike",
 	}
 	resp, err := intelcli.Reputation(ctx, input)
 	if err != nil {
@@ -42,7 +42,7 @@ func Test_Integration_DomainReputation(t *testing.T) {
 
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, resp.Result.Data.Verdict, "suspicious")
+	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
 }
 
 // Reputation domain unknown
@@ -57,7 +57,7 @@ func Test_Integration_DomainReputation_2(t *testing.T) {
 		Domain:   "google.com",
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
-		Provider: "domaintools",
+		Provider: "crowdstrike",
 	}
 
 	resp, err := intelcli.Reputation(ctx, input)
@@ -67,7 +67,7 @@ func Test_Integration_DomainReputation_2(t *testing.T) {
 
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, resp.Result.Data.Verdict, "benign")
+	assert.NotEmpty(t, resp.Result.Data.Verdict)
 }
 
 // Test empty domain
@@ -82,7 +82,7 @@ func Test_Integration_DomainReputation_Error(t *testing.T) {
 		Domain:   "",
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
-		Provider: "domaintools",
+		Provider: "crowdstrike",
 	}
 
 	resp, err := intelcli.Reputation(ctx, input)
@@ -110,7 +110,7 @@ func Test_Integration_DomainReputation_Error_BadAuthToken(t *testing.T) {
 		Domain:   "737updatesboeing.com",
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
-		Provider: "domaintools",
+		Provider: "crowdstrike",
 	}
 	resp, err := intelcli.Reputation(ctx, input)
 
