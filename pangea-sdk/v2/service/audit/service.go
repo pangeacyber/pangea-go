@@ -9,10 +9,10 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, any, bool) (*pangea.PangeaResponse[LogResult], error)
-	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
-	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
+	Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error)
+	Search(ctx context.Context, req *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
+	SearchResults(ctx context.Context, req *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
+	Root(ctx context.Context, req *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 
 	// Base service methods
 	GetPendingRequestID() []string

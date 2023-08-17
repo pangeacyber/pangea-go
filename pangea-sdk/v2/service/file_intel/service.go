@@ -7,7 +7,7 @@ import (
 )
 
 type Client interface {
-	Reputation(ctx context.Context, input *FileReputationRequest) (*pangea.PangeaResponse[FileReputationResult], error)
+	Reputation(ctx context.Context, req *FileReputationRequest) (*pangea.PangeaResponse[FileReputationResult], error)
 
 	// Base service methods
 	GetPendingRequestID() []string

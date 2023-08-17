@@ -21,6 +21,19 @@ type ClientUserinfoRequest struct {
 	Code string `json:"code"`
 }
 
+// @summary Get User (client token)
+//
+// @description Retrieve the logged in user's token and information.
+//
+// @operationId authn_post_v1_client_userinfo
+//
+// @example
+//
+//	input := authn.ClientUserinfoRequest{
+//		Code: "pmc_d6chl6qulpn3it34oerwm3cqwsjd6dxw",
+//	}
+//
+//	esp, err := authncli.Client.Userinfo(ctx, input)
 func (a *Client) Userinfo(ctx context.Context, input ClientUserinfoRequest) (*pangea.PangeaResponse[ClientUserinfoResult], error) {
 	return request.DoPost(ctx, a.client, "v1/client/userinfo", &input, &ClientUserinfoResult{})
 }
@@ -29,6 +42,15 @@ type ClientJWKSResult struct {
 	Keys []v.JWT `json:"keys"`
 }
 
+// @summary Get JWT verification keys
+//
+// @description Get JWT verification keys.
+//
+// @operationId authn_post_v1_client_jwks
+//
+// @example
+//
+//	resp, err := authncli.Client.JWKS(ctx)
 func (a *Client) JWKS(ctx context.Context) (*pangea.PangeaResponse[ClientJWKSResult], error) {
 	return request.DoPost(ctx, a.client, "v1/client/jwks", &pangea.BaseRequest{}, &ClientJWKSResult{})
 }
@@ -52,6 +74,19 @@ type ClientTokenCheckResult struct {
 	CreatedAt string      `json:"created_at"`
 }
 
+// @summary Check a token
+//
+// @description Look up a token and return its contents.
+//
+// @operationId authn_post_v1_client_token_check
+//
+// @example
+//
+//	input := authn.ClientTokenCheckRequest{
+//		Token: "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authcli.Client.Token.Check(ctx, input)
 func (a *ClientToken) Check(ctx context.Context, input ClientTokenCheckRequest) (*pangea.PangeaResponse[ClientTokenCheckResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/client/token/check", &input, &ClientTokenCheckResult{})
 }
@@ -68,6 +103,21 @@ type ClientPasswordChangeRequest struct {
 type ClientPasswordChangeResult struct {
 }
 
+// @summary Change a user's password
+//
+// @description Change a user's password given the current password.
+//
+// @operationId authn_post_v1_client_password_change
+//
+// @example
+//
+//	input := authn.ClientPasswordChangeRequest{
+//		Token: "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//		OldPassword: "hunter2",
+//		NewPassword: "My2n+Password",
+//	}
+//
+//	resp, err := authncli.Client.Password.Change(ctx, input)
 func (a *ClientPassword) Change(ctx context.Context, input ClientPasswordChangeRequest) (*pangea.PangeaResponse[ClientPasswordChangeResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/client/password/change", &input, &ClientPasswordChangeResult{})
 }
@@ -127,6 +177,27 @@ type UserCreateResult struct {
 	CreatedAt    string        `json:"created_at"`
 }
 
+// @summary Create User
+//
+// @description Create a user.
+//
+// @operationId authn_post_v1_user_create
+//
+// @example
+//
+//	profile := &authn.ProfileData{
+//		"first_name": "Joe",
+//		"last_name": "User",
+//	}
+//
+//	input := authn.UserCreateRequest{
+//		Email: "joe.user@email.com",
+//		Authenticator: "My1s+Password",
+//		IDProvider: authn.IDPPassword,
+//		Profile: profile,
+//	}
+//
+//	resp, err := authncli.User.Create(ctx, input)
 func (a *User) Create(ctx context.Context, input UserCreateRequest) (*pangea.PangeaResponse[UserCreateResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/create", &input, &UserCreateResult{})
 }
@@ -142,6 +213,19 @@ type UserDeleteRequest struct {
 type UserDeleteResult struct {
 }
 
+// @summary Delete User
+//
+// @description Delete a user by email address.
+//
+// @operationId authn_post_v1_user_delete
+//
+// @example
+//
+//	input := UserDeleteRequest{
+//		Email: "joe.user@email.com",
+//	}
+//
+//	authncli.User.Delete(ctx, input)
 func (a *User) Delete(ctx context.Context, input UserDeleteRequest) (*pangea.PangeaResponse[UserDeleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/delete", &input, &UserDeleteResult{})
 }
@@ -171,6 +255,20 @@ type UserUpdateResult struct {
 	CreatedAt    string        `json:"created_at"`
 }
 
+// @summary Update user's settings
+//
+// @description Update user's settings.
+//
+// @operationId authn_post_v1_user_update
+//
+// @example
+//
+//	input := authn.UserUpdateRequest{
+//		Email: pangea.String("joe.user@email.com"),
+//		RequireMFA: pangea.Bool(true),
+//	}
+//
+//	resp, err := authncli.User.Update(ctx, input)
 func (a *User) Update(ctx context.Context, input UserUpdateRequest) (*pangea.PangeaResponse[UserUpdateResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/update", &input, &UserUpdateResult{})
 }
@@ -198,6 +296,22 @@ type UserInviteResult struct {
 	Expire     string `json:"expire"`
 }
 
+// @summary Invite User
+//
+// @description Send an invitation to a user.
+//
+// @operationId authn_post_v1_user_invite
+//
+// @example
+//
+//	input := authn.UserInviteRequest{
+//		Inviter: "admin@email.com",
+//		Email: "joe.user@email.com",
+//		Callback: "/callback",
+//		State: "pcb_zurr3lkcwdp5keq73htsfpcii5k4zgm7",
+//	}
+//
+//	resp, err := authncli.User.Invite(ctx, input)
 func (a *User) Invite(ctx context.Context, input UserInviteRequest) (*pangea.PangeaResponse[UserInviteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/invite", &input, &UserInviteResult{})
 }
@@ -256,6 +370,16 @@ type UserListResult struct {
 	Count int        `json:"count"`
 }
 
+// @summary List Users
+//
+// @description Look up users by scopes.
+//
+// @operationId authn_post_v1_user_list
+//
+// @example
+//
+//	input := authn.UserListRequest{}
+//	resp, err := authncli.User.List(ctx, input)
 func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaResponse[UserListResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/list", &input, &UserListResult{})
 }
@@ -297,10 +421,42 @@ type UserLoginSocialRequest struct {
 	ExtraProfile *ProfileData `json:"extra_profile,omitempty"`
 }
 
+// @summary Login with a password
+//
+// @description Login a user with a password and return the user's token and information.
+//
+// @operationId authn_post_v1_user_login_password
+//
+// @example
+//
+//	input := authn.UserLoginPasswordRequest{
+//		Email: "joe.user@email.com",
+//		Password: "My1s+Password",
+//		ExtraProfile: &authn.ProfileData{
+//			"country": "Argentina",
+//		},
+//	}
+//
+//	resp, err := authncli.User.Login.Password(ctx, input)
 func (a *UserLogin) Password(ctx context.Context, input UserLoginPasswordRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/login/password", &input, &UserLoginResult{})
 }
 
+// @summary Login with a social provider
+//
+// @description Login a user by their social ID and return the user's token and information.
+//
+// @operationId authn_post_v1_user_login_social
+//
+// @example
+//
+//	input := authn.UserLoginSocialRequest{
+//		Email: "joe.user@email.com",
+//		Provider: authn.IDPGoogle,
+//		SocialID: "My1s+Password",
+//	}
+//
+//	resp, err := authncli.User.Login.Social(ctx, input)
 func (a *UserLogin) Social(ctx context.Context, input UserLoginSocialRequest) (*pangea.PangeaResponse[UserLoginResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/login/social", &input, &UserLoginResult{})
 }
@@ -326,6 +482,19 @@ type UserProfileGetResult struct {
 	CreatedAt    string        `json:"created_at"`
 }
 
+// @summary Get user
+//
+// @description Get user's information.
+//
+// @operationId authn_post_v1_user_profile_get
+//
+// @example
+//
+//	input := authn.UserProfileGetRequest{
+//		Email: pangea.String("joe.user@email.com"),
+//	}
+//
+//	resp, err := authncli.User.Profile.Get(ctx, input)
 func (a *UserProfile) Get(ctx context.Context, input UserProfileGetRequest) (*pangea.PangeaResponse[UserProfileGetResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/profile/get", &input, &UserProfileGetResult{})
 }
@@ -352,6 +521,22 @@ type UserProfileUpdateResult struct {
 	CreatedAt    string        `json:"created_at"`
 }
 
+// @summary Update user
+//
+// @description Update user's information by identity or email.
+//
+// @operationId authn_post_v1_user_profile_update
+//
+// @example
+//
+//	input := authn.UserProfileUpdateRequest{
+//		Email: pangea.String("joe.user@email.com"),
+//		Profile: authn.ProfileData{
+//			"country": "Argentina",
+//		},
+//	}
+//
+//	resp, err := authncli.User.Profile.Update(ctx, input)
 func (a *UserProfile) Update(ctx context.Context, input UserProfileUpdateRequest) (*pangea.PangeaResponse[UserProfileUpdateResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/profile/update", &input, &UserProfileUpdateResult{})
 }
@@ -385,6 +570,16 @@ type UserInviteListResult struct {
 	Count   int              `json:"count"`
 }
 
+// @summary List Invites
+//
+// @description Look up active invites for the userpool.
+//
+// @operationId authn_post_v1_user_invite_list
+//
+// @example
+//
+//	input := authn.UserInviteListRequest{}
+//	resp, err := authncli.User.Invite.List(ctx, input)
 func (a *UserInvite) List(ctx context.Context, input UserInviteListRequest) (*pangea.PangeaResponse[UserInviteListResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/invite/list", &input, &UserInviteListResult{})
 }
@@ -399,6 +594,19 @@ type UserInviteDeleteRequest struct {
 type UserInviteDeleteResult struct {
 }
 
+// @summary Delete Invite
+//
+// @description Delete a user invitation.
+//
+// @operationId authn_post_v1_user_invite_delete
+//
+// @example
+//
+//	input := authn.UserInviteDeleteRequest{
+//		ID: "pmc_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authncli.User.Invite.Delete(ctx, input)
 func (a *UserInvite) Delete(ctx context.Context, input UserInviteDeleteRequest) (*pangea.PangeaResponse[UserInviteDeleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/invite/delete", &input, &UserInviteDeleteResult{})
 }
@@ -414,12 +622,26 @@ type UserPasswordResetRequest struct {
 type UserPasswordResetResult struct {
 }
 
+// @summary User Password Reset
+//
+// @description Manually reset a user's password.
+//
+// @operationId authn_post_v1_user_password_reset
+//
+// @example
+//
+//	input := authn.UserPasswordResetRequest{
+//		UserID: "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+//		NewPassword: "My2n+Password",
+//	}
+//
+//	resp, err := authncli.User.Password.Reset(ctx, input)
 func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest) (*pangea.PangeaResponse[UserPasswordResetResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/password/reset", &input, &UserPasswordResetResult{})
 }
 
 // #   - path: authn::/v1/flow/complete
-// # https://dev.pangea.cloud/docs/api/authn#complete-a-login-or-signup-flow
+// # https://pangea.cloud/docs/api/authn#complete-sign-up-in
 type FlowCompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -432,12 +654,25 @@ type FlowCompleteResult struct {
 	ActiveToken  LoginToken `json:"active_token"`
 }
 
+// @summary Complete Sign-up/in
+//
+// @description Complete a login or signup flow.
+//
+// @operationId authn_post_v1_flow_complete
+//
+// @example
+//
+//	input := authn.FlowCompleteRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//	}
+//
+//	resp, err := authncli.Flow.Complete(ctx, input)
 func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/complete", &input, &FlowCompleteResult{})
 }
 
 // #   - path: authn::/v1/flow/enroll/mfa/complete
-// # https://dev.pangea.cloud/docs/api/authn#complete-mfa-enrollment-by-verifying-a-trial-mfa-code
+// # https://pangea.cloud/docs/api/authn#complete-mfa-enrollment
 
 type FlowEnrollMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
@@ -521,6 +756,20 @@ type FlowEnrollMFACompleteResult struct {
 	CommonFlowResult
 }
 
+// @summary Complete MFA Enrollment
+//
+// @description Complete MFA enrollment by verifying a trial MFA code.
+//
+// @operationId authn_post_v1_flow_enroll_mfa_complete
+//
+// @example
+//
+//	input := authn.FlowEnrollMFACompleteRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Code: "391423",
+//	}
+//
+//	resp, err := authncli.Flow.Enroll.MFA.Complete(ctx, input)
 func (a *FlowEnrollMFA) Complete(ctx context.Context, input FlowEnrollMFACompleteRequest) (*pangea.PangeaResponse[FlowEnrollMFACompleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/enroll/mfa/complete", &input, &FlowEnrollMFACompleteResult{})
 }
@@ -540,12 +789,26 @@ type FlowResetPasswordResult struct {
 	CommonFlowResult
 }
 
+// @summary Password Reset
+//
+// @description Reset password during sign-in.
+//
+// @operationId authn_post_v1_flow_reset_password
+//
+// @example
+//
+//	input := authn.FlowResetPasswordRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Password: "My1s+Password",
+//	}
+//
+//	resp, err := authncli.Flow.Reset.Password(ctx, input)
 func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest) (*pangea.PangeaResponse[FlowResetPasswordResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/reset/password", &input, &FlowResetPasswordResult{})
 }
 
 // #   - path: authn::/v1/flow/enroll/mfa/start
-// # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-enrolling-an-mfa
+// # https://pangea.cloud/docs/api/authn#start-mfa-enrollment
 type FlowEnrollMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -559,12 +822,27 @@ type FlowEnrollMFAStartResult struct {
 	CommonFlowResult
 }
 
+// @summary Start MFA Enrollment
+//
+// @description Start the process of enrolling an MFA.
+//
+// @operationId authn_post_v1_flow_enroll_mfa_start
+//
+// @example
+//
+//	input := authn.FlowEnrollMFAStartRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		MFAProvider: authn.IDPSMSOTP,
+//		Phone: "1-808-555-0173",
+//	}
+//
+//	resp, err := authncli.Flow.Enroll.MFA.Start(ctx, input)
 func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartRequest) (*pangea.PangeaResponse[FlowEnrollMFAStartResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/enroll/mfa/start", &input, &FlowEnrollMFAStartResult{})
 }
 
 // #   - path: authn::/v1/flow/signup/password
-// # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-password
+// # https://pangea.cloud/docs/api/authn#password-sign-up
 type FlowSignupPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -579,12 +857,28 @@ type FlowSignupPasswordResult struct {
 	CommonFlowResult
 }
 
+// @summary Password Sign-up
+//
+// @description Signup a new account using a password.
+//
+// @operationId authn_post_v1_flow_signup_password
+//
+// @example
+//
+//	input := authn.FlowSignupPasswordRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Password: "My1s+Password",
+//		FirstName: "Joe",
+//		LastName: "User",
+//	}
+//
+//	resp, err := authncli.Flow.Signup.Password(ctx, input)
 func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordRequest) (*pangea.PangeaResponse[FlowSignupPasswordResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/signup/password", &input, &FlowSignupPasswordResult{})
 }
 
 // #   - path: authn::/v1/flow/signup/social
-// # https://dev.pangea.cloud/docs/api/authn#signup-a-new-account-using-a-social-provider
+// # https://pangea.cloud/docs/api/authn#social-sign-up
 type FlowSignupSocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -598,12 +892,27 @@ type FlowSignupSocialResult struct {
 	CommonFlowResult
 }
 
+// @summary Social Sign-up
+//
+// @description Signup a new account using a social provider.
+//
+// @operationId authn_post_v1_flow_signup_social
+//
+// @example
+//
+//	input := authn.FlowSignupSocialRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		CBState: "pcb_zurr3lkcwdp5keq73htsfpcii5k4zgm7",
+//		CBCode: "poc_fwg3ul4db1jpivexru3wyj354u9ej5e2",
+//	}
+//
+//	resp, err := authncli.Flow.Signup.Social(ctx, input)
 func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) (*pangea.PangeaResponse[FlowSignupSocialResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/signup/social", &input, &FlowSignupSocialResult{})
 }
 
 // #   - path: authn::/v1/flow/start
-// # https://dev.pangea.cloud/docs/api/authn#start-a-new-signup-or-signin-flow
+// # https://pangea.cloud/docs/api/authn#start-a-sign-up-in
 type FlowStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -618,12 +927,29 @@ type FlowStartResult struct {
 	CommonFlowResult
 }
 
+// @summary Start a sign-up/in
+//
+// @description Start a new signup or signin flow.
+//
+// @operationId authn_post_v1_flow_start
+//
+// @example
+//
+//	fts := []FlowType{FTsignin,FTsignup}
+//	input := authn.FlowStartRequest{
+//		CBURI: "https://www.myserver.com/callback",
+//		Email: "joe.user@email.com",
+//		FlowTypes: fts,
+//		Provider: &authn.IDPPassword,
+//	}
+//
+//	resp, cli := authncli.Flow.Start(ctx, input)
 func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.PangeaResponse[FlowStartResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/start", &input, &FlowStartResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/captcha
-// # https://dev.pangea.cloud/docs/api/authn#verify-a-captcha-during-a-signup-or-signin-flow
+// # https://pangea.cloud/docs/api/authn#verify-captcha
 type FlowVerifyCaptchaRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -636,12 +962,26 @@ type FlowVerifyCaptchaResult struct {
 	CommonFlowResult
 }
 
+// @summary Verify Captcha
+//
+// @description Verify a CAPTCHA during a signup or signin flow.
+//
+// @operationId authn_post_v1_flow_verify_captcha
+//
+// @example
+//
+//	input := authn.FlowVerifyCaptchaRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Code: "SOMEREALLYLONGANDOPAQUESTRINGFROMCAPTCHAVERIFICATION",
+//	}
+//
+//	resp, err := authncli.Flow.Verify.Captcha(ctx, input)
 func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest) (*pangea.PangeaResponse[FlowVerifyCaptchaResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/captcha", &input, &FlowVerifyCaptchaResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/email
-// # https://dev.pangea.cloud/docs/api/authn#verify-an-email-address-during-a-signup-or-signin-flow
+// # https://pangea.cloud/docs/api/authn#verify-email-address
 type FlowVerifyEmailRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -655,12 +995,27 @@ type FlowVerifyEmailResult struct {
 	CommonFlowResult
 }
 
+// @summary Verify Email Address
+//
+// @description Verify an email address during a signup or signin flow.
+//
+// @operationId authn_post_v1_flow_verify_email
+//
+// @example
+//
+//	input := authn.FlowVerifyEmailRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		CBState: "pcb_zurr3lkcwdp5keq73htsfpcii5k4zgm7",
+//		CBCode: "poc_fwg3ul4db1jpivexru3wyj354u9ej5e2",
+//	}
+//
+//	resp, err := authncli.Flow.Verify.Email(ctx, input)
 func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*pangea.PangeaResponse[FlowVerifyEmailResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/email", &input, &FlowVerifyEmailResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/mfa/complete
-// # https://dev.pangea.cloud/docs/api/authn#complete-mfa-verification
+// # https://pangea.cloud/docs/api/authn#complete-mfa-verification
 type FlowVerifyMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -674,12 +1029,26 @@ type FlowVerifyMFACompleteResult struct {
 	CommonFlowResult
 }
 
+// @summary Complete MFA Verification
+//
+// @description Complete MFA verification.
+//
+// @operationId authn_post_v1_flow_verify_mfa_complete
+//
+// @example
+//
+//	input := authn.FlowVerifyMFACompleteRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Code: pangea.String("999999"),
+//	}
+//
+//	resp, err := authncli.Flow.Verify.MFA.Complete(ctx, input)
 func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFACompleteRequest) (*pangea.PangeaResponse[FlowVerifyMFACompleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/complete", &input, &FlowVerifyMFACompleteResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/mfa/start
-// # https://dev.pangea.cloud/docs/api/authn#start-the-process-of-mfa-verification
+// # https://pangea.cloud/docs/api/authn#start-mfa-verification
 type FlowVerifyMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -692,12 +1061,26 @@ type FlowVerifyMFAStartResult struct {
 	CommonFlowResult
 }
 
+// @summary Start MFA Verification
+//
+// @description Start the process of MFA verification.
+//
+// @operationId authn_post_v1_flow_verify_mfa_start
+//
+// @example
+//
+//	input := authn.FlowVerifyMFAStartRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		MFAProvider: authn.MFAPTOTP,
+//	}
+//
+//	resp, err := authncli.Flow.Verify.MFA.Start(ctx, input)
 func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartRequest) (*pangea.PangeaResponse[FlowVerifyMFAStartResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/start", &input, &FlowVerifyMFAStartResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/password
-// # https://dev.pangea.cloud/docs/api/authn#sign-in-with-a-password
+// # https://pangea.cloud/docs/api/authn#password-sign-in
 type FlowVerifyPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -711,12 +1094,26 @@ type FlowVerifyPasswordResult struct {
 	CommonFlowResult
 }
 
+// @summary Password Sign-in
+//
+// @description Sign in with a password.
+//
+// @operationId authn_post_v1_flow_verify_password
+//
+// @example
+//
+//	input := authn.FlowVerifyPasswordRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Password: pangea.String("My1s+Password"),
+//	}
+//
+//	resp, err := authncli.Flow.Verify.Password(ctx, input)
 func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordRequest) (*pangea.PangeaResponse[FlowVerifyPasswordResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/password", &input, &FlowVerifyPasswordResult{})
 }
 
 // #   - path: authn::/v1/flow/verify/social
-// # https://dev.pangea.cloud/docs/api/authn#signin-with-a-social-provider
+// # https://pangea.cloud/docs/api/authn#social-sign-in
 type FlowVerifySocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -730,12 +1127,27 @@ type FlowVerifySocialResult struct {
 	CommonFlowResult
 }
 
+// @summary Social Sign-in
+//
+// @description Signin with a social provider.
+//
+// @operationId authn_post_v1_flow_verify_social
+//
+// @example
+//
+//	input := authn.FlowVerifySocialRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		CBState: "pcb_zurr3lkcwdp5keq73htsfpcii5k4zgm7",
+//		CBCode: "poc_fwg3ul4db1jpivexru3wyj354u9ej5e2",
+//	}
+//
+//	resp, err := authncli.Flow.Verify.Social(ctx, input)
 func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) (*pangea.PangeaResponse[FlowVerifySocialResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/social", &input, &FlowVerifySocialResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/delete
-// # https://dev.pangea.cloud/docs/api/authn#delete-mfa-enrollment-for-a-user
+// # https://pangea.cloud/docs/api/authn#delete-mfa-enrollment
 type UserMFADeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -747,12 +1159,26 @@ type UserMFADeleteRequest struct {
 type UserMFADeleteResult struct {
 }
 
+// @summary Delete MFA Enrollment
+//
+// @description Delete MFA enrollment for a user.
+//
+// @operationId authn_post_v1_user_mfa_delete
+//
+// @example
+//
+//	input := authn.UserMFADeleteRequest{
+//		UserID: "pui_zgp532cx6opljeavvllmbi3iwmq72f7f",
+//		MFAProvider: authn.MFAPTOTP,
+//	}
+//
+//	resp, err := authncli.User.MFA.Delete(ctx, input)
 func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pangea.PangeaResponse[UserMFADeleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/delete", &input, &UserMFADeleteResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/enroll
-// # https://dev.pangea.cloud/docs/api/authn#enroll-mfa-for-a-user
+// # https://pangea.cloud/docs/api/authn#enroll-in-mfa
 type UserMFAEnrollRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -765,12 +1191,27 @@ type UserMFAEnrollRequest struct {
 type UserMFAEnrollResult struct {
 }
 
+// @summary Enroll In MFA
+//
+// @description Enroll in MFA for a user by proving the user has access to an MFA verification code.
+//
+// @operationId authn_post_v1_user_mfa_enroll
+//
+// @example
+//
+//	input := authn.UserMFAEnrollRequest{
+//		UserID: "pui_zgp532cx6opljeavvllmbi3iwmq72f7f",
+//		MFAProvider: authn.MFAPTOTP,
+//		Code: "999999",
+//	}
+//
+//	resp, err := authncli.User.MFA.Enroll(ctx, input)
 func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pangea.PangeaResponse[UserMFAEnrollResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/enroll", &input, &UserMFAEnrollResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/start
-// # https://dev.pangea.cloud/docs/api/authn#start-mfa-verification-for-a-user
+// # https://pangea.cloud/docs/api/authn#user-start-mfa-verification
 type UserMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -790,12 +1231,26 @@ type UserMFAStartResult struct {
 	TOTPSecret *UserMFAStartTOTPSecret `json:"totp_secret,omitempty"`
 }
 
+// @summary Start MFA Verification
+//
+// @description Start MFA verification for a user, generating a new one-time code, and sending it if necessary. When enrolling TOTP, this returns the TOTP secret.
+//
+// @operationId authn_post_v1_user_mfa_start
+//
+// @example
+//
+//	input := authn.UserMFAStartRequest{
+//		UserID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		MFAProvider: authn.MFAPTOTP,
+//	}
+//
+//	resp, err := authncli.User.MFA.Start(ctx, input)
 func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea.PangeaResponse[UserMFAStartResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/start", &input, &UserMFAStartResult{})
 }
 
 // #   - path: authn::/v1/user/mfa/verify
-// # https://dev.pangea.cloud/docs/api/authn#verify-an-mfa-code
+// # https://pangea.cloud/docs/api/authn#verify-an-mfa-code
 type UserMFAVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -808,12 +1263,27 @@ type UserMFAVerifyRequest struct {
 type UserMFAVerifyResult struct {
 }
 
+// @summary Verify An MFA Code
+//
+// @description Verify that the user has access to an MFA verification code.
+//
+// @operationId authn_post_v1_user_mfa_verify
+//
+// @example
+//
+//	input := authn.UserMFAVerifyRequest{
+//		UserID: "pui_zgp532cx6opljeavvllmbi3iwmq72f7f",
+//		MFAProvider: authn.MFAPTOTP,
+//		Code: "999999",
+//	}
+//
+//	resp, err := authncli.User.MFA.Verify(ctx, input)
 func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pangea.PangeaResponse[UserMFAVerifyResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/verify", &input, &UserMFAVerifyResult{})
 }
 
 // #   - path: authn::/v1/user/verify
-// # https://dev.pangea.cloud/docs/api/authn#verify-a-user
+// # https://pangea.cloud/docs/api/authn#verify-user
 type UserVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -837,6 +1307,21 @@ type UserVerifyResult struct {
 	CreatedAt    string      `json:"created_at"`
 }
 
+// @summary Verify User
+//
+// @description Verify a user's primary authentication.
+//
+// @operationId authn_post_v1_user_verify
+//
+// @example
+//
+//	input := authn.UserVerifyRequest{
+//		IDProvider: authn.IDPPassword,
+//		Email: "joe.user@email.com",
+//		Authenticator: "My1s+Password",
+//	}
+//
+//	resp, err := authncli.User.Verify(ctx, input)
 func (a *User) Verify(ctx context.Context, input UserVerifyRequest) (*pangea.PangeaResponse[UserVerifyResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/user/verify", &input, &UserVerifyResult{})
 }
@@ -852,6 +1337,20 @@ type ClientSessionInvalidateRequest struct {
 type ClientSessionInvalidateResult struct {
 }
 
+// @summary Invalidate Session | Client
+//
+// @description Invalidate a session by session ID using a client token.
+//
+// @operationId authn_post_v1_client_session_invalidate
+//
+// @example
+//
+//	input := authn.ClientSessionInvalidateRequest{
+//		Token: "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//		SessionID: "pmt_zppkzrjguxyblaia6itbiesejn7jejnr",
+//	}
+//
+//	resp, err := authncli.Client.Session.Invalidate(ctx, input)
 func (a *ClientSession) Invalidate(ctx context.Context, input ClientSessionInvalidateRequest) (*pangea.PangeaResponse[ClientSessionInvalidateResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/client/session/invalidate", &input, &ClientSessionInvalidateResult{})
 }
@@ -915,6 +1414,19 @@ type SessionListResult struct {
 	Last     string        `json:"last"`
 }
 
+// @summary List sessions (client token)
+//
+// @description List sessions using a client token.
+//
+// @operationId authn_post_v1_client_session_list
+//
+// @example
+//
+//	input := authn.ClientSessionListRequest{
+//		Token: "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authncli.Client.Session.List(ctx, input)
 func (a *ClientSession) List(ctx context.Context, input ClientSessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/client/session/list", &input, &SessionListResult{})
 }
@@ -929,6 +1441,19 @@ type ClientSessionLogoutRequest struct {
 type ClientSessionLogoutResult struct {
 }
 
+// @summary Log out (client token)
+//
+// @description Log out the current user's session.
+//
+// @operationId authn_post_v1_client_session_logout
+//
+// @example
+//
+//	input := authn.ClientSessionLogoutRequest{
+//		Token: "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authncli.Client.Session.Logout(ctx, input)
 func (a *ClientSession) Logout(ctx context.Context, input ClientSessionLogoutRequest) (*pangea.PangeaResponse[ClientSessionLogoutResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/client/session/logout", &input, &ClientSessionLogoutResult{})
 }
@@ -946,6 +1471,20 @@ type ClientSessionRefreshResult struct {
 	ActiveToken  LoginToken `json:"active_token"`
 }
 
+// @summary Refresh a Session
+//
+// @description Refresh a session token.
+//
+// @operationId authn_post_v1_client_session_refresh
+//
+// @example
+//
+//	input := authn.ClientSessionRefreshRequest{
+//		RefreshToken: "ptr_xpkhwpnz2cmegsws737xbsqnmnuwtbm5",
+//		UserToken: "ptu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authncli.Client.Session.Refresh(ctx, input)
 func (a *ClientSession) Refresh(ctx context.Context, input ClientSessionRefreshRequest) (*pangea.PangeaResponse[ClientSessionRefreshResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/client/session/refresh", &input, &ClientSessionRefreshResult{})
 }
@@ -960,6 +1499,16 @@ type SessionListRequest struct {
 	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
 }
 
+// @summary List session (service token)
+//
+// @description List sessions.
+//
+// @operationId authn_post_v1_session_list
+//
+// @example
+//
+//	input := authn.SessionListRequest{}
+//	resp, err := authn.Session.List(ctx, input)
 func (a *Session) List(ctx context.Context, input SessionListRequest) (*pangea.PangeaResponse[SessionListResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/session/list", &input, &SessionListResult{})
 }
@@ -974,6 +1523,19 @@ type SessionInvalidateRequest struct {
 type SessionInvalidateResult struct {
 }
 
+// @summary Invalidate Session
+//
+// @description Invalidate a session by session ID.
+//
+// @operationId authn_post_v1_session_invalidate
+//
+// @example
+//
+//	input := authn.SessionInvalidateRequest{
+//		SessionID: "pmt_zppkzrjguxyblaia6itbiesejn7jejnr",
+//	}
+//
+//	resp, err := authncli.Session.Invalidate(ctx, input)
 func (a *Session) Invalidate(ctx context.Context, input SessionInvalidateRequest) (*pangea.PangeaResponse[SessionInvalidateResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/session/invalidate", &input, &SessionInvalidateResult{})
 }
@@ -988,6 +1550,19 @@ type SessionLogoutRequest struct {
 type SessionLogoutResult struct {
 }
 
+// @summary Log out (service token)
+//
+// @description Invalidate all sessions belonging to a user.
+//
+// @operationId authn_post_v1_session_logout
+//
+// @example
+//
+//	input := authn.SessionLogoutRequest{
+//		UserID: "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+//	}
+//
+//	resp, err := authncli.Session.Logout(ctx, input)
 func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/session/logout", &input, &SessionLogoutResult{})
 }
