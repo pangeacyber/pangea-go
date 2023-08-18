@@ -66,6 +66,7 @@ const (
 	IVSsuspended   ItemVersionState = "suspended"
 	IVScompromised ItemVersionState = "compromised"
 	IVSdestroyed   ItemVersionState = "destroyed"
+	IVSinherited   ItemVersionState = "inherited"
 )
 
 type ItemState string
@@ -303,10 +304,13 @@ type UpdateResult struct {
 type FolderCreateRequest struct {
 	pangea.BaseRequest
 
-	Name     string   `json:"name"`
-	Folder   string   `json:"folder"`
-	Metadata Metadata `json:"metadata,omitempty"`
-	Tags     Tags     `json:"tags,omitempty"`
+	Name                string           `json:"name"`
+	Folder              string           `json:"folder"`
+	Metadata            Metadata         `json:"metadata,omitempty"`
+	Tags                Tags             `json:"tags,omitempty"`
+	RotationFrequency   string           `json:"rotation_frequency,omitempty"`
+	RotationState       ItemVersionState `json:"rotation_state,omitempty"`
+	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"`
 }
 
 type FolderCreateResult struct {
