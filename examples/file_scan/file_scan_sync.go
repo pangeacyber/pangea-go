@@ -48,7 +48,7 @@ func main() {
 	fmt.Println("File Scan request...")
 	resp, err := client.Scan(ctx, input, file)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
 	fmt.Println("File Scan success.")

@@ -45,12 +45,18 @@ func main() {
 	}
 
 	fmt.Println("File Scan request...")
-	_, err = client.Scan(ctx, input, file)
-	if err == nil {
-		log.Fatal("Should return AcceptedError")
+	sr, err := client.Scan(ctx, input, file)
+	if sr != nil {
+		// this could happen if reputation call inside scan success
+		fmt.Println("File Scan success on first attempt.")
+		fmt.Println(pangea.Stringify(sr.Result))
+		os.Exit(0)
 	}
 
-	ae := err.(*pangea.AcceptedError)
+	ae, ok := err.(*pangea.AcceptedError)
+	if ok == false {
+		log.Fatal("Unexpected error. This should be AcceptedError: %v", err.Error())
+	}
 	fmt.Println("Accepted error received (as expected).")
 
 	fmt.Println("Sleep some time until result should be ready.")
