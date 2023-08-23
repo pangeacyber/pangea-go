@@ -1,4 +1,3 @@
-// intel domain lookup is an example of how to use the lookup method
 package main
 
 import (
@@ -16,7 +15,7 @@ const TESTFILE_PATH = "./testdata/testfile.pdf"
 
 func main() {
 	fmt.Println("File Scan async start...")
-	token := os.Getenv("PANGEA_INTEL_TOKEN")
+	token := os.Getenv("PANGEA_FILE_SCAN_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
