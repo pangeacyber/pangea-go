@@ -4,12 +4,11 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
 )
 
-// TODO: Do we need this interface?
-// type Client interface {
-// 	Lookup(ctx context.Context, input *DomainLookupInput) (*pangea.PangeaResponse[DomainLookupOutput], error)
-// }
-
 type Password struct {
+	*pangea.Client
+}
+
+type Agreements struct {
 	*pangea.Client
 }
 
@@ -100,16 +99,23 @@ type UserLogin struct {
 }
 
 type AuthN struct {
-	client   *pangea.Client
-	Password *Password
-	User     *User
-	Flow     *Flow
-	Client   *Client
-	Session  *Session
+	client     *pangea.Client
+	Password   *Password
+	User       *User
+	Flow       *Flow
+	Client     *Client
+	Session    *Session
+	Agreements *Agreements
 }
 
 func newPassword(cli *pangea.Client) *Password {
 	return &Password{
+		Client: cli,
+	}
+}
+
+func newAgreements(cli *pangea.Client) *Agreements {
+	return &Agreements{
 		Client: cli,
 	}
 }
@@ -239,12 +245,13 @@ func newUser(cli *pangea.Client) *User {
 func New(cfg *pangea.Config) *AuthN {
 	pc := pangea.NewClient("authn", false, cfg)
 	cli := &AuthN{
-		client:   pc,
-		Password: newPassword(pc),
-		User:     newUser(pc),
-		Flow:     newFlow(pc),
-		Client:   newClient(pc),
-		Session:  newSession(pc),
+		client:     pc,
+		Password:   newPassword(pc),
+		User:       newUser(pc),
+		Flow:       newFlow(pc),
+		Client:     newClient(pc),
+		Session:    newSession(pc),
+		Agreements: newAgreements(pc),
 	}
 	return cli
 }

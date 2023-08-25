@@ -1531,3 +1531,98 @@ type SessionLogoutResult struct {
 func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/session/logout", &input, &SessionLogoutResult{})
 }
+
+type AgreementType string
+
+const (
+	ATeula          AgreementType = "eula"
+	ATprivacyPolicy               = "privacy_policy"
+)
+
+type AgreementCreateRequest struct {
+	pangea.BaseRequest
+
+	Type   AgreementType `json:"type"`
+	Name   string        `json:"name"`
+	Text   string        `json:"text"`
+	Active *bool         `json:"active,omitempty"`
+}
+
+type AgreementInfo struct {
+	Type        string `json:"type"`
+	ID          string `json:"id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	PublishedAt string `json:"published_at,omitempty"`
+	Name        string `json:"name"`
+	Text        string `json:"text"`
+	Active      bool   `json:"active"`
+}
+
+type AgreementCreateResult AgreementInfo
+
+// TODO: docs
+func (a *Agreements) Create(ctx context.Context, input AgreementCreateRequest) (*pangea.PangeaResponse[AgreementCreateResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/create", &input, &AgreementCreateResult{})
+}
+
+type AgreementDeleteRequest struct {
+	pangea.BaseRequest
+
+	Type AgreementType `json:"type"`
+	ID   string        `json:"id"`
+}
+
+type AgreementDeleteResult struct{}
+
+// TODO: docs
+func (a *Agreements) Delete(ctx context.Context, input AgreementDeleteRequest) (*pangea.PangeaResponse[AgreementDeleteResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/delete", &input, &AgreementDeleteResult{})
+}
+
+type AgreementListOrderBy string
+
+const (
+	ALOBid        AgreementListOrderBy = "id"
+	ALOBcreatedAt                      = "created_at"
+	ALOBname                           = "name"
+	ALOBtext                           = "text"
+)
+
+type AgreementListRequest struct {
+	pangea.BaseRequest
+
+	Filter  map[string]string    `json:"filter,omitempty"`
+	Last    string               `json:"last,omitempty"`
+	Order   ItemOrder            `json:"order,omitempty"`
+	OrderBy AgreementListOrderBy `json:"order_by,omitempty"`
+	Size    int                  `json:"size,omitempty"`
+}
+
+type AgreementListResult struct {
+	Agreements []AgreementInfo `json:"agreements"`
+	Count      int             `json:"count"`
+	Last       string          `json:"last,omitempty"`
+}
+
+// TODO: docs
+func (a *Agreements) List(ctx context.Context, input AgreementListRequest) (*pangea.PangeaResponse[AgreementListResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/list", &input, &AgreementListResult{})
+}
+
+type AgreementUpdateRequest struct {
+	pangea.BaseRequest
+
+	Type   AgreementType `json:"type"`
+	ID     string        `json:"id"`
+	Name   *string       `json:"name,omitempty"`
+	Text   *string       `json:"text,omitempty"`
+	Active *bool         `json:"active,omitempty"`
+}
+
+type AgreementUpdateResult AgreementInfo
+
+// TODO: docs
+func (a *Agreements) Update(ctx context.Context, input AgreementUpdateRequest) (*pangea.PangeaResponse[AgreementUpdateResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/update", &input, &AgreementUpdateResult{})
+}

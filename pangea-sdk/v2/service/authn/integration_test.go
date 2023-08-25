@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// rand.Seed(time.Now().UnixNano())
 var RANDOM_VALUE string
 var USER_ID string
 var EMAIL_TEST string
@@ -26,6 +25,8 @@ var PROFILE_OLD = map[string]string{}
 var PROFILE_NEW = map[string]string{}
 var PASSWORD_OLD string
 var PASSWORD_NEW string
+var timeNow = time.Now()
+var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
 
 const (
 	testingEnvironment = pangeatesting.Live
@@ -424,4 +425,89 @@ func Test_Integration_User_List(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, rDel)
 	}
+}
+
+func agreementsCycle(t *testing.T, client *authn.AuthN, ctx context.Context, at authn.AgreementType) {
+	name := string(at) + timeStr
+	text := "This is agreement text"
+	active := false
+
+	// Create
+	cr, err := client.Agreements.Create(ctx, authn.AgreementCreateRequest{
+		Type:   at,
+		Name:   name,
+		Text:   text,
+		Active: pangea.Bool(active),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, cr)
+	assert.NotNil(t, cr.Result)
+	assert.Equal(t, name, cr.Result.Name)
+	assert.Equal(t, text, cr.Result.Text)
+	assert.Equal(t, active, cr.Result.Active)
+	assert.NotEmpty(t, cr.Result.ID)
+	id := cr.Result.ID
+
+	// Update agreement
+	newName := name + "v2"
+	newText := text + "v2"
+
+	ur, err := client.Agreements.Update(ctx, authn.AgreementUpdateRequest{
+		ID:     id,
+		Type:   at,
+		Text:   &newText,
+		Name:   &newName,
+		Active: pangea.Bool(active),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, ur)
+	assert.NotNil(t, ur.Result)
+	assert.Equal(t, newName, ur.Result.Name)
+	assert.Equal(t, newText, ur.Result.Text)
+	assert.Equal(t, active, ur.Result.Active)
+
+	// List
+	lr, err := client.Agreements.List(ctx, authn.AgreementListRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, lr)
+	assert.NotNil(t, lr.Result)
+	assert.Greater(t, lr.Result.Count, 0)
+	assert.Greater(t, len(lr.Result.Agreements), 0)
+	count := lr.Result.Count
+
+	// delete
+	dr, err := client.Agreements.Delete(ctx, authn.AgreementDeleteRequest{
+		Type: at,
+		ID:   id,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, dr)
+	assert.NotNil(t, dr.Result)
+
+	// List again
+	lr2, err := client.Agreements.List(ctx, authn.AgreementListRequest{})
+	assert.NoError(t, err)
+	assert.NotNil(t, lr2)
+	assert.NotNil(t, lr2.Result)
+	assert.Equal(t, count-1, lr2.Result.Count)
+}
+
+func Test_Integration_AgreementsCycleEULA(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+
+	agreementsCycle(t, client, ctx, authn.ATeula)
+}
+
+func Test_Integration_AgreementsCyclePP(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+
+	agreementsCycle(t, client, ctx, authn.ATprivacyPolicy)
 }
