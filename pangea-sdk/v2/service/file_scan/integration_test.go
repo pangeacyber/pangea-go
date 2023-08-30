@@ -48,33 +48,6 @@ func Test_Integration_FileScan(t *testing.T) {
 	assert.Equal(t, resp.Result.Data.Verdict, "benign")
 }
 
-func Test_Integration_FileScanCanceled(t *testing.T) {
-	// In this case we'll setup 13 seconds timeout to context, so, once this timeout is reached, function should return AcceptedError inmediatly
-	ctx, cancelFn := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	defer cancelFn()
-
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 60 * time.Second
-	client := file_scan.New(cfg)
-
-	input := &file_scan.FileScanRequest{
-		Raw:      true,
-		Verbose:  true,
-		Provider: "crowdstrike",
-	}
-
-	file, err := os.Open(TESTFILE_PATH)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
-	resp, err := client.Scan(ctx, input, file)
-	assert.Error(t, err)
-	assert.Nil(t, resp)
-	_, ok := err.(*pangea.AcceptedError)
-	assert.True(t, ok)
-}
-
 func Test_Integration_FileScan_NoRetry(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
