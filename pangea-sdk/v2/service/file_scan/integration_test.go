@@ -50,7 +50,7 @@ func Test_Integration_FileScan(t *testing.T) {
 
 func Test_Integration_FileScanCanceled(t *testing.T) {
 	// In this case we'll setup 13 seconds timeout to context, so, once this timeout is reached, function should return AcceptedError inmediatly
-	ctx, cancelFn := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
