@@ -1,4 +1,4 @@
-# Pangea Python SDK examples
+# Pangea Go SDK examples
 
 This is a quick example about how you use Pangea Go SDK, set up and run it.
 
