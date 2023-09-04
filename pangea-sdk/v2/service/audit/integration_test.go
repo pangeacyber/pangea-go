@@ -554,7 +554,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	ct := time.Now().UTC()
-	start := ct.Add(-3 * 24 * time.Hour).Truncate(1 * time.Microsecond)
+	start := ct.Add(-7 * 24 * time.Hour).Truncate(1 * time.Microsecond)
 
 	searchInput := &audit.SearchInput{
 		Query:   `message:""`,
