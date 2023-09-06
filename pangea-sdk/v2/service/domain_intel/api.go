@@ -30,7 +30,10 @@ type DomainReputationRequest struct {
 	pangea.BaseRequest
 
 	// The domain to be looked up.
-	Domain string `json:"domain"`
+	Domain string `json:"domain,omitempty"`
+
+	// The domain to be looked up.
+	DomainList []string `json:"domain_list,omitempty"`
 
 	// Echo the API parameters in the response.
 	Verbose *bool `json:"verbose,omitempty"`
@@ -56,6 +59,12 @@ type ReputationData struct {
 	Verdict string `json:"verdict"`
 }
 
+type ReputationDataItem struct {
+	ReputationData
+
+	Indicator string `json:"indicator"`
+}
+
 type DomainReputationResult struct {
 	// High-level normalized results sent
 	// by the Pangea service
@@ -68,4 +77,8 @@ type DomainReputationResult struct {
 	// The raw data from the provider.
 	// Each provider's data will have its own format
 	RawData interface{} `json:"raw_data,omitempty"`
+
+	// High-level normalized list results sent
+	// by the Pangea service
+	DataList []ReputationDataItem `json:"data_list"`
 }
