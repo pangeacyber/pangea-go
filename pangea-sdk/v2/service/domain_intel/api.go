@@ -80,5 +80,5 @@ type DomainReputationResult struct {
 
 	// High-level normalized list results sent
 	// by the Pangea service
-	DataList map[string]ReputationDataItem `json:"data_list"`
+	DataDetails map[string]ReputationDataItem `json:"data_details"`
 }

@@ -43,7 +43,7 @@ func Test_Integration_DomainReputation(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
-	assert.Equal(t, len(resp.Result.DataList), 0)
+	assert.Equal(t, len(resp.Result.DataDetails), 0)
 }
 
 // Reputation domain unknown
@@ -69,7 +69,7 @@ func Test_Integration_DomainReputation_2(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
 	assert.NotEmpty(t, resp.Result.Data.Verdict)
-	assert.Equal(t, len(resp.Result.DataList), 0)
+	assert.Equal(t, len(resp.Result.DataDetails), 0)
 }
 
 func Test_Integration_DomainReputationBulk(t *testing.T) {
@@ -93,8 +93,8 @@ func Test_Integration_DomainReputationBulk(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
-	assert.Equal(t, len(resp.Result.DataList), 3)
-	for _, di := range resp.Result.DataList {
+	assert.Equal(t, len(resp.Result.DataDetails), 3)
+	for _, di := range resp.Result.DataDetails {
 		assert.NotEmpty(t, di.Indicator)
 		assert.NotEmpty(t, di.Category)
 		assert.NotEmpty(t, di.Score)

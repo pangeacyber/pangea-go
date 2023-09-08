@@ -83,8 +83,8 @@ func Test_Integration_UrlReputationBulk(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
-	assert.Equal(t, len(resp.Result.DataList), 3)
-	for _, di := range resp.Result.DataList {
+	assert.Equal(t, len(resp.Result.DataDetails), 3)
+	for _, di := range resp.Result.DataDetails {
 		assert.NotEmpty(t, di.Indicator)
 		assert.NotEmpty(t, di.Category)
 		assert.NotEmpty(t, di.Score)
