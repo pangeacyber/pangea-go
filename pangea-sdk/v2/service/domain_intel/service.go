@@ -8,6 +8,7 @@ import (
 
 type Client interface {
 	Reputation(ctx context.Context, req *DomainReputationRequest) (*pangea.PangeaResponse[DomainReputationResult], error)
+	WhoIs(ctx context.Context, req *DomainWhoIsRequest) (*pangea.PangeaResponse[DomainWhoIsResult], error)
 
 	// Base service methods
 	GetPendingRequestID() []string
