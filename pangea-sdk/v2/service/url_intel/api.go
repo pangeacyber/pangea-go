@@ -31,20 +31,55 @@ type UrlReputationRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Url      string `json:"url"`
-	Verbose  *bool  `json:"verbose,omitempty"`
-	Raw      *bool  `json:"raw,omitempty"`
+	// The URL to be looked up
+	Url string `json:"url,omitempty"`
+
+	// URL list to be looked up.
+	UrlList []string `json:"url_list,omitemtpy"`
+
+	// Echo the API parameters in the response.
+	Verbose *bool `json:"verbose,omitempty"`
+
+	// Include raw data from this provider.
+	Raw *bool `json:"raw,omitempty"`
+
+	// Use reputation data from this provider.
 	Provider string `json:"provider,omitempty"`
 }
 
 type ReputationData struct {
+	// The categories that apply to this
+	// indicator as determined by the provider
 	Category []string `json:"category"`
-	Score    int      `json:"score"`
-	Verdict  string   `json:"verdict"`
+
+	// The score, given by the Pangea service,
+	// for the indicator
+	Score int `json:"score"`
+
+	// The verdict, given by the Pangea service,
+	// for the indicator
+	Verdict string `json:"verdict"`
+}
+type ReputationDataItem struct {
+	ReputationData
+
+	Indicator string `json:"indicator"`
 }
 
 type UrlReputationResult struct {
-	Data       ReputationData `json:"data"`
-	Parameters interface{}    `json:"parameters,omitempty"`
-	RawData    interface{}    `json:"raw_data,omitempty"`
+	// High-level normalized results sent
+	// by the Pangea service
+	Data ReputationData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
+
+	// High-level normalized list results sent
+	// by the Pangea service
+	DataList map[string]ReputationDataItem `json:"data_list"`
 }

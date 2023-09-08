@@ -56,9 +56,15 @@ type UserBreachedData struct {
 }
 
 type UserBreachedResult struct {
-	Data       UserBreachedData `json:"data"`
-	Parameters interface{}      `json:"parameters,omitempty"`
-	RawData    interface{}      `json:"raw_data,omitempty"`
+	Data UserBreachedData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 // @summary Look up breached passwords
@@ -99,7 +105,13 @@ type UserPasswordBreachedData struct {
 }
 
 type UserPasswordBreachedResult struct {
-	Data       UserPasswordBreachedData `json:"data"`
-	Parameters map[string]any           `json:"parameters,omitempty"`
-	RawData    map[string]any           `json:"raw_data,omitempty"`
+	Data UserPasswordBreachedData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }

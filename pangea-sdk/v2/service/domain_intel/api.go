@@ -32,7 +32,7 @@ type DomainReputationRequest struct {
 	// The domain to be looked up.
 	Domain string `json:"domain,omitempty"`
 
-	// The domain to be looked up.
+	// The domain list to be looked up.
 	DomainList []string `json:"domain_list,omitempty"`
 
 	// Echo the API parameters in the response.
@@ -72,13 +72,13 @@ type DomainReputationResult struct {
 
 	// The parameters, which were passed in
 	// the request, echoed back
-	Parameters interface{} `json:"parameters,omitempty"`
+	Parameters map[string]any `json:"parameters,omitempty"`
 
 	// The raw data from the provider.
 	// Each provider's data will have its own format
-	RawData interface{} `json:"raw_data,omitempty"`
+	RawData map[string]any `json:"raw_data,omitempty"`
 
 	// High-level normalized list results sent
 	// by the Pangea service
-	DataList []ReputationDataItem `json:"data_list"`
+	DataList map[string]ReputationDataItem `json:"data_list"`
 }

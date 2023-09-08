@@ -51,11 +51,11 @@ type FileReputationResult struct {
 
 	// The parameters, which were passed in
 	// the request, echoed back
-	Parameters interface{} `json:"parameters,omitempty"`
+	Parameters map[string]any `json:"parameters,omitempty"`
 
 	// The raw data from the provider.
 	// Each provider's data will have its own format
-	RawData interface{} `json:"raw_data,omitempty"`
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 // @summary Reputation check

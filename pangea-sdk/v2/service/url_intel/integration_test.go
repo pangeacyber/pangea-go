@@ -62,6 +62,36 @@ func Test_Integration_UrlReputation_2(t *testing.T) {
 	assert.Equal(t, resp.Result.Data.Verdict, "unknown")
 }
 
+func Test_Integration_UrlReputationBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &url_intel.UrlReputationRequest{
+		UrlList:  []string{"http://113.235.101.11:54384", "http://45.14.49.109:54819", "https://chcial.ru/uplcv?utm_term%3Dcost%2Bto%2Brezone%2Bland"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+	resp, err := intelcli.Reputation(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+	assert.Equal(t, len(resp.Result.DataList), 3)
+	for _, di := range resp.Result.DataList {
+		assert.NotEmpty(t, di.Indicator)
+		assert.NotEmpty(t, di.Category)
+		assert.NotEmpty(t, di.Score)
+		assert.NotEmpty(t, di.Verdict)
+	}
+}
+
 func Test_Integration_UrlReputation_Error_BadToken(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()

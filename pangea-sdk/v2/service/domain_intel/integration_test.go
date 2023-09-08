@@ -100,7 +100,6 @@ func Test_Integration_DomainReputationBulk(t *testing.T) {
 		assert.NotEmpty(t, di.Score)
 		assert.NotEmpty(t, di.Verdict)
 	}
-
 }
 
 // Test empty domain

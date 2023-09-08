@@ -135,15 +135,27 @@ type ReputationData struct {
 }
 
 type IpReputationResult struct {
-	Data       ReputationData `json:"data"`
-	Parameters interface{}    `json:"parameters,omitempty"`
-	RawData    interface{}    `json:"raw_data,omitempty"`
+	Data ReputationData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 type IpGeolocateResult struct {
-	Data       GeolocateData `json:"data"`
-	Parameters interface{}   `json:"parameters,omitempty"`
-	RawData    interface{}   `json:"raw_data,omitempty"`
+	Data GeolocateData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 type GeolocateData struct {
@@ -166,9 +178,15 @@ type IpDomainRequest struct {
 }
 
 type IpDomainResult struct {
-	Data       DomainData  `json:"data"`
-	Parameters interface{} `json:"parameters,omitempty"`
-	RawData    interface{} `json:"raw_data,omitempty"`
+	Data DomainData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 type DomainData struct {
@@ -187,9 +205,15 @@ type IpVPNRequest struct {
 }
 
 type IpVPNResult struct {
-	Data       VPNData     `json:"data"`
-	Parameters interface{} `json:"parameters,omitempty"`
-	RawData    interface{} `json:"raw_data,omitempty"`
+	Data VPNData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 type VPNData struct {
@@ -207,9 +231,15 @@ type IpProxyRequest struct {
 }
 
 type IpProxyResult struct {
-	Data       ProxyData   `json:"data"`
-	Parameters interface{} `json:"parameters,omitempty"`
-	RawData    interface{} `json:"raw_data,omitempty"`
+	Data ProxyData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 type ProxyData struct {
