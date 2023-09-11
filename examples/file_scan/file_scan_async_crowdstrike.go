@@ -60,7 +60,7 @@ func main() {
 
 	fmt.Println("Sleep some time until result should be ready.")
 	// Wait until result should be ready
-	time.Sleep(time.Duration(30 * time.Second))
+	time.Sleep(time.Duration(20 * time.Second))
 
 	fmt.Println("File Scan poll result...")
 	pr, err := client.PollResultByError(ctx, *ae)
