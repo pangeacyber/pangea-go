@@ -304,7 +304,8 @@ func Test_Integration_Client_Session(t *testing.T) {
 
 	// Client session list
 	input2 := authn.ClientSessionListRequest{
-		Token: resp.Result.ActiveToken.Token,
+		Token:  resp.Result.ActiveToken.Token,
+		Filter: authn.Filter(authn.FilterSessionList{}),
 	}
 	resp2, err := client.Client.Session.List(ctx, input2)
 	assert.NoError(t, err)
@@ -340,7 +341,9 @@ func Test_Integration_Session(t *testing.T) {
 	assert.NotEmpty(t, resp.Result.RefreshToken)
 
 	// Client session list
-	input2 := authn.SessionListRequest{}
+	input2 := authn.SessionListRequest{
+		Filter: authn.Filter(authn.FilterSessionList{}),
+	}
 	resp2, err := client.Session.List(ctx, input2)
 	assert.NoError(t, err)
 	assert.Greater(t, len(resp2.Result.Sessions), 0)
@@ -399,7 +402,9 @@ func Test_Integration_User_Invite_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	resp, err := client.User.Invites.List(ctx, authn.UserInviteListRequest{})
+	resp, err := client.User.Invites.List(ctx, authn.UserInviteListRequest{
+		Filter: authn.Filter(authn.FilterUserInviteList{}),
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.Greater(t, len(resp.Result.Invites), 0)
@@ -411,7 +416,9 @@ func Test_Integration_User_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	input := authn.UserListRequest{}
+	input := authn.UserListRequest{
+		Filter: authn.Filter(authn.FilterUserList{}),
+	}
 	resp, err := client.User.List(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
@@ -467,7 +474,9 @@ func agreementsCycle(t *testing.T, client *authn.AuthN, ctx context.Context, at 
 	assert.Equal(t, active, ur.Result.Active)
 
 	// List
-	lr, err := client.Agreements.List(ctx, authn.AgreementListRequest{})
+	lr, err := client.Agreements.List(ctx, authn.AgreementListRequest{
+		Filter: authn.Filter(authn.FilterAgreementList{}),
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, lr)
 	assert.NotNil(t, lr.Result)
@@ -485,7 +494,9 @@ func agreementsCycle(t *testing.T, client *authn.AuthN, ctx context.Context, at 
 	assert.NotNil(t, dr.Result)
 
 	// List again
-	lr2, err := client.Agreements.List(ctx, authn.AgreementListRequest{})
+	lr2, err := client.Agreements.List(ctx, authn.AgreementListRequest{
+		Filter: authn.Filter(authn.FilterAgreementList{}),
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, lr2)
 	assert.NotNil(t, lr2.Result)
