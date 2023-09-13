@@ -38,7 +38,6 @@ func authnIntegrationCfg(t *testing.T) *pangea.Config {
 }
 
 func TestMain(m *testing.M) {
-	// Write code here to run before tests
 	rand.Seed(time.Now().UnixNano())
 	RANDOM_VALUE = strconv.Itoa(rand.Intn(10000000))
 	USER_ID = ""
@@ -58,9 +57,6 @@ func TestMain(m *testing.M) {
 	// Run tests
 	exitVal := m.Run()
 
-	// Write code here to run after tests
-
-	// Exit with exit value from tests
 	os.Exit(exitVal)
 }
 
@@ -302,10 +298,12 @@ func Test_Integration_Client_Session(t *testing.T) {
 	assert.NotEmpty(t, resp.Result.ActiveToken)
 	assert.NotEmpty(t, resp.Result.RefreshToken)
 
+	filter := authn.NewFilterSessionList()
+
 	// Client session list
 	input2 := authn.ClientSessionListRequest{
 		Token:  resp.Result.ActiveToken.Token,
-		Filter: authn.Filter(authn.FilterSessionList{}),
+		Filter: filter.Filter(),
 	}
 	resp2, err := client.Client.Session.List(ctx, input2)
 	assert.NoError(t, err)
@@ -341,8 +339,9 @@ func Test_Integration_Session(t *testing.T) {
 	assert.NotEmpty(t, resp.Result.RefreshToken)
 
 	// Client session list
+	filter := authn.NewFilterSessionList()
 	input2 := authn.SessionListRequest{
-		Filter: authn.Filter(authn.FilterSessionList{}),
+		Filter: filter.Filter(),
 	}
 	resp2, err := client.Session.List(ctx, input2)
 	assert.NoError(t, err)
@@ -402,8 +401,9 @@ func Test_Integration_User_Invite_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
+	filter := authn.NewFilterUserInviteList()
 	resp, err := client.User.Invites.List(ctx, authn.UserInviteListRequest{
-		Filter: authn.Filter(authn.FilterUserInviteList{}),
+		Filter: filter.Filter(),
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
@@ -416,8 +416,9 @@ func Test_Integration_User_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
+	filter := authn.NewFilterUserList()
 	input := authn.UserListRequest{
-		Filter: authn.Filter(authn.FilterUserList{}),
+		Filter: filter.Filter(),
 	}
 	resp, err := client.User.List(ctx, input)
 	assert.NoError(t, err)
@@ -473,9 +474,11 @@ func agreementsCycle(t *testing.T, client *authn.AuthN, ctx context.Context, at 
 	assert.Equal(t, newText, ur.Result.Text)
 	assert.Equal(t, active, ur.Result.Active)
 
+	filter := authn.NewFilterAgreementList()
+
 	// List
 	lr, err := client.Agreements.List(ctx, authn.AgreementListRequest{
-		Filter: authn.Filter(authn.FilterAgreementList{}),
+		Filter: filter.Filter(),
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, lr)
@@ -495,7 +498,7 @@ func agreementsCycle(t *testing.T, client *authn.AuthN, ctx context.Context, at 
 
 	// List again
 	lr2, err := client.Agreements.List(ctx, authn.AgreementListRequest{
-		Filter: authn.Filter(authn.FilterAgreementList{}),
+		Filter: filter.Filter(),
 	})
 	assert.NoError(t, err)
 	assert.NotNil(t, lr2)
