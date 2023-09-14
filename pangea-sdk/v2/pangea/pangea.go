@@ -64,6 +64,7 @@ type Config struct {
 	Token string
 
 	// Config ID for multi-config projects
+	// @deprecated: Set config_id with options in service initialization if supported
 	ConfigID string
 
 	// The HTTP client to be used by the client.
