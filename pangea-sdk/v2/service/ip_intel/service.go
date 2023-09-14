@@ -14,10 +14,7 @@ type Client interface {
 	IsProxy(ctx context.Context, req *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error)
 
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
 }
 
 type ipIntel struct {
@@ -26,7 +23,7 @@ type ipIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &ipIntel{
-		BaseService: pangea.NewBaseService("ip-intel", false, cfg),
+		BaseService: pangea.NewBaseService("ip-intel", cfg),
 	}
 	return cli
 }
