@@ -139,7 +139,7 @@ func Test_Integration_FileScan_NoRetry_reversinglabs(t *testing.T) {
 	ae := err.(*pangea.AcceptedError)
 
 	// Wait until result should be ready
-	time.Sleep(time.Duration(10 * time.Second))
+	time.Sleep(time.Duration(40 * time.Second))
 
 	pr, err := client.PollResultByError(ctx, *ae)
 	assert.NoError(t, err)
