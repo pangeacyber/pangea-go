@@ -11,10 +11,7 @@ type Client interface {
 	Scan(ctx context.Context, input *FileScanRequest, file io.Reader) (*pangea.PangeaResponse[FileScanResult], error)
 
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
 }
 
 type FileScan struct {
@@ -23,7 +20,7 @@ type FileScan struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &FileScan{
-		BaseService: pangea.NewBaseService("file-scan", false, cfg),
+		BaseService: pangea.NewBaseService("file-scan", cfg),
 	}
 	return cli
 }

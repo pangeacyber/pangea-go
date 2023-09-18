@@ -12,7 +12,8 @@ type HashType string
 const (
 	HTsha265 HashType = "sha256"
 	HTsha1   HashType = "sha1"
-	HTmd5    HashType = "md5"
+	HTsha512 HashType = "sha512"
+	HTntlm   HashType = "ntlm"
 )
 
 // @summary Look up breached users

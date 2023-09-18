@@ -94,6 +94,33 @@ func Test_Integration_DomainWhoIs(t *testing.T) {
 	assert.NotEmpty(t, resp.Result.Data.DomainAvailability)
 }
 
+// Reputation domain unknown
+func Test_Integration_DomainReputation_NotFound(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := intelDomainIntegrationCfg(t)
+	intelcli := domain_intel.New(cfg)
+
+	input := &domain_intel.DomainReputationRequest{
+		Domain:   "thisshouldbeafakedomain123asd.com",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+
+	resp, err := intelcli.Reputation(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.NotEmpty(t, resp.Result.Data.Verdict)
+	assert.NotNil(t, resp.Result.Data.Category)
+	assert.NotEmpty(t, resp.Result.Data.Score)
+}
+
 // Test empty domain
 func Test_Integration_DomainReputation_Error(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
