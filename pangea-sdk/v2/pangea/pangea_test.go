@@ -20,13 +20,13 @@ func testClient(t *testing.T, url string) *pangea.Client {
 	headers := make(map[string]string, 0)
 	headers["Key"] = "Value"
 	cfg.AdditionalHeaders = headers
-	return pangea.NewClient("service", false, cfg)
+	return pangea.NewClient("service", cfg)
 }
 
 func TestClientCustomUserAgent(t *testing.T) {
 	cfg := pangeatesting.TestConfig("pangea.cloud")
 	cfg.CustomUserAgent = "Test"
-	c := pangea.NewClient("service", false, cfg)
+	c := pangea.NewClient("service", cfg)
 	assert.NotNil(t, c)
 }
 
@@ -234,7 +234,7 @@ func TestDo_With_Retries_Success(t *testing.T) {
 		RetryMax: 1,
 	}
 
-	client := pangea.NewClient("service", false, cfg)
+	client := pangea.NewClient("service", cfg)
 	req, _ := client.NewRequest("POST", "test", nil)
 
 	handler := func() func(w http.ResponseWriter, r *http.Request) {
@@ -275,7 +275,7 @@ func TestDo_With_Retries_Error(t *testing.T) {
 		RetryMax: 1,
 	}
 
-	client := pangea.NewClient("service", false, cfg)
+	client := pangea.NewClient("service", cfg)
 
 	req, _ := client.NewRequest("POST", "test", nil)
 

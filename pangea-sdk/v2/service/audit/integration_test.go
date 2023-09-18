@@ -730,8 +730,8 @@ func Test_Integration_Multi_Config_1_Log(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
-	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
-	client, _ := audit.New(cfg)
+	ConfigID := pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
+	client, _ := audit.New(cfg, audit.WithConfigID(ConfigID))
 
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
@@ -756,8 +756,8 @@ func Test_Integration_Multi_Config_2_Log(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
-	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
-	client, _ := audit.New(cfg)
+	ConfigID := pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
+	client, _ := audit.New(cfg, audit.WithConfigID(ConfigID))
 
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,

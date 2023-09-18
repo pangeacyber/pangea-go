@@ -15,10 +15,7 @@ type Client interface {
 	Root(ctx context.Context, req *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
 }
 
 type Tenanter interface {
@@ -48,7 +45,7 @@ type audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 	cli := &audit{
-		BaseService:           pangea.NewBaseService("audit", true, cfg),
+		BaseService:           pangea.NewBaseService("audit", cfg),
 		skipEventVerification: false,
 		rp:                    nil,
 		lastUnpRootHash:       nil,
@@ -57,6 +54,15 @@ func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 		tenantID:              "",
 		schema:                StandardEvent{},
 	}
+
+	// FIXME: Just to still support ConfigID in PangeaConfig. Remove when deprecated
+	if cfg.ConfigID != "" {
+		err := WithConfigID(cfg.ConfigID)(cli)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	for _, opt := range opts {
 		err := opt(cli)
 		if err != nil {
@@ -72,6 +78,12 @@ func WithLogProofVerificationEnabled() Option {
 	return func(a *audit) error {
 		a.verifyProofs = true
 		return nil
+	}
+}
+
+func WithConfigID(cid string) Option {
+	return func(a *audit) error {
+		return pangea.WithConfigID(cid)(&a.BaseService)
 	}
 }
 
