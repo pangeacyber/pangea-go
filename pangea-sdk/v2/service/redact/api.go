@@ -59,6 +59,9 @@ type TextRequest struct {
 	// An array of redact rule short names
 	Rules []string `json:"rules,omitempty"`
 
+	// An array of redact rulesets short names
+	Rulesets []string `json:"rulesets,omitempty"`
+
 	// Setting this value to false will omit the redacted result only returning count
 	ReturnResult *bool `json:"return_result,omitempty"`
 }
@@ -121,6 +124,9 @@ type StructuredRequest struct {
 
 	// An array of redact rule short names
 	Rules []string `json:"rules,omitempty"`
+
+	// An array of redact rulesets short names
+	Rulesets []string `json:"rulesets,omitempty"`
 
 	// Setting this value to false will omit the redacted result only returning count
 	ReturnResult *bool `json:"return_result,omitempty"`

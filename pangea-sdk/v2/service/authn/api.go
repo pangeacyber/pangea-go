@@ -149,7 +149,6 @@ const (
 
 type ProfileData map[string]string
 type Scopes []string
-type Filter map[string]any
 
 type UserCreateRequest struct {
 	// Base request has ConfigID for multi-config projects
@@ -339,11 +338,101 @@ const (
 	UILOBinviteOrg                 = "invite_org"
 )
 
+type FilterUserList struct {
+	pangea.FilterBase
+	acceptedEulaID   *pangea.FilterMatch[string]
+	createdAt        *pangea.FilterRange[string]
+	disabled         *pangea.FilterEqual[bool]
+	email            *pangea.FilterMatch[string]
+	id               *pangea.FilterMatch[string]
+	lastLoginAt      *pangea.FilterMatch[string]
+	lastLoginIP      *pangea.FilterMatch[string]
+	lastLoginCity    *pangea.FilterMatch[string]
+	lastLoginCountry *pangea.FilterMatch[string]
+	loginCount       *pangea.FilterRange[int]
+	requireMFA       *pangea.FilterEqual[bool]
+	scopes           *pangea.FilterEqual[[]string]
+	verified         *pangea.FilterEqual[bool]
+}
+
+func NewFilterUserList() *FilterUserList {
+	filter := make(pangea.Filter)
+	return &FilterUserList{
+		FilterBase:       *pangea.NewFilterBase(filter),
+		acceptedEulaID:   pangea.NewFilterMatch[string]("accepted_eula_id", &filter),
+		createdAt:        pangea.NewFilterRange[string]("created_at", &filter),
+		disabled:         pangea.NewFilterEqual[bool]("diabled", &filter),
+		email:            pangea.NewFilterMatch[string]("email", &filter),
+		id:               pangea.NewFilterMatch[string]("id", &filter),
+		lastLoginAt:      pangea.NewFilterMatch[string]("last_login_at", &filter),
+		lastLoginIP:      pangea.NewFilterMatch[string]("last_login_ip", &filter),
+		lastLoginCity:    pangea.NewFilterMatch[string]("last_login_city", &filter),
+		lastLoginCountry: pangea.NewFilterMatch[string]("last_login_country", &filter),
+		loginCount:       pangea.NewFilterRange[int]("login_count", &filter),
+		requireMFA:       pangea.NewFilterEqual[bool]("require_mfa", &filter),
+		scopes:           pangea.NewFilterEqual[[]string]("scopes", &filter),
+		verified:         pangea.NewFilterEqual[bool]("verified", &filter),
+	}
+}
+
+func (fu *FilterUserList) AcceptedEulaID() *pangea.FilterMatch[string] {
+	return fu.acceptedEulaID
+}
+
+func (fu *FilterUserList) CreatedAt() *pangea.FilterRange[string] {
+	return fu.createdAt
+}
+
+func (fu *FilterUserList) Disabled() *pangea.FilterEqual[bool] {
+	return fu.disabled
+}
+
+func (fu *FilterUserList) Email() *pangea.FilterMatch[string] {
+	return fu.email
+}
+
+func (fu *FilterUserList) ID() *pangea.FilterMatch[string] {
+	return fu.id
+}
+
+func (fu *FilterUserList) LastLoginAt() *pangea.FilterMatch[string] {
+	return fu.lastLoginAt
+}
+
+func (fu *FilterUserList) LastLoginIP() *pangea.FilterMatch[string] {
+	return fu.lastLoginIP
+}
+
+func (fu *FilterUserList) LastLoginCity() *pangea.FilterMatch[string] {
+	return fu.lastLoginCity
+}
+
+func (fu *FilterUserList) LastLoginCountry() *pangea.FilterMatch[string] {
+	return fu.lastLoginCountry
+}
+
+func (fu *FilterUserList) LoginCount() *pangea.FilterRange[int] {
+	return fu.loginCount
+}
+
+func (fu *FilterUserList) RequireMFA() *pangea.FilterEqual[bool] {
+	return fu.requireMFA
+}
+
+func (fu *FilterUserList) Scopes() *pangea.FilterEqual[[]string] {
+	return fu.scopes
+}
+
+func (fu *FilterUserList) Verified() *pangea.FilterEqual[bool] {
+	return fu.verified
+}
+
 type UserListRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Filter  Filter          `json:"filter,omitempty"`
+	// Should user FilterUserList object here
+	Filter  pangea.Filter   `json:"filter,omitempty"`
 	Last    string          `json:"last,omitempty"`
 	Order   ItemOrder       `json:"order,omitempty"`
 	OrderBy UserListOrderBy `json:"order_by,omitempty"`
@@ -553,11 +642,84 @@ type UserInviteData struct {
 	Expire     string `json:"expire"`
 }
 
+// FilterUserInviteList represents the filter criteria for user invites.
+type FilterUserInviteList struct {
+	pangea.FilterBase
+	callback   *pangea.FilterMatch[string]
+	email      *pangea.FilterMatch[string]
+	id         *pangea.FilterMatch[string]
+	inviteOrg  *pangea.FilterMatch[string]
+	inviter    *pangea.FilterMatch[string]
+	state      *pangea.FilterMatch[string]
+	signup     *pangea.FilterEqual[bool]
+	requireMFA *pangea.FilterEqual[bool]
+	expire     *pangea.FilterRange[string]
+	createdAt  *pangea.FilterRange[string]
+}
+
+func NewFilterUserInviteList() *FilterUserInviteList {
+	filter := make(pangea.Filter)
+	return &FilterUserInviteList{
+		FilterBase: *pangea.NewFilterBase(filter),
+		callback:   pangea.NewFilterMatch[string]("callback", &filter),
+		email:      pangea.NewFilterMatch[string]("email", &filter),
+		id:         pangea.NewFilterMatch[string]("id", &filter),
+		inviteOrg:  pangea.NewFilterMatch[string]("invite_org", &filter),
+		inviter:    pangea.NewFilterMatch[string]("inviter", &filter),
+		state:      pangea.NewFilterMatch[string]("state", &filter),
+		signup:     pangea.NewFilterEqual[bool]("signup", &filter),
+		requireMFA: pangea.NewFilterEqual[bool]("require_mfa", &filter),
+		expire:     pangea.NewFilterRange[string]("expire", &filter),
+		createdAt:  pangea.NewFilterRange[string]("created_at", &filter),
+	}
+}
+
+func (f *FilterUserInviteList) Callback() *pangea.FilterMatch[string] {
+	return f.callback
+}
+
+func (f *FilterUserInviteList) Email() *pangea.FilterMatch[string] {
+	return f.email
+}
+
+func (f *FilterUserInviteList) ID() *pangea.FilterMatch[string] {
+	return f.id
+}
+
+func (f *FilterUserInviteList) InviteOrg() *pangea.FilterMatch[string] {
+	return f.inviteOrg
+}
+
+func (f *FilterUserInviteList) Inviter() *pangea.FilterMatch[string] {
+	return f.inviter
+}
+
+func (f *FilterUserInviteList) State() *pangea.FilterMatch[string] {
+	return f.state
+}
+
+func (f *FilterUserInviteList) Signup() *pangea.FilterEqual[bool] {
+	return f.signup
+}
+
+func (f *FilterUserInviteList) RequireMFA() *pangea.FilterEqual[bool] {
+	return f.requireMFA
+}
+
+func (f *FilterUserInviteList) Expire() *pangea.FilterRange[string] {
+	return f.expire
+}
+
+func (f *FilterUserInviteList) CreatedAt() *pangea.FilterRange[string] {
+	return f.createdAt
+}
+
 type UserInviteListRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Filter  Filter                `json:"filter,omitempty"`
+	// Should use FilterUserInviteList object here
+	Filter  pangea.Filter         `json:"filter,omitempty"`
 	Last    string                `json:"last,omitempty"`
 	Order   ItemOrder             `json:"order,omitempty"`
 	OrderBy UserInviteListOrderBy `json:"order_by,omitempty"`
@@ -640,8 +802,6 @@ func (a *UserPassword) Reset(ctx context.Context, input UserPasswordResetRequest
 	return request.DoPost(ctx, a.Client, "v1/user/password/reset", &input, &UserPasswordResetResult{})
 }
 
-// #   - path: authn::/v1/flow/complete
-// # https://pangea.cloud/docs/api/authn#complete-sign-up-in
 type FlowCompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -670,9 +830,6 @@ type FlowCompleteResult struct {
 func (a *Flow) Complete(ctx context.Context, input FlowCompleteRequest) (*pangea.PangeaResponse[FlowCompleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/flow/complete", &input, &FlowCompleteResult{})
 }
-
-// #   - path: authn::/v1/flow/enroll/mfa/complete
-// # https://pangea.cloud/docs/api/authn#complete-mfa-enrollment
 
 type FlowEnrollMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
@@ -807,8 +964,6 @@ func (a *FlowReset) Password(ctx context.Context, input FlowResetPasswordRequest
 	return request.DoPost(ctx, a.Client, "v1/flow/reset/password", &input, &FlowResetPasswordResult{})
 }
 
-// #   - path: authn::/v1/flow/enroll/mfa/start
-// # https://pangea.cloud/docs/api/authn#start-mfa-enrollment
 type FlowEnrollMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -841,8 +996,6 @@ func (a *FlowEnrollMFA) Start(ctx context.Context, input FlowEnrollMFAStartReque
 	return request.DoPost(ctx, a.Client, "v1/flow/enroll/mfa/start", &input, &FlowEnrollMFAStartResult{})
 }
 
-// #   - path: authn::/v1/flow/signup/password
-// # https://pangea.cloud/docs/api/authn#password-sign-up
 type FlowSignupPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -877,8 +1030,6 @@ func (a *FlowSignup) Password(ctx context.Context, input FlowSignupPasswordReque
 	return request.DoPost(ctx, a.Client, "v1/flow/signup/password", &input, &FlowSignupPasswordResult{})
 }
 
-// #   - path: authn::/v1/flow/signup/social
-// # https://pangea.cloud/docs/api/authn#social-sign-up
 type FlowSignupSocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -911,8 +1062,6 @@ func (a *FlowSignup) Social(ctx context.Context, input FlowSignupSocialRequest) 
 	return request.DoPost(ctx, a.Client, "v1/flow/signup/social", &input, &FlowSignupSocialResult{})
 }
 
-// #   - path: authn::/v1/flow/start
-// # https://pangea.cloud/docs/api/authn#start-a-sign-up-in
 type FlowStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -948,8 +1097,6 @@ func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.Pange
 	return request.DoPost(ctx, a.Client, "v1/flow/start", &input, &FlowStartResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/captcha
-// # https://pangea.cloud/docs/api/authn#verify-captcha
 type FlowVerifyCaptchaRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -980,8 +1127,6 @@ func (a *FlowVerify) Captcha(ctx context.Context, input FlowVerifyCaptchaRequest
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/captcha", &input, &FlowVerifyCaptchaResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/email
-// # https://pangea.cloud/docs/api/authn#verify-email-address
 type FlowVerifyEmailRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1014,8 +1159,6 @@ func (a *FlowVerify) Email(ctx context.Context, input FlowVerifyEmailRequest) (*
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/email", &input, &FlowVerifyEmailResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/mfa/complete
-// # https://pangea.cloud/docs/api/authn#complete-mfa-verification
 type FlowVerifyMFACompleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1047,8 +1190,6 @@ func (a *FlowVerifyMFA) Complete(ctx context.Context, input FlowVerifyMFAComplet
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/complete", &input, &FlowVerifyMFACompleteResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/mfa/start
-// # https://pangea.cloud/docs/api/authn#start-mfa-verification
 type FlowVerifyMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1079,8 +1220,6 @@ func (a *FlowVerifyMFA) Start(ctx context.Context, input FlowVerifyMFAStartReque
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/mfa/start", &input, &FlowVerifyMFAStartResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/password
-// # https://pangea.cloud/docs/api/authn#password-sign-in
 type FlowVerifyPasswordRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1112,8 +1251,6 @@ func (a *FlowVerify) Password(ctx context.Context, input FlowVerifyPasswordReque
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/password", &input, &FlowVerifyPasswordResult{})
 }
 
-// #   - path: authn::/v1/flow/verify/social
-// # https://pangea.cloud/docs/api/authn#social-sign-in
 type FlowVerifySocialRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1146,8 +1283,6 @@ func (a *FlowVerify) Social(ctx context.Context, input FlowVerifySocialRequest) 
 	return request.DoPost(ctx, a.Client, "v1/flow/verify/social", &input, &FlowVerifySocialResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/delete
-// # https://pangea.cloud/docs/api/authn#delete-mfa-enrollment
 type UserMFADeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1177,8 +1312,6 @@ func (a *UserMFA) Delete(ctx context.Context, input UserMFADeleteRequest) (*pang
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/delete", &input, &UserMFADeleteResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/enroll
-// # https://pangea.cloud/docs/api/authn#enroll-in-mfa
 type UserMFAEnrollRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1210,8 +1343,6 @@ func (a *UserMFA) Enroll(ctx context.Context, input UserMFAEnrollRequest) (*pang
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/enroll", &input, &UserMFAEnrollResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/start
-// # https://pangea.cloud/docs/api/authn#user-start-mfa-verification
 type UserMFAStartRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1249,8 +1380,6 @@ func (a *UserMFA) Start(ctx context.Context, input UserMFAStartRequest) (*pangea
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/start", &input, &UserMFAStartResult{})
 }
 
-// #   - path: authn::/v1/user/mfa/verify
-// # https://pangea.cloud/docs/api/authn#verify-an-mfa-code
 type UserMFAVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1282,8 +1411,6 @@ func (a *UserMFA) Verify(ctx context.Context, input UserMFAVerifyRequest) (*pang
 	return request.DoPost(ctx, a.Client, "v1/user/mfa/verify", &input, &UserMFAVerifyResult{})
 }
 
-// #   - path: authn::/v1/user/verify
-// # https://pangea.cloud/docs/api/authn#verify-user
 type UserVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1374,12 +1501,67 @@ const (
 	IOdesc           = "desc"
 )
 
+type FilterSessionList struct {
+	pangea.FilterBase
+	id        *pangea.FilterMatch[string]
+	typeStr   *pangea.FilterMatch[string]
+	identity  *pangea.FilterMatch[string]
+	email     *pangea.FilterMatch[string]
+	createdAt *pangea.FilterRange[string]
+	expire    *pangea.FilterRange[string]
+	scopes    *pangea.FilterEqual[[]string]
+}
+
+func NewFilterSessionList() *FilterSessionList {
+	filter := make(pangea.Filter)
+	return &FilterSessionList{
+		FilterBase: *pangea.NewFilterBase(filter),
+		id:         pangea.NewFilterMatch[string]("id", &filter),
+		typeStr:    pangea.NewFilterMatch[string]("type", &filter),
+		identity:   pangea.NewFilterMatch[string]("identity", &filter),
+		email:      pangea.NewFilterMatch[string]("email", &filter),
+		createdAt:  pangea.NewFilterRange[string]("created_at", &filter),
+		expire:     pangea.NewFilterRange[string]("expire", &filter),
+		scopes:     pangea.NewFilterEqual[[]string]("scopes", &filter),
+	}
+}
+
+func (f *FilterSessionList) ID() *pangea.FilterMatch[string] {
+	return f.id
+}
+
+func (f *FilterSessionList) Type() *pangea.FilterMatch[string] {
+	return f.typeStr
+}
+
+func (f *FilterSessionList) Identity() *pangea.FilterMatch[string] {
+	return f.identity
+}
+
+func (f *FilterSessionList) Email() *pangea.FilterMatch[string] {
+	return f.email
+}
+
+func (f *FilterSessionList) CreatedAt() *pangea.FilterRange[string] {
+	return f.createdAt
+}
+
+func (f *FilterSessionList) Expire() *pangea.FilterRange[string] {
+	return f.expire
+}
+
+func (f *FilterSessionList) Scopes() *pangea.FilterEqual[[]string] {
+	return f.scopes
+}
+
 type ClientSessionListRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Token   string             `json:"token"`
-	Filter  Filter             `json:"filter,omitempty"`
+	Token string `json:"token"`
+
+	// Should use FilterSessionList object here
+	Filter  pangea.Filter      `json:"filter,omitempty"`
 	Last    string             `json:"last,omitempty"`
 	Order   ItemOrder          `json:"order,omitempty"`
 	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
@@ -1493,7 +1675,8 @@ type SessionListRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Filter  Filter             `json:"filter,omitempty"`
+	// Should use FilterSessionList object here
+	Filter  pangea.Filter      `json:"filter,omitempty"`
 	Last    string             `json:"last,omitempty"`
 	Order   ItemOrder          `json:"order,omitempty"`
 	OrderBy SessionListOrderBy `json:"order_by,omitempty"`
@@ -1565,4 +1748,153 @@ type SessionLogoutResult struct {
 //	resp, err := authncli.Session.Logout(ctx, input)
 func (a *Session) Logout(ctx context.Context, input SessionLogoutRequest) (*pangea.PangeaResponse[SessionLogoutResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/session/logout", &input, &SessionLogoutResult{})
+}
+
+type AgreementType string
+
+const (
+	ATeula          AgreementType = "eula"
+	ATprivacyPolicy               = "privacy_policy"
+)
+
+type AgreementCreateRequest struct {
+	pangea.BaseRequest
+
+	Type   AgreementType `json:"type"`
+	Name   string        `json:"name"`
+	Text   string        `json:"text"`
+	Active *bool         `json:"active,omitempty"`
+}
+
+type AgreementInfo struct {
+	Type        string `json:"type"`
+	ID          string `json:"id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	PublishedAt string `json:"published_at,omitempty"`
+	Name        string `json:"name"`
+	Text        string `json:"text"`
+	Active      bool   `json:"active"`
+}
+
+type AgreementCreateResult AgreementInfo
+
+// TODO: docs
+func (a *Agreements) Create(ctx context.Context, input AgreementCreateRequest) (*pangea.PangeaResponse[AgreementCreateResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/create", &input, &AgreementCreateResult{})
+}
+
+type AgreementDeleteRequest struct {
+	pangea.BaseRequest
+
+	Type AgreementType `json:"type"`
+	ID   string        `json:"id"`
+}
+
+type AgreementDeleteResult struct{}
+
+// TODO: docs
+func (a *Agreements) Delete(ctx context.Context, input AgreementDeleteRequest) (*pangea.PangeaResponse[AgreementDeleteResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/delete", &input, &AgreementDeleteResult{})
+}
+
+type AgreementListOrderBy string
+
+const (
+	ALOBid        AgreementListOrderBy = "id"
+	ALOBcreatedAt                      = "created_at"
+	ALOBname                           = "name"
+	ALOBtext                           = "text"
+)
+
+type FilterAgreementList struct {
+	pangea.FilterBase
+	active       *pangea.FilterEqual[bool]
+	created_at   *pangea.FilterRange[string]
+	published_at *pangea.FilterRange[string]
+	typeStr      *pangea.FilterMatch[string]
+	id           *pangea.FilterMatch[string]
+	name         *pangea.FilterMatch[string]
+	text         *pangea.FilterMatch[string]
+}
+
+func NewFilterAgreementList() *FilterAgreementList {
+	filter := make(pangea.Filter)
+	return &FilterAgreementList{
+		FilterBase:   *pangea.NewFilterBase(filter),
+		active:       pangea.NewFilterEqual[bool]("active", &filter),
+		created_at:   pangea.NewFilterRange[string]("created_at", &filter),
+		published_at: pangea.NewFilterRange[string]("published_at", &filter),
+		typeStr:      pangea.NewFilterMatch[string]("type", &filter),
+		id:           pangea.NewFilterMatch[string]("id", &filter),
+		name:         pangea.NewFilterMatch[string]("name", &filter),
+		text:         pangea.NewFilterMatch[string]("text", &filter),
+	}
+}
+
+func (f *FilterAgreementList) Active() *pangea.FilterEqual[bool] {
+	return f.active
+}
+
+func (f *FilterAgreementList) CreatedAt() *pangea.FilterRange[string] {
+	return f.created_at
+}
+
+func (f *FilterAgreementList) PublishedAt() *pangea.FilterRange[string] {
+	return f.published_at
+}
+
+func (f *FilterAgreementList) Type() *pangea.FilterMatch[string] {
+	return f.typeStr
+}
+
+func (f *FilterAgreementList) ID() *pangea.FilterMatch[string] {
+	return f.id
+}
+
+func (f *FilterAgreementList) Name() *pangea.FilterMatch[string] {
+	return f.name
+}
+
+func (f *FilterAgreementList) Text() *pangea.FilterMatch[string] {
+	return f.text
+}
+
+type AgreementListRequest struct {
+	pangea.BaseRequest
+
+	// Should use FilterAgreementList object here
+	Filter  map[string]any       `json:"filter,omitempty"`
+	Last    string               `json:"last,omitempty"`
+	Order   ItemOrder            `json:"order,omitempty"`
+	OrderBy AgreementListOrderBy `json:"order_by,omitempty"`
+	Size    int                  `json:"size,omitempty"`
+}
+
+type AgreementListResult struct {
+	Agreements []AgreementInfo `json:"agreements"`
+	Count      int             `json:"count"`
+	Last       string          `json:"last,omitempty"`
+}
+
+// TODO: docs
+func (a *Agreements) List(ctx context.Context, input AgreementListRequest) (*pangea.PangeaResponse[AgreementListResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/list", &input, &AgreementListResult{})
+}
+
+type AgreementUpdateRequest struct {
+	pangea.BaseRequest
+
+	Type   AgreementType `json:"type"`
+	ID     string        `json:"id"`
+	Name   *string       `json:"name,omitempty"`
+	Text   *string       `json:"text,omitempty"`
+	Active *bool         `json:"active,omitempty"`
+}
+
+type AgreementUpdateResult AgreementInfo
+
+// TODO: docs
+func (a *Agreements) Update(ctx context.Context, input AgreementUpdateRequest) (*pangea.PangeaResponse[AgreementUpdateResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/agreements/update", &input, &AgreementUpdateResult{})
 }

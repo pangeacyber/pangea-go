@@ -108,6 +108,30 @@ func Test_Integration_IpGetDomain_DefaultProvider(t *testing.T) {
 	assert.Equal(t, resp.Result.Data.Domain, "rogers.com")
 }
 
+func Test_Integration_IpGetDomain_NotFound(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpDomainRequest{
+		Ip:       "127.0.0.1",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "digitalelement",
+	}
+	resp, err := intelcli.GetDomain(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.False(t, resp.Result.Data.DomainFound)
+	assert.Empty(t, resp.Result.Data.Domain)
+}
+
 func Test_Integration_IpIsVPN(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
@@ -129,6 +153,29 @@ func Test_Integration_IpIsVPN(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.True(t, resp.Result.Data.IsVPN)
+}
+
+func Test_Integration_IpIsVPN_NotFound(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpVPNRequest{
+		Ip:       "127.0.0.1",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "digitalelement",
+	}
+	resp, err := intelcli.IsVPN(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.False(t, resp.Result.Data.IsVPN)
 }
 
 func Test_Integration_IpIsVPN_DefaultProvider(t *testing.T) {
@@ -174,6 +221,29 @@ func Test_Integration_IpIsProxy(t *testing.T) {
 	assert.True(t, resp.Result.Data.IsProxy)
 }
 
+func Test_Integration_IpIsProxy_NotFound(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpProxyRequest{
+		Ip:       "127.0.0.1",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "digitalelement",
+	}
+	resp, err := intelcli.IsProxy(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.False(t, resp.Result.Data.IsProxy)
+}
+
 func Test_Integration_IpIsProxy_DefaultProvider(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
@@ -215,6 +285,31 @@ func Test_Integration_IpReputationCrowdstrikeProvider(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+}
+
+func Test_Integration_IpReputationCrowdstrikeProvider_NotFound(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpReputationRequest{
+		Ip:       "127.0.0.1",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+	resp, err := intelcli.Reputation(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.NotEmpty(t, resp.Result.Data.Verdict)
+	assert.NotNil(t, resp.Result.Data.Category)
+	assert.NotEmpty(t, resp.Result.Data.Score)
 }
 
 func Test_Integration_IpReputation_CymruProvider(t *testing.T) {

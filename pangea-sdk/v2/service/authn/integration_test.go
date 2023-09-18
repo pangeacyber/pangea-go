@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// rand.Seed(time.Now().UnixNano())
 var RANDOM_VALUE string
 var USER_ID string
 var EMAIL_TEST string
@@ -26,6 +25,8 @@ var PROFILE_OLD = map[string]string{}
 var PROFILE_NEW = map[string]string{}
 var PASSWORD_OLD string
 var PASSWORD_NEW string
+var timeNow = time.Now()
+var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
 
 const (
 	testingEnvironment = pangeatesting.Live
@@ -37,7 +38,6 @@ func authnIntegrationCfg(t *testing.T) *pangea.Config {
 }
 
 func TestMain(m *testing.M) {
-	// Write code here to run before tests
 	rand.Seed(time.Now().UnixNano())
 	RANDOM_VALUE = strconv.Itoa(rand.Intn(10000000))
 	USER_ID = ""
@@ -57,9 +57,6 @@ func TestMain(m *testing.M) {
 	// Run tests
 	exitVal := m.Run()
 
-	// Write code here to run after tests
-
-	// Exit with exit value from tests
 	os.Exit(exitVal)
 }
 
@@ -301,9 +298,12 @@ func Test_Integration_Client_Session(t *testing.T) {
 	assert.NotEmpty(t, resp.Result.ActiveToken)
 	assert.NotEmpty(t, resp.Result.RefreshToken)
 
+	filter := authn.NewFilterSessionList()
+
 	// Client session list
 	input2 := authn.ClientSessionListRequest{
-		Token: resp.Result.ActiveToken.Token,
+		Token:  resp.Result.ActiveToken.Token,
+		Filter: filter.Filter(),
 	}
 	resp2, err := client.Client.Session.List(ctx, input2)
 	assert.NoError(t, err)
@@ -339,7 +339,10 @@ func Test_Integration_Session(t *testing.T) {
 	assert.NotEmpty(t, resp.Result.RefreshToken)
 
 	// Client session list
-	input2 := authn.SessionListRequest{}
+	filter := authn.NewFilterSessionList()
+	input2 := authn.SessionListRequest{
+		Filter: filter.Filter(),
+	}
 	resp2, err := client.Session.List(ctx, input2)
 	assert.NoError(t, err)
 	assert.Greater(t, len(resp2.Result.Sessions), 0)
@@ -398,7 +401,10 @@ func Test_Integration_User_Invite_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	resp, err := client.User.Invites.List(ctx, authn.UserInviteListRequest{})
+	filter := authn.NewFilterUserInviteList()
+	resp, err := client.User.Invites.List(ctx, authn.UserInviteListRequest{
+		Filter: filter.Filter(),
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
 	assert.Greater(t, len(resp.Result.Invites), 0)
@@ -410,7 +416,10 @@ func Test_Integration_User_List(t *testing.T) {
 
 	cfg := authnIntegrationCfg(t)
 	client := authn.New(cfg)
-	input := authn.UserListRequest{}
+	filter := authn.NewFilterUserList()
+	input := authn.UserListRequest{
+		Filter: filter.Filter(),
+	}
 	resp, err := client.User.List(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, resp.Result)
@@ -424,4 +433,95 @@ func Test_Integration_User_List(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, rDel)
 	}
+}
+
+func agreementsCycle(t *testing.T, client *authn.AuthN, ctx context.Context, at authn.AgreementType) {
+	name := string(at) + timeStr
+	text := "This is agreement text"
+	active := false
+
+	// Create
+	cr, err := client.Agreements.Create(ctx, authn.AgreementCreateRequest{
+		Type:   at,
+		Name:   name,
+		Text:   text,
+		Active: pangea.Bool(active),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, cr)
+	assert.NotNil(t, cr.Result)
+	assert.Equal(t, name, cr.Result.Name)
+	assert.Equal(t, text, cr.Result.Text)
+	assert.Equal(t, active, cr.Result.Active)
+	assert.NotEmpty(t, cr.Result.ID)
+	id := cr.Result.ID
+
+	// Update agreement
+	newName := name + "v2"
+	newText := text + "v2"
+
+	ur, err := client.Agreements.Update(ctx, authn.AgreementUpdateRequest{
+		ID:     id,
+		Type:   at,
+		Text:   &newText,
+		Name:   &newName,
+		Active: pangea.Bool(active),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, ur)
+	assert.NotNil(t, ur.Result)
+	assert.Equal(t, newName, ur.Result.Name)
+	assert.Equal(t, newText, ur.Result.Text)
+	assert.Equal(t, active, ur.Result.Active)
+
+	filter := authn.NewFilterAgreementList()
+
+	// List
+	lr, err := client.Agreements.List(ctx, authn.AgreementListRequest{
+		Filter: filter.Filter(),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, lr)
+	assert.NotNil(t, lr.Result)
+	assert.Greater(t, lr.Result.Count, 0)
+	assert.Greater(t, len(lr.Result.Agreements), 0)
+	count := lr.Result.Count
+
+	// delete
+	dr, err := client.Agreements.Delete(ctx, authn.AgreementDeleteRequest{
+		Type: at,
+		ID:   id,
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, dr)
+	assert.NotNil(t, dr.Result)
+
+	// List again
+	lr2, err := client.Agreements.List(ctx, authn.AgreementListRequest{
+		Filter: filter.Filter(),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, lr2)
+	assert.NotNil(t, lr2.Result)
+	assert.Equal(t, count-1, lr2.Result.Count)
+}
+
+func Test_Integration_AgreementsCycleEULA(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+
+	agreementsCycle(t, client, ctx, authn.ATeula)
+}
+
+func Test_Integration_AgreementsCyclePP(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := authnIntegrationCfg(t)
+	client := authn.New(cfg)
+
+	agreementsCycle(t, client, ctx, authn.ATprivacyPolicy)
 }

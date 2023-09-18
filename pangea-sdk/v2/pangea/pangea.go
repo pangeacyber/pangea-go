@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	version         = "2.1.0"
+	version         = "2.2.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
@@ -64,6 +64,7 @@ type Config struct {
 	Token string
 
 	// Config ID for multi-config projects
+	// @deprecated: Set config_id with options in service initialization if supported
 	ConfigID string
 
 	// The HTTP client to be used by the client.
@@ -122,11 +123,11 @@ type Client struct {
 	// Client logger
 	Logger zerolog.Logger
 
-	// Flag to check config ID on request
-	checkConfigID bool
+	// config ID on request
+	configID string
 }
 
-func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalConfigs ...*Config) *Client {
+func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 
@@ -148,7 +149,7 @@ func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalCo
 		token:            cfg.Token,
 		config:           cfg,
 		userAgent:        userAgent,
-		checkConfigID:    checkConfigID,
+		configID:         "",
 		pendingRequestID: make(map[string]bool),
 		Logger:           *cfg.Logger,
 	}
@@ -234,8 +235,8 @@ func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Reque
 		Str("url", u).
 		Send()
 
-	if c.checkConfigID && c.config.ConfigID != "" && body.GetConfigID() == "" {
-		body.SetConfigID(c.config.ConfigID)
+	if c.configID != "" && body.GetConfigID() == "" {
+		body.SetConfigID(c.configID)
 	}
 
 	var buf io.ReadWriter
@@ -672,13 +673,20 @@ type BaseService struct {
 	Client *Client
 }
 
-func NewBaseService(name string, checkConfigID bool, baseCfg *Config) BaseService {
+type BaseServicer interface {
+	GetPendingRequestID() []string
+	PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error)
+	PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error)
+	PollResultRaw(ctx context.Context, requestID string) (*PangeaResponse[map[string]any], error)
+}
+
+func NewBaseService(name string, baseCfg *Config) BaseService {
 	cfg := baseCfg.Copy()
 	if cfg.Logger == nil {
 		cfg.Logger = GetDefaultPangeaLogger()
 	}
 	bs := BaseService{
-		Client: NewClient(name, checkConfigID, cfg),
+		Client: NewClient(name, cfg),
 	}
 	return bs
 }
@@ -719,6 +727,23 @@ func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaRe
 		Response: *resp,
 		Result:   &r,
 	}, nil
+}
+
+type Option func(*BaseService) error
+
+func WithConfigID(cid string) Option {
+	return func(b *BaseService) error {
+		return ClientWithConfigID(cid)(b.Client)
+	}
+}
+
+type ClientOption func(*Client) error
+
+func ClientWithConfigID(cid string) ClientOption {
+	return func(b *Client) error {
+		b.configID = cid
+		return nil
+	}
 }
 
 func (c *Client) GetPendingRequestID() []string {
