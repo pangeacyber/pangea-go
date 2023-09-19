@@ -9,13 +9,13 @@ type BaseService struct {
 	Client *Client
 }
 
-func NewBaseService(name string, checkConfigID bool, baseCfg *Config) BaseService {
+func NewBaseService(name string, baseCfg *Config) BaseService {
 	cfg := baseCfg.Copy()
 	if cfg.Logger == nil {
 		cfg.Logger = GetDefaultPangeaLogger()
 	}
 	bs := BaseService{
-		Client: NewClient(name, checkConfigID, cfg),
+		Client: NewClient(name, cfg),
 	}
 	return bs
 }
@@ -78,4 +78,19 @@ func (bs *BaseService) KillRequestsInProgress() {
 
 func (bs *BaseService) GetPendingRequestID() []string {
 	return bs.Client.GetPendingRequestID()
+}
+
+type BaseServicer interface {
+	GetPendingRequestID() []string
+	PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error)
+	PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error)
+	PollResultRaw(ctx context.Context, requestID string) (*PangeaResponse[map[string]any], error)
+}
+
+type Option func(*BaseService) error
+
+func WithConfigID(cid string) Option {
+	return func(b *BaseService) error {
+		return ClientWithConfigID(cid)(b.Client)
+	}
 }

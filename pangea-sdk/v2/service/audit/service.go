@@ -11,16 +11,13 @@ import (
 )
 
 type Client interface {
-	Log(context.Context, any, bool) (*pangea.PangeaResponse[LogResult], error)
-	Search(context.Context, *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
-	SearchResults(context.Context, *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
-	Root(context.Context, *RootInput) (*pangea.PangeaResponse[RootOutput], error)
+	Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error)
+	Search(ctx context.Context, req *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
+	SearchResults(ctx context.Context, req *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
+	Root(ctx context.Context, req *RootInput) (*pangea.PangeaResponse[RootOutput], error)
 
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
 }
 
 type Tenanter interface {
@@ -51,7 +48,7 @@ type audit struct {
 
 func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 	cli := &audit{
-		BaseService:           pangea.NewBaseService("audit", true, cfg),
+		BaseService:           pangea.NewBaseService("audit", cfg),
 		skipEventVerification: false,
 		rp:                    nil,
 		signer:                nil,
@@ -60,6 +57,15 @@ func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 		schema:                StandardEvent{},
 	}
 	cli.lastUnpRootHash.Store(nil)
+
+	// FIXME: Just to still support ConfigID in PangeaConfig. Remove when deprecated
+	if cfg.ConfigID != "" {
+		err := WithConfigID(cfg.ConfigID)(cli)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	for _, opt := range opts {
 		err := opt(cli)
 		if err != nil {
@@ -75,6 +81,12 @@ func WithLogProofVerificationEnabled() Option {
 	return func(a *audit) error {
 		a.verifyProofs = true
 		return nil
+	}
+}
+
+func WithConfigID(cid string) Option {
+	return func(a *audit) error {
+		return pangea.WithConfigID(cid)(&a.BaseService)
 	}
 }
 

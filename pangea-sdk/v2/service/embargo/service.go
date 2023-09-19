@@ -7,13 +7,12 @@ import (
 )
 
 type Client interface {
-	IPCheck(ctx context.Context, input *IPCheckRequest) (*pangea.PangeaResponse[CheckResult], error)
-	ISOCheck(ctx context.Context, input *ISOCheckRequest) (*pangea.PangeaResponse[CheckResult], error)
+	IPCheck(ctx context.Context, req *IPCheckRequest) (*pangea.PangeaResponse[CheckResult], error)
+	ISOCheck(ctx context.Context, req *ISOCheckRequest) (*pangea.PangeaResponse[CheckResult], error)
+
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
+
 	KillRequestsInProgress()
 	WaitGroup()
 	GetNumRequestsInProgress() int
@@ -26,7 +25,7 @@ type embargo struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &embargo{
-		BaseService: pangea.NewBaseService("embargo", false, cfg),
+		BaseService: pangea.NewBaseService("embargo", cfg),
 	}
 	return cli
 }

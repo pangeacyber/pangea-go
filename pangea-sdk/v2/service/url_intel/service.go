@@ -7,13 +7,10 @@ import (
 )
 
 type Client interface {
-	Reputation(ctx context.Context, input *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error)
+	Reputation(ctx context.Context, req *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error)
 
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
 }
 
 type urlIntel struct {
@@ -22,7 +19,7 @@ type urlIntel struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &urlIntel{
-		BaseService: pangea.NewBaseService("url-intel", false, cfg),
+		BaseService: pangea.NewBaseService("url-intel", cfg),
 	}
 	return cli
 }

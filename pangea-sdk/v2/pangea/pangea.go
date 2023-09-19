@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	version         = "2.1.0"
+	version         = "2.2.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
@@ -64,6 +64,7 @@ type Config struct {
 	Token string
 
 	// Config ID for multi-config projects
+	// @deprecated: Set config_id with options in service initialization if supported
 	ConfigID string
 
 	// The HTTP client to be used by the client.
@@ -127,9 +128,6 @@ type Client struct {
 	// Client logger
 	Logger zerolog.Logger
 
-	// Flag to check config ID on request
-	checkConfigID bool
-
 	// wait group in case of async calls
 	wg sync.WaitGroup
 
@@ -138,9 +136,11 @@ type Client struct {
 
 	// context in progress with cancel function
 	cip sync.Map
+	// config ID on request
+	configID string
 }
 
-func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalConfigs ...*Config) *Client {
+func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 
@@ -158,16 +158,16 @@ func NewClient(service string, checkConfigID bool, baseCfg *Config, additionalCo
 	}
 
 	return &Client{
-		serviceName:   service,
-		token:         cfg.Token,
-		config:        cfg,
-		userAgent:     userAgent,
-		checkConfigID: checkConfigID,
-		prid:          sync.Map{},
-		Logger:        *cfg.Logger,
-		uiid:          atomic.Int64{},
-		cip:           sync.Map{},
-		wg:            sync.WaitGroup{},
+		serviceName: service,
+		token:       cfg.Token,
+		config:      cfg,
+		userAgent:   userAgent,
+		prid:        sync.Map{},
+		Logger:      *cfg.Logger,
+		uiid:        atomic.Int64{},
+		cip:         sync.Map{},
+		wg:          sync.WaitGroup{},
+		configID:    "",
 	}
 }
 
@@ -256,8 +256,8 @@ func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Reque
 		Str("url", u).
 		Send()
 
-	if c.checkConfigID && c.config.ConfigID != "" && body.GetConfigID() == "" {
-		body.SetConfigID(c.config.ConfigID)
+	if c.configID != "" && body.GetConfigID() == "" {
+		body.SetConfigID(c.configID)
 	}
 
 	var buf io.ReadWriter
@@ -686,6 +686,15 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	c.removePendingRequestID(reqID)
 
 	return resp, nil
+}
+
+type ClientOption func(*Client) error
+
+func ClientWithConfigID(cid string) ClientOption {
+	return func(b *Client) error {
+		b.configID = cid
+		return nil
+	}
 }
 
 func (c *Client) GetPendingRequestID() []string {

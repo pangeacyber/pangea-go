@@ -7,13 +7,11 @@ import (
 )
 
 type Client interface {
-	Redact(ctx context.Context, input *TextRequest) (*pangea.PangeaResponse[TextResult], error)
-	RedactStructured(ctx context.Context, input *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error)
+	Redact(ctx context.Context, req *TextRequest) (*pangea.PangeaResponse[TextResult], error)
+	RedactStructured(ctx context.Context, req *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error)
+
 	// Base service methods
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e pangea.AcceptedError) (*pangea.PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*pangea.PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*pangea.PangeaResponse[map[string]any], error)
+	pangea.BaseServicer
 }
 
 type redact struct {
@@ -22,7 +20,7 @@ type redact struct {
 
 func New(cfg *pangea.Config) Client {
 	cli := &redact{
-		BaseService: pangea.NewBaseService("redact", false, cfg),
+		BaseService: pangea.NewBaseService("redact", cfg),
 	}
 	return cli
 }

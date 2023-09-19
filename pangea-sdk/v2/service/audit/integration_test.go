@@ -501,7 +501,7 @@ func Test_Integration_Search_Results_Verify(t *testing.T) {
 	maxResults := 5
 	limit := 2
 	ct := time.Now().UTC()
-	start := ct.Add(-3 * 24 * time.Hour)
+	start := ct.Add(-3 * 24 * time.Hour).Truncate(1 * time.Microsecond)
 
 	input := &audit.SearchInput{
 		Query:      "message:" + MSG_SIGNED,
@@ -554,7 +554,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 	cfg := auditIntegrationCfg(t)
 	client, _ := audit.New(cfg)
 	ct := time.Now().UTC()
-	start := ct.Add(-3 * 24 * time.Hour)
+	start := ct.Add(-7 * 24 * time.Hour).Truncate(1 * time.Microsecond)
 
 	searchInput := &audit.SearchInput{
 		Query:   `message:""`,
@@ -730,8 +730,8 @@ func Test_Integration_Multi_Config_1_Log(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
-	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
-	client, _ := audit.New(cfg)
+	ConfigID := pangeatesting.GetConfigID(t, testingEnvironment, "audit", 1)
+	client, _ := audit.New(cfg, audit.WithConfigID(ConfigID))
 
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
@@ -756,8 +756,8 @@ func Test_Integration_Multi_Config_2_Log(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
-	cfg.ConfigID = pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
-	client, _ := audit.New(cfg)
+	ConfigID := pangeatesting.GetConfigID(t, testingEnvironment, "audit", 2)
+	client, _ := audit.New(cfg, audit.WithConfigID(ConfigID))
 
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,

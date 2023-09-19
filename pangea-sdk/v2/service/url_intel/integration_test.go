@@ -39,6 +39,31 @@ func Test_Integration_UrlReputation(t *testing.T) {
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
 }
 
+func Test_Integration_UrlReputation_NotFound(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &url_intel.UrlReputationRequest{
+		Url:      "http://113.235.101.11:54384",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+	resp, err := intelcli.Reputation(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.NotEmpty(t, resp.Result.Data.Verdict)
+	assert.NotNil(t, resp.Result.Data.Category)
+	assert.NotEmpty(t, resp.Result.Data.Score)
+}
+
 func Test_Integration_UrlReputation_2(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
