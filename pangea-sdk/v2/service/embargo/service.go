@@ -12,11 +12,6 @@ type Client interface {
 
 	// Base service methods
 	pangea.BaseServicer
-
-	KillRequestsInProgress()
-	WaitGroup()
-	GetNumRequestsInProgress() int
-	Close()
 }
 
 type embargo struct {

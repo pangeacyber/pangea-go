@@ -85,6 +85,10 @@ type BaseServicer interface {
 	PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error)
 	PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error)
 	PollResultRaw(ctx context.Context, requestID string) (*PangeaResponse[map[string]any], error)
+	GetNumRequestsInProgress() int
+	KillRequestsInProgress()
+	WaitGroup()
+	Close()
 }
 
 type Option func(*BaseService) error
