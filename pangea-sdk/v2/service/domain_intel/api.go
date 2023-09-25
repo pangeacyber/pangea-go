@@ -11,6 +11,8 @@ import (
 //
 // @description Lookup an internet domain to retrieve reputation data.
 //
+// @operationId domain_intel_post_v1_reputation
+//
 // @example
 //
 //	input := &domain_intel.DomainReputationRequest{
@@ -25,20 +27,22 @@ func (e *domainIntel) Reputation(ctx context.Context, input *DomainReputationReq
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &DomainReputationResult{})
 }
 
-// @summary WhoIs check
+// @summary WhoIs
 //
 // @description Retrieve who is for a domain from a provider, including an optional detailed report.
+//
+// @operationId domain_intel_post_v1_whois
 //
 // @example
 //
 //	input := &domain_intel.DomainWhoIsRequest{
-//		Domain: "737updatesboeing.com",
+//		Domain: "google.com",
 //		Raw: true,
 //		Verbose: true,
-//		Provider: "domaintools",
+//		Provider: "whoisxml",
 //	}
 //
-//	checkResponse, err := domainintel.Reputation(ctx, input)
+//	checkResponse, err := domainintel.WhoIs(ctx, input)
 func (e *domainIntel) WhoIs(ctx context.Context, input *DomainWhoIsRequest) (*pangea.PangeaResponse[DomainWhoIsResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/whois", input, &DomainWhoIsResult{})
 }
@@ -92,7 +96,7 @@ type DomainWhoIsRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	// The domain to be looked up.
+	// The domain to query.
 	Domain string `json:"domain"`
 
 	// Echo the API parameters in the response.
@@ -101,7 +105,7 @@ type DomainWhoIsRequest struct {
 	// Include raw data from this provider.
 	Raw *bool `json:"raw,omitempty"`
 
-	// Use reputation data from this provider.
+	// Use whois data from this provider.
 	Provider string `json:"provider,omitempty"`
 }
 
