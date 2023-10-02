@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func Test_Integration_IpGeolocate(t *testing.T) {
@@ -285,6 +285,34 @@ func Test_Integration_IpReputationCrowdstrikeProvider(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+}
+
+func Test_Integration_IpReputationBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpReputationBulkRequest{
+		Ips:      []string{"93.231.182.110", "190.28.74.251"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+	resp, err := intelcli.ReputationBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+	for _, di := range resp.Result.Data {
+		assert.NotEmpty(t, di.Category)
+		assert.NotEmpty(t, di.Score)
+		assert.NotEmpty(t, di.Verdict)
+	}
 }
 
 func Test_Integration_IpReputationCrowdstrikeProvider_NotFound(t *testing.T) {

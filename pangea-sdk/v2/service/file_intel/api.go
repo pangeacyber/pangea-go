@@ -30,6 +30,25 @@ type FileReputationRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+type FileReputationBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Hashes []string `json:"hashes"`
+
+	// One of "sha256", "sha", "md5".
+	HashType string `json:"hash_type"`
+
+	// Echo the API parameters in the response.
+	Verbose *bool `json:"verbose,omitempty"`
+
+	// Include raw data from this provider.
+	Raw *bool `json:"raw,omitempty"`
+
+	// Use reputation data from this provider.
+	Provider string `json:"provider,omitempty"`
+}
+
 type ReputationData struct {
 	// The categories that apply to this
 	// indicator as determined by the provider
@@ -48,6 +67,20 @@ type FileReputationResult struct {
 	// High-level normalized results sent
 	// by the Pangea service
 	Data ReputationData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
+}
+
+type FileReputationBulkResult struct {
+	// High-level normalized results sent
+	// by the Pangea service
+	Data map[string]ReputationData `json:"data"`
 
 	// The parameters, which were passed in
 	// the request, echoed back
@@ -77,6 +110,27 @@ type FileReputationResult struct {
 //	checkOutput, _, err := fileintel.Reputation(ctx, input)
 func (e *fileIntel) Reputation(ctx context.Context, input *FileReputationRequest) (*pangea.PangeaResponse[FileReputationResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &FileReputationResult{})
+}
+
+// @summary Reputation check
+//
+// @description Lookup a file's hash to retrieve reputation data.
+//
+// @operationId FIXME:
+//
+// @example
+//
+//	input := &file_intel.FileReputationBulkRequest{
+//		Hashes: FIXME:
+//		HashType: "sha256",
+//		Raw: true,
+//		Verbose: true,
+//		Provider: "reversinglabs",
+//	}
+//
+//	checkOutput, _, err := fileintel.ReputationBulk(ctx, input)
+func (e *fileIntel) ReputationBulk(ctx context.Context, input *FileReputationBulkRequest) (*pangea.PangeaResponse[FileReputationBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/reputation", input, &FileReputationBulkResult{})
 }
 
 // Create a FileReputationRequest from path file

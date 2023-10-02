@@ -48,6 +48,27 @@ func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &IpReputationResult{})
 }
 
+// @summary Reputation
+//
+// @description Retrieve a reputation score for IP list address from a provider,
+// including an optional detailed report.
+//
+// @operationId FIXME:
+//
+// @example
+//
+//	input := &ip_intel.IpReputationBulkRequest{
+//		Ips:       FIXME:,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "crowdstrike",
+//	}
+//
+//	checkOutput, _, err := ipintel.ReputationBulk(ctx, input)
+func (e *ipIntel) ReputationBulk(ctx context.Context, input *IpReputationBulkRequest) (*pangea.PangeaResponse[IpReputationBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/reputation", input, &IpReputationBulkResult{})
+}
+
 // @summary Domain
 //
 // @description Retrieve the domain name associated with an IP address.
@@ -128,6 +149,16 @@ type IpReputationRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+type IpReputationBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Ips      []string `json:"ips"`
+	Verbose  *bool    `json:"verbose,omitempty"`
+	Raw      *bool    `json:"raw,omitempty"`
+	Provider string   `json:"provider,omitempty"`
+}
+
 type ReputationData struct {
 	Category []string `json:"category"`
 	Score    int      `json:"score"`
@@ -136,6 +167,18 @@ type ReputationData struct {
 
 type IpReputationResult struct {
 	Data ReputationData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
+}
+
+type IpReputationBulkResult struct {
+	Data map[string]ReputationData `json:"data"`
 
 	// The parameters, which were passed in
 	// the request, echoed back

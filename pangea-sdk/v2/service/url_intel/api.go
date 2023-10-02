@@ -27,15 +27,49 @@ func (e *urlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) 
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &UrlReputationResult{})
 }
 
+// @summary Reputation check
+//
+// @description Retrieve a reputation score for a URL list from a provider, including an optional detailed report.
+//
+// @operationId FIXME:
+//
+// @example
+//
+//	input := &url_intel.UrlReputationBulkRequest{
+//		Urls:      FIXME:
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "crowdstrike",
+//	}
+//
+//	checkOutput, _, err := urlintel.ReputationBulk(ctx, input)
+func (e *urlIntel) ReputationBulk(ctx context.Context, input *UrlReputationBulkRequest) (*pangea.PangeaResponse[UrlReputationBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/reputation", input, &UrlReputationBulkResult{})
+}
+
 type UrlReputationRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
 	// The URL to be looked up
-	Url string `json:"url,omitempty"`
+	Url string `json:"url"`
 
-	// URL list to be looked up.
-	UrlList []string `json:"url_list,omitemtpy"`
+	// Echo the API parameters in the response.
+	Verbose *bool `json:"verbose,omitempty"`
+
+	// Include raw data from this provider.
+	Raw *bool `json:"raw,omitempty"`
+
+	// Use reputation data from this provider.
+	Provider string `json:"provider,omitempty"`
+}
+
+type UrlReputationBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	// The URL to be looked up
+	Urls []string `json:"urls"`
 
 	// Echo the API parameters in the response.
 	Verbose *bool `json:"verbose,omitempty"`
@@ -60,12 +94,6 @@ type ReputationData struct {
 	// for the indicator
 	Verdict string `json:"verdict"`
 }
-type ReputationDataItem struct {
-	ReputationData
-
-	Indicator string `json:"indicator"`
-}
-
 type UrlReputationResult struct {
 	// High-level normalized results sent
 	// by the Pangea service
@@ -78,8 +106,18 @@ type UrlReputationResult struct {
 	// The raw data from the provider.
 	// Each provider's data will have its own format
 	RawData map[string]any `json:"raw_data,omitempty"`
+}
 
-	// High-level normalized list results sent
+type UrlReputationBulkResult struct {
+	// High-level normalized results sent
 	// by the Pangea service
-	DataDetails map[string]ReputationDataItem `json:"data_details"`
+	Data map[string]ReputationData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
