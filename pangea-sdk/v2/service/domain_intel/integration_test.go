@@ -102,6 +102,30 @@ func Test_Integration_DomainReputationBulk(t *testing.T) {
 	}
 }
 
+func Test_Integration_DomainWhoIs(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := intelDomainIntegrationCfg(t)
+	intelcli := domain_intel.New(cfg)
+
+	input := &domain_intel.DomainWhoIsRequest{
+		Domain:   "737updatesboeing.com",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "whoisxml",
+	}
+	resp, err := intelcli.WhoIs(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.NotEmpty(t, resp.Result.Data.DomainName)
+	assert.NotEmpty(t, resp.Result.Data.DomainAvailability)
+}
+
 // Reputation domain unknown
 func Test_Integration_DomainReputation_NotFound(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
