@@ -27,22 +27,24 @@ func (e *domainIntel) Reputation(ctx context.Context, input *DomainReputationReq
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &DomainReputationResult{})
 }
 
-// @summary Reputation check
+// @summary Bulk reputation check
 //
 // @description Lookup an internet domain list to retrieve reputation data.
 //
-// @operationId FIXME:
+// @operationId domain_intel_post_v2_reputation
 //
 // @example
 //
+//	domains := [...]string{"737updatesboeing.com"}
+//
 //	input := &domain_intel.DomainReputationBulkRequest{
-//		Domain: FIXME:
+//		Domains: domains,
 //		Raw: true,
 //		Verbose: true,
 //		Provider: "domaintools",
 //	}
 //
-//	checkResponse, err := domainintel.Reputation(ctx, input)
+//	checkResponse, err := domainintel.ReputationBulk(ctx, input)
 func (e *domainIntel) ReputationBulk(ctx context.Context, input *DomainReputationBulkRequest) (*pangea.PangeaResponse[DomainReputationBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/reputation", input, &DomainReputationBulkResult{})
 }

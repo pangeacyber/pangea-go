@@ -100,7 +100,7 @@ type FileReputationBulkResult struct {
 // @example
 //
 //	input := &file_intel.FileReputationRequest{
-//		Hash: "322ccbd42b7e4fd3a9d0167ca2fa9f6483d9691364c431625f1df54270647ca8",
+//		Hash: "179e2b8a4162372cd9344b81793cbf74a9513a002eda3324e6331243f3137a63",
 //		HashType: "sha256",
 //		Raw: true,
 //		Verbose: true,
@@ -112,16 +112,18 @@ func (e *fileIntel) Reputation(ctx context.Context, input *FileReputationRequest
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &FileReputationResult{})
 }
 
-// @summary Reputation check
+// @summary Bulk reputation check
 //
-// @description Lookup a file's hash to retrieve reputation data.
+// @description Retrieve a reputation score for a set of file hashes from a provider, including an optional detailed report.
 //
-// @operationId FIXME:
+// @operationId file_intel_post_v2_reputation
 //
 // @example
 //
+//	hashes := [...]string{"179e2b8a4162372cd9344b81793cbf74a9513a002eda3324e6331243f3137a63"}
+//
 //	input := &file_intel.FileReputationBulkRequest{
-//		Hashes: FIXME:
+//		Hashes: hashes,
 //		HashType: "sha256",
 //		Raw: true,
 //		Verbose: true,

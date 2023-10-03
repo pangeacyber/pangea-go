@@ -37,7 +37,7 @@ func (e *ipIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pa
 // @example
 //
 //	input := &ip_intel.IpReputationRequest{
-//		Ip:       "93.231.182.110",
+//		Ip:       "190.28.74.251",
 //		Raw:      true,
 //		Verbose:  true,
 //		Provider: "crowdstrike",
@@ -48,17 +48,19 @@ func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &IpReputationResult{})
 }
 
-// @summary Reputation
+// @summary Bulk reputation
 //
-// @description Retrieve a reputation score for IP list address from a provider,
+// @description Retrieve reputation scores for a list of IP addresses from a provider,
 // including an optional detailed report.
 //
-// @operationId FIXME:
+// @operationId ip_intel_post_v2_reputation
 //
 // @example
 //
+//	ips := [...]string{"190.28.74.251"}
+//
 //	input := &ip_intel.IpReputationBulkRequest{
-//		Ips:       FIXME:,
+//		Ips:      ips,
 //		Raw:      true,
 //		Verbose:  true,
 //		Provider: "crowdstrike",

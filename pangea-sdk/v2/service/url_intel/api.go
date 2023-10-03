@@ -27,16 +27,18 @@ func (e *urlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) 
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &UrlReputationResult{})
 }
 
-// @summary Reputation check
+// @summary Bulk reputation check
 //
 // @description Retrieve a reputation score for a URL list from a provider, including an optional detailed report.
 //
-// @operationId FIXME:
+// @operationId url_intel_post_v2_reputation
 //
 // @example
 //
+//	urls := [...]string{"http://113.235.101.11:54384"}
+//
 //	input := &url_intel.UrlReputationBulkRequest{
-//		Urls:      FIXME:
+//		Urls:     urls,
 //		Raw:      true,
 //		Verbose:  true,
 //		Provider: "crowdstrike",
