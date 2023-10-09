@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/defaults"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
 func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {

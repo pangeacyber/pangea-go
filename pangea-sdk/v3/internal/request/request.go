@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
 func DoPost[T any](ctx context.Context, c *pangea.Client, urlStr string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {

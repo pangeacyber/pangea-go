@@ -1,4 +1,4 @@
-module github.com/pangeacyber/pangea-go/pangea-sdk/v2
+module github.com/pangeacyber/pangea-go/pangea-sdk/v3
 
 go 1.18
 

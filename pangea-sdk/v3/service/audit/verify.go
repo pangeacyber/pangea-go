@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea/hash"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea/hash"
 )
 
 type proofSide uint

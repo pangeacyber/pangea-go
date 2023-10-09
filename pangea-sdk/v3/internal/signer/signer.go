@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
 	"golang.org/x/crypto/ssh"
 )
 

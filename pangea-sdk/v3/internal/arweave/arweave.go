@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/defaults"
 )
 
 const baseURL = "https://arweave.net"

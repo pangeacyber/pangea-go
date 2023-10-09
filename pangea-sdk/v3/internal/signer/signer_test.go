@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/signer"
 	"github.com/stretchr/testify/assert"
 )
 

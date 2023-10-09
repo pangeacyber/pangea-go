@@ -1,6 +1,6 @@
 package vault
 
-import "github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+import "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 
 type AsymmetricGenerateRequest struct {
 	CommonGenerateRequest

@@ -3,7 +3,7 @@ package redact
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
 type Client interface {

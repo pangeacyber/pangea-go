@@ -1,7 +1,7 @@
 package authn
 
 import (
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
 type Password struct {

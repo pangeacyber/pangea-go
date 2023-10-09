@@ -18,8 +18,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/defaults"
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/defaults"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
 	"github.com/rs/zerolog"
 )
 

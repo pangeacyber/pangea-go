@@ -69,8 +69,8 @@ import (
   "log"
   "os"
 
-  "github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-  "github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
+  "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+  "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/audit"
 )
 ```
 
@@ -127,4 +127,4 @@ These linters will run on every `git commit` operation.
 
 ### Send a PR
 
-If you would like to [send a PR](https://github.com/pangeacyber/pangea-go/pulls) including a new feature or fixing a bug in code or an error in documents we will really appreciate it and after review and approval you will be included in our [contributors list](https://github.com/pangeacyber/pangea-go/blob/main/pangea-sdk/v2/CONTRIBUTING.md)
+If you would like to [send a PR](https://github.com/pangeacyber/pangea-go/pulls) including a new feature or fixing a bug in code or an error in documents we will really appreciate it and after review and approval you will be included in our [contributors list](https://github.com/pangeacyber/pangea-go/blob/main/pangea-sdk/v3/CONTRIBUTING.md)

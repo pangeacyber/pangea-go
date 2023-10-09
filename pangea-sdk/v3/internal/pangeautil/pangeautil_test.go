@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
 	"github.com/stretchr/testify/assert"
 )
 
