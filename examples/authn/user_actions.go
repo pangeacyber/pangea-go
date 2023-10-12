@@ -10,9 +10,133 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/authn"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/authn"
 )
+
+var CB_URI = "https://www.usgs.gov/faqs/what-was-pangea"
+
+func flowHandlePasswordPhase(ctx context.Context, client *authn.AuthN, flow_id, password string) *authn.FlowUpdateResult {
+	fmt.Println("Handling password phase...")
+	resp, err := client.Flow.Update(ctx, authn.FlowUpdateRequest{
+		FlowID: flow_id,
+		Choice: authn.FCPassword,
+		Data: authn.FlowUpdateDataPassword{
+			Password: password,
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return resp.Result
+}
+
+func flowHandleProfilePhase(ctx context.Context, client *authn.AuthN, flow_id string, profile *authn.ProfileData) *authn.FlowUpdateResult {
+	fmt.Println("Handling profile phase...")
+	resp, err := client.Flow.Update(ctx, authn.FlowUpdateRequest{
+		FlowID: flow_id,
+		Choice: authn.FCProfile,
+		Data: authn.FlowUpdateDataProfile{
+			Profile: *profile,
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return resp.Result
+}
+
+func flowHandleAgreementsPhase(ctx context.Context, client *authn.AuthN, flow_id string, result *authn.FlowUpdateResult) *authn.FlowUpdateResult {
+	// Iterate over flow_choices in response.result
+	fmt.Println("Handling agreements phase...")
+	agreed := []string{}
+	for _, flowChoice := range result.FlowChoices {
+		// Check if the choice is AGREEMENTS
+		if flowChoice.Choice == string(authn.FCAgreements) {
+			// Assuming flowChoice.Data["agreements"] is a map[string]interface{}
+			agreements, ok := flowChoice.Data["agreements"].(map[string]interface{})
+			if ok {
+				// Iterate over agreements and append the "id" values to agreed slice
+				for _, v := range agreements {
+					agreement, ok := v.(map[string]interface{})
+					if ok {
+						id, ok := agreement["id"].(string)
+						if ok {
+							agreed = append(agreed, id)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	resp, err := client.Flow.Update(ctx, authn.FlowUpdateRequest{
+		FlowID: flow_id,
+		Choice: authn.FCAgreements,
+		Data: authn.FlowUpdateDataAgreements{
+			Agreed: agreed,
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	return resp.Result
+}
+
+func choiceIsAvailable(choices []authn.FlowChoiceItem, choice string) bool {
+	for _, fc := range choices {
+		if fc.Choice == choice {
+			return true
+
+		}
+	}
+	return false
+}
+
+func CreateAndLogin(client *authn.AuthN, email, password string, profile *authn.ProfileData) *authn.FlowCompleteResult {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelFn()
+
+	fmt.Println("Flow starting...")
+	fsresp, err := client.Flow.Start(ctx,
+		authn.FlowStartRequest{
+			Email:     email,
+			FlowTypes: []authn.FlowType{authn.FTsignup, authn.FTsignin},
+			CBURI:     CB_URI,
+		})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	flowID := fsresp.Result.FlowID
+	var result *authn.FlowUpdateResult = nil
+	flowPhase := "initial"
+	choices := fsresp.Result.FlowChoices
+
+	for flowPhase != "phase_completed" {
+		if choiceIsAvailable(choices, string(authn.FCPassword)) {
+			result = flowHandlePasswordPhase(ctx, client, flowID, password)
+		} else if choiceIsAvailable(choices, string(authn.FCProfile)) {
+			result = flowHandleProfilePhase(ctx, client, flowID, profile)
+		} else if choiceIsAvailable(choices, string(authn.FCAgreements)) {
+			result = flowHandleAgreementsPhase(ctx, client, flowID, result)
+		} else {
+			fmt.Printf("Phase %s not handled", result.FlowPhase)
+		}
+		flowPhase = result.FlowPhase
+		choices = result.FlowChoices
+	}
+
+	fcresp, err := client.Flow.Complete(ctx,
+		authn.FlowCompleteRequest{
+			FlowID: flowID,
+		})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fcresp.Result
+}
 
 func main() {
 	// Set up variables to be used
@@ -20,10 +144,10 @@ func main() {
 	RANDOM_VALUE := strconv.Itoa(rand.Intn(10000000))
 	USER_EMAIL := "user.email+goexample" + RANDOM_VALUE + "@pangea.cloud"
 	PROFILE_INITIAL := &authn.ProfileData{
-		"name":    "User name",
-		"country": "Argentina",
+		"first_name": "Name",
+		"last_name":  "User",
 	}
-	PROFILE_UPDATE := authn.ProfileData{"age": "18"}
+	PROFILE_UPDATE := authn.ProfileData{"first_name": "NameUpdate"}
 	PASSWORD_OLD := "My1s+Password"
 	PASSWORD_NEW := "My1s+Password_new"
 	// End set up variables
@@ -46,43 +170,17 @@ func main() {
 	// Requests examples...
 	// User create...
 	fmt.Println("Creating user...")
-	input := authn.UserCreateRequest{
-		Email:         USER_EMAIL,
-		Authenticator: PASSWORD_OLD,
-		IDProvider:    authn.IDPPassword,
-		Profile:       PROFILE_INITIAL,
-	}
-	resp, err := client.User.Create(ctx, input)
-	if err != nil {
-		fmt.Println("Something went wrong...")
-		fmt.Println(err)
-		return
-	}
-	USER_ID := resp.Result.ID
-	fmt.Println("Create user success. Result: " + pangea.Stringify(resp.Result))
-
-	// User login
-	fmt.Println("\n\nUser login...")
-	input2 := authn.UserLoginPasswordRequest{
-		Email:    USER_EMAIL,
-		Password: PASSWORD_OLD,
-	}
-	resp2, err := client.User.Login.Password(ctx, input2)
-	if err != nil {
-		fmt.Println("Something went wrong...")
-		fmt.Println(err)
-		return
-	}
-	fmt.Println("User login success. Result: " + pangea.Stringify(resp2.Result))
+	result := CreateAndLogin(client, USER_EMAIL, PASSWORD_OLD, PROFILE_INITIAL)
+	fmt.Println("Create user success. Result: " + pangea.Stringify(result))
 
 	// User password change
 	fmt.Println("\n\nUser password change..")
 	input3 := authn.ClientPasswordChangeRequest{
-		Token:       resp2.Result.ActiveToken.Token,
+		Token:       result.ActiveToken.Token,
 		OldPassword: PASSWORD_OLD,
 		NewPassword: PASSWORD_NEW,
 	}
-	_, err = client.Client.Password.Change(ctx, input3)
+	_, err := client.Client.Password.Change(ctx, input3)
 	if err != nil {
 		fmt.Println("Something went wrong...")
 		fmt.Println(err)
@@ -96,6 +194,8 @@ func main() {
 		Email: pangea.String(USER_EMAIL),
 	}
 	resp4, err := client.User.Profile.Get(ctx, input4)
+
+	USER_ID := resp4.Result.ID
 	if err != nil {
 		fmt.Println("Something went wrong...")
 		fmt.Println(err)
@@ -133,9 +233,8 @@ func main() {
 	// User update
 	fmt.Println("User update...")
 	input7 := authn.UserUpdateRequest{
-		Email:      pangea.String(USER_EMAIL),
-		Disabled:   pangea.Bool(false),
-		RequireMFA: pangea.Bool(false),
+		Email:    pangea.String(USER_EMAIL),
+		Disabled: pangea.Bool(false),
 	}
 	resp7, err := client.User.Update(ctx, input7)
 	if err != nil {
