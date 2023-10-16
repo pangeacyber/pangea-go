@@ -25,7 +25,7 @@ type ClientUserinfoRequest struct {
 //
 // @description Retrieve the logged in user's token and information.
 //
-// @operationId authn_post_v1_client_userinfo
+// @operationId authn_post_v2_client_userinfo
 //
 // @example
 //
@@ -46,7 +46,7 @@ type ClientJWKSResult struct {
 //
 // @description Get JWT verification keys.
 //
-// @operationId authn_post_v1_client_jwks
+// @operationId authn_post_v2_client_jwks
 //
 // @example
 //
@@ -78,7 +78,7 @@ type ClientTokenCheckResult struct {
 //
 // @description Look up a token and return its contents.
 //
-// @operationId authn_post_v1_client_token_check
+// @operationId authn_post_v2_client_token_check
 //
 // @example
 //
@@ -107,7 +107,7 @@ type ClientPasswordChangeResult struct {
 //
 // @description Change a user's password given the current password.
 //
-// @operationId authn_post_v1_client_password_change
+// @operationId authn_post_v2_client_password_change
 //
 // @example
 //
@@ -180,7 +180,7 @@ type UserCreateResult struct {
 //
 // @description Create a user.
 //
-// @operationId authn_post_v1_user_create
+// @operationId authn_post_v2_user_create
 //
 // @example
 //
@@ -216,7 +216,7 @@ type UserDeleteResult struct {
 //
 // @description Delete a user by email address.
 //
-// @operationId authn_post_v1_user_delete
+// @operationId authn_post_v2_user_delete
 //
 // @example
 //
@@ -262,7 +262,7 @@ type UserUpdateResult struct {
 //
 // @description Update user's settings.
 //
-// @operationId authn_post_v1_user_update
+// @operationId authn_post_v2_user_update
 //
 // @example
 //
@@ -302,7 +302,7 @@ type UserInviteResult struct {
 //
 // @description Send an invitation to a user.
 //
-// @operationId authn_post_v1_user_invite
+// @operationId authn_post_v2_user_invite
 //
 // @example
 //
@@ -452,7 +452,7 @@ type UserListResult struct {
 //
 // @description Look up users by scopes.
 //
-// @operationId authn_post_v1_user_list
+// @operationId authn_post_v2_user_list
 //
 // @example
 //
@@ -491,7 +491,7 @@ type UserProfileGetResult struct {
 //
 // @description Get user's information.
 //
-// @operationId authn_post_v1_user_profile_get
+// @operationId authn_post_v2_user_profile_get
 //
 // @example
 //
@@ -521,7 +521,7 @@ type UserProfileUpdateResult struct {
 //
 // @description Update user's information by identity or email.
 //
-// @operationId authn_post_v1_user_profile_update
+// @operationId authn_post_v2_user_profile_update
 //
 // @example
 //
@@ -643,7 +643,7 @@ type UserInviteListResult struct {
 //
 // @description Look up active invites for the userpool.
 //
-// @operationId authn_post_v1_user_invite_list
+// @operationId authn_post_v2_user_invite_list
 //
 // @example
 //
@@ -667,7 +667,7 @@ type UserInviteDeleteResult struct {
 //
 // @description Delete a user invitation.
 //
-// @operationId authn_post_v1_user_invite_delete
+// @operationId authn_post_v2_user_invite_delete
 //
 // @example
 //
@@ -692,11 +692,11 @@ type FlowCompleteResult struct {
 	ActiveToken  LoginToken `json:"active_token"`
 }
 
-// @summary Complete Sign-up/in
+// @summary Complete sign-up/sign-in
 //
 // @description Complete a login or signup flow.
 //
-// @operationId authn_post_v1_flow_complete
+// @operationId authn_post_v2_flow_complete
 //
 // @example
 //
@@ -737,15 +737,15 @@ type FlowStartResult struct {
 	CommonFlowResult
 }
 
-// @summary Start a sign-up/in
+// @summary Start a sign-up/sign-in flow
 //
 // @description Start a new signup or signin flow.
 //
-// @operationId authn_post_v1_flow_start
+// @operationId authn_post_v2_flow_start
 //
 // @example
 //
-//	fts := []FlowType{FTsignin,FTsignup}
+//	fts := []FlowType{authn.FTsignin,authn.FTsignup}
 //	input := authn.FlowStartRequest{
 //		CBURI: "https://www.myserver.com/callback",
 //		Email: "joe.user@email.com",
@@ -753,7 +753,7 @@ type FlowStartResult struct {
 //		Provider: &authn.IDPPassword,
 //	}
 //
-//	resp, cli := authncli.Flow.Start(ctx, input)
+//	resp, err := authncli.Flow.Start(ctx, input)
 func (a *Flow) Start(ctx context.Context, input FlowStartRequest) (*pangea.PangeaResponse[FlowStartResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/flow/start", &input, &FlowStartResult{})
 }
@@ -873,7 +873,23 @@ type FlowUpdateResult struct {
 	CommonFlowResult
 }
 
-// TODO: Docs
+// @summary Update a sign-up/sign-in flow
+//
+// @description Update a sign-up/sign-in flow.
+//
+// @operationId authn_post_v2_flow_update
+//
+// @example
+//
+//	input := authn.FlowUpdateRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Choice: authn.FCPassword,
+//		Data: authn.FlowUpdateDataPassword{
+//			Password: "somenewpassword",
+//		}
+//	}
+//
+//	resp, err := authncli.Flow.Update(ctx, input)
 func (a *Flow) Update(ctx context.Context, input FlowUpdateRequest) (*pangea.PangeaResponse[FlowUpdateResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/flow/update", &input, &FlowUpdateResult{})
 }
@@ -896,7 +912,21 @@ type FlowRestartResult struct {
 	CommonFlowResult
 }
 
-// TODO: Docs
+// @summary Restart a sign-up/sign-in flow
+//
+// @description Restart a signup-up/in flow choice.
+//
+// @operationId authn_post_v2_flow_restart
+//
+// @example
+//
+//	input := authn.FlowRestartRequest{
+//		FlowID: "pfl_dxiqyuq7ndc5ycjwdgmguwuodizcaqhh",
+//		Choice: authn.FCPassword,
+//		Data: authn.FlowRestartData{},
+//	}
+//
+//	resp, err := authncli.Flow.Restart(ctx, input)
 func (a *Flow) Restart(ctx context.Context, input FlowRestartRequest) (*pangea.PangeaResponse[FlowRestartResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/flow/restart", &input, &FlowRestartResult{})
 }
@@ -912,20 +942,7 @@ type UserAuthenticatorsDeleteRequest struct {
 type UserAuthenticatorsDeleteResult struct {
 }
 
-// @summary Delete MFA Enrollment
-//
-// @description Delete MFA enrollment for a user.
-//
-// @operationId authn_post_v1_user_mfa_delete
-//
-// @example
-//
-//	input := authn.UserMFADeleteRequest{
-//		UserID: "pui_zgp532cx6opljeavvllmbi3iwmq72f7f",
-//		MFAProvider: authn.MFAPTOTP,
-//	}
-//
-//	resp, err := authncli.User.MFA.Delete(ctx, input)
+// TODO: Docs
 func (a *UserAuthenticators) Delete(ctx context.Context, input UserAuthenticatorsDeleteRequest) (*pangea.PangeaResponse[UserAuthenticatorsDeleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/user/authenticators/delete", &input, &UserAuthenticatorsDeleteResult{})
 }
@@ -950,7 +967,19 @@ type UserAuthenticatorsListResult struct {
 	Authenticators []Authenticator `json:"authenticators"`
 }
 
-// TODO: Docs
+// @summary Get user authenticators
+//
+// @description Get user's authenticators by identity or email.
+//
+// @operationId authn_post_v2_user_authenticators_list
+//
+// @example
+//
+//	input := authn.UserAuthenticatorsListRequest{
+//		ID: pangea.String("pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5"),
+//	}
+//
+//	resp, err := authncli.User.Authenticators.List(ctx, input)
 func (a *UserAuthenticators) List(ctx context.Context, input UserAuthenticatorsListRequest) (*pangea.PangeaResponse[UserAuthenticatorsListResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/user/authenticators/list", &input, &UserAuthenticatorsListResult{})
 }
@@ -970,7 +999,7 @@ type ClientSessionInvalidateResult struct {
 //
 // @description Invalidate a session by session ID using a client token.
 //
-// @operationId authn_post_v1_client_session_invalidate
+// @operationId authn_post_v2_client_session_invalidate
 //
 // @example
 //
@@ -1102,7 +1131,7 @@ type SessionListResult struct {
 //
 // @description List sessions using a client token.
 //
-// @operationId authn_post_v1_client_session_list
+// @operationId authn_post_v2_client_session_list
 //
 // @example
 //
@@ -1129,7 +1158,7 @@ type ClientSessionLogoutResult struct {
 //
 // @description Log out the current user's session.
 //
-// @operationId authn_post_v1_client_session_logout
+// @operationId authn_post_v2_client_session_logout
 //
 // @example
 //
@@ -1159,7 +1188,7 @@ type ClientSessionRefreshResult struct {
 //
 // @description Refresh a session token.
 //
-// @operationId authn_post_v1_client_session_refresh
+// @operationId authn_post_v2_client_session_refresh
 //
 // @example
 //
@@ -1188,7 +1217,7 @@ type SessionListRequest struct {
 //
 // @description List sessions.
 //
-// @operationId authn_post_v1_session_list
+// @operationId authn_post_v2_session_list
 //
 // @example
 //
@@ -1212,7 +1241,7 @@ type SessionInvalidateResult struct {
 //
 // @description Invalidate a session by session ID.
 //
-// @operationId authn_post_v1_session_invalidate
+// @operationId authn_post_v2_session_invalidate
 //
 // @example
 //
@@ -1239,7 +1268,7 @@ type SessionLogoutResult struct {
 //
 // @description Invalidate all sessions belonging to a user.
 //
-// @operationId authn_post_v1_session_logout
+// @operationId authn_post_v2_session_logout
 //
 // @example
 //
@@ -1281,7 +1310,21 @@ type AgreementInfo struct {
 
 type AgreementCreateResult AgreementInfo
 
-// TODO: docs
+// @summary Create an agreement
+//
+// @description Create an agreement.
+//
+// @operationId authn_post_v2_agreements_create
+//
+// @example
+//
+//	input := authn.AgreementCreateRequest{
+//		Type: authn.ATeula,
+//		Name: "EULA_V1",
+//		Text: "You agree to behave yourself while logged in.",
+//	}
+//
+//	resp, err := authncli.Agreements.Create(ctx, input)
 func (a *Agreements) Create(ctx context.Context, input AgreementCreateRequest) (*pangea.PangeaResponse[AgreementCreateResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/agreements/create", &input, &AgreementCreateResult{})
 }
@@ -1295,7 +1338,20 @@ type AgreementDeleteRequest struct {
 
 type AgreementDeleteResult struct{}
 
-// TODO: docs
+// @summary Delete an agreement
+//
+// @description Delete an agreement.
+//
+// @operationId authn_post_v2_agreements_delete
+//
+// @example
+//
+//	input := authn.AgreementDeleteRequest{
+//		Type: authn.ATeula,
+//		ID: "peu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authncli.Agreements.Delete(ctx, input)
 func (a *Agreements) Delete(ctx context.Context, input AgreementDeleteRequest) (*pangea.PangeaResponse[AgreementDeleteResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/agreements/delete", &input, &AgreementDeleteResult{})
 }
@@ -1379,7 +1435,17 @@ type AgreementListResult struct {
 	Last       string          `json:"last,omitempty"`
 }
 
-// TODO: docs
+// @summary List agreements
+//
+// @description List agreements.
+//
+// @operationId authn_post_v2_agreements_list
+//
+// @example
+//
+//	input := authn.AgreementListRequest{}
+//
+//	resp, err := authncli.Agreements.List(ctx, input)
 func (a *Agreements) List(ctx context.Context, input AgreementListRequest) (*pangea.PangeaResponse[AgreementListResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/agreements/list", &input, &AgreementListResult{})
 }
@@ -1396,7 +1462,20 @@ type AgreementUpdateRequest struct {
 
 type AgreementUpdateResult AgreementInfo
 
-// TODO: docs
+// @summary Update agreement
+//
+// @description Update agreement.
+//
+// @operationId authn_post_v2_agreements_update
+//
+// @example
+//
+//	input := authn.AgreementUpdateRequest{
+//		Type: authn.ATeula,
+//		ID: "peu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//	}
+//
+//	resp, err := authncli.Agreements.Update(ctx, input)
 func (a *Agreements) Update(ctx context.Context, input AgreementUpdateRequest) (*pangea.PangeaResponse[AgreementUpdateResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/agreements/update", &input, &AgreementUpdateResult{})
 }
