@@ -31,7 +31,7 @@ var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
 var CB_URI = "https://www.usgs.gov/faqs/what-was-pangea"
 
 const (
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func authnIntegrationCfg(t *testing.T) *pangea.Config {
