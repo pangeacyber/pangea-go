@@ -7,6 +7,8 @@ import (
 	v "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	di "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea/service/domain_intel"
+	ipi "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea/service/ip_intel"
 )
 
 type ClientUserinfoResult struct {
@@ -463,17 +465,29 @@ func (a *User) List(ctx context.Context, input UserListRequest) (*pangea.PangeaR
 	return request.DoPost(ctx, a.Client, "v2/user/list", &input, &UserListResult{})
 }
 
+type IPIntelligence struct {
+	IsBad       bool               `json:"is_bad"`
+	IsVPN       bool               `json:"is_vpn"`
+	IsProxy     bool               `json:"is_proxy"`
+	Reputation  ipi.ReputationData `json:"reputation"`
+	Geolocation ipi.GeolocateData  `json:"geolocation"`
+}
+
+type DomainIntelligence struct {
+	IsBad      bool              `json:"is_bad"`
+	Reputation di.ReputationData `json:"reputation"`
+}
+
+type Intelligence struct {
+	Embargo     bool               `json:"embargo"`
+	IPIntel     IPIntelligence     `json:"ip_intel"`
+	DomainIntel DomainIntelligence `json:"domain_intel"`
+	UserIntel   bool               `json:"user_intel"`
+}
+
 type LoginToken struct {
-	Token     string      `json:"token"`
-	ID        string      `json:"id"`
-	Type      string      `json:"type"`
-	Life      int         `json:"life"`
-	Expire    string      `json:"expire"`
-	Identity  string      `json:"identity"`
-	Email     string      `json:"email"`
-	Profile   ProfileData `json:"profile"`
-	Scopes    Scopes      `json:"scopes"`
-	CreatedAt string      `json:"created_at"`
+	SessionToken
+	Token string `json:"token"`
 }
 
 type UserProfileGetRequest struct {
@@ -1072,14 +1086,15 @@ type ClientSessionListRequest struct {
 }
 
 type SessionToken struct {
-	ID        string      `json:"id"`
-	Type      string      `json:"type"`
-	Life      int         `json:"life"`
-	Expire    string      `json:"expire"`
-	Email     string      `json:"email"`
-	Scopes    Scopes      `json:"scopes"`
-	Profile   ProfileData `json:"profile"`
-	CreatedAt string      `json:"created_at"`
+	ID           string        `json:"id"`
+	Type         string        `json:"type"`
+	Life         int           `json:"life"`
+	Expire       string        `json:"expire"`
+	Email        string        `json:"email"`
+	Scopes       Scopes        `json:"scopes"`
+	Profile      ProfileData   `json:"profile"`
+	CreatedAt    string        `json:"created_at"`
+	Intelligence *Intelligence `json:"intelligence,omitempty"`
 }
 
 type SessionItem struct {
