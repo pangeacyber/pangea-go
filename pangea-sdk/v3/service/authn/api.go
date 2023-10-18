@@ -230,19 +230,20 @@ func (a *User) Delete(ctx context.Context, input UserDeleteRequest) (*pangea.Pan
 }
 
 type UserItem struct {
-	ID                      string      `json:"id"`
-	Email                   string      `json:"email"`
-	Profile                 ProfileData `json:"profile"`
-	Verified                bool        `json:"verified"`
-	Disabled                bool        `json:"disabled"`
-	AcceptedEulaID          *string     `json:"accepted_eula_id,omitempty"`
-	AcceptedPrivacyPolicyID *string     `json:"accepted_privacy_policy_id,omitempty"`
-	LastLoginAt             *string     `json:"last_login_at,omitempty"`
-	CreatedAt               string      `json:"created_at"`
-	LoginCount              int         `json:"login_count"`
-	LastLoginIP             *string     `json:"last_login_ip,omitempty"`
-	LastLoginCity           *string     `json:"last_login_city,omitempty"`
-	LastLoginCountry        *string     `json:"last_login_country,omitempty"`
+	ID                      string          `json:"id"`
+	Email                   string          `json:"email"`
+	Profile                 ProfileData     `json:"profile"`
+	Verified                bool            `json:"verified"`
+	Disabled                bool            `json:"disabled"`
+	AcceptedEulaID          *string         `json:"accepted_eula_id,omitempty"`
+	AcceptedPrivacyPolicyID *string         `json:"accepted_privacy_policy_id,omitempty"`
+	LastLoginAt             *string         `json:"last_login_at,omitempty"`
+	CreatedAt               string          `json:"created_at"`
+	LoginCount              int             `json:"login_count"`
+	LastLoginIP             *string         `json:"last_login_ip,omitempty"`
+	LastLoginCity           *string         `json:"last_login_city,omitempty"`
+	LastLoginCountry        *string         `json:"last_login_country,omitempty"`
+	Authenticators          []Authenticator `json:"authenticators"`
 }
 
 type UserUpdateRequest struct {
