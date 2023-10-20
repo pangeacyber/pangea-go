@@ -7,8 +7,8 @@ import (
 	v "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	di "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea/service/domain_intel"
-	ipi "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea/service/ip_intel"
+	di "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/domain_intel"
+	ipi "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
 )
 
 type ClientUserinfoResult struct {
