@@ -168,7 +168,7 @@ type UserCreateResult struct {
 //
 // @description Create a user. Also allows creating the user's credentials.
 //
-// @operationId authn_post_v1_user_create
+// @operationId authn_post_v2_user_create
 //
 // @example
 //
@@ -179,8 +179,6 @@ type UserCreateResult struct {
 //
 //	input := authn.UserCreateRequest{
 //		Email: "joe.user@email.com",
-//		Authenticator: "My1s+Password",
-//		IDProvider: authn.IDPPassword,
 //		Profile: profile,
 //	}
 //
