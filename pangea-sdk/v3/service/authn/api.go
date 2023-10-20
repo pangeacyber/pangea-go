@@ -1502,7 +1502,8 @@ type AgreementUpdateResult AgreementInfo
 //
 //	input := authn.AgreementUpdateRequest{
 //		Type: authn.ATeula,
-//		ID: "peu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a",
+//		ID: pangea.String("peu_wuk7tvtpswyjtlsx52b7yyi2l7zotv4a"),
+//		Text: pangea.String("You agree to behave yourself while logged in. Don't be evil."),
 //	}
 //
 //	resp, err := authncli.Agreements.Update(ctx, input)
