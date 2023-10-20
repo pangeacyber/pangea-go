@@ -28,7 +28,7 @@ var PASSWORD_OLD string
 var PASSWORD_NEW string
 var timeNow = time.Now()
 var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
-var CB_URI = "https://www.usgs.gov/faqs/what-was-pangea"
+var CB_URI = "https://someurl.com/callbacklink"
 
 const (
 	testingEnvironment = pangeatesting.Live
