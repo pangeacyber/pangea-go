@@ -156,26 +156,12 @@ type UserCreateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Email         string       `json:"email"`
-	Authenticator string       `json:"authenticator"`
-	IDProvider    IDProvider   `json:"id_provider"`
-	Verified      *bool        `json:"verified,omitempty"`
-	RequireMFA    *bool        `json:"require_mfa,omitempty"`
-	Profile       *ProfileData `json:"profile,omitempty"`
-	Scopes        *Scopes      `json:"scopes,omitempty"`
+	Email   string      `json:"email"`
+	Profile ProfileData `json:"profile"`
 }
 
 type UserCreateResult struct {
-	ID           string        `json:"id"`
-	Email        string        `json:"email"`
-	Profile      ProfileData   `json:"profile"`
-	IDProviders  []string      `json:"id_providers"`
-	RequireMFA   bool          `json:"require_mfa"`
-	Verified     bool          `json:"verified"`
-	LastLoginAt  *string       `json:"last_login_at,omitempty"`
-	Disabled     bool          `json:"disabled"`
-	MFAProviders []MFAProvider `json:"mfa_providers,omitempty"`
-	CreatedAt    string        `json:"created_at"`
+	User
 }
 
 // @summary Create User
