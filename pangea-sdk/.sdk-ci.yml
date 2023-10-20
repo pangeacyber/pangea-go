@@ -1,6 +1,6 @@
 .go-sdk-base:
   before_script:
-    - cd pangea-sdk/v2
+    - cd pangea-sdk/v3
     - go install github.com/boumenot/gocover-cobertura@latest
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
