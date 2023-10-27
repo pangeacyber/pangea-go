@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
@@ -24,7 +25,7 @@ func testClient(t *testing.T, url string) *pangea.Client {
 }
 
 func TestClientCustomUserAgent(t *testing.T) {
-	cfg := pangeatesting.TestConfig("pangea.cloud")
+	cfg := pangeatesting.TestConfig("https://pangea.cloud")
 	cfg.CustomUserAgent = "Test"
 	c := pangea.NewClient("service", cfg)
 	assert.NotNil(t, c)
@@ -61,11 +62,14 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, make(map[string]any))
 	_, err := client.Do(context.Background(), req, nil)
 
 	assert.Error(t, err)
 
+	fmt.Println(reflect.TypeOf(err))
+	fmt.Println(err)
 	pangeaErr, ok := err.(*pangea.APIError)
 	assert.True(t, ok)
 	assert.NotNil(t, pangeaErr.ResponseHeader)
@@ -92,7 +96,8 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 	_, err := client.Do(context.Background(), req, nil)
 	assert.Error(t, err)
 	pangeaErr, ok := err.(*pangea.APIError)
@@ -120,7 +125,8 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 	body := &struct {
 		Key *string `json:"key"`
 	}{}
@@ -149,7 +155,8 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	}
 
 	reqBody := reqbody{Key: pangea.String("value")}
-	req, _ := client.NewRequest("POST", "test", &reqBody)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, &reqBody)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		body := &reqbody{}
@@ -203,7 +210,8 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 
 	client := testClient(t, url)
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -235,7 +243,8 @@ func TestDo_With_Retries_Success(t *testing.T) {
 	}
 
 	client := pangea.NewClient("service", cfg)
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 
 	handler := func() func(w http.ResponseWriter, r *http.Request) {
 		var reqCount int
@@ -277,7 +286,8 @@ func TestDo_With_Retries_Error(t *testing.T) {
 
 	client := pangea.NewClient("service", cfg)
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -306,7 +316,8 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 	_, err := client.Do(context.Background(), req, nil)
 
 	if err == nil {
