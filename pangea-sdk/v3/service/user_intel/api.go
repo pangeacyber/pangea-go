@@ -36,6 +36,19 @@ func (e *userIntel) UserBreached(ctx context.Context, input *UserBreachedRequest
 	return request.DoPost(ctx, e.Client, "v1/user/breached", input, &UserBreachedResult{})
 }
 
+// @summary Look up breached users
+//
+// @description Determine if an email address, username, phone number, or IP address was exposed in a security breach.
+//
+// @operationId FIXME:
+//
+// @example
+//
+//	FIXME:
+func (e *userIntel) UserBreachedBulk(ctx context.Context, input *UserBreachedBulkRequest) (*pangea.PangeaResponse[UserBreachedBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/user/breached", input, &UserBreachedBulkResult{})
+}
+
 type UserBreachedRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -51,6 +64,21 @@ type UserBreachedRequest struct {
 	Provider    string `json:"provider,omitempty"`
 }
 
+type UserBreachedBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Emails       []string `json:"emails,omitempty"`
+	Usernames    []string `json:"usernames,omitempty"`
+	PhoneNumbers []string `json:"phone_numbers,omitempty"`
+	IPs          []string `json:"ips,omitempty"`
+	Start        string   `json:"start,omitempty"`
+	End          string   `json:"end,omitempty"`
+	Verbose      *bool    `json:"verbose,omitempty"`
+	Raw          *bool    `json:"raw,omitempty"`
+	Provider     string   `json:"provider,omitempty"`
+}
+
 type UserBreachedData struct {
 	FoundInBreach bool `json:"found_in_breach"`
 	BreachCount   int  `json:"breach_count,omitempty"`
@@ -60,6 +88,12 @@ type UserBreachedResult struct {
 	Data       UserBreachedData `json:"data"`
 	Parameters interface{}      `json:"parameters,omitempty"`
 	RawData    interface{}      `json:"raw_data,omitempty"`
+}
+
+type UserBreachedBulkResult struct {
+	Data       map[string]UserBreachedData `json:"data"`
+	Parameters interface{}                 `json:"parameters,omitempty"`
+	RawData    interface{}                 `json:"raw_data,omitempty"`
 }
 
 // @summary Look up breached passwords
@@ -83,6 +117,19 @@ func (e *userIntel) PasswordBreached(ctx context.Context, input *UserPasswordBre
 	return request.DoPost(ctx, e.Client, "v1/password/breached", input, &UserPasswordBreachedResult{})
 }
 
+// @summary Look up breached passwords
+//
+// @description Determine if a password has been exposed in a security breach using a 5 character prefix of the password hash.
+//
+// @operationId FIXME:
+//
+// @example
+//
+//	FIXME:
+func (e *userIntel) PasswordBreachedBulk(ctx context.Context, input *UserPasswordBreachedBulkRequest) (*pangea.PangeaResponse[UserPasswordBreachedBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/password/breached", input, &UserPasswordBreachedBulkResult{})
+}
+
 type UserPasswordBreachedRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -94,6 +141,17 @@ type UserPasswordBreachedRequest struct {
 	Provider   string   `json:"provider,omitempty"`
 }
 
+type UserPasswordBreachedBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	HashType     HashType `json:"hash_type,omitempty"`
+	HashPrefixes []string `json:"hash_prefixes,omitempty"`
+	Verbose      *bool    `json:"verbose,omitempty"`
+	Raw          *bool    `json:"raw,omitempty"`
+	Provider     string   `json:"provider,omitempty"`
+}
+
 type UserPasswordBreachedData struct {
 	FoundInBreach bool `json:"found_in_breach"`
 	BreachCount   int  `json:"breach_count,omitempty"`
@@ -103,4 +161,10 @@ type UserPasswordBreachedResult struct {
 	Data       UserPasswordBreachedData `json:"data"`
 	Parameters map[string]any           `json:"parameters,omitempty"`
 	RawData    map[string]any           `json:"raw_data,omitempty"`
+}
+
+type UserPasswordBreachedBulkResult struct {
+	Data       map[string]UserPasswordBreachedData `json:"data"`
+	Parameters map[string]any                      `json:"parameters,omitempty"`
+	RawData    map[string]any                      `json:"raw_data,omitempty"`
 }

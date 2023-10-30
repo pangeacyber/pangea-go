@@ -8,6 +8,7 @@ import (
 
 type Client interface {
 	Reputation(ctx context.Context, req *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error)
+	ReputationBulk(ctx context.Context, req *UrlReputationBulkRequest) (*pangea.PangeaResponse[UrlReputationBulkResult], error)
 
 	// Base service methods
 	pangea.BaseServicer

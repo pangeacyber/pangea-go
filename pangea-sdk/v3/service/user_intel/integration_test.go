@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func Test_Integration_UserBreachedByPhone(t *testing.T) {
@@ -40,6 +40,29 @@ func Test_Integration_UserBreachedByPhone(t *testing.T) {
 	assert.Greater(t, resp.Result.Data.BreachCount, 0)
 }
 
+func Test_Integration_UserBreachedByPhoneBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &user_intel.UserBreachedBulkRequest{
+		PhoneNumbers: []string{"8005550123", "8005550124"},
+		Raw:          pangea.Bool(true),
+		Verbose:      pangea.Bool(true),
+		Provider:     "spycloud",
+	}
+	resp, err := intelcli.UserBreachedBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+}
+
 func Test_Integration_UserBreachedByEmail(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
@@ -62,6 +85,29 @@ func Test_Integration_UserBreachedByEmail(t *testing.T) {
 	assert.NotNil(t, resp.Result.Data)
 	assert.True(t, resp.Result.Data.FoundInBreach)
 	assert.Greater(t, resp.Result.Data.BreachCount, 0)
+}
+
+func Test_Integration_UserBreachedByEmailBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &user_intel.UserBreachedBulkRequest{
+		Emails:   []string{"test@example.com", "noreply@example.com"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "spycloud",
+	}
+	resp, err := intelcli.UserBreachedBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
 }
 
 func Test_Integration_UserBreachedByUsername(t *testing.T) {
@@ -88,6 +134,29 @@ func Test_Integration_UserBreachedByUsername(t *testing.T) {
 	assert.Greater(t, resp.Result.Data.BreachCount, 0)
 }
 
+func Test_Integration_UserBreachedByUsernameBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &user_intel.UserBreachedBulkRequest{
+		Usernames: []string{"shortpatrick", "user1"},
+		Raw:       pangea.Bool(true),
+		Verbose:   pangea.Bool(true),
+		Provider:  "spycloud",
+	}
+	resp, err := intelcli.UserBreachedBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+}
+
 func Test_Integration_UserBreachedByIP(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
@@ -110,6 +179,29 @@ func Test_Integration_UserBreachedByIP(t *testing.T) {
 	assert.NotNil(t, resp.Result.Data)
 	assert.True(t, resp.Result.Data.FoundInBreach)
 	assert.Greater(t, resp.Result.Data.BreachCount, 0)
+}
+
+func Test_Integration_UserBreachedByIPBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &user_intel.UserBreachedBulkRequest{
+		IPs:      []string{"192.168.140.37", "1.1.1.1"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "spycloud",
+	}
+	resp, err := intelcli.UserBreachedBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
 }
 
 func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
@@ -179,6 +271,30 @@ func Test_Integration_PasswordBreached(t *testing.T) {
 	assert.NotNil(t, resp.Result.Data)
 	assert.True(t, resp.Result.Data.FoundInBreach)
 	assert.Greater(t, resp.Result.Data.BreachCount, 0)
+}
+
+func Test_Integration_PasswordBreachedBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &user_intel.UserPasswordBreachedBulkRequest{
+		HashType:     user_intel.HTsha265,
+		HashPrefixes: []string{"5baa6", "5baa7"},
+		Raw:          pangea.Bool(true),
+		Verbose:      pangea.Bool(true),
+		Provider:     "spycloud",
+	}
+	resp, err := intelcli.PasswordBreachedBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
 }
 
 func Test_Integration_PasswordBreachedDefaultProvider(t *testing.T) {

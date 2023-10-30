@@ -8,7 +8,9 @@ import (
 
 type Client interface {
 	UserBreached(ctx context.Context, req *UserBreachedRequest) (*pangea.PangeaResponse[UserBreachedResult], error)
+	UserBreachedBulk(ctx context.Context, req *UserBreachedBulkRequest) (*pangea.PangeaResponse[UserBreachedBulkResult], error)
 	PasswordBreached(ctx context.Context, req *UserPasswordBreachedRequest) (*pangea.PangeaResponse[UserPasswordBreachedResult], error)
+	PasswordBreachedBulk(ctx context.Context, req *UserPasswordBreachedBulkRequest) (*pangea.PangeaResponse[UserPasswordBreachedBulkResult], error)
 
 	// Base service methods
 	pangea.BaseServicer

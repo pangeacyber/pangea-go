@@ -8,7 +8,6 @@ import (
 
 type Client interface {
 	Reputation(ctx context.Context, req *DomainReputationRequest) (*pangea.PangeaResponse[DomainReputationResult], error)
-	ReputationBulk(ctx context.Context, req *DomainReputationBulkRequest) (*pangea.PangeaResponse[DomainReputationBulkResult], error)
 	WhoIs(ctx context.Context, req *DomainWhoIsRequest) (*pangea.PangeaResponse[DomainWhoIsResult], error)
 
 	// Base service methods

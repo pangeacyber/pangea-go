@@ -13,6 +13,12 @@ type Client interface {
 	IsVPN(ctx context.Context, req *IpVPNRequest) (*pangea.PangeaResponse[IpVPNResult], error)
 	IsProxy(ctx context.Context, req *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error)
 
+	ReputationBulk(ctx context.Context, req *IpReputationBulkRequest) (*pangea.PangeaResponse[IpReputationBulkResult], error)
+	GeolocateBulk(ctx context.Context, req *IpGeolocateBulkRequest) (*pangea.PangeaResponse[IpGeolocateBulkResult], error)
+	GetDomainBulk(ctx context.Context, req *IpDomainBulkRequest) (*pangea.PangeaResponse[IpDomainBulkResult], error)
+	IsVPNBulk(ctx context.Context, req *IpVPNBulkRequest) (*pangea.PangeaResponse[IpVPNBulkResult], error)
+	IsProxyBulk(ctx context.Context, req *IpProxyBulkRequest) (*pangea.PangeaResponse[IpProxyBulkResult], error)
+
 	// Base service methods
 	pangea.BaseServicer
 }

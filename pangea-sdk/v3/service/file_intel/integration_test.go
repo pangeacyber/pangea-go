@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func intelFileIntegrationCfg(t *testing.T) *pangea.Config {
@@ -69,6 +69,36 @@ func Test_Integration_FileReputation_2(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result)
 	assert.Equal(t, "unknown", resp.Result.Data.Verdict)
+}
+
+func Test_Integration_FileReputationBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := intelFileIntegrationCfg(t)
+	intelcli := file_intel.New(cfg)
+
+	input := &file_intel.FileReputationBulkRequest{
+		Hashes:   []string{"142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e", "179e2b8a4162372cd9344b81793cbf74a9513a002eda3324e6331243f3137a63"},
+		HashType: "sha256",
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "reversinglabs",
+	}
+	resp, err := intelcli.ReputationBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+	for _, di := range resp.Result.Data {
+		assert.NotEmpty(t, di.Category)
+		assert.NotEmpty(t, di.Score)
+		assert.NotEmpty(t, di.Verdict)
+	}
 }
 
 func Test_Integration_FileReputation_ErrorBadHash(t *testing.T) {
