@@ -119,9 +119,21 @@ func pad(b *bytes.Buffer, str string) {
 	b.WriteString(str)
 }
 
+// TODO: Duplicated fields. Remove ResponseHeader in next breaking update.
 type AcceptedError struct {
 	ResponseHeader
-	ResultField any
+	ResultField    any
+	AcceptedResult AcceptedResult
+	Response
+}
+
+type AcceptedStatus struct {
+	UploadURL     string            `json:"upload_url"`
+	UploadDetails map[string]string `json:"upload_details"`
+}
+
+type AcceptedResult struct {
+	AcceptedStatus AcceptedStatus `json:"accepted_status"`
 }
 
 func (e *AcceptedError) Error() string {

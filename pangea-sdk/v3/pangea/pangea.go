@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -35,6 +34,13 @@ var (
 
 var errNonNilContext = errors.New("context must be non-nil")
 
+type TransferMethod string
+
+const (
+	TMdirect    TransferMethod = "direct"
+	TMmultipart                = "multipart"
+)
+
 type ConfigIDer interface {
 	SetConfigID(configID string)
 	GetConfigID() string
@@ -42,6 +48,18 @@ type ConfigIDer interface {
 
 type BaseRequest struct {
 	ConfigID string `json:"config_id,omitempty"`
+}
+
+type TransferRequester interface {
+	GetTransferMethod() TransferMethod
+}
+
+type TransferRequest struct {
+	TransferMethod TransferMethod `json:"transfer_method,omitempty"`
+}
+
+func (tr TransferRequest) GetTransferMethod() TransferMethod {
+	return tr.TransferMethod
 }
 
 func (br *BaseRequest) GetConfigID() string {
@@ -127,6 +145,10 @@ type Client struct {
 	configID string
 }
 
+func (c *Client) ServiceName() string {
+	return c.serviceName
+}
+
 func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *Client {
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
@@ -183,7 +205,11 @@ func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
 	}
 }
 
-func (c *Client) serviceUrl(service, path string) (string, error) {
+func (c *Client) GetRequestIDURL(rid string) (string, error) {
+	return c.GetURL(fmt.Sprintf("request/%v", rid))
+}
+
+func (c *Client) GetURL(path string) (string, error) {
 	cfg := c.config
 	endpoint := ""
 	// Remove slashes, just in case
@@ -202,7 +228,7 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 			// If we are testing locally do not use service
 			endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
 		} else {
-			endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, service, domain, path)
+			endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, c.serviceName, domain, path)
 		}
 	}
 
@@ -218,25 +244,19 @@ func (c *Client) serviceUrl(service, path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Request, error) {
-	u, err := c.serviceUrl(c.serviceName, urlStr)
-	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "NewRequest").
-			Err(err)
-		return nil, err
-	}
-
+func (c *Client) NewRequest(method, url string, body any) (*http.Request, error) {
 	c.Logger.Info().
 		Str("service", c.serviceName).
 		Str("method", "NewRequest").
 		Str("action", method).
-		Str("url", u).
+		Str("url", url).
 		Send()
 
-	if c.configID != "" && body.GetConfigID() == "" {
-		body.SetConfigID(c.configID)
+	if c.configID != "" {
+		v, ok := body.(ConfigIDer)
+		if ok && v.GetConfigID() == "" {
+			v.SetConfigID(c.configID)
+		}
 	}
 
 	var buf io.ReadWriter
@@ -252,11 +272,11 @@ func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Reque
 		Str("service", c.serviceName).
 		Str("method", "NewRequest").
 		Str("action", method).
-		Str("url", u).
+		Str("url", url).
 		Interface("data", body).
 		Send()
 
-	req, err := http.NewRequest(method, u, buf)
+	req, err := http.NewRequest(method, url, buf)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
@@ -273,14 +293,103 @@ func (c *Client) NewRequest(method, urlStr string, body ConfigIDer) (*http.Reque
 	return req, nil
 }
 
-func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, file io.Reader) (*http.Request, error) {
-	u, err := c.serviceUrl(c.serviceName, urlStr)
+func (c *Client) PostPresignedURL(ctx context.Context, url string, input any, out any, file io.Reader) (*Response, error) {
+	req, err := c.NewRequest("POST", url, input)
+	if err != nil {
+		return nil, err
+	}
+
+	pr, err := c.simplePost(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.CheckResponse(pr, out)
+	var ae *AcceptedError
+	var ok bool
+	if err != nil {
+		// This should return AcceptedError
+		ae, ok = err.(*AcceptedError)
+		if !ok {
+			c.Logger.Error().
+				Str("service", c.serviceName).
+				Str("method", "Do.CheckResponse").
+				Str("url", url).
+				Err(err)
+			// Return APIError
+			return nil, err
+		}
+	}
+
+	ar, err := c.pollPresignedURL(ctx, ae)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err = c.NewRequestForm("POST", ar.AcceptedStatus.UploadURL, ae.AcceptedResult.AcceptedStatus.UploadDetails, file, false)
+	if err != nil {
+		return nil, err
+	}
+
+	psURLr, err := c.BareDo(ctx, req)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
-			Str("method", "NewRequestMultPart").
+			Str("method", "simplePost.BareDo").
 			Err(err)
 		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	if psURLr.StatusCode < 200 || psURLr.StatusCode >= 300 {
+		defer psURLr.Body.Close()
+		return nil, errors.New("Presigned post failure")
+	}
+
+	pr, err = c.handledQueued(ctx, pr)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "PostPresignedURL.handleQueued").
+			Err(err)
+		return nil, err
+	}
+
+	u := ""
+	if pr != nil && pr.HTTPResponse != nil && pr.HTTPResponse.Request != nil && pr.HTTPResponse.Request.URL != nil {
+		u = pr.HTTPResponse.Request.URL.String()
+	}
+
+	err = c.CheckResponse(pr, out)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "PostPresignedURL.CheckResponse").
+			Str("url", u).
+			Err(err)
+		// Return APIError
+		return nil, err
+	}
+
+	return pr, nil
+}
+
+func (c *Client) PostMultipart(ctx context.Context, url string, input any, out any, file io.Reader) (*Response, error) {
+	req, err := c.NewRequestMultipart("POST", url, input, file)
+	if err != nil {
+		return nil, err
+	}
+	return c.Do(ctx, req, out)
+}
+
+func (c *Client) NewRequestMultipart(method, url string, body any, file io.Reader) (*http.Request, error) {
+	if c.configID != "" {
+		v, ok := body.(ConfigIDer)
+		if ok && v.GetConfigID() == "" {
+			v.SetConfigID(c.configID)
+		}
 	}
 
 	var buf io.ReadWriter
@@ -294,9 +403,9 @@ func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, fil
 
 	c.Logger.Debug().
 		Str("service", c.serviceName).
-		Str("method", "NewRequestMultPart").
+		Str("method", "NewRequestMultipart").
 		Str("action", method).
-		Str("url", u).
+		Str("url", url).
 		Interface("data", body).
 		Send()
 
@@ -304,6 +413,8 @@ func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, fil
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 	var fw io.Writer
+
+	var err error
 
 	// Write request body
 	h := make(textproto.MIMEHeader)
@@ -326,12 +437,60 @@ func (c *Client) NewRequestMultPart(method, urlStr string, body interface{}, fil
 
 	// close the multipart writer.
 	w.Close()
-	req, err := http.NewRequest(method, u, &b)
+	req, err := http.NewRequest(method, url, &b)
 	if err != nil {
 		return nil, err
 	}
 
 	c.SetHeaders(req)
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	return req, nil
+}
+
+func (c *Client) NewRequestForm(method, url string, body map[string]string, file io.Reader, setHeaders bool) (*http.Request, error) {
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "NewRequestForm").
+		Str("action", method).
+		Str("url", url).
+		Interface("data", body).
+		Send()
+
+	// Prepare multi part form
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	// Write request body fields
+	if body != nil {
+		for key, value := range body {
+			if err := w.WriteField(key, value); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	// Write file
+	var err error
+	part, err := w.CreateFormFile("file", "filename.exe")
+	if err != nil {
+		return nil, err
+	}
+	_, err = io.Copy(part, file)
+	if err != nil {
+		return nil, err
+	}
+
+	// close the multipart writer.
+	w.Close()
+	req, err := http.NewRequest(method, url, &b)
+	if err != nil {
+		return nil, err
+	}
+
+	if setHeaders {
+		c.SetHeaders(req)
+	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	return req, nil
@@ -347,29 +506,6 @@ func (c *Client) SetHeaders(req *http.Request) {
 	mergeHeaders(req, c.config.AdditionalHeaders)
 }
 
-type PangeaResponse[T any] struct {
-	Response
-	Result *T
-}
-
-func (r *Response) UnmarshalResult(target interface{}) error {
-	return json.Unmarshal(r.RawResult, target)
-}
-
-// newResponse takes a http.Response and tries to parse the body into a base pangea API response.
-func newResponse(r *http.Response) (*Response, error) {
-	response := &Response{HTTPResponse: r}
-	defer r.Body.Close()
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil, NewUnmarshalError(err, []byte{}, r)
-	}
-	if err := json.Unmarshal(data, response); err != nil {
-		return nil, NewUnmarshalError(err, data, r)
-	}
-	return response, nil
-}
-
 // BareDo sends an API request and lets you handle the api response.
 //
 //	If an error or API Error occurs, the error will contain more information. Otherwise you
@@ -382,6 +518,35 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response,
 	return resp, nil
 }
 
+func (c *Client) simplePost(ctx context.Context, req *http.Request) (*Response, error) {
+	if ctx == nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "simplePost").
+			Err(errNonNilContext)
+		return nil, errNonNilContext
+	}
+
+	resp, err := c.BareDo(ctx, req)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "simplePost.BareDo").
+			Err(err)
+		return nil, err
+	}
+
+	r, err := newResponse(resp)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "simplePost.newResponse").
+			Err(err)
+		return nil, err
+	}
+	return r, nil
+}
+
 // Do sends an API request and returns the API response. The API response is
 // JSON decoded and stored in the value pointed to by v, or returned as an
 // error if an API error has occurred. If v is nil, and no error hapens, the response is returned as is.
@@ -391,38 +556,12 @@ func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response,
 // The provided ctx must be non-nil, if it is nil an error is returned. If it is
 // canceled or times out, ctx.Err() will be returned.
 func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, error) {
-	if ctx == nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "Do").
-			Err(errNonNilContext)
-		return nil, errNonNilContext
-	}
-
-	resp, err := c.BareDo(ctx, req)
+	r, err := c.simplePost(ctx, req)
 	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "Do.BareDo").
-			Err(err)
-		return nil, err
-	}
-
-	r, err := newResponse(resp)
-	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "Do.newResponse").
-			Err(err)
 		return nil, err
 	}
 
 	r, err = c.handledQueued(ctx, r)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.CheckResponse(r, v)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
@@ -447,27 +586,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, e
 		return nil, err
 	}
 
-	switch v.(type) {
-	case nil:
-		// This should never be fired to user because Client is to internal use
-		err := fmt.Errorf("Not initialized struct. Can't unmarshal result from response")
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "Do").
-			Err(err)
-		return r, err
-	default:
-		err = r.UnmarshalResult(v)
-		if err != nil {
-			c.Logger.Error().
-				Str("service", c.serviceName).
-				Str("method", "Do.UnmarshalResult").
-				Str("url", u).
-				Err(err)
-			return nil, NewAPIError(err, r)
-		}
-	}
-
 	return r, nil
 }
 
@@ -485,6 +603,66 @@ func (c *Client) reachTimeout(start time.Time) bool {
 	return time.Since(start) >= c.config.PollResultTimeout
 }
 
+func (c *Client) pollPresignedURL(ctx context.Context, ae *AcceptedError) (*AcceptedResult, error) {
+	if ae.AcceptedResult.AcceptedStatus.UploadURL != "" {
+		return &ae.AcceptedResult, nil
+	}
+
+	u, err := c.GetRequestIDURL(*ae.RequestID)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.ServiceName()).
+			Str("method", "pollPresignedURL").
+			Err(err)
+		return nil, err
+	}
+
+	var aeLoop = ae
+	var ok bool
+	start := time.Now()
+	var retry = 1
+
+	for aeLoop.AcceptedResult.AcceptedStatus.UploadURL != "" && !c.reachTimeout(start) {
+		delay := c.getDelay(retry, start)
+		if pu.Sleep(delay, ctx) == false {
+			// If context closed, return inmediatly
+			return nil, errors.New("Context closed")
+		}
+
+		req, err := c.NewRequest("GET", u, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if ctx == nil {
+			return nil, errNonNilContext
+		}
+
+		resp, err := c.BareDo(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+
+		r, err := newResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+
+		err = c.CheckResponse(r, ae.ResultField)
+		aeLoop, ok = err.(*AcceptedError)
+		if !ok {
+			return nil, err
+		}
+		retry++
+	}
+
+	if c.reachTimeout(start) {
+		return nil, aeLoop
+	}
+
+	return &aeLoop.AcceptedResult, nil
+}
+
 func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, error) {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted && (r != nil && r.RequestID != nil) {
 		c.addPendingRequestID(*r.RequestID)
@@ -498,7 +676,14 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 
 	start := time.Now()
 	var retry = 1
-	u := fmt.Sprintf("request/%v", *r.RequestID)
+	u, err := c.GetRequestIDURL(*r.RequestID)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.ServiceName()).
+			Str("method", "handledQueued").
+			Err(err)
+		return nil, err
+	}
 
 	c.Logger.Info().
 		Str("service", c.serviceName).
@@ -513,7 +698,7 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 			return r, nil
 		}
 
-		req, err := c.NewRequest("GET", fmt.Sprintf("request/%v", *r.RequestID), nil)
+		req, err := c.NewRequest("GET", u, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -550,21 +735,40 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 
 func (c *Client) CheckResponse(r *Response, v any) error {
 	if r.HTTPResponse.StatusCode == http.StatusAccepted {
+		var ar AcceptedResult
+		err := r.UnmarshalResult(&ar)
+		if err != nil {
+			ar = AcceptedResult{}
+		}
+
 		return &AcceptedError{
 			ResponseHeader: r.ResponseHeader,
 			ResultField:    v,
+			AcceptedResult: ar,
+			Response:       *r,
 		}
 	}
 
 	if r.HTTPResponse.StatusCode == http.StatusOK && *r.ResponseHeader.Status == "Success" {
+		switch v.(type) {
+		case nil:
+			// This should never be fired to user because Client is to internal use
+			err := fmt.Errorf("Not initialized struct. Can't unmarshal result from response")
+			return err
+		default:
+			err := r.UnmarshalResult(v)
+			if err != nil {
+				return NewAPIError(err, r)
+			}
+		}
 		return nil
 	}
 
 	var apiError error
-
 	var pa PangeaErrors
-	err := r.UnmarshalResult(&pa)
 	em := ""
+
+	err := r.UnmarshalResult(&pa)
 	if err != nil {
 		pa = PangeaErrors{}
 		em = fmt.Sprintf("API error: %s. Unmarshall Error: %s.", *r.ResponseHeader.Summary, err.Error())
@@ -648,7 +852,15 @@ func (c *Config) Copy(cfgs ...*Config) *Config {
 
 // FetchAcceptedResponse retries the
 func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v interface{}) (*Response, error) {
-	u := fmt.Sprintf("request/%v", reqID)
+	u, err := c.GetRequestIDURL(reqID)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.ServiceName()).
+			Str("method", "FetchAcceptedResponse").
+			Err(err)
+		return nil, err
+	}
+
 	c.Logger.Info().
 		Str("service", c.serviceName).
 		Str("method", "FetchAcceptedResponse").
@@ -669,74 +881,6 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	return resp, nil
 }
 
-type BaseService struct {
-	Client *Client
-}
-
-type BaseServicer interface {
-	GetPendingRequestID() []string
-	PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error)
-	PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error)
-	PollResultRaw(ctx context.Context, requestID string) (*PangeaResponse[map[string]any], error)
-}
-
-func NewBaseService(name string, baseCfg *Config) BaseService {
-	cfg := baseCfg.Copy()
-	if cfg.Logger == nil {
-		cfg.Logger = GetDefaultPangeaLogger()
-	}
-	bs := BaseService{
-		Client: NewClient(name, cfg),
-	}
-	return bs
-}
-
-func (bs *BaseService) PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
-	if e.RequestID == nil {
-		return nil, errors.New("Request ID is empty")
-	}
-
-	resp, err := bs.PollResultByID(ctx, *e.RequestID, e.ResultField)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (bs *BaseService) PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error) {
-	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, v)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PangeaResponse[any]{
-		Response: *resp,
-		Result:   &v,
-	}, nil
-}
-
-func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaResponse[map[string]any], error) {
-	r := make(map[string]any)
-	resp, err := bs.Client.FetchAcceptedResponse(ctx, rid, &r)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PangeaResponse[map[string]any]{
-		Response: *resp,
-		Result:   &r,
-	}, nil
-}
-
-type Option func(*BaseService) error
-
-func WithConfigID(cid string) Option {
-	return func(b *BaseService) error {
-		return ClientWithConfigID(cid)(b.Client)
-	}
-}
-
 type ClientOption func(*Client) error
 
 func ClientWithConfigID(cid string) ClientOption {
@@ -754,10 +898,6 @@ func (c *Client) GetPendingRequestID() []string {
 		i++
 	}
 	return keys
-}
-
-func (bs *BaseService) GetPendingRequestID() []string {
-	return bs.Client.GetPendingRequestID()
 }
 
 func (c *Client) addPendingRequestID(rid string) {
