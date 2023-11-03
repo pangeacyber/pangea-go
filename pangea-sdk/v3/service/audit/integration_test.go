@@ -27,7 +27,7 @@ const (
 	MSG_CUSTOM_SCHEMA_SIGNED_VAULT = "go-sdk-custom-schema-sign-vault"
 	LONG_FIELD                     = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia, orci eget commodo commodo non."
 
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 var customSchemaEvent = pangeatesting.CustomSchemaEvent{
@@ -821,3 +821,75 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 // 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'message' cannot have less than 1 characters")
 // 	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/event/message")
 // }
+
+func Test_Integration_Log_Bulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	event := &audit.StandardEvent{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.LogBulk(ctx, []any{event, event}, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	for _, r := range out.Result.Results {
+		assert.NotEmpty(t, r.Hash)
+		assert.NotNil(t, r.EventEnvelope)
+		assert.NotNil(t, r.EventEnvelope.Event)
+		e := (r.EventEnvelope.Event).(*audit.StandardEvent)
+		assert.NotNil(t, e.Message)
+		assert.Equal(t, e.Message, MSG_NO_SIGNED)
+		assert.Nil(t, r.ConsistencyProof)
+		assert.Equal(t, r.ConcistencyVerification, audit.NotVerified)
+		assert.Equal(t, r.MembershipVerification, audit.NotVerified)
+		assert.Equal(t, r.SignatureVerification, audit.NotVerified)
+	}
+}
+
+func Test_Integration_Log_Async(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	cfg.QueuedRetryEnabled = false
+	client, _ := audit.New(cfg)
+
+	event := &audit.StandardEvent{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.LogAsync(ctx, event, true)
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	_, ok := err.(*pangea.AcceptedError)
+	assert.True(t, ok)
+}
+
+func Test_Integration_Log_Bulk_Async(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	cfg.QueuedRetryEnabled = false
+	client, _ := audit.New(cfg)
+
+	event := &audit.StandardEvent{
+		Message: MSG_NO_SIGNED,
+		Actor:   ACTOR,
+		Status:  MSG_NO_SIGNED,
+	}
+
+	out, err := client.LogBulkAsync(ctx, []any{event, event}, true)
+	assert.Error(t, err)
+	assert.Nil(t, out)
+	_, ok := err.(*pangea.AcceptedError)
+	assert.True(t, ok)
+}
