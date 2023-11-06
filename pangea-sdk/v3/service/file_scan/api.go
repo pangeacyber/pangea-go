@@ -43,17 +43,20 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 		return nil, errors.New("nil input")
 	}
 
-	params, err := GetFSParams(file)
-	if err != nil {
-		return nil, err
+	var req FileScanFullRequest
+	params := &FileScanFileParams{}
+
+	if input.TransferMethod == pangea.TMdirect {
+		var err error
+		params, err = GetFSParams(file)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	req := FileScanFullRequest{
+	req = FileScanFullRequest{
 		FileScanRequest:    *input,
 		FileScanFileParams: *params,
-		TransferRequest: pangea.TransferRequest{
-			TransferMethod: pangea.TMdirect,
-		},
 	}
 
 	return request.DoPostWithFile(ctx, e.Client, "v1/scan", req, &FileScanResult{}, file)
@@ -62,6 +65,7 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 type FileScanRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
+	pangea.TransferRequest
 
 	Verbose  bool   `json:"verbose,omitempty"`
 	Raw      bool   `json:"raw,omitempty"`
@@ -75,8 +79,6 @@ type FileScanFileParams struct {
 }
 
 type FileScanFullRequest struct {
-	pangea.TransferRequest
-
 	FileScanRequest
 	FileScanFileParams
 }
