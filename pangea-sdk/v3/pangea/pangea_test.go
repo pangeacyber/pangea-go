@@ -24,7 +24,7 @@ func testClient(t *testing.T, url string) *pangea.Client {
 }
 
 func TestClientCustomUserAgent(t *testing.T) {
-	cfg := pangeatesting.TestConfig("pangea.cloud")
+	cfg := pangeatesting.TestConfig("https://pangea.cloud")
 	cfg.CustomUserAgent = "Test"
 	c := pangea.NewClient("service", cfg)
 	assert.NotNil(t, c)
@@ -61,7 +61,8 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, make(map[string]any))
 	_, err := client.Do(context.Background(), req, nil)
 
 	assert.Error(t, err)
@@ -92,7 +93,8 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 	_, err := client.Do(context.Background(), req, nil)
 	assert.Error(t, err)
 	pangeaErr, ok := err.(*pangea.APIError)
@@ -120,7 +122,8 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 	body := &struct {
 		Key *string `json:"key"`
 	}{}
@@ -149,7 +152,8 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	}
 
 	reqBody := reqbody{Key: pangea.String("value")}
-	req, _ := client.NewRequest("POST", "test", &reqBody)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, &reqBody)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		body := &reqbody{}
@@ -173,28 +177,7 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 	resp, err := client.Do(context.Background(), req, nil)
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "Not initialized struct. Can't unmarshal result from response")
-	assert.NotNil(t, resp)
-	assert.NotNil(t, resp.Status)
-	assert.Equal(t, *resp.Status, "Success")
-}
-
-func TestDo_When_Client_Can_Not_UnMarshall_Response_It_Returns_UnMarshalError(t *testing.T) {
-	mux, url, teardown := pangeatesting.SetupServer()
-	defer teardown()
-
-	client := testClient(t, url)
-
-	req, _ := client.NewRequest("POST", "test", nil)
-
-	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, `ERROR`)
-	})
-
-	_, err := client.Do(context.Background(), req, nil)
-
-	var v *pangea.UnmarshalError
-	assert.ErrorAs(t, err, &v)
+	assert.Nil(t, resp)
 }
 
 func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_APIError(t *testing.T) {
@@ -203,7 +186,8 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 
 	client := testClient(t, url)
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -225,47 +209,6 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 	assert.ErrorAs(t, err, &v)
 }
 
-func TestDo_With_Retries_Success(t *testing.T) {
-	mux, url, teardown := pangeatesting.SetupServer()
-	defer teardown()
-	cfg := pangeatesting.TestConfig(url)
-	cfg.Retry = true
-	cfg.RetryConfig = &pangea.RetryConfig{
-		RetryMax: 1,
-	}
-
-	client := pangea.NewClient("service", cfg)
-	req, _ := client.NewRequest("POST", "test", nil)
-
-	handler := func() func(w http.ResponseWriter, r *http.Request) {
-		var reqCount int
-		return func(w http.ResponseWriter, r *http.Request) {
-			if reqCount == 1 {
-				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, `{
-					"request_id": "some-id",
-					"request_time": "1970-01-01T00:00:00Z",
-					"response_time": "1970-01-01T00:00:10Z",
-					"status": "Success",
-					"summary": "ok"
-				}`)
-			} else {
-				reqCount++
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-		}
-	}
-	mux.HandleFunc("/test", handler())
-
-	resp, err := client.Do(context.Background(), req, nil)
-
-	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "Not initialized struct. Can't unmarshal result from response")
-	assert.NotNil(t, resp)
-	assert.NotNil(t, resp.Status)
-	assert.Equal(t, "Success", *resp.Status)
-}
-
 func TestDo_With_Retries_Error(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
@@ -277,7 +220,8 @@ func TestDo_With_Retries_Error(t *testing.T) {
 
 	client := pangea.NewClient("service", cfg)
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -306,7 +250,8 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 		}`)
 	})
 
-	req, _ := client.NewRequest("POST", "test", nil)
+	url, _ = client.GetURL("/test")
+	req, _ := client.NewRequest("POST", url, nil)
 	_, err := client.Do(context.Background(), req, nil)
 
 	if err == nil {

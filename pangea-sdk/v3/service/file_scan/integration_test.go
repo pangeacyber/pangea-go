@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Staging
 	TESTFILE_PATH      = "./testdata/testfile.pdf"
 )
 
@@ -30,6 +30,39 @@ func Test_Integration_FileScan_crowdstrike(t *testing.T) {
 		Raw:      true,
 		Verbose:  true,
 		Provider: "crowdstrike",
+	}
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	resp, err := client.Scan(ctx, input, file)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err.Error())
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, resp.Result.Data.Verdict, "benign")
+}
+
+func Test_Integration_FileScan_multipart(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	cfg.PollResultTimeout = 60 * time.Second
+	client := file_scan.New(cfg)
+
+	input := &file_scan.FileScanRequest{
+		Raw:      true,
+		Verbose:  true,
+		Provider: "crowdstrike",
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMmultipart,
+		},
 	}
 
 	file, err := os.Open(TESTFILE_PATH)

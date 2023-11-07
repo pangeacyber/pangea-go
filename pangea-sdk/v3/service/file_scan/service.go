@@ -2,13 +2,13 @@ package file_scan
 
 import (
 	"context"
-	"io"
+	"os"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
 type Client interface {
-	Scan(ctx context.Context, input *FileScanRequest, file io.Reader) (*pangea.PangeaResponse[FileScanResult], error)
+	Scan(ctx context.Context, input *FileScanRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error)
 
 	// Base service methods
 	pangea.BaseServicer

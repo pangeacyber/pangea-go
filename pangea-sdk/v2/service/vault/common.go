@@ -66,6 +66,7 @@ const (
 	IVSsuspended   ItemVersionState = "suspended"
 	IVScompromised ItemVersionState = "compromised"
 	IVSdestroyed   ItemVersionState = "destroyed"
+	IVSinherited   ItemVersionState = "inherited"
 )
 
 type ItemState string
@@ -189,10 +190,17 @@ type ItemData struct {
 	Purpose           string          `json:"purpose,omitempty"`
 }
 
+type InheritedSettings struct {
+	RotationFrequency   string `json:"rotation_frequency,omitempty"`
+	RotationState       string `json:"rotation_state,omitempty"`
+	RotationGracePeriod string `json:"rotation_grace_period,omitempty"`
+}
+
 type GetResult struct {
 	ItemData
-	Versions            []ItemVersionData `json:"versions"`
-	RotationGracePeriod string            `json:"rotation_grace_period,omitempty"`
+	Versions            []ItemVersionData  `json:"versions"`
+	RotationGracePeriod string             `json:"rotation_grace_period,omitempty"`
+	InheritedSettings   *InheritedSettings `json:"inherited_settings,omitempty"`
 }
 
 type ListItemData struct {
@@ -296,10 +304,13 @@ type UpdateResult struct {
 type FolderCreateRequest struct {
 	pangea.BaseRequest
 
-	Name     string   `json:"name"`
-	Folder   string   `json:"folder"`
-	Metadata Metadata `json:"metadata,omitempty"`
-	Tags     Tags     `json:"tags,omitempty"`
+	Name                string           `json:"name"`
+	Folder              string           `json:"folder"`
+	Metadata            Metadata         `json:"metadata,omitempty"`
+	Tags                Tags             `json:"tags,omitempty"`
+	RotationFrequency   string           `json:"rotation_frequency,omitempty"`
+	RotationState       ItemVersionState `json:"rotation_state,omitempty"`
+	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"`
 }
 
 type FolderCreateResult struct {
