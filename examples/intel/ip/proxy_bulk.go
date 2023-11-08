@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
@@ -19,6 +20,12 @@ func PrintData(ip string, data ip_intel.ProxyData) {
 	}
 }
 
+func PrintBulkData(data map[string]ip_intel.ProxyData) {
+	for k, v := range data {
+		PrintData(k, v)
+	}
+}
+
 func main() {
 	fmt.Println("Checking if IP is a proxy...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
@@ -27,24 +34,24 @@ func main() {
 	}
 
 	intelcli := ip_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:              token,
+		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
 	})
 
 	ctx := context.Background()
-	ip := "34.201.32.172"
-	input := &ip_intel.IpProxyRequest{
-		Ip:       ip,
-		Raw:      pangea.Bool(true),
-		Verbose:  pangea.Bool(true),
-		Provider: "digitalelement",
+	input := &ip_intel.IpProxyBulkRequest{
+		Ips:     []string{"34.201.32.172", "190.28.74.251"},
+		Raw:     pangea.Bool(true),
+		Verbose: pangea.Bool(true),
 	}
 
-	resp, err := intelcli.IsProxy(ctx, input)
+	resp, err := intelcli.IsProxyBulk(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Result:")
-	PrintData(ip, resp.Result.Data)
+	PrintBulkData(resp.Result.Data)
 }

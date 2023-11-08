@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/domain_intel"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/url_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/domain_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/url_intel"
 )
 
 var defangedSchemes = map[string]string{

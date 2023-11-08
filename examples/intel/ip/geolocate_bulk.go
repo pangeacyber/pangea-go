@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
@@ -21,6 +22,12 @@ func PrintData(ip string, data ip_intel.GeolocateData) {
 	fmt.Printf("\t\t CountryCode: %s\n", data.CountryCode)
 }
 
+func PrintBulkData(data map[string]ip_intel.GeolocateData) {
+	for k, v := range data {
+		PrintData(k, v)
+	}
+}
+
 func main() {
 	fmt.Println("Geolocating IP...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
@@ -29,24 +36,24 @@ func main() {
 	}
 
 	intelcli := ip_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:              token,
+		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
 	})
 
 	ctx := context.Background()
-	ip := "93.231.182.110"
-	input := &ip_intel.IpGeolocateRequest{
-		Ip:       ip,
-		Raw:      pangea.Bool(true),
-		Verbose:  pangea.Bool(true),
-		Provider: "digitalelement",
+	input := &ip_intel.IpGeolocateBulkRequest{
+		Ips:     []string{"93.231.182.110", "190.28.74.251"},
+		Raw:     pangea.Bool(true),
+		Verbose: pangea.Bool(true),
 	}
 
-	resp, err := intelcli.Geolocate(ctx, input)
+	resp, err := intelcli.GeolocateBulk(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Result:")
-	PrintData(ip, resp.Result.Data)
+	PrintBulkData(resp.Result.Data)
 }

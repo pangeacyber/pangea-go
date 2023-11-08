@@ -7,9 +7,16 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/domain_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/domain_intel"
 )
+
+func PrintData(indicator string, data domain_intel.ReputationData) {
+	fmt.Printf("\t Indicator: %s\n", indicator)
+	fmt.Printf("\t\t Verdict: %s\n", data.Verdict)
+	fmt.Printf("\t\t Score: %d\n", data.Score)
+	fmt.Printf("\t\t Category: %s\n", pangea.Stringify(data.Category))
+}
 
 func main() {
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
@@ -23,8 +30,9 @@ func main() {
 	})
 
 	ctx := context.Background()
+	indicator := "737updatesboeing.com"
 	input := &domain_intel.DomainReputationRequest{
-		Domain:   "737updatesboeing.com",
+		Domain:   indicator,
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
 		Provider: "domaintools",
@@ -35,5 +43,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result.Data))
+	fmt.Println("Result:")
+	PrintData(indicator, resp.Result.Data)
 }

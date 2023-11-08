@@ -6,44 +6,51 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/url_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/domain_intel"
 )
 
-func PrintData(indicator string, data url_intel.ReputationData) {
+func PrintData(indicator string, data domain_intel.ReputationData) {
 	fmt.Printf("\t Indicator: %s\n", indicator)
 	fmt.Printf("\t\t Verdict: %s\n", data.Verdict)
 	fmt.Printf("\t\t Score: %d\n", data.Score)
 	fmt.Printf("\t\t Category: %s\n", pangea.Stringify(data.Category))
 }
 
+func PrintBulkData(data map[string]domain_intel.ReputationData) {
+	for k, v := range data {
+		PrintData(k, v)
+	}
+}
+
 func main() {
-	fmt.Println("Checking URL...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	intelcli := url_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+	intelcli := domain_intel.New(&pangea.Config{
+		Token:              token,
+		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
 	})
 
 	ctx := context.Background()
-	indicator := "http://113.235.101.11:54384"
-	input := &url_intel.UrlReputationRequest{
-		Url:      indicator,
+	input := &domain_intel.DomainReputationBulkRequest{
+		Domains:  []string{"pemewizubidob.cafij.co.za", "redbomb.com.tr", "kmbk8.hicp.net"},
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 
-	resp, err := intelcli.Reputation(ctx, input)
+	resp, err := intelcli.ReputationBulk(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Result:")
-	PrintData(indicator, resp.Result.Data)
+	PrintBulkData(resp.Result.Data)
 }
