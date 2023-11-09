@@ -900,6 +900,16 @@ func (c *Client) GetPendingRequestID() []string {
 	return keys
 }
 
+func (c *Client) DisableQueueRetry() func() {
+	v := c.config.QueuedRetryEnabled
+	c.config.QueuedRetryEnabled = false
+
+	return func() {
+		// defer this function to re-set to original value
+		c.config.QueuedRetryEnabled = v
+	}
+}
+
 func (c *Client) addPendingRequestID(rid string) {
 	c.pendingRequestID[rid] = true
 }

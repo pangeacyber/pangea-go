@@ -857,7 +857,6 @@ func Test_Integration_Log_Async(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
-	cfg.QueuedRetryEnabled = false
 	client, _ := audit.New(cfg)
 
 	event := &audit.StandardEvent{
@@ -878,7 +877,6 @@ func Test_Integration_Log_Bulk_Async(t *testing.T) {
 	defer cancelFn()
 
 	cfg := auditIntegrationCfg(t)
-	cfg.QueuedRetryEnabled = false
 	client, _ := audit.New(cfg)
 
 	event := &audit.StandardEvent{
