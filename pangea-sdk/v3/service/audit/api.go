@@ -66,6 +66,7 @@ func (a *audit) LogAsync(ctx context.Context, event any, verbose bool) (*pangea.
 		return nil, err
 	}
 
+	// Disable QueueRetry and re-enable it after this function call
 	defer a.Client.DisableQueueRetry()()
 
 	resp, err := request.DoPost(ctx, a.Client, "v1/log_async", input, &LogResult{})
@@ -108,6 +109,7 @@ func (a *audit) LogBulkAsync(ctx context.Context, events []any, verbose bool) (*
 		return nil, err
 	}
 
+	// Disable QueueRetry and re-enable it after this function call
 	defer a.Client.DisableQueueRetry()()
 
 	resp, err := request.DoPost(ctx, a.Client, "v2/log_async", input, &LogBulkResult{})

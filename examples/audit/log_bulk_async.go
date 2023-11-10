@@ -25,14 +25,25 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &audit.RootInput{
-		TreeSize: 10,
+	event1 := &audit.StandardEvent{
+		Message: "Sign up",
+		Actor:   "go-sdk",
 	}
 
-	rootResponse, err := auditcli.Root(ctx, input)
-	if err != nil {
-		log.Fatal(err)
+	event2 := &audit.StandardEvent{
+		Message: "Sign in",
+		Actor:   "go-sdk",
 	}
 
-	fmt.Println("Result: ", pangea.Stringify(rootResponse.Result))
+	fmt.Println("Sending multiple events...")
+
+	_, err = auditcli.LogBulkAsync(ctx, []any{event1, event2}, true)
+	_, ok := err.(*pangea.AcceptedError)
+	if ok {
+		fmt.Println("\tAcceptedError as expected")
+	} else {
+		fmt.Println("\tUnexpected error")
+		fmt.Println(err)
+	}
+
 }
