@@ -24,3 +24,11 @@ func New(cfg *pangea.Config) Client {
 	}
 	return cli
 }
+
+type Option func(*redact) error
+
+func WithConfigID(cid string) Option {
+	return func(a *redact) error {
+		return pangea.WithConfigID(cid)(&a.BaseService)
+	}
+}
