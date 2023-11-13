@@ -109,7 +109,6 @@ func (a *audit) getLogBulkRequest(events []any, verbose bool) (*LogBulkRequest, 
 
 	if a.verifyProofs {
 		input.Verbose = true
-		input.PrevRoot = a.lastUnpRootHash
 	}
 
 	return input, nil
@@ -387,9 +386,6 @@ type LogBulkRequest struct {
 	// If true, be verbose in the response; include root, membership and consistency proof, etc.
 	// default: false
 	Verbose bool `json:"verbose"`
-
-	// Previous unpublished root
-	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
 func (i *LogEvent) SignEvent(s signer.Signer, pki map[string]string) error {
