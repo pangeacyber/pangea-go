@@ -47,41 +47,6 @@ func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.Pange
 	return resp, nil
 }
 
-// @summary Log an entry
-//
-// @description Create a log entry in the Secure Audit Log.
-//
-// @operationId audit_post_v1_log
-//
-// @example
-//
-//	event := audit.Event{
-//		Message: "Integration test msg",
-//	 }
-//
-//	logResponse, err := auditcli.Log(ctx, event, true)
-func (a *audit) LogAsync(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
-	input, err := a.getLogRequest(event, verbose)
-	if err != nil {
-		return nil, err
-	}
-
-	// Disable QueueRetry and re-enable it after this function call
-	defer a.Client.DisableQueueRetry()()
-
-	resp, err := request.DoPost(ctx, a.Client, "v1/log_async", input, &LogResult{})
-	if err != nil {
-		return nil, err
-	}
-
-	err = a.processLogResult(ctx, resp.Result)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
 // TODO: Docs
 func (a *audit) LogBulk(ctx context.Context, events []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error) {
 	input, err := a.getLogBulkRequest(events, verbose)

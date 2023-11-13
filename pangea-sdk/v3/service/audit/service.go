@@ -11,7 +11,6 @@ import (
 type Client interface {
 	Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error)
 	LogBulk(ctx context.Context, event []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error)
-	LogAsync(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error)
 	LogBulkAsync(ctx context.Context, event []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error)
 	Search(ctx context.Context, req *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
 	SearchResults(ctx context.Context, req *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)

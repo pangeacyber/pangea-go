@@ -852,26 +852,6 @@ func Test_Integration_Log_Bulk(t *testing.T) {
 	}
 }
 
-func Test_Integration_Log_Async(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	cfg := auditIntegrationCfg(t)
-	client, _ := audit.New(cfg)
-
-	event := &audit.StandardEvent{
-		Message: MSG_NO_SIGNED,
-		Actor:   ACTOR,
-		Status:  MSG_NO_SIGNED,
-	}
-
-	out, err := client.LogAsync(ctx, event, true)
-	assert.Error(t, err)
-	assert.Nil(t, out)
-	_, ok := err.(*pangea.AcceptedError)
-	assert.True(t, ok)
-}
-
 func Test_Integration_Log_Bulk_Async(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
