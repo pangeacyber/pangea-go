@@ -74,10 +74,7 @@ func (a *audit) LogBulkAsync(ctx context.Context, events []any, verbose bool) (*
 		return nil, err
 	}
 
-	// Disable QueueRetry and re-enable it after this function call
-	defer a.Client.DisableQueueRetry()()
-
-	resp, err := request.DoPost(ctx, a.Client, "v2/log_async", input, &LogBulkResult{})
+	resp, err := request.DoPostNoQueue(ctx, a.Client, "v2/log_async", input, &LogBulkResult{})
 	if err != nil {
 		return nil, err
 	}

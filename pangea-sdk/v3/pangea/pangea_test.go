@@ -37,7 +37,7 @@ func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
 	client := testClient(t, url)
 
 	req, _ := client.NewRequest("GET", ".", nil)
-	_, err := client.Do(nil, req, nil)
+	_, err := client.Do(nil, req, nil, true)
 
 	assert.Error(t, err)
 	assert.Equal(t, "context must be non-nil", err.Error())
@@ -63,7 +63,7 @@ func TestDo_When_Server_Returns_400_It_Returns_Error(t *testing.T) {
 
 	url, _ = client.GetURL("/test")
 	req, _ := client.NewRequest("POST", url, make(map[string]any))
-	_, err := client.Do(context.Background(), req, nil)
+	_, err := client.Do(context.Background(), req, nil, true)
 
 	assert.Error(t, err)
 
@@ -95,7 +95,7 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 
 	url, _ = client.GetURL("/test")
 	req, _ := client.NewRequest("POST", url, nil)
-	_, err := client.Do(context.Background(), req, nil)
+	_, err := client.Do(context.Background(), req, nil, true)
 	assert.Error(t, err)
 	pangeaErr, ok := err.(*pangea.APIError)
 	assert.True(t, ok)
@@ -127,7 +127,7 @@ func TestDo_When_Server_Returns_200_It_UnMarshals_Result_Into_Struct(t *testing.
 	body := &struct {
 		Key *string `json:"key"`
 	}{}
-	resp, err := client.Do(context.Background(), req, body)
+	resp, err := client.Do(context.Background(), req, body, true)
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -174,7 +174,7 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 		}`)
 	})
 
-	resp, err := client.Do(context.Background(), req, nil)
+	resp, err := client.Do(context.Background(), req, nil, true)
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "Not initialized struct. Can't unmarshal result from response")
 	assert.Nil(t, resp)
@@ -203,7 +203,7 @@ func TestDo_When_Client_Can_Not_UnMarshall_Response_Result_Into_Body_It_Returns_
 	body := &struct {
 		Key *string `json:"key"`
 	}{}
-	_, err := client.Do(context.Background(), req, body)
+	_, err := client.Do(context.Background(), req, body, true)
 
 	var v *pangea.APIError
 	assert.ErrorAs(t, err, &v)
@@ -227,7 +227,7 @@ func TestDo_With_Retries_Error(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 	})
 
-	_, err := client.Do(context.Background(), req, nil)
+	_, err := client.Do(context.Background(), req, nil, true)
 
 	assert.Error(t, err)
 }
@@ -252,7 +252,7 @@ func TestDo_When_Server_Returns_202_It_Returns_AcceptedError(t *testing.T) {
 
 	url, _ = client.GetURL("/test")
 	req, _ := client.NewRequest("POST", url, nil)
-	_, err := client.Do(context.Background(), req, nil)
+	_, err := client.Do(context.Background(), req, nil, true)
 
 	if err == nil {
 		t.Fatal("Expected error")
