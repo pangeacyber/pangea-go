@@ -76,6 +76,15 @@ func (a *audit) LogBulkAsync(ctx context.Context, events []any, verbose bool) (*
 
 	resp, err := request.DoPostNoQueue(ctx, a.Client, "v2/log_async", input, &LogBulkResult{})
 	if err != nil {
+		ae, ok := err.(*pangea.AcceptedError)
+		if ok {
+			return &pangea.PangeaResponse[LogBulkResult]{
+				Response:       ae.Response,
+				AcceptedResult: &ae.AcceptedResult,
+				Result:         nil,
+			}, nil
+		}
+
 		return nil, err
 	}
 

@@ -736,7 +736,7 @@ func Test_Integration_Multi_Config_1_Log(t *testing.T) {
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
-		Status:  MSG_NO_SIGNED,
+		Status:  STATUS_NO_SIGNED,
 	}
 
 	out, err := client.Log(ctx, event, false)
@@ -789,7 +789,7 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
-		Status:  MSG_NO_SIGNED,
+		Status:  STATUS_NO_SIGNED,
 	}
 
 	out, err := client.Log(ctx, event, false)
@@ -832,7 +832,7 @@ func Test_Integration_Log_Bulk(t *testing.T) {
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
 		Actor:   ACTOR,
-		Status:  MSG_NO_SIGNED,
+		Status:  STATUS_NO_SIGNED,
 	}
 
 	out, err := client.LogBulk(ctx, []any{event, event}, true)
@@ -852,6 +852,39 @@ func Test_Integration_Log_Bulk(t *testing.T) {
 	}
 }
 
+func Test_Integration_Log_Bulk_And_Sign(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg,
+		audit.WithLogLocalSigning("./testdata/privkey"),
+		audit.WithLogProofVerificationEnabled(),
+	)
+
+	event := &audit.StandardEvent{
+		Message: MSG_SIGNED,
+		Actor:   ACTOR,
+		Status:  STATUS_SIGNED,
+	}
+
+	out, err := client.LogBulk(ctx, []any{event, event}, true)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	for _, r := range out.Result.Results {
+		assert.NotEmpty(t, r.Hash)
+		assert.NotNil(t, r.EventEnvelope)
+		assert.NotNil(t, r.EventEnvelope.Event)
+		e := (r.EventEnvelope.Event).(*audit.StandardEvent)
+		assert.NotNil(t, e.Message)
+		assert.Equal(t, e.Message, MSG_SIGNED)
+		assert.Nil(t, r.ConsistencyProof)
+		assert.Equal(t, r.ConcistencyVerification, audit.NotVerified)
+		assert.Equal(t, r.MembershipVerification, audit.NotVerified)
+		assert.Equal(t, r.SignatureVerification, audit.Success)
+	}
+}
+
 func Test_Integration_Log_Bulk_Async(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
@@ -866,8 +899,8 @@ func Test_Integration_Log_Bulk_Async(t *testing.T) {
 	}
 
 	out, err := client.LogBulkAsync(ctx, []any{event, event}, true)
-	assert.Error(t, err)
-	assert.Nil(t, out)
-	_, ok := err.(*pangea.AcceptedError)
-	assert.True(t, ok)
+	assert.NoError(t, err)
+	assert.NotNil(t, out)
+	assert.Nil(t, out.Result)
+	assert.NotNil(t, out.AcceptedResult)
 }
