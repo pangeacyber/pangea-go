@@ -37,13 +37,11 @@ func main() {
 
 	fmt.Println("Sending multiple events...")
 
-	_, err = auditcli.LogBulkAsync(ctx, []any{event1, event2}, true)
-	_, ok := err.(*pangea.AcceptedError)
-	if ok {
-		fmt.Println("\tAcceptedError as expected")
-	} else {
-		fmt.Println("\tUnexpected error")
-		fmt.Println(err)
+	resp, err := auditcli.LogBulkAsync(ctx, []any{event1, event2}, true)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	fmt.Printf("Success. Request_id: %s\n", *resp.RequestID)
 
 }
