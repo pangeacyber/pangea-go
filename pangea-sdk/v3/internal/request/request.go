@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
-func DoPost[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {
-	if input == nil || out == nil {
+func getPostRequest(c *pangea.Client, path string, input pangea.ConfigIDer) (*http.Request, error) {
+	if input == nil {
 		return nil, errors.New("nil pointer to struct")
 	}
 
@@ -30,7 +31,43 @@ func DoPost[T any](ctx context.Context, c *pangea.Client, path string, input pan
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.Do(ctx, req, out)
+
+	return req, nil
+}
+
+func DoPost[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {
+	if out == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := getPostRequest(c, path, input)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Do(ctx, req, out, true)
+	if err != nil {
+		return nil, err
+	}
+
+	panresp := pangea.PangeaResponse[T]{
+		Response: *resp,
+		Result:   out,
+	}
+	return &panresp, nil
+}
+
+func DoPostNoQueue[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {
+	if out == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := getPostRequest(c, path, input)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.Do(ctx, req, out, false)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +93,7 @@ func DoPostWithFile[T any](ctx context.Context, c *pangea.Client, path string, i
 	err = nil
 	v, ok := input.(pangea.TransferRequester)
 
-	if ok && v.GetTransferMethod() == pangea.TMdirect { // Check TrasnferMethod
+	if ok && v.GetTransferMethod() == pangea.TMdirect { // Check TransferMethod
 		resp, err = c.PostPresignedURL(ctx, url, input, out, file)
 	} else {
 		resp, err = c.PostMultipart(ctx, url, input, out, file)

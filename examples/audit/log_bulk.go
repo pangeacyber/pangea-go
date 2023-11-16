@@ -25,14 +25,27 @@ func main() {
 	}
 
 	ctx := context.Background()
-	input := &audit.RootInput{
-		TreeSize: 10,
+	event1 := &audit.StandardEvent{
+		Message: "Sign up",
+		Actor:   "go-sdk",
 	}
 
-	rootResponse, err := auditcli.Root(ctx, input)
+	event2 := &audit.StandardEvent{
+		Message: "Sign in",
+		Actor:   "go-sdk",
+	}
+
+	fmt.Println("Logging multiple events...")
+
+	lr, err := auditcli.LogBulk(ctx, []any{event1, event2}, true)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Result: ", pangea.Stringify(rootResponse.Result))
+	fmt.Println("Results:")
+	for _, r := range lr.Result.Results {
+		e := (r.EventEnvelope.Event).(*audit.StandardEvent)
+		fmt.Printf("\tLogged event: %s", pangea.Stringify(e))
+	}
+
 }

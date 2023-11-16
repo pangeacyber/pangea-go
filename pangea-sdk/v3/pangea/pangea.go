@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	version         = "3.1.0"
+	version         = "3.2.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
@@ -381,7 +381,7 @@ func (c *Client) PostMultipart(ctx context.Context, url string, input any, out a
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(ctx, req, out)
+	return c.Do(ctx, req, out, true)
 }
 
 func (c *Client) NewRequestMultipart(method, url string, body any, file io.Reader) (*http.Request, error) {
@@ -549,25 +549,27 @@ func (c *Client) simplePost(ctx context.Context, req *http.Request) (*Response, 
 
 // Do sends an API request and returns the API response. The API response is
 // JSON decoded and stored in the value pointed to by v, or returned as an
-// error if an API error has occurred. If v is nil, and no error hapens, the response is returned as is.
+// error if an API error has occurred. If v is nil, and no error happens, the response is returned as is.
 // The provided ctx must be non-nil, if it is nil an error is returned. If it
 // is canceled or times out, ctx.Err() will be returned.
 //
 // The provided ctx must be non-nil, if it is nil an error is returned. If it is
 // canceled or times out, ctx.Err() will be returned.
-func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, v any, handleQueue bool) (*Response, error) {
 	r, err := c.simplePost(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	r, err = c.handledQueued(ctx, r)
-	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "Do.handleQueued").
-			Err(err)
-		return nil, err
+	if handleQueue {
+		r, err = c.handledQueued(ctx, r)
+		if err != nil {
+			c.Logger.Error().
+				Str("service", c.serviceName).
+				Str("method", "Do.handleQueued").
+				Err(err)
+			return nil, err
+		}
 	}
 
 	u := ""
@@ -871,7 +873,7 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.Do(ctx, req, v)
+	resp, err := c.Do(ctx, req, v, true)
 	if err != nil {
 		return nil, err
 	}
