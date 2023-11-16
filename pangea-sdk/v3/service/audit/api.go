@@ -232,7 +232,19 @@ func (a *audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 	return resp, nil
 }
 
-// SearchResults is used to page through results from a previous search.
+// @summary Search results
+//
+// @description Page through results from a previous search.
+//
+// @operationId audit_post_v1_results
+//
+// @example
+//
+//	input := &audit.SearchResultsInput{
+//		ID: "pas_sqilrhruwu54uggihqj3aie24wrctakr",
+//	}
+//
+//	res, err := auditcli.SearchResults(ctx, input)
 func (a *audit) SearchResults(ctx context.Context, input *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error) {
 	resp, err := request.DoPost(ctx, a.Client, "v1/results", input, &SearchResultsOutput{})
 	if err != nil {
