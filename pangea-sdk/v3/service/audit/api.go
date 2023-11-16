@@ -24,7 +24,7 @@ import (
 // @example
 //
 //	event := audit.Event{
-//		Message: "Integration test msg",
+//		Message: "hello world",
 //	 }
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
@@ -47,7 +47,20 @@ func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.Pange
 	return resp, nil
 }
 
-// TODO: Docs
+// @summary Log multiple entries
+//
+// @description Create multiple log entries in the Secure Audit Log.
+//
+// @operationId audit_post_v2_log
+//
+// @example
+//
+//	event := audit.Event{
+//		Message: "hello world",
+//	 }
+//	events := []audit.Event{event}
+//
+//	logResponse, err := auditcli.LogBulk(ctx, events, true)
 func (a *audit) LogBulk(ctx context.Context, events []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error) {
 	input, err := a.getLogBulkRequest(events, verbose)
 	if err != nil {
@@ -67,7 +80,20 @@ func (a *audit) LogBulk(ctx context.Context, events []any, verbose bool) (*pange
 	return resp, nil
 }
 
-// TODO: Docs
+// @summary Log multiple entries asynchronously
+//
+// @description Asynchronously create multiple log entries in the Secure Audit Log.
+//
+// @operationId audit_post_v2_log_async
+//
+// @example
+//
+//	event := audit.Event{
+//		Message: "hello world",
+//	 }
+//	events := []audit.Event{event}
+//
+//	logResponse, err := auditcli.LogBulkAsync(ctx, events, true)
 func (a *audit) LogBulkAsync(ctx context.Context, events []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error) {
 	input, err := a.getLogBulkRequest(events, verbose)
 	if err != nil {
