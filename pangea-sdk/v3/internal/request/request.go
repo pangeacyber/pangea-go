@@ -3,7 +3,6 @@ package request
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
@@ -22,7 +21,7 @@ func getPostRequest(c *pangea.Client, path string, input pangea.ConfigIDer) (*ht
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.ServiceName()).
-			Str("method", "DoPost").
+			Str("method", "GetURL").
 			Err(err)
 		return nil, err
 	}
@@ -45,6 +44,7 @@ func DoPost[T any](ctx context.Context, c *pangea.Client, path string, input pan
 		return nil, err
 	}
 
+	// Pass true to HANDLE 202 in queue
 	resp, err := c.Do(ctx, req, out, true)
 	if err != nil {
 		return nil, err
@@ -67,6 +67,7 @@ func DoPostNoQueue[T any](ctx context.Context, c *pangea.Client, path string, in
 		return nil, err
 	}
 
+	// Pass false to NOT handle 202 in queue
 	resp, err := c.Do(ctx, req, out, false)
 	if err != nil {
 		return nil, err
@@ -79,7 +80,42 @@ func DoPostNoQueue[T any](ctx context.Context, c *pangea.Client, path string, in
 	return &panresp, nil
 }
 
-func DoPostWithFile[T any](ctx context.Context, c *pangea.Client, path string, input any, out *T, file io.Reader) (*pangea.PangeaResponse[T], error) {
+func GetUploadURL[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {
+	url, err := c.GetURL(path)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.ServiceName()).
+			Str("method", "DoPost").
+			Err(err)
+		return nil, err
+	}
+
+	pr, ar, err := c.GetPresignedURL(ctx, url, input)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.ServiceName()).
+			Str("method", "GetPresignedURL").
+			Err(err)
+		return nil, err
+	}
+
+	if pr == nil {
+		err = errors.New("GetPresignedURL return nil response pointer")
+		c.Logger.Error().
+			Str("service", c.ServiceName()).
+			Str("method", "GetPresignedURL").
+			Err(err)
+		return nil, err
+	}
+
+	return &pangea.PangeaResponse[T]{
+		Response:       *pr,
+		AcceptedResult: ar,
+		Result:         out,
+	}, nil
+}
+
+func DoPostWithFile[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T, fd pangea.FileData) (*pangea.PangeaResponse[T], error) {
 	url, err := c.GetURL(path)
 	if err != nil {
 		c.Logger.Error().
@@ -94,9 +130,9 @@ func DoPostWithFile[T any](ctx context.Context, c *pangea.Client, path string, i
 	v, ok := input.(pangea.TransferRequester)
 
 	if ok && v.GetTransferMethod() == pangea.TMdirect { // Check TransferMethod
-		resp, err = c.PostPresignedURL(ctx, url, input, out, file)
+		resp, err = c.FullPostPresignedURL(ctx, url, input, out, fd)
 	} else {
-		resp, err = c.PostMultipart(ctx, url, input, out, file)
+		resp, err = c.PostMultipart(ctx, url, input, out, fd)
 	}
 
 	if err != nil {

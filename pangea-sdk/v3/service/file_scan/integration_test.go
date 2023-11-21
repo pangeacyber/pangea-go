@@ -182,3 +182,162 @@ func Test_Integration_FileScan_NoRetry_reversinglabs(t *testing.T) {
 	r := (*pr.Result).(*file_scan.FileScanResult)
 	assert.Equal(t, r.Data.Verdict, "benign")
 }
+
+func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	client := file_scan.New(cfg)
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	params, err := file_scan.GetUploadFileParams(file)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	input := &file_scan.FileScanGetURLInput{
+		Raw:            true,
+		Verbose:        true,
+		Provider:       "reversinglabs",
+		TransferMethod: pangea.TMpostURL,
+		FileParams:     params,
+	}
+
+	resp, err := client.GetUploadURL(ctx, input, file)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err.Error())
+	}
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.AcceptedResult)
+	assert.NotEmpty(t, resp.AcceptedResult.AcceptedStatus.UploadURL)
+
+	url := resp.AcceptedResult.AcceptedStatus.UploadURL
+	ud := resp.AcceptedResult.AcceptedStatus.UploadDetails
+
+	fd := pangea.FileData{
+		File:    file,
+		Name:    "someName",
+		Details: ud,
+	}
+
+	uploader := file_scan.NewFileUploader()
+	err = uploader.UploadFile(ctx, url, pangea.TMpostURL, fd)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	pollResult := true
+	var pr *pangea.PangeaResponse[any]
+	i := 0
+
+	for pollResult && i < 24 {
+		// Wait until result should be ready
+		time.Sleep(time.Duration(10 * time.Second))
+
+		pr, err = client.PollResultByID(ctx, *resp.RequestID, &file_scan.FileScanResult{})
+		if err == nil {
+			pollResult = false
+		}
+		i++
+	}
+	assert.NoError(t, err)
+	assert.NotNil(t, pr)
+	assert.NotNil(t, pr.Result)
+
+	r := (*pr.Result).(*file_scan.FileScanResult)
+	assert.Equal(t, r.Data.Verdict, "benign")
+}
+
+func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	client := file_scan.New(cfg)
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	input := &file_scan.FileScanGetURLInput{
+		Raw:            true,
+		Verbose:        true,
+		Provider:       "reversinglabs",
+		TransferMethod: pangea.TMputURL,
+	}
+
+	resp, err := client.GetUploadURL(ctx, input, file)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err.Error())
+	}
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.AcceptedResult)
+	assert.NotEmpty(t, resp.AcceptedResult.AcceptedStatus.UploadURL)
+
+	url := resp.AcceptedResult.AcceptedStatus.UploadURL
+	ud := resp.AcceptedResult.AcceptedStatus.UploadDetails
+
+	fd := pangea.FileData{
+		File:    file,
+		Name:    "someName",
+		Details: ud,
+	}
+
+	uploader := file_scan.NewFileUploader()
+	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	pollResult := true
+	var pr *pangea.PangeaResponse[any]
+	i := 0
+
+	for pollResult && i < 24 {
+		// Wait until result should be ready
+		time.Sleep(time.Duration(10 * time.Second))
+
+		pr, err = client.PollResultByID(ctx, *resp.RequestID, &file_scan.FileScanResult{})
+		if err == nil {
+			pollResult = false
+		}
+		i++
+	}
+	assert.NoError(t, err)
+	assert.NotNil(t, pr)
+	assert.NotNil(t, pr.Result)
+
+	r := (*pr.Result).(*file_scan.FileScanResult)
+	assert.Equal(t, r.Data.Verdict, "benign")
+
+}
+
+func Test_Integration_FileScan_SplitUpload_Post_ErrorNoParams(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	client := file_scan.New(cfg)
+
+	file, err := os.Open(TESTFILE_PATH)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	input := &file_scan.FileScanGetURLInput{
+		Raw:            true,
+		Verbose:        true,
+		Provider:       "reversinglabs",
+		TransferMethod: pangea.TMpostURL,
+	}
+
+	resp, err := client.GetUploadURL(ctx, input, file)
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+}
