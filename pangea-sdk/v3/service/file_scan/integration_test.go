@@ -208,7 +208,7 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 		FileParams:     params,
 	}
 
-	resp, err := client.GetUploadURL(ctx, input, file)
+	resp, err := client.RequestUploadURL(ctx, input, file)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err.Error())
 	}
@@ -231,17 +231,16 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	pollResult := true
 	var pr *pangea.PangeaResponse[any]
 	i := 0
 
-	for pollResult && i < 24 {
+	for i < 24 {
 		// Wait until result should be ready
 		time.Sleep(time.Duration(10 * time.Second))
 
 		pr, err = client.PollResultByID(ctx, *resp.RequestID, &file_scan.FileScanResult{})
 		if err == nil {
-			pollResult = false
+			break
 		}
 		i++
 	}
@@ -272,7 +271,7 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 		TransferMethod: pangea.TMputURL,
 	}
 
-	resp, err := client.GetUploadURL(ctx, input, file)
+	resp, err := client.RequestUploadURL(ctx, input, file)
 	if err != nil {
 		t.Fatalf("expected no error got: %v", err.Error())
 	}
@@ -295,17 +294,16 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	pollResult := true
 	var pr *pangea.PangeaResponse[any]
 	i := 0
 
-	for pollResult && i < 24 {
+	for i < 24 {
 		// Wait until result should be ready
 		time.Sleep(time.Duration(10 * time.Second))
 
 		pr, err = client.PollResultByID(ctx, *resp.RequestID, &file_scan.FileScanResult{})
 		if err == nil {
-			pollResult = false
+			break
 		}
 		i++
 	}
@@ -337,7 +335,7 @@ func Test_Integration_FileScan_SplitUpload_Post_ErrorNoParams(t *testing.T) {
 		TransferMethod: pangea.TMpostURL,
 	}
 
-	resp, err := client.GetUploadURL(ctx, input, file)
+	resp, err := client.RequestUploadURL(ctx, input, file)
 	assert.Error(t, err)
 	assert.Nil(t, resp)
 }

@@ -916,7 +916,7 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.Do(ctx, req, v, true)
+	resp, err := c.Do(ctx, req, v, false)
 	if err != nil {
 		return nil, err
 	}
