@@ -73,7 +73,7 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 	return request.DoPostWithFile(ctx, e.Client, "v1/scan", &req, &FileScanResult{}, fd)
 }
 
-func (e *FileScan) GetUploadURL(ctx context.Context, input *FileScanGetURLInput, file *os.File) (*pangea.PangeaResponse[FileScanResult], error) {
+func (e *FileScan) GetUploadURL(ctx context.Context, input *FileScanGetURLRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error) {
 	if (input.TransferMethod == pangea.TMdirect || input.TransferMethod == pangea.TMpostURL) && input.FileParams == nil {
 		return nil, errors.New("Need to set FileParams in order to use TMpostURL or TMdirect")
 	}
@@ -108,7 +108,7 @@ type FileScanFileParams struct {
 	SHA256 string `json:"transfer_sha256,omitempty"`
 }
 
-type FileScanGetURLInput struct {
+type FileScanGetURLRequest struct {
 	TransferMethod pangea.TransferMethod
 	Verbose        bool
 	Raw            bool

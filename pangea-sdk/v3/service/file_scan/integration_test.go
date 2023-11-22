@@ -200,7 +200,7 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	input := &file_scan.FileScanGetURLInput{
+	input := &file_scan.FileScanGetURLRequest{
 		Raw:            true,
 		Verbose:        true,
 		Provider:       "reversinglabs",
@@ -265,7 +265,7 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	input := &file_scan.FileScanGetURLInput{
+	input := &file_scan.FileScanGetURLRequest{
 		Raw:            true,
 		Verbose:        true,
 		Provider:       "reversinglabs",
@@ -330,7 +330,7 @@ func Test_Integration_FileScan_SplitUpload_Post_ErrorNoParams(t *testing.T) {
 		t.Fatalf("expected no error got: %v", err)
 	}
 
-	input := &file_scan.FileScanGetURLInput{
+	input := &file_scan.FileScanGetURLRequest{
 		Raw:            true,
 		Verbose:        true,
 		Provider:       "reversinglabs",
