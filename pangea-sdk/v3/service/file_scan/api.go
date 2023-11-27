@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"hash/crc32"
 	"io"
 	"os"
@@ -46,9 +47,9 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 	var req FileScanFullRequest
 	params := &FileScanFileParams{}
 
-	if input.TransferMethod == pangea.TMdirect {
+	if input.TransferMethod == pangea.TMdirect || input.TransferMethod == pangea.TMpostURL {
 		var err error
-		params, err = GetFSParams(file)
+		params, err = GetUploadFileParams(file)
 		if err != nil {
 			return nil, err
 		}
@@ -59,7 +60,36 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 		FileScanFileParams: *params,
 	}
 
-	return request.DoPostWithFile(ctx, e.Client, "v1/scan", req, &FileScanResult{}, file)
+	name := "file"
+	if input.TransferMethod == pangea.TMmultipart {
+		name = "upload"
+	}
+
+	fd := pangea.FileData{
+		File: file,
+		Name: name,
+	}
+
+	return request.DoPostWithFile(ctx, e.Client, "v1/scan", &req, &FileScanResult{}, fd)
+}
+
+func (e *FileScan) RequestUploadURL(ctx context.Context, input *FileScanGetURLRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error) {
+	if (input.TransferMethod == pangea.TMdirect || input.TransferMethod == pangea.TMpostURL) && input.FileParams == nil {
+		return nil, errors.New("Need to set FileParams in order to use TMpostURL or TMdirect")
+	}
+
+	req := &FileScanFullRequest{
+		FileScanRequest: FileScanRequest{
+			TransferRequest: pangea.TransferRequest{
+				TransferMethod: input.TransferMethod,
+			},
+		},
+	}
+	if input.FileParams != nil {
+		req.FileScanFileParams = *input.FileParams
+	}
+
+	return request.GetUploadURL(ctx, e.Client, "v1/scan", req, &FileScanResult{})
 }
 
 type FileScanRequest struct {
@@ -76,6 +106,14 @@ type FileScanFileParams struct {
 	Size   int    `json:"transfer_size,omitempty"`
 	CRC    string `json:"transfer_crc32c,omitempty"`
 	SHA256 string `json:"transfer_sha256,omitempty"`
+}
+
+type FileScanGetURLRequest struct {
+	TransferMethod pangea.TransferMethod
+	Verbose        bool
+	Raw            bool
+	Provider       string
+	FileParams     *FileScanFileParams
 }
 
 type FileScanFullRequest struct {
@@ -95,7 +133,7 @@ type FileScanResult struct {
 	RawData    interface{}  `json:"raw_data,omitempty"`
 }
 
-func GetFSParams(file *os.File) (*FileScanFileParams, error) {
+func GetUploadFileParams(file *os.File) (*FileScanFileParams, error) {
 	// Create a new CRC32C hash
 	crcHash := crc32.New(crc32.MakeTable(crc32.Castagnoli))
 	// Create a new SHA256 hash
@@ -137,4 +175,17 @@ func GetFSParams(file *os.File) (*FileScanFileParams, error) {
 		Size:   int(size),
 	}, nil
 
+}
+
+func (fu *FileUploader) UploadFile(ctx context.Context, url string, tm pangea.TransferMethod, fd pangea.FileData) error {
+	if tm == pangea.TMmultipart {
+		return errors.New(fmt.Sprintf("%s is not supported in UploadFile. Use Scan() instead", tm))
+	}
+
+	fds := pangea.FileData{
+		File:    fd.File,
+		Name:    "file",
+		Details: fd.Details,
+	}
+	return fu.client.UploadFile(ctx, url, tm, fds)
 }

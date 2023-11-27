@@ -9,6 +9,7 @@ import (
 
 type Client interface {
 	Scan(ctx context.Context, input *FileScanRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error)
+	RequestUploadURL(ctx context.Context, input *FileScanGetURLRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error)
 
 	// Base service methods
 	pangea.BaseServicer
@@ -23,4 +24,18 @@ func New(cfg *pangea.Config) Client {
 		BaseService: pangea.NewBaseService("file-scan", cfg),
 	}
 	return cli
+}
+
+type FileUploader struct {
+	client *pangea.Client
+}
+
+func NewFileUploader() FileUploader {
+	cfg := &pangea.Config{
+		QueuedRetryEnabled: false,
+	}
+
+	return FileUploader{
+		client: pangea.NewClient("FileScanUploader", cfg),
+	}
 }
