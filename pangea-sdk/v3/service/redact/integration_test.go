@@ -193,3 +193,66 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	apiErr := err.(*pangea.APIError)
 	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
 }
+
+func Test_Integration_Multi_Config_1_Redact(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	ConfigID := pangeatesting.GetConfigID(t, testingEnvironment, "redact", 1)
+	client := redact.New(cfg, redact.WithConfigID(ConfigID))
+
+	redacted := "My Phone number is <PHONE_NUMBER>"
+
+	input := &redact.TextRequest{
+		Text: pangea.String("My Phone number is 415-867-5309"),
+	}
+	out, err := client.Redact(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.Equal(t, redacted, *out.Result.RedactedText)
+	assert.Equal(t, 1, out.Result.Count)
+}
+
+func Test_Integration_Multi_Config_2_Log(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	ConfigID := pangeatesting.GetConfigID(t, testingEnvironment, "redact", 2)
+	client := redact.New(cfg, redact.WithConfigID(ConfigID))
+
+	redacted := "My Phone number is <PHONE_NUMBER>"
+
+	input := &redact.TextRequest{
+		Text: pangea.String("My Phone number is 415-867-5309"),
+	}
+	out, err := client.Redact(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.Equal(t, redacted, *out.Result.RedactedText)
+	assert.Equal(t, 1, out.Result.Count)
+}
+
+func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	client := redact.New(cfg)
+
+	input := &redact.TextRequest{
+		Text: pangea.String("My Phone number is 415-867-5309"),
+	}
+	out, err := client.Redact(ctx, input)
+	assert.Error(t, err)
+	assert.Nil(t, out)
+}
