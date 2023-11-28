@@ -258,7 +258,7 @@ func (v *vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateR
 //
 // @description Generate a symmetric key.
 //
-// @operationId vault_post_v1_key_generate 1
+// @operationId vault_post_v1_key_generate 2
 //
 // @example
 //
@@ -296,7 +296,7 @@ func (v *vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateR
 //
 // @description Generate an asymmetric key.
 //
-// @operationId vault_post_v1_key_generate 2
+// @operationId vault_post_v1_key_generate 1
 //
 // @example
 //
