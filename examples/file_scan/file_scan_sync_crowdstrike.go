@@ -23,8 +23,7 @@ func main() {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	// To work in sync it's need to set up QueuedRetryEnabled to true and set up a proper timeout
-	// If timeout is so little service won't end up and will return an AcceptedError anyway
+	// To enable sync mode, set QueuedRetryEnabled to true and set a timeout
 	client := file_scan.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
@@ -41,7 +40,7 @@ func main() {
 	// This should be your own file to scan
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		log.Fatal("expected no error got: %v", err)
+		log.Fatalf("unexpected error: %v", err)
 	}
 
 	fmt.Println("File Scan request...")

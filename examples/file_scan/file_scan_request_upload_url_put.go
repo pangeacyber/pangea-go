@@ -23,8 +23,7 @@ func main() {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	// To work in sync it's need to set up QueuedRetryEnabled to true and set up a proper timeout
-	// If timeout is so little service won't end up and will return an AcceptedError anyway
+	// To enable sync mode, set QueuedRetryEnabled to true and set a timeout
 	client := file_scan.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
@@ -34,10 +33,10 @@ func main() {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		log.Fatalf("expected no error got: %v", err)
+		log.Fatalf("unexpected error: %v", err)
 	}
 
-	// If use TransferMethod TMputURL it's not needed file params
+	// Only the TransferMethod is needed when using TMputURL, in addition to the standard parameters
 	input := &file_scan.FileScanGetURLRequest{
 		Raw:            true,
 		Verbose:        true,
@@ -48,11 +47,11 @@ func main() {
 	// request an upload url
 	resp, err := client.RequestUploadURL(ctx, input, file)
 	if err != nil {
-		log.Fatalf("expected no error got: %v", err.Error())
+		log.Fatalf("unexpected error: %v", err)
 	}
 
-	// extract upload url and upload details that should be posted with the file
-	// If use TransferMethod TMputURL it's not needed FileDetails
+	// Extract the upload url
+	// File details is not needed when using TransferMethod TMputURL
 	url := resp.AcceptedResult.AcceptedStatus.UploadURL
 	fmt.Printf("Got upload url: %s\n", url)
 
@@ -65,7 +64,7 @@ func main() {
 	uploader := file_scan.NewFileUploader()
 	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
 	if err != nil {
-		log.Fatalf("expected no error got: %v", err)
+		log.Fatalf("unexpected error: %v", err.Error())
 	}
 	fmt.Println("Upload file success")
 
@@ -75,7 +74,7 @@ func main() {
 
 	fmt.Println("Let's try to poll result...")
 	for i < maxRetry {
-		// Wait until result should be ready
+		// Wait for result
 		time.Sleep(time.Duration(10 * time.Second))
 
 		pr, err = client.PollResultByID(ctx, *resp.RequestID, &file_scan.FileScanResult{})

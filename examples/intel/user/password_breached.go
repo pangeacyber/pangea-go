@@ -1,4 +1,4 @@
-// intel domain lookup is an example of how to use the lookup method
+// Example of how to check if a password has been exposed/breached
 package main
 
 import (
@@ -23,15 +23,16 @@ func main() {
 	})
 
 	// Set the password you would like to check
+	// Observe proper safety with passwords, do not check them into source control etc.
 	password := "mypassword"
-	// Calculate its hash, it could be sha256 or sha1
+	// Calculate its hash, it could be sha256, sha512 or sha1
 	hash := pangea.HashSHA256(password)
-	// get the hash prefix, right know it should be just 5 characters
+	// get the hash prefix, just the first 5 characters
 	hashPrefix := pangea.GetHashPrefix(hash, 5)
 
 	ctx := context.Background()
 	input := &user_intel.UserPasswordBreachedRequest{
-		// should setup right hash_type here, sha256 or sha1
+		// set the right hash_type here, sha256, sha512 or sha1
 		HashType:   user_intel.HTsha265,
 		HashPrefix: hashPrefix,
 		Raw:        pangea.Bool(true),
@@ -44,7 +45,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// This auxiliary function analyze service provider raw data to search for full hash in their registers
+	// IsPasswordBreached is a helper function that can simplify searching the response's raw data for the full hash
 	s, err := user_intel.IsPasswordBreached(r, hash)
 	if err != nil {
 		log.Fatal(err)
