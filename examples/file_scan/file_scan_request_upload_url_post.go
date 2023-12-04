@@ -57,8 +57,8 @@ func main() {
 	}
 
 	// extract upload url and upload details that should be posted with the file
-	url := resp.AcceptedResult.AcceptedStatus.UploadURL
-	ud := resp.AcceptedResult.AcceptedStatus.UploadDetails
+	url := resp.AcceptedResult.PostURL
+	ud := resp.AcceptedResult.PostFormData
 	fmt.Printf("Got upload url: %s\n", url)
 
 	fd := pangea.FileData{

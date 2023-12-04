@@ -47,7 +47,7 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 	var req FileScanFullRequest
 	params := &FileScanFileParams{}
 
-	if input.TransferMethod == pangea.TMdirect || input.TransferMethod == pangea.TMpostURL {
+	if input.TransferMethod == pangea.TMpostURL {
 		var err error
 		params, err = GetUploadFileParams(file)
 		if err != nil {
@@ -74,7 +74,7 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 }
 
 func (e *FileScan) RequestUploadURL(ctx context.Context, input *FileScanGetURLRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error) {
-	if (input.TransferMethod == pangea.TMdirect || input.TransferMethod == pangea.TMpostURL) && input.FileParams == nil {
+	if input.TransferMethod == pangea.TMpostURL && input.FileParams == nil {
 		return nil, errors.New("Need to set FileParams in order to use TMpostURL or TMdirect")
 	}
 
@@ -97,15 +97,16 @@ type FileScanRequest struct {
 	pangea.BaseRequest
 	pangea.TransferRequest
 
-	Verbose  bool   `json:"verbose,omitempty"`
-	Raw      bool   `json:"raw,omitempty"`
-	Provider string `json:"provider,omitempty"`
+	Verbose   bool   `json:"verbose,omitempty"`
+	Raw       bool   `json:"raw,omitempty"`
+	Provider  string `json:"provider,omitempty"`
+	SourceURL string `json:"source_url,omitempty"`
 }
 
 type FileScanFileParams struct {
-	Size   int    `json:"transfer_size,omitempty"`
-	CRC    string `json:"transfer_crc32c,omitempty"`
-	SHA256 string `json:"transfer_sha256,omitempty"`
+	Size   int    `json:"size,omitempty"`
+	CRC    string `json:"crc32c,omitempty"`
+	SHA256 string `json:"sha256,omitempty"`
 }
 
 type FileScanGetURLRequest struct {
