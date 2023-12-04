@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	version         = "3.0.0"
+	version         = "3.3.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
@@ -39,6 +39,8 @@ type TransferMethod string
 const (
 	TMdirect    TransferMethod = "direct"
 	TMmultipart                = "multipart"
+	TMpostURL                  = "post-url"
+	TMputURL                   = "put-url"
 )
 
 type ConfigIDer interface {
@@ -143,6 +145,12 @@ type Client struct {
 
 	// config ID on request
 	configID string
+}
+
+type FileData struct {
+	File    io.Reader
+	Name    string
+	Details map[string]string
 }
 
 func (c *Client) ServiceName() string {
@@ -293,18 +301,18 @@ func (c *Client) NewRequest(method, url string, body any) (*http.Request, error)
 	return req, nil
 }
 
-func (c *Client) PostPresignedURL(ctx context.Context, url string, input any, out any, file io.Reader) (*Response, error) {
+func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*Response, *AcceptedResult, error) {
 	req, err := c.NewRequest("POST", url, input)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	pr, err := c.simplePost(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	err = c.CheckResponse(pr, out)
+	err = c.CheckResponse(pr, &AcceptedResult{})
 	var ae *AcceptedError
 	var ok bool
 	if err != nil {
@@ -313,39 +321,79 @@ func (c *Client) PostPresignedURL(ctx context.Context, url string, input any, ou
 		if !ok {
 			c.Logger.Error().
 				Str("service", c.serviceName).
-				Str("method", "Do.CheckResponse").
+				Str("method", "GetPresignedURL").
 				Str("url", url).
 				Err(err)
 			// Return APIError
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	ar, err := c.pollPresignedURL(ctx, ae)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	req, err = c.NewRequestForm("POST", ar.AcceptedStatus.UploadURL, ae.AcceptedResult.AcceptedStatus.UploadDetails, file, false)
+	return pr, ar, nil
+}
+
+func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, fd FileData) error {
+	if tm == TMputURL && fd.Details != nil {
+		return errors.New(fmt.Sprintf("Data param should be nil in order to use TransferMethod %s\n", TMputURL))
+	}
+
+	method := "POST"
+	if tm == TMputURL {
+		method = "PUT"
+	}
+
+	req, err := c.NewRequestForm(method, url, fd, false)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	psURLr, err := c.BareDo(ctx, req)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
-			Str("method", "simplePost.BareDo").
+			Str("method", "UploadFile.BareDo").
 			Err(err)
-		return nil, err
+		return err
 	}
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if psURLr.StatusCode < 200 || psURLr.StatusCode >= 300 {
 		defer psURLr.Body.Close()
-		return nil, errors.New("Presigned post failure")
+		return errors.New("Presigned url upload failure")
+	}
+	return nil
+}
+
+func (c *Client) FullPostPresignedURL(ctx context.Context, url string, input ConfigIDer, out any, fd FileData) (*Response, error) {
+	pr, ar, err := c.GetPresignedURL(ctx, url, input)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "PostPresignedURL.GetPresignedURL").
+			Err(err)
+		return nil, err
+	}
+
+	fds := FileData{
+		File:    fd.File,
+		Name:    fd.Name,
+		Details: ar.AcceptedStatus.UploadDetails,
+	}
+
+	err = c.UploadFile(ctx, ar.AcceptedStatus.UploadURL, TMpostURL, fds)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "PostPresignedURL.PostPresignedURL").
+			Err(err)
+		return nil, err
 	}
 
 	pr, err = c.handledQueued(ctx, pr)
@@ -357,17 +405,12 @@ func (c *Client) PostPresignedURL(ctx context.Context, url string, input any, ou
 		return nil, err
 	}
 
-	u := ""
-	if pr != nil && pr.HTTPResponse != nil && pr.HTTPResponse.Request != nil && pr.HTTPResponse.Request.URL != nil {
-		u = pr.HTTPResponse.Request.URL.String()
-	}
-
 	err = c.CheckResponse(pr, out)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
 			Str("method", "PostPresignedURL.CheckResponse").
-			Str("url", u).
+			Str("url", url).
 			Err(err)
 		// Return APIError
 		return nil, err
@@ -376,15 +419,15 @@ func (c *Client) PostPresignedURL(ctx context.Context, url string, input any, ou
 	return pr, nil
 }
 
-func (c *Client) PostMultipart(ctx context.Context, url string, input any, out any, file io.Reader) (*Response, error) {
-	req, err := c.NewRequestMultipart("POST", url, input, file)
+func (c *Client) PostMultipart(ctx context.Context, url string, input any, out any, fd FileData) (*Response, error) {
+	req, err := c.NewRequestMultipart("POST", url, input, fd)
 	if err != nil {
 		return nil, err
 	}
-	return c.Do(ctx, req, out)
+	return c.Do(ctx, req, out, true)
 }
 
-func (c *Client) NewRequestMultipart(method, url string, body any, file io.Reader) (*http.Request, error) {
+func (c *Client) NewRequestMultipart(method, url string, body any, fd FileData) (*http.Request, error) {
 	if c.configID != "" {
 		v, ok := body.(ConfigIDer)
 		if ok && v.GetConfigID() == "" {
@@ -428,10 +471,10 @@ func (c *Client) NewRequestMultipart(method, url string, body any, file io.Reade
 	}
 
 	// Write file
-	if fw, err = w.CreateFormFile("upload", "filename.exe"); err != nil {
+	if fw, err = w.CreateFormFile(fd.Name, "filename.exe"); err != nil {
 		return nil, err
 	}
-	if _, err = io.Copy(fw, file); err != nil {
+	if _, err = io.Copy(fw, fd.File); err != nil {
 		return nil, err
 	}
 
@@ -448,13 +491,13 @@ func (c *Client) NewRequestMultipart(method, url string, body any, file io.Reade
 	return req, nil
 }
 
-func (c *Client) NewRequestForm(method, url string, body map[string]string, file io.Reader, setHeaders bool) (*http.Request, error) {
+func (c *Client) NewRequestForm(method, url string, fd FileData, setHeaders bool) (*http.Request, error) {
 	c.Logger.Debug().
 		Str("service", c.serviceName).
 		Str("method", "NewRequestForm").
 		Str("action", method).
 		Str("url", url).
-		Interface("data", body).
+		Interface("data", fd.Details).
 		Send()
 
 	// Prepare multi part form
@@ -462,8 +505,8 @@ func (c *Client) NewRequestForm(method, url string, body map[string]string, file
 	w := multipart.NewWriter(&b)
 
 	// Write request body fields
-	if body != nil {
-		for key, value := range body {
+	if fd.Details != nil {
+		for key, value := range fd.Details {
 			if err := w.WriteField(key, value); err != nil {
 				return nil, err
 			}
@@ -472,11 +515,11 @@ func (c *Client) NewRequestForm(method, url string, body map[string]string, file
 
 	// Write file
 	var err error
-	part, err := w.CreateFormFile("file", "filename.exe")
+	part, err := w.CreateFormFile(fd.Name, "filename.exe")
 	if err != nil {
 		return nil, err
 	}
-	_, err = io.Copy(part, file)
+	_, err = io.Copy(part, fd.File)
 	if err != nil {
 		return nil, err
 	}
@@ -549,25 +592,27 @@ func (c *Client) simplePost(ctx context.Context, req *http.Request) (*Response, 
 
 // Do sends an API request and returns the API response. The API response is
 // JSON decoded and stored in the value pointed to by v, or returned as an
-// error if an API error has occurred. If v is nil, and no error hapens, the response is returned as is.
+// error if an API error has occurred. If v is nil, and no error happens, the response is returned as is.
 // The provided ctx must be non-nil, if it is nil an error is returned. If it
 // is canceled or times out, ctx.Err() will be returned.
 //
 // The provided ctx must be non-nil, if it is nil an error is returned. If it is
 // canceled or times out, ctx.Err() will be returned.
-func (c *Client) Do(ctx context.Context, req *http.Request, v any) (*Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, v any, handleQueue bool) (*Response, error) {
 	r, err := c.simplePost(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	r, err = c.handledQueued(ctx, r)
-	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "Do.handleQueued").
-			Err(err)
-		return nil, err
+	if handleQueue {
+		r, err = c.handledQueued(ctx, r)
+		if err != nil {
+			c.Logger.Error().
+				Str("service", c.serviceName).
+				Str("method", "Do.handleQueued").
+				Err(err)
+			return nil, err
+		}
 	}
 
 	u := ""
@@ -612,7 +657,7 @@ func (c *Client) pollPresignedURL(ctx context.Context, ae *AcceptedError) (*Acce
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.ServiceName()).
-			Str("method", "pollPresignedURL").
+			Str("method", "PollPresignedURL").
 			Err(err)
 		return nil, err
 	}
@@ -871,7 +916,7 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.Do(ctx, req, v)
+	resp, err := c.Do(ctx, req, v, false)
 	if err != nil {
 		return nil, err
 	}

@@ -42,7 +42,8 @@ func (r *ResponseHeader) String() string {
 
 type PangeaResponse[T any] struct {
 	Response
-	Result *T
+	Result         *T
+	AcceptedResult *AcceptedResult
 }
 
 func (r *Response) UnmarshalResult(target interface{}) error {

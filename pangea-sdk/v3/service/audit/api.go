@@ -24,33 +24,14 @@ import (
 // @example
 //
 //	event := audit.Event{
-//		Message: "Integration test msg",
+//		Message: "hello world",
 //	 }
 //
 //	logResponse, err := auditcli.Log(ctx, event, true)
 func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.PangeaResponse[LogResult], error) {
-	// Overwrite tenant id if user set it on event
-	if st, ok := event.(Tenanter); ok {
-		if st.Tenant() == "" && a.tenantID != "" {
-			st.SetTenant(a.tenantID)
-		}
-	}
-
-	input := &LogRequest{
-		Event:   event,
-		Verbose: verbose,
-	}
-
-	if a.verifyProofs {
-		input.Verbose = true
-		input.PrevRoot = a.lastUnpRootHash
-	}
-
-	if a.signer != nil {
-		err := input.SignEvent(*a.signer, a.publicKeyInfo)
-		if err != nil {
-			return nil, err
-		}
+	input, err := a.getLogRequest(event, verbose)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := request.DoPost(ctx, a.Client, "v1/log", input, &LogResult{})
@@ -58,17 +39,160 @@ func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.Pange
 		return nil, err
 	}
 
-	resp.Result.EventEnvelope, err = a.newEventEnvelopeFromMap(resp.Result.RawEnvelope)
-	if err != nil {
-		return nil, err
-	}
-
-	err = a.processLogResponse(ctx, resp.Result)
+	err = a.processLogResult(ctx, resp.Result)
 	if err != nil {
 		return nil, err
 	}
 
 	return resp, nil
+}
+
+// @summary Log multiple entries
+//
+// @description Create multiple log entries in the Secure Audit Log.
+//
+// @operationId audit_post_v2_log
+//
+// @example
+//
+//	event := audit.Event{
+//		Message: "hello world",
+//	 }
+//	events := []audit.Event{event}
+//
+//	logResponse, err := auditcli.LogBulk(ctx, events, true)
+func (a *audit) LogBulk(ctx context.Context, events []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error) {
+	input, err := a.getLogBulkRequest(events, verbose)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := request.DoPost(ctx, a.Client, "v2/log", input, &LogBulkResult{})
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.processLogBulkResult(ctx, resp.Result)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// @summary Log multiple entries asynchronously
+//
+// @description Asynchronously create multiple log entries in the Secure Audit Log.
+//
+// @operationId audit_post_v2_log_async
+//
+// @example
+//
+//	event := audit.Event{
+//		Message: "hello world",
+//	 }
+//	events := []audit.Event{event}
+//
+//	logResponse, err := auditcli.LogBulkAsync(ctx, events, true)
+func (a *audit) LogBulkAsync(ctx context.Context, events []any, verbose bool) (*pangea.PangeaResponse[LogBulkResult], error) {
+	input, err := a.getLogBulkRequest(events, verbose)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := request.DoPostNoQueue(ctx, a.Client, "v2/log_async", input, &LogBulkResult{})
+	if err != nil {
+		ae, ok := err.(*pangea.AcceptedError)
+		if ok {
+			return &pangea.PangeaResponse[LogBulkResult]{
+				Response:       ae.Response,
+				AcceptedResult: &ae.AcceptedResult,
+				Result:         nil,
+			}, nil
+		}
+
+		return nil, err
+	}
+
+	err = a.processLogBulkResult(ctx, resp.Result)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (a *audit) getLogBulkRequest(events []any, verbose bool) (*LogBulkRequest, error) {
+	var logEvents []*LogEvent
+
+	for i := range events {
+		logEvent, err := a.getLogEvent(events[i])
+		if err != nil {
+			return nil, err
+		}
+		logEvents = append(logEvents, logEvent)
+	}
+
+	input := &LogBulkRequest{
+		Events: logEvents,
+	}
+
+	input.Verbose = verbose
+
+	if a.verifyProofs {
+		input.Verbose = true
+	}
+
+	return input, nil
+}
+
+func (a *audit) getLogRequest(event any, verbose bool) (*LogRequest, error) {
+	// Overwrite tenant id if user set it on event
+	if st, ok := event.(Tenanter); ok {
+		if st.Tenant() == "" && a.tenantID != "" {
+			st.SetTenant(a.tenantID)
+		}
+	}
+
+	logEvent, err := a.getLogEvent(event)
+	if err != nil {
+		return nil, err
+	}
+
+	input := &LogRequest{
+		LogEvent: *logEvent,
+	}
+
+	input.Verbose = verbose
+
+	if a.verifyProofs {
+		input.Verbose = true
+		input.PrevRoot = a.lastUnpRootHash
+	}
+
+	return input, nil
+}
+
+func (a *audit) getLogEvent(event any) (*LogEvent, error) {
+	// Overwrite tenant id if user set it on event
+	if st, ok := event.(Tenanter); ok {
+		if st.Tenant() == "" && a.tenantID != "" {
+			st.SetTenant(a.tenantID)
+		}
+	}
+
+	le := &LogEvent{
+		Event: event,
+	}
+
+	if a.signer != nil {
+		err := le.SignEvent(*a.signer, a.publicKeyInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return le, nil
 }
 
 // @summary Search for events
@@ -108,7 +232,19 @@ func (a *audit) Search(ctx context.Context, input *SearchInput) (*pangea.PangeaR
 	return resp, nil
 }
 
-// SearchResults is used to page through results from a previous search.
+// @summary Search results
+//
+// @description Page through results from a previous search.
+//
+// @operationId audit_post_v1_results
+//
+// @example
+//
+//	input := &audit.SearchResultsInput{
+//		ID: "pas_sqilrhruwu54uggihqj3aie24wrctakr",
+//	}
+//
+//	res, err := auditcli.SearchResults(ctx, input)
 func (a *audit) SearchResults(ctx context.Context, input *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error) {
 	resp, err := request.DoPost(ctx, a.Client, "v1/results", input, &SearchResultsOutput{})
 	if err != nil {
@@ -164,10 +300,28 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 	return resp.Result.Root, events, nil
 }
 
-func (a *audit) processLogResponse(ctx context.Context, log *LogResult) error {
+func (a *audit) processLogBulkResult(ctx context.Context, br *LogBulkResult) error {
+	for i, _ := range br.Results {
+		err := a.processLogResult(ctx, &br.Results[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *audit) processLogResult(ctx context.Context, log *LogResult) error {
 	if log == nil {
 		return nil
 	}
+
+	ee, err := a.newEventEnvelopeFromMap(log.RawEnvelope)
+	if err != nil {
+		return err
+	}
+
+	log.EventEnvelope = ee
 
 	if !a.skipEventVerification {
 		if VerifyHash(log.RawEnvelope, log.Hash) == Failed {
@@ -241,16 +395,9 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 	return nil
 }
 
-type LogRequest struct {
-	// Base request has ConfigID for multi-config projects
-	pangea.BaseRequest
-
+type LogEvent struct {
 	// A structured event describing an auditable activity.
 	Event any `json:"event"`
-
-	// If true, be verbose in the response; include root, membership and consistency proof, etc.
-	// default: false
-	Verbose bool `json:"verbose"`
 
 	// An optional client-side signature for forgery protection.
 	// max len of 256 bytes
@@ -258,12 +405,34 @@ type LogRequest struct {
 
 	// The base64-encoded ed25519 public key used for the signature, if one is provided
 	PublicKey *string `json:"public_key,omitempty"`
+}
+
+type LogRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	LogEvent
+
+	// If true, be verbose in the response; include root, membership and consistency proof, etc.
+	// default: false
+	Verbose bool `json:"verbose"`
 
 	// Previous unpublished root
 	PrevRoot *string `json:"prev_root,omitempty"`
 }
 
-func (i *LogRequest) SignEvent(s signer.Signer, pki map[string]string) error {
+type LogBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Events []*LogEvent `json:"events"`
+
+	// If true, be verbose in the response; include root, membership and consistency proof, etc.
+	// default: false
+	Verbose bool `json:"verbose"`
+}
+
+func (i *LogEvent) SignEvent(s signer.Signer, pki map[string]string) error {
 	b, err := pu.CanonicalizeStruct(&i.Event)
 	if err != nil {
 		return err
@@ -443,6 +612,10 @@ type LogResult struct {
 	MembershipVerification  EventVerification
 	ConcistencyVerification EventVerification
 	SignatureVerification   EventVerification
+}
+
+type LogBulkResult struct {
+	Results []LogResult `json:"results"`
 }
 
 type SearchInput struct {

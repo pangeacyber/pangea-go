@@ -1,4 +1,4 @@
-// intel domain lookup is an example of how to use the lookup method
+// Example of how to check if an email address has been exposed/breached
 package main
 
 import (

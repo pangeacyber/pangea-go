@@ -1,4 +1,4 @@
-// intel file lookup is an example of how to use the lookup method
+// Example of how to lookup a file's reputation by hash given a local file path
 package main
 
 import (

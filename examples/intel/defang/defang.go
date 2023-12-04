@@ -1,4 +1,4 @@
-// intel domain lookup is an example of how to use the lookup method
+// Domain amd URL intel can be used to defang malicious URLs
 package main
 
 import (

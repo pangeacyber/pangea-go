@@ -1,4 +1,4 @@
-// intel domain lookup is an example of how to use the lookup method
+// Example of how to lookup public whois information for a domain
 package main
 
 import (

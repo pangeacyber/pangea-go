@@ -2,6 +2,7 @@ package redact
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
@@ -18,9 +19,24 @@ type redact struct {
 	pangea.BaseService
 }
 
-func New(cfg *pangea.Config) Client {
+func New(cfg *pangea.Config, opts ...Option) Client {
 	cli := &redact{
 		BaseService: pangea.NewBaseService("redact", cfg),
 	}
+
+	for _, opt := range opts {
+		err := opt(cli)
+		if err != nil {
+			fmt.Println("Error applying options to redact service")
+		}
+	}
 	return cli
+}
+
+type Option func(*redact) error
+
+func WithConfigID(cid string) Option {
+	return func(a *redact) error {
+		return pangea.WithConfigID(cid)(&a.BaseService)
+	}
 }

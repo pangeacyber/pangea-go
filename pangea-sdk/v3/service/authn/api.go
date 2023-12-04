@@ -239,6 +239,7 @@ type UserUpdateRequest struct {
 	ID       *string `json:"id,omitempty"`
 	Email    *string `json:"email,omitempty"`
 	Disabled *bool   `json:"disabled,omitempty"`
+	Unlock   *bool   `json:"unlock,omitempty"`
 }
 
 type UserUpdateResult struct {

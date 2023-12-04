@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/file_scan"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/file_scan"
 )
 
 const TESTFILE_PATH = "./testdata/testfile.pdf"
@@ -23,8 +23,8 @@ func main() {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	// To work in async it's need to set up QueuedRetryEnabled to false
-	// When we call .Scan() it will return an AcceptedError inmediatly if server return a 202 response
+	// To enable async mode, set QueuedRetryEnabled to false
+	// When .Scan() is called it will return an AcceptedError immediately when server returns a 202 response
 	client := file_scan.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
@@ -46,7 +46,7 @@ func main() {
 	fmt.Println("File Scan request...")
 	sr, err := client.Scan(ctx, input, file)
 	if sr != nil {
-		// this could happen if reputation call inside scan success
+		// .Scan() will return a response immediately if the file has a known reputation
 		fmt.Println("File Scan success on first attempt.")
 		fmt.Println(pangea.Stringify(sr.Result))
 		os.Exit(0)
@@ -58,8 +58,8 @@ func main() {
 	}
 	fmt.Println("Accepted error received (as expected).")
 
-	fmt.Println("Sleep some time until result should be ready.")
-	// Wait until result should be ready
+	fmt.Println("Sleep some time before polling.")
+	// multiple polling attempts may be required
 	time.Sleep(time.Duration(20 * time.Second))
 
 	fmt.Println("File Scan poll result...")

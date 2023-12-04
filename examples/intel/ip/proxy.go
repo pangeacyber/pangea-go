@@ -1,4 +1,4 @@
-// intel domain lookup is an example of how to use the lookup method
+// Example of how to look up if an IP address belongs to a proxy service
 package main
 
 import (
