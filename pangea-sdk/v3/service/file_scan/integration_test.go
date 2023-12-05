@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Staging
+	testingEnvironment = pangeatesting.Live
 	TESTFILE_PATH      = "./testdata/testfile.pdf"
 )
 
