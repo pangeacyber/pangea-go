@@ -9,7 +9,8 @@ import (
 
 // @summary Reputation check
 //
-// @description Retrieve a reputation score for a URL from a provider, including an optional detailed report.
+// @description Retrieve a reputation score for a URL, from a provider,
+// including an optional detailed report.
 //
 // @operationId url_intel_post_v1_reputation
 //
@@ -22,14 +23,15 @@ import (
 //		Provider: "crowdstrike",
 //	}
 //
-//	checkOutput, _, err := urlintel.Reputation(ctx, input)
+//	checkOutput, err := urlintel.Reputation(ctx, input)
 func (e *urlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) (*pangea.PangeaResponse[UrlReputationResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &UrlReputationResult{})
 }
 
-// @summary Bulk reputation check
+// @summary Reputation check V2
 //
-// @description Retrieve a reputation score for a URL list from a provider, including an optional detailed report.
+// @description Retrieve reputation scores for URLs, from a provider,
+// including an optional detailed report.
 //
 // @operationId url_intel_post_v2_reputation
 //
@@ -44,7 +46,7 @@ func (e *urlIntel) Reputation(ctx context.Context, input *UrlReputationRequest) 
 //		Provider: "crowdstrike",
 //	}
 //
-//	checkOutput, _, err := urlintel.ReputationBulk(ctx, input)
+//	checkOutput, err := urlintel.ReputationBulk(ctx, input)
 func (e *urlIntel) ReputationBulk(ctx context.Context, input *UrlReputationBulkRequest) (*pangea.PangeaResponse[UrlReputationBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/reputation", input, &UrlReputationBulkResult{})
 }

@@ -18,7 +18,8 @@ const (
 
 // @summary Look up breached users
 //
-// @description Determine if an email address, username, phone number, or IP address was exposed in a security breach.
+// @description Determine if an email address, username, phone number, or IP
+// address was exposed in a security breach.
 //
 // @operationId user_intel_post_v1_user_breached
 //
@@ -36,15 +37,25 @@ func (e *userIntel) UserBreached(ctx context.Context, input *UserBreachedRequest
 	return request.DoPost(ctx, e.Client, "v1/user/breached", input, &UserBreachedResult{})
 }
 
-// @summary Look up breached users
+// @summary Look up breached users V2
 //
-// @description Determine if an email address, username, phone number, or IP address was exposed in a security breach.
+// @description Determine if an email address, username, phone number, or IP
+// address was exposed in a security breach.
 //
-// @operationId FIXME:
+// @operationId user_intel_post_v2_user_breached
 //
 // @example
 //
-//	FIXME:
+// phoneNumbers := [...]string{"8005550123"}
+//
+//	input := &user_intel.UserBreachedBulkRequest{
+//		PhoneNumbers: phoneNumbers,
+//		Raw:          true,
+//		Verbose:      true,
+//		Provider:     "spycloud",
+//	}
+//
+// out, err := userintel.UserBreachedBulk(ctx, input)
 func (e *userIntel) UserBreachedBulk(ctx context.Context, input *UserBreachedBulkRequest) (*pangea.PangeaResponse[UserBreachedBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/user/breached", input, &UserBreachedBulkResult{})
 }
@@ -98,7 +109,8 @@ type UserBreachedBulkResult struct {
 
 // @summary Look up breached passwords
 //
-// @description Determine if a password has been exposed in a security breach using a 5 character prefix of the password hash.
+// @description Determine if a password has been exposed in a security breach
+// using a 5 character prefix of the password hash.
 //
 // @operationId user_intel_post_v1_password_breached
 //
@@ -112,20 +124,31 @@ type UserBreachedBulkResult struct {
 //		Provider:   "spycloud",
 //	}
 //
-// out, err := userintel.PasswordBreached(ctx, input)
+//	out, err := userintel.PasswordBreached(ctx, input)
 func (e *userIntel) PasswordBreached(ctx context.Context, input *UserPasswordBreachedRequest) (*pangea.PangeaResponse[UserPasswordBreachedResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/password/breached", input, &UserPasswordBreachedResult{})
 }
 
-// @summary Look up breached passwords
+// @summary Look up breached passwords V2
 //
-// @description Determine if a password has been exposed in a security breach using a 5 character prefix of the password hash.
+// @description Determine if a password has been exposed in a security breach
+// using a 5 character prefix of the password hash.
 //
-// @operationId FIXME:
+// @operationId user_intel_post_v2_password_breached
 //
 // @example
 //
-//	FIXME:
+//	hashPrefixes := [...]string{"5baa6"}
+//
+//	input := &user_intel.UserPasswordBreachedBulkRequest{
+//		HashType:     user_intel.HTsha265,
+//		HashPrefixes: hashPrefixes,
+//		Raw:          true,
+//		Verbose:      true,
+//		Provider:     "spycloud",
+//	}
+//
+//	out, err := userintel.PasswordBreachedBulk(ctx, input)
 func (e *userIntel) PasswordBreachedBulk(ctx context.Context, input *UserPasswordBreachedBulkRequest) (*pangea.PangeaResponse[UserPasswordBreachedBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/password/breached", input, &UserPasswordBreachedBulkResult{})
 }

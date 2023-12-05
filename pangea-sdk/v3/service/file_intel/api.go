@@ -110,7 +110,7 @@ func (e *fileIntel) Reputation(ctx context.Context, input *FileReputationRequest
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &FileReputationResult{})
 }
 
-// @summary Bulk reputation check
+// @summary Reputation check V2
 //
 // @description Retrieve a reputation score for a set of file hashes from a provider, including an optional detailed report.
 //

@@ -27,7 +27,7 @@ func (e *domainIntel) Reputation(ctx context.Context, input *DomainReputationReq
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &DomainReputationResult{})
 }
 
-// @summary Bulk reputation check
+// @summary Reputation check V2
 //
 // @description Lookup an internet domain list to retrieve reputation data.
 //

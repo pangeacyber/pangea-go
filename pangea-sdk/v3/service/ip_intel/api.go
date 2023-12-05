@@ -9,7 +9,8 @@ import (
 
 // @summary Geolocate
 //
-// @description Retrieve information about the location of an IP address.
+// @description Retrieve geolocation information for an IP address from a provider,
+// including an optional detailed report.
 //
 // @operationId ip_intel_post_v1_geolocate
 //
@@ -22,20 +23,30 @@ import (
 //		Provider: "digitalelement",
 //	}
 //
-//	checkOutput, _, err := ipintel.geolocate(ctx, input)
+//	checkOutput, err := ipintel.Geolocate(ctx, input)
 func (e *ipIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/geolocate", input, &IpGeolocateResult{})
 }
 
-// @summary Geolocate
+// @summary Geolocate V2
 //
-// @description Retrieve information about the location of an IP address' list.
+// @description Retrieve geolocation information for a list of IP addresses, from a provider,
+// including an optional detailed report.
 //
-// @operationId FIXME:
+// @operationId ip_intel_post_v2_geolocate
 //
 // @example
 //
-//	FIXME:
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpGeolocateBulkRequest{
+//		Ips:      ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.GeolocateBulk(ctx, input)
 func (e *ipIntel) GeolocateBulk(ctx context.Context, input *IpGeolocateBulkRequest) (*pangea.PangeaResponse[IpGeolocateBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/geolocate", input, &IpGeolocateBulkResult{})
 }
@@ -56,21 +67,30 @@ func (e *ipIntel) GeolocateBulk(ctx context.Context, input *IpGeolocateBulkReque
 //		Provider: "crowdstrike",
 //	}
 //
-//	checkOutput, _, err := ipintel.Reputation(ctx, input)
+//	checkOutput, err := ipintel.Reputation(ctx, input)
 func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &IpReputationResult{})
 }
 
-// @summary Reputation
+// @summary Reputation V2
 //
-// @description Retrieve a reputation score for an IP address' list from a provider,
+// @description Retrieve a reputation scores for a list of IP addresses, from a provider,
 // including an optional detailed report.
 //
-// @operationId FIXME:
+// @operationId ip_intel_post_v2_reputation
 //
 // @example
 //
-//	FIXME:
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpReputationBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "crowdstrike",
+//	}
+//
+//	checkOutput, err := ipintel.ReputationBulk(ctx, input)
 func (e *ipIntel) ReputationBulk(ctx context.Context, input *IpReputationBulkRequest) (*pangea.PangeaResponse[IpReputationBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/reputation", input, &IpReputationBulkResult{})
 }
@@ -90,27 +110,36 @@ func (e *ipIntel) ReputationBulk(ctx context.Context, input *IpReputationBulkReq
 //		Provider: "digitalelement",
 //	}
 //
-//	checkOutput, _, err := ipintel.GetDomain(ctx, input)
+//	checkOutput, err := ipintel.GetDomain(ctx, input)
 func (e *ipIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/domain", input, &IpDomainResult{})
 }
 
-// @summary Domain
+// @summary Domain V2
 //
-// @description Retrieve the domain name associated with an IP address' list.
+// @description Retrieve the domain names associated with a list of IP addresses.
 //
-// @operationId FIXME:
+// @operationId ip_intel_post_v2_domain
 //
 // @example
 //
-//	FIXME:
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpDomainBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.GetDomainBulk(ctx, input)
 func (e *ipIntel) GetDomainBulk(ctx context.Context, input *IpDomainBulkRequest) (*pangea.PangeaResponse[IpDomainBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/domain", input, &IpDomainBulkResult{})
 }
 
 // @summary VPN
 //
-// @description Determine if an IP address is provided by a VPN service.
+// @description Determine if an IP address originates from a VPN.
 //
 // @operationId ip_intel_post_v1_vpn
 //
@@ -128,22 +157,31 @@ func (e *ipIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 	return request.DoPost(ctx, e.Client, "v1/vpn", input, &IpVPNResult{})
 }
 
-// @summary VPN
+// @summary VPN V2
 //
-// @description Determine if an IP address' list is provided by a VPN service.
+// @description Determine which IP addresses originate from a VPN.
 //
-// @operationId FIXME:
+// @operationId ip_intel_post_v2_vpn
 //
 // @example
 //
-//	FIXME:
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpVPNBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.IsVPNBulk(ctx, input)
 func (e *ipIntel) IsVPNBulk(ctx context.Context, input *IpVPNBulkRequest) (*pangea.PangeaResponse[IpVPNBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/vpn", input, &IpVPNBulkResult{})
 }
 
 // @summary Proxy
 //
-// @description Determine if an IP address is provided by a proxy service.
+// @description Determine if an IP address originates from a proxy.
 //
 // @operationId ip_intel_post_v1_proxy
 //
@@ -156,20 +194,29 @@ func (e *ipIntel) IsVPNBulk(ctx context.Context, input *IpVPNBulkRequest) (*pang
 //		Provider: "digitalelement",
 //	}
 //
-//	checkOutput, _, err := ipintel.IsProxy(ctx, input)
+//	checkOutput, err := ipintel.IsProxy(ctx, input)
 func (e *ipIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/proxy", input, &IpProxyResult{})
 }
 
-// @summary Proxy
+// @summary Proxy V2
 //
-// @description Determine if an IP address' list is provided by a proxy service.
+// @description Determine which IP addresses originate from a proxy.
 //
-// @operationId FIXME:
+// @operationId ip_intel_post_v1_proxy
 //
 // @example
 //
-//	FIXME:
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpProxyBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.IsProxyBulk(ctx, input)
 func (e *ipIntel) IsProxyBulk(ctx context.Context, input *IpProxyBulkRequest) (*pangea.PangeaResponse[IpProxyBulkResult], error) {
 	return request.DoPost(ctx, e.Client, "v2/proxy", input, &IpProxyBulkResult{})
 }
