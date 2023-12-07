@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [3.4.0] - 2023-12-07
+
+# Changed 
+
+- 202 result format
+
+# Removed
+
+- accepted_status in 202 result
+
+# Added 
+
+- put_url, post_url, post_form_data fields in 202 result
+
+
 ## [3.3.0] - 2023-11-28
 
 # Added
@@ -231,7 +246,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redact client
 
 
-[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.3.0...main
+[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.4.0...main
+[3.4.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.0.0...v3.1.0

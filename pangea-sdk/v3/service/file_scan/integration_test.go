@@ -214,10 +214,11 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 	}
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.AcceptedResult)
-	assert.NotEmpty(t, resp.AcceptedResult.AcceptedStatus.UploadURL)
+	assert.NotEmpty(t, resp.AcceptedResult.PostURL)
+	assert.Empty(t, resp.AcceptedResult.PutURL)
 
-	url := resp.AcceptedResult.AcceptedStatus.UploadURL
-	ud := resp.AcceptedResult.AcceptedStatus.UploadDetails
+	url := resp.AcceptedResult.PostURL
+	ud := resp.AcceptedResult.PostFormData
 
 	fd := pangea.FileData{
 		File:    file,
@@ -277,15 +278,15 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 	}
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.AcceptedResult)
-	assert.NotEmpty(t, resp.AcceptedResult.AcceptedStatus.UploadURL)
+	assert.NotEmpty(t, resp.AcceptedResult.PutURL)
+	assert.Empty(t, resp.AcceptedResult.PostURL)
+	assert.Empty(t, resp.AcceptedResult.PostFormData)
 
-	url := resp.AcceptedResult.AcceptedStatus.UploadURL
-	ud := resp.AcceptedResult.AcceptedStatus.UploadDetails
+	url := resp.AcceptedResult.PutURL
 
 	fd := pangea.FileData{
-		File:    file,
-		Name:    "someName",
-		Details: ud,
+		File: file,
+		Name: "someName",
 	}
 
 	uploader := file_scan.NewFileUploader()
