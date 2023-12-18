@@ -129,7 +129,7 @@ func DoPostWithFile[T any](ctx context.Context, c *pangea.Client, path string, i
 	err = nil
 	v, ok := input.(pangea.TransferRequester)
 
-	if ok && v.GetTransferMethod() == pangea.TMdirect { // Check TransferMethod
+	if ok && v.GetTransferMethod() == pangea.TMpostURL { // Check TransferMethod
 		resp, err = c.FullPostPresignedURL(ctx, url, input, out, fd)
 	} else {
 		resp, err = c.PostMultipart(ctx, url, input, out, fd)

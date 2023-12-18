@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	version         = "3.3.0"
+	version         = "3.4.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
@@ -37,10 +37,10 @@ var errNonNilContext = errors.New("context must be non-nil")
 type TransferMethod string
 
 const (
-	TMdirect    TransferMethod = "direct"
-	TMmultipart                = "multipart"
+	TMmultipart TransferMethod = "multipart"
 	TMpostURL                  = "post-url"
 	TMputURL                   = "put-url"
+	TMsourceURL                = "source-url"
 )
 
 type ConfigIDer interface {
@@ -384,10 +384,10 @@ func (c *Client) FullPostPresignedURL(ctx context.Context, url string, input Con
 	fds := FileData{
 		File:    fd.File,
 		Name:    fd.Name,
-		Details: ar.AcceptedStatus.UploadDetails,
+		Details: ar.PostFormData,
 	}
 
-	err = c.UploadFile(ctx, ar.AcceptedStatus.UploadURL, TMpostURL, fds)
+	err = c.UploadFile(ctx, ar.PostURL, TMpostURL, fds)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
@@ -649,7 +649,7 @@ func (c *Client) reachTimeout(start time.Time) bool {
 }
 
 func (c *Client) pollPresignedURL(ctx context.Context, ae *AcceptedError) (*AcceptedResult, error) {
-	if ae.AcceptedResult.AcceptedStatus.UploadURL != "" {
+	if ae.AcceptedResult.HasUploadURL() {
 		return &ae.AcceptedResult, nil
 	}
 
@@ -667,7 +667,7 @@ func (c *Client) pollPresignedURL(ctx context.Context, ae *AcceptedError) (*Acce
 	start := time.Now()
 	var retry = 1
 
-	for aeLoop.AcceptedResult.AcceptedStatus.UploadURL != "" && !c.reachTimeout(start) {
+	for !aeLoop.AcceptedResult.HasUploadURL() && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
 		if pu.Sleep(delay, ctx) == false {
 			// If context closed, return inmediatly

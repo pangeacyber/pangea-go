@@ -127,13 +127,17 @@ type AcceptedError struct {
 	Response
 }
 
-type AcceptedStatus struct {
-	UploadURL     string            `json:"upload_url"`
-	UploadDetails map[string]string `json:"upload_details"`
+type AcceptedResult struct {
+	TTLMins      int               `json:"ttl_mins"`
+	RetryCounter int               `json:"retry_counter"`
+	Location     string            `json:"location"`
+	PostURL      string            `json:"post_url"`
+	PutURL       string            `json:"put_url"`
+	PostFormData map[string]string `json:"post_form_data"`
 }
 
-type AcceptedResult struct {
-	AcceptedStatus AcceptedStatus `json:"accepted_status"`
+func (ar AcceptedResult) HasUploadURL() bool {
+	return ar.PutURL != "" || ar.PostURL != ""
 }
 
 func (e *AcceptedError) Error() string {

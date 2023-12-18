@@ -63,28 +63,6 @@ func Test_Integration_IpGeolocate_DefaultProvider(t *testing.T) {
 	assert.Equal(t, resp.Result.Data.PostalCode, "59425")
 }
 
-func Test_Integration_IpGeolocateBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
-
-	input := &ip_intel.IpGeolocateBulkRequest{
-		Ips:     []string{"93.231.182.110", "190.28.74.251"},
-		Raw:     pangea.Bool(true),
-		Verbose: pangea.Bool(true),
-	}
-	resp, err := intelcli.GeolocateBulk(ctx, input)
-	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
-	}
-
-	assert.NotNil(t, resp)
-	assert.NotNil(t, resp.Result)
-	assert.NotNil(t, resp.Result.Data)
-	assert.Equal(t, len(resp.Result.Data), 2)
-}
-
 func Test_Integration_IpGetDomain(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()

@@ -52,7 +52,7 @@ func main() {
 
 	// Extract the upload url
 	// File details is not needed when using TransferMethod TMputURL
-	url := resp.AcceptedResult.AcceptedStatus.UploadURL
+	url := resp.AcceptedResult.PutURL
 	fmt.Printf("Got upload url: %s\n", url)
 
 	fd := pangea.FileData{
