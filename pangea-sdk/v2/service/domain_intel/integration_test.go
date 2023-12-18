@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func intelDomainIntegrationCfg(t *testing.T) *pangea.Config {

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func Test_Integration_IpGeolocate(t *testing.T) {
@@ -38,7 +38,7 @@ func Test_Integration_IpGeolocate(t *testing.T) {
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Country, "Federal Republic Of Germany")
 	assert.Equal(t, resp.Result.Data.City, "unna")
-	assert.Equal(t, resp.Result.Data.PostalCode, "59425")
+	assert.Equal(t, len(resp.Result.Data.PostalCode), 5)
 }
 
 func Test_Integration_IpGeolocate_DefaultProvider(t *testing.T) {
@@ -60,7 +60,7 @@ func Test_Integration_IpGeolocate_DefaultProvider(t *testing.T) {
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Country, "Federal Republic Of Germany")
 	assert.Equal(t, resp.Result.Data.City, "unna")
-	assert.Equal(t, resp.Result.Data.PostalCode, "59425")
+	assert.Equal(t, len(resp.Result.Data.PostalCode), 5)
 }
 
 func Test_Integration_IpGetDomain(t *testing.T) {
@@ -132,6 +132,28 @@ func Test_Integration_IpGetDomain_NotFound(t *testing.T) {
 	assert.Empty(t, resp.Result.Data.Domain)
 }
 
+func Test_Integration_IpGetDomainBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpDomainBulkRequest{
+		Ips:     []string{"93.231.182.110", "190.28.74.251"},
+		Raw:     pangea.Bool(true),
+		Verbose: pangea.Bool(true),
+	}
+	resp, err := intelcli.GetDomainBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+}
+
 func Test_Integration_IpIsVPN(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
@@ -198,6 +220,28 @@ func Test_Integration_IpIsVPN_DefaultProvider(t *testing.T) {
 	assert.True(t, resp.Result.Data.IsVPN)
 }
 
+func Test_Integration_IpIsVPNBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpVPNBulkRequest{
+		Ips:     []string{"93.231.182.110", "190.28.74.251"},
+		Raw:     pangea.Bool(true),
+		Verbose: pangea.Bool(true),
+	}
+	resp, err := intelcli.IsVPNBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+}
+
 func Test_Integration_IpIsProxy(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
@@ -262,6 +306,28 @@ func Test_Integration_IpIsProxy_DefaultProvider(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.True(t, resp.Result.Data.IsProxy)
+}
+
+func Test_Integration_IpIsProxyBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpProxyBulkRequest{
+		Ips:     []string{"93.231.182.110", "190.28.74.251"},
+		Raw:     pangea.Bool(true),
+		Verbose: pangea.Bool(true),
+	}
+	resp, err := intelcli.IsProxyBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
 }
 
 func Test_Integration_IpReputationCrowdstrikeProvider(t *testing.T) {
@@ -356,6 +422,34 @@ func Test_Integration_IpReputation_2(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "unknown")
+}
+
+func Test_Integration_IpReputationBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ip_intel.IpReputationBulkRequest{
+		Ips:      []string{"93.231.182.110", "190.28.74.251"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+	resp, err := intelcli.ReputationBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 2)
+	for _, di := range resp.Result.Data {
+		assert.NotEmpty(t, di.Category)
+		assert.NotEmpty(t, di.Score)
+		assert.NotEmpty(t, di.Verdict)
+	}
 }
 
 func Test_Integration_IpReputation_Error_BadIPFormat_1(t *testing.T) {

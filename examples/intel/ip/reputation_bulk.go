@@ -1,4 +1,4 @@
-//  Example of how to look up an IP's reputation using reversinglabs
+// intel domain lookup is an example of how to use the lookup method
 package main
 
 import (
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
@@ -18,6 +19,12 @@ func PrintData(indicator string, data ip_intel.ReputationData) {
 	fmt.Printf("\t\t Category: %s\n", pangea.Stringify(data.Category))
 }
 
+func PrintBulkData(data map[string]ip_intel.ReputationData) {
+	for k, v := range data {
+		PrintData(k, v)
+	}
+}
+
 func main() {
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
 	if token == "" {
@@ -25,24 +32,25 @@ func main() {
 	}
 
 	intelcli := ip_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:              token,
+		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
 	})
 
 	ctx := context.Background()
-	ip := "93.231.182.110"
-	input := &ip_intel.IpReputationRequest{
-		Ip:       ip,
+	input := &ip_intel.IpReputationBulkRequest{
+		Ips:      []string{"93.231.182.110", "190.28.74.251"},
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
-		Provider: "cymru",
+		Provider: "crowdstrike",
 	}
 
-	resp, err := intelcli.Reputation(ctx, input)
+	resp, err := intelcli.ReputationBulk(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Result:")
-	PrintData(ip, resp.Result.Data)
+	PrintBulkData(resp.Result.Data)
 }

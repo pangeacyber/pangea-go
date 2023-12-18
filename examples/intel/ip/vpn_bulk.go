@@ -1,4 +1,4 @@
-// Example of how to look up if an IP address belongs to a VPN service
+// intel domain lookup is an example of how to use the lookup method
 package main
 
 import (
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
@@ -19,6 +20,12 @@ func PrintData(ip string, data ip_intel.VPNData) {
 	}
 }
 
+func PrintBulkData(data map[string]ip_intel.VPNData) {
+	for k, v := range data {
+		PrintData(k, v)
+	}
+}
+
 func main() {
 	fmt.Println("Checking if IP is a vpn...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
@@ -27,24 +34,24 @@ func main() {
 	}
 
 	intelcli := ip_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:              token,
+		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
 	})
 
 	ctx := context.Background()
-	ip := "2.56.189.74"
-	input := &ip_intel.IpVPNRequest{
-		Ip:       ip,
-		Raw:      pangea.Bool(true),
-		Verbose:  pangea.Bool(true),
-		Provider: "digitalelement",
+	input := &ip_intel.IpVPNBulkRequest{
+		Ips:     []string{"2.56.189.74", "190.28.74.251"},
+		Raw:     pangea.Bool(true),
+		Verbose: pangea.Bool(true),
 	}
 
-	resp, err := intelcli.IsVPN(ctx, input)
+	resp, err := intelcli.IsVPNBulk(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Result:")
-	PrintData(ip, resp.Result.Data)
+	PrintBulkData(resp.Result.Data)
 }

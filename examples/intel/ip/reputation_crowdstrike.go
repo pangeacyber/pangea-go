@@ -7,9 +7,16 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/ip_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
 )
+
+func PrintData(indicator string, data ip_intel.ReputationData) {
+	fmt.Printf("\t Indicator: %s\n", indicator)
+	fmt.Printf("\t\t Verdict: %s\n", data.Verdict)
+	fmt.Printf("\t\t Score: %d\n", data.Score)
+	fmt.Printf("\t\t Category: %s\n", pangea.Stringify(data.Category))
+}
 
 func main() {
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
@@ -23,8 +30,9 @@ func main() {
 	})
 
 	ctx := context.Background()
+	ip := "93.231.182.110"
 	input := &ip_intel.IpReputationRequest{
-		Ip:       "93.231.182.110",
+		Ip:       ip,
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
@@ -35,5 +43,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(pangea.Stringify(resp.Result.Data))
+	fmt.Println("Result:")
+	PrintData(ip, resp.Result.Data)
 }

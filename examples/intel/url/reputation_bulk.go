@@ -1,4 +1,4 @@
-// Example of how to look up a URL's reputation
+// intel domain lookup is an example of how to use the lookup method
 package main
 
 import (
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/url_intel"
@@ -18,6 +19,12 @@ func PrintData(indicator string, data url_intel.ReputationData) {
 	fmt.Printf("\t\t Category: %s\n", pangea.Stringify(data.Category))
 }
 
+func PrintBulkData(data map[string]url_intel.ReputationData) {
+	for k, v := range data {
+		PrintData(k, v)
+	}
+}
+
 func main() {
 	fmt.Println("Checking URL...")
 	token := os.Getenv("PANGEA_INTEL_TOKEN")
@@ -26,24 +33,25 @@ func main() {
 	}
 
 	intelcli := url_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:              token,
+		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		QueuedRetryEnabled: true,
+		PollResultTimeout:  60 * time.Second,
 	})
 
 	ctx := context.Background()
-	indicator := "http://113.235.101.11:54384"
-	input := &url_intel.UrlReputationRequest{
-		Url:      indicator,
+	input := &url_intel.UrlReputationBulkRequest{
+		Urls:     []string{"http://113.235.101.11:54384", "http://45.14.49.109:54819"},
 		Raw:      pangea.Bool(true),
 		Verbose:  pangea.Bool(true),
 		Provider: "crowdstrike",
 	}
 
-	resp, err := intelcli.Reputation(ctx, input)
+	resp, err := intelcli.ReputationBulk(ctx, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println("Result:")
-	PrintData(indicator, resp.Result.Data)
+	PrintBulkData(resp.Result.Data)
 }

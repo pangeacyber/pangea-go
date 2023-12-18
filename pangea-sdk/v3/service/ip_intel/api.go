@@ -9,7 +9,8 @@ import (
 
 // @summary Geolocate
 //
-// @description Retrieve information about the location of an IP address.
+// @description Retrieve geolocation information for an IP address from a provider,
+// including an optional detailed report.
 //
 // @operationId ip_intel_post_v1_geolocate
 //
@@ -22,9 +23,32 @@ import (
 //		Provider: "digitalelement",
 //	}
 //
-//	checkOutput, _, err := ipintel.geolocate(ctx, input)
+//	checkOutput, err := ipintel.Geolocate(ctx, input)
 func (e *ipIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pangea.PangeaResponse[IpGeolocateResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/geolocate", input, &IpGeolocateResult{})
+}
+
+// @summary Geolocate V2
+//
+// @description Retrieve geolocation information for a list of IP addresses, from a provider,
+// including an optional detailed report.
+//
+// @operationId ip_intel_post_v2_geolocate
+//
+// @example
+//
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpGeolocateBulkRequest{
+//		Ips:      ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.GeolocateBulk(ctx, input)
+func (e *ipIntel) GeolocateBulk(ctx context.Context, input *IpGeolocateBulkRequest) (*pangea.PangeaResponse[IpGeolocateBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/geolocate", input, &IpGeolocateBulkResult{})
 }
 
 // @summary Reputation
@@ -43,9 +67,32 @@ func (e *ipIntel) Geolocate(ctx context.Context, input *IpGeolocateRequest) (*pa
 //		Provider: "crowdstrike",
 //	}
 //
-//	checkOutput, _, err := ipintel.Reputation(ctx, input)
+//	checkOutput, err := ipintel.Reputation(ctx, input)
 func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*pangea.PangeaResponse[IpReputationResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/reputation", input, &IpReputationResult{})
+}
+
+// @summary Reputation V2
+//
+// @description Retrieve a reputation scores for a list of IP addresses, from a provider,
+// including an optional detailed report.
+//
+// @operationId ip_intel_post_v2_reputation
+//
+// @example
+//
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpReputationBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "crowdstrike",
+//	}
+//
+//	checkOutput, err := ipintel.ReputationBulk(ctx, input)
+func (e *ipIntel) ReputationBulk(ctx context.Context, input *IpReputationBulkRequest) (*pangea.PangeaResponse[IpReputationBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/reputation", input, &IpReputationBulkResult{})
 }
 
 // @summary Domain
@@ -63,14 +110,36 @@ func (e *ipIntel) Reputation(ctx context.Context, input *IpReputationRequest) (*
 //		Provider: "digitalelement",
 //	}
 //
-//	checkOutput, _, err := ipintel.GetDomain(ctx, input)
+//	checkOutput, err := ipintel.GetDomain(ctx, input)
 func (e *ipIntel) GetDomain(ctx context.Context, input *IpDomainRequest) (*pangea.PangeaResponse[IpDomainResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/domain", input, &IpDomainResult{})
 }
 
+// @summary Domain V2
+//
+// @description Retrieve the domain names associated with a list of IP addresses.
+//
+// @operationId ip_intel_post_v2_domain
+//
+// @example
+//
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpDomainBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.GetDomainBulk(ctx, input)
+func (e *ipIntel) GetDomainBulk(ctx context.Context, input *IpDomainBulkRequest) (*pangea.PangeaResponse[IpDomainBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/domain", input, &IpDomainBulkResult{})
+}
+
 // @summary VPN
 //
-// @description Determine if an IP address is provided by a VPN service.
+// @description Determine if an IP address originates from a VPN.
 //
 // @operationId ip_intel_post_v1_vpn
 //
@@ -88,9 +157,31 @@ func (e *ipIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 	return request.DoPost(ctx, e.Client, "v1/vpn", input, &IpVPNResult{})
 }
 
+// @summary VPN V2
+//
+// @description Determine which IP addresses originate from a VPN.
+//
+// @operationId ip_intel_post_v2_vpn
+//
+// @example
+//
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpVPNBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.IsVPNBulk(ctx, input)
+func (e *ipIntel) IsVPNBulk(ctx context.Context, input *IpVPNBulkRequest) (*pangea.PangeaResponse[IpVPNBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/vpn", input, &IpVPNBulkResult{})
+}
+
 // @summary Proxy
 //
-// @description Determine if an IP address is provided by a proxy service.
+// @description Determine if an IP address originates from a proxy.
 //
 // @operationId ip_intel_post_v1_proxy
 //
@@ -103,9 +194,31 @@ func (e *ipIntel) IsVPN(ctx context.Context, input *IpVPNRequest) (*pangea.Pange
 //		Provider: "digitalelement",
 //	}
 //
-//	checkOutput, _, err := ipintel.IsProxy(ctx, input)
+//	checkOutput, err := ipintel.IsProxy(ctx, input)
 func (e *ipIntel) IsProxy(ctx context.Context, input *IpProxyRequest) (*pangea.PangeaResponse[IpProxyResult], error) {
 	return request.DoPost(ctx, e.Client, "v1/proxy", input, &IpProxyResult{})
+}
+
+// @summary Proxy V2
+//
+// @description Determine which IP addresses originate from a proxy.
+//
+// @operationId ip_intel_post_v1_proxy
+//
+// @example
+//
+//	ips := [...]string{"93.231.182.110"}
+//
+//	input := &ip_intel.IpProxyBulkRequest{
+//		Ip:       ips,
+//		Raw:      true,
+//		Verbose:  true,
+//		Provider: "digitalelement",
+//	}
+//
+//	checkOutput, err := ipintel.IsProxyBulk(ctx, input)
+func (e *ipIntel) IsProxyBulk(ctx context.Context, input *IpProxyBulkRequest) (*pangea.PangeaResponse[IpProxyBulkResult], error) {
+	return request.DoPost(ctx, e.Client, "v2/proxy", input, &IpProxyBulkResult{})
 }
 
 type IpGeolocateRequest struct {
@@ -118,6 +231,16 @@ type IpGeolocateRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+type IpGeolocateBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Ips      []string `json:"ips"`
+	Verbose  *bool    `json:"verbose,omitempty"`
+	Raw      *bool    `json:"raw,omitempty"`
+	Provider string   `json:"provider,omitempty"`
+}
+
 type IpReputationRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -126,6 +249,16 @@ type IpReputationRequest struct {
 	Verbose  *bool  `json:"verbose,omitempty"`
 	Raw      *bool  `json:"raw,omitempty"`
 	Provider string `json:"provider,omitempty"`
+}
+
+type IpReputationBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Ips      []string `json:"ips"`
+	Verbose  *bool    `json:"verbose,omitempty"`
+	Raw      *bool    `json:"raw,omitempty"`
+	Provider string   `json:"provider,omitempty"`
 }
 
 type ReputationData struct {
@@ -140,10 +273,22 @@ type IpReputationResult struct {
 	RawData    interface{}    `json:"raw_data,omitempty"`
 }
 
+type IpReputationBulkResult struct {
+	Data       map[string]ReputationData `json:"data"`
+	Parameters interface{}               `json:"parameters,omitempty"`
+	RawData    interface{}               `json:"raw_data,omitempty"`
+}
+
 type IpGeolocateResult struct {
 	Data       GeolocateData `json:"data"`
 	Parameters interface{}   `json:"parameters,omitempty"`
 	RawData    interface{}   `json:"raw_data,omitempty"`
+}
+
+type IpGeolocateBulkResult struct {
+	Data       map[string]GeolocateData `json:"data"`
+	Parameters interface{}              `json:"parameters,omitempty"`
+	RawData    interface{}              `json:"raw_data,omitempty"`
 }
 
 type GeolocateData struct {
@@ -165,10 +310,26 @@ type IpDomainRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+type IpDomainBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Ips      []string `json:"ips"`
+	Verbose  *bool    `json:"verbose,omitempty"`
+	Raw      *bool    `json:"raw,omitempty"`
+	Provider string   `json:"provider,omitempty"`
+}
+
 type IpDomainResult struct {
 	Data       DomainData  `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
 	RawData    interface{} `json:"raw_data,omitempty"`
+}
+
+type IpDomainBulkResult struct {
+	Data       map[string]DomainData `json:"data"`
+	Parameters interface{}           `json:"parameters,omitempty"`
+	RawData    interface{}           `json:"raw_data,omitempty"`
 }
 
 type DomainData struct {
@@ -186,10 +347,26 @@ type IpVPNRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+type IpVPNBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Ips      []string `json:"ips"`
+	Verbose  *bool    `json:"verbose,omitempty"`
+	Raw      *bool    `json:"raw,omitempty"`
+	Provider string   `json:"provider,omitempty"`
+}
+
 type IpVPNResult struct {
 	Data       VPNData     `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
 	RawData    interface{} `json:"raw_data,omitempty"`
+}
+
+type IpVPNBulkResult struct {
+	Data       map[string]VPNData `json:"data"`
+	Parameters interface{}        `json:"parameters,omitempty"`
+	RawData    interface{}        `json:"raw_data,omitempty"`
 }
 
 type VPNData struct {
@@ -206,10 +383,26 @@ type IpProxyRequest struct {
 	Provider string `json:"provider,omitempty"`
 }
 
+type IpProxyBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Ips      []string `json:"ips"`
+	Verbose  *bool    `json:"verbose,omitempty"`
+	Raw      *bool    `json:"raw,omitempty"`
+	Provider string   `json:"provider,omitempty"`
+}
+
 type IpProxyResult struct {
 	Data       ProxyData   `json:"data"`
 	Parameters interface{} `json:"parameters,omitempty"`
 	RawData    interface{} `json:"raw_data,omitempty"`
+}
+
+type IpProxyBulkResult struct {
+	Data       map[string]ProxyData `json:"data"`
+	Parameters interface{}          `json:"parameters,omitempty"`
+	RawData    interface{}          `json:"raw_data,omitempty"`
 }
 
 type ProxyData struct {
