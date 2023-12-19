@@ -32,6 +32,9 @@ func main() {
 		log.Fatal(err)
 	}
     auditToken := getResponse.Result.CurrentVersion.Secret
+    if auditToken == nil {
+		log.Fatal("Unexpected nil auditToken")
+    }
 
 	auditcli, err := audit.New(&pangea.Config{
 		Token:  *auditToken,
