@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
+	testingEnvironment = pangeatesting.Develop
 )
 
 func intelDomainIntegrationCfg(t *testing.T) *pangea.Config {
@@ -43,6 +43,34 @@ func Test_Integration_DomainReputation(t *testing.T) {
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Verdict, "malicious")
+}
+
+func Test_Integration_DomainReputationBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	cfg := intelDomainIntegrationCfg(t)
+	intelcli := domain_intel.New(cfg)
+
+	input := &domain_intel.DomainReputationBulkRequest{
+		Domains:  []string{"pemewizubidob.cafij.co.za", "redbomb.com.tr", "kmbk8.hicp.net"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "crowdstrike",
+	}
+	resp, err := intelcli.ReputationBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 3)
+	for _, di := range resp.Result.Data {
+		assert.NotEmpty(t, di.Category)
+		assert.NotEmpty(t, di.Score)
+		assert.NotEmpty(t, di.Verdict)
+	}
 }
 
 // Reputation domain unknown

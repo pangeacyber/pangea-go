@@ -85,11 +85,25 @@ type DomainReputationResult struct {
 
 	// The parameters, which were passed in
 	// the request, echoed back
-	Parameters interface{} `json:"parameters,omitempty"`
+	Parameters map[string]any `json:"parameters,omitempty"`
 
 	// The raw data from the provider.
 	// Each provider's data will have its own format
-	RawData interface{} `json:"raw_data,omitempty"`
+	RawData map[string]any `json:"raw_data,omitempty"`
+}
+
+type DomainReputationBulkResult struct {
+	// High-level normalized results sent
+	// by the Pangea service
+	Data map[string]ReputationData `json:"data"`
+
+	// The parameters, which were passed in
+	// the request, echoed back
+	Parameters map[string]any `json:"parameters,omitempty"`
+
+	// The raw data from the provider.
+	// Each provider's data will have its own format
+	RawData map[string]any `json:"raw_data,omitempty"`
 }
 
 type DomainWhoIsRequest struct {
