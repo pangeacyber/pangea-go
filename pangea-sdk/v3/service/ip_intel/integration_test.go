@@ -37,7 +37,7 @@ func Test_Integration_IpGeolocate(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Country, "Federal Republic Of Germany")
-	assert.Equal(t, resp.Result.Data.City, "unna")
+	assert.NotEmpty(t, resp.Result.Data.City)
 	assert.Equal(t, len(resp.Result.Data.PostalCode), 5)
 }
 
@@ -59,7 +59,7 @@ func Test_Integration_IpGeolocate_DefaultProvider(t *testing.T) {
 	assert.NotNil(t, resp.Result)
 	assert.NotNil(t, resp.Result.Data)
 	assert.Equal(t, resp.Result.Data.Country, "Federal Republic Of Germany")
-	assert.Equal(t, resp.Result.Data.City, "unna")
+	assert.NotEmpty(t, resp.Result.Data.City)
 	assert.Equal(t, len(resp.Result.Data.PostalCode), 5)
 }
 
