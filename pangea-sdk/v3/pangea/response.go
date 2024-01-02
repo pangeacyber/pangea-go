@@ -73,7 +73,6 @@ func (r Response) MarshalJSON() ([]byte, error) {
 		return nil, errors.New("Unable to read response body")
 	}
 	b := make([]byte, len(r.rawResponse))
-	// Using the copy function to copy the contents.
 	nc := copy(b, r.rawResponse)
 	if nc != len(r.rawResponse) {
 		return nil, errors.New("Unable to copy raw response")
