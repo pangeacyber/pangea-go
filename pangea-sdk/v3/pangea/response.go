@@ -2,6 +2,7 @@ package pangea
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,7 +29,8 @@ type Response struct {
 	ResponseHeader
 	HTTPResponse *http.Response
 	// Query raw result
-	RawResult json.RawMessage `json:"result"`
+	RawResult   json.RawMessage `json:"result"`
+	rawResponse []byte
 }
 
 func (r *ResponseHeader) String() string {
@@ -58,8 +60,22 @@ func newResponse(r *http.Response) (*Response, error) {
 	if err != nil {
 		return nil, NewUnmarshalError(err, []byte{}, r)
 	}
+	response.rawResponse = data
 	if err := json.Unmarshal(data, response); err != nil {
 		return nil, NewUnmarshalError(err, data, r)
 	}
 	return response, nil
+}
+
+// MarshalJSON implements the json.Marshaler interface for CustomType.
+func (r Response) MarshalJSON() ([]byte, error) {
+	if r.rawResponse == nil {
+		return nil, errors.New("Unable to read response body")
+	}
+	b := make([]byte, len(r.rawResponse))
+	nc := copy(b, r.rawResponse)
+	if nc != len(r.rawResponse) {
+		return nil, errors.New("Unable to copy raw response")
+	}
+	return b, nil
 }

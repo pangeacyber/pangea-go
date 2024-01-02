@@ -3,6 +3,7 @@ package embargo_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -62,6 +63,13 @@ func Test_Integration_Check_2(t *testing.T) {
 
 	assert.NotNil(t, out.Result)
 	assert.Zero(t, out.Result.Count)
+
+	rr, err := json.Marshal(out)
+	assert.NoError(t, err)
+	assert.NotNil(t, rr)
+	assert.True(t, len(rr) > 0)
+	fmt.Println("Marshalled response:")
+	fmt.Println(string(rr))
 }
 
 func Test_Integration_Check_Error_BadISO(t *testing.T) {
