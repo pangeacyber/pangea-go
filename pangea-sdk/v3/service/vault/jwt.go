@@ -6,13 +6,13 @@ type JWT struct {
 	Alg string  `json:"alg"`
 	Kid *string `json:"kid,omitempty"`
 	Kty string  `json:"kty"`
-	Use *string `json:"use,omitemtpy"`
-	Crv *string `json:"crv,omitemtpy"`
-	D   *string `json:"d,omitemtpy"`
-	X   *string `json:"x,omitemtpy"`
-	Y   *string `json:"y,omitemtpy"`
-	N   *string `json:"n,omitemtpy"`
-	E   *string `json:"e,omitemtpy"`
+	Use *string `json:"use,omitempty"`
+	Crv *string `json:"crv,omitempty"`
+	D   *string `json:"d,omitempty"`
+	X   *string `json:"x,omitempty"`
+	Y   *string `json:"y,omitempty"`
+	N   *string `json:"n,omitempty"`
+	E   *string `json:"e,omitempty"`
 }
 
 type JWKGetRequest struct {

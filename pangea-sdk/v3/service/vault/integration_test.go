@@ -31,7 +31,7 @@ var KEY_ED25519_public_key = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAPlGrDl
 var KEY_AES_algorithm = vault.SYAaes
 var KEY_AES_key = "oILlp2FUPHWiaqFXl4/1ww=="
 
-func PrintPangeAPIError(err error) {
+func PrintPangeaAPIError(err error) {
 	if err != nil {
 		apiErr := err.(*pangea.APIError)
 		fmt.Println(apiErr.Err.Error())
@@ -50,7 +50,6 @@ func GetName(name string) string {
 }
 
 func GetRandID() string {
-	rand.Seed(time.Now().UnixNano())
 	return fmt.Sprint(rand.Intn(1000000))
 }
 
@@ -505,7 +504,7 @@ func JWTAsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context,
 			ID: id,
 		},
 	)
-	PrintPangeAPIError(err)
+	PrintPangeaAPIError(err)
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
@@ -999,5 +998,66 @@ func Test_Integration_Folders(t *testing.T) {
 	)
 	assert.NoError(t, err)
 	assert.Equal(t, pcr.Result.ID, dpr.Result.ID)
+}
 
+func Test_Integration_EncryptStructured(t *testing.T) {
+	// Test data.
+	data := map[string]interface{}{
+		"field1": [4]interface{}{1, 2, "true", "false"},
+		"field2": "true",
+	}
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	// Generate an encryption key.
+	rGen, err := client.SymmetricGenerate(
+		ctx,
+		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: GetName("Test_Integration_EncryptStructured"),
+			},
+			Algorithm: vault.SYAaes256_cfb,
+			Purpose:   vault.KPencryption,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.ID)
+	key := rGen.Result.ID
+
+	// Encrypt.
+	encryptedResponse, err := client.EncryptStructured(
+		ctx,
+		&vault.EncryptStructuredRequest{
+			ID:             key,
+			StructuredData: data,
+			Filter:         "$.field1[2:4]",
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, encryptedResponse)
+	assert.NotNil(t, encryptedResponse.Result)
+	assert.Equal(t, key, encryptedResponse.Result.ID)
+	assert.Len(t, encryptedResponse.Result.StructuredData["field1"], 4)
+	assert.Equal(t, data["field2"], encryptedResponse.Result.StructuredData["field2"])
+
+	// Decrypt what we encrypted.
+	decryptedResponse, err := client.DecryptStructured(
+		ctx,
+		&vault.EncryptStructuredRequest{
+			ID:             key,
+			StructuredData: encryptedResponse.Result.StructuredData,
+			Filter:         "$.field1[2:4]",
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, decryptedResponse)
+	assert.NotNil(t, decryptedResponse.Result)
+	assert.Equal(t, key, decryptedResponse.Result.ID)
+	assert.Len(t, decryptedResponse.Result.StructuredData["field1"], 4)
+	assert.Equal(t, data["field2"], decryptedResponse.Result.StructuredData["field2"])
 }
