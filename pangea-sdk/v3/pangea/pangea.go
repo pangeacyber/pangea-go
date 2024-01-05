@@ -41,6 +41,7 @@ const (
 	TMpostURL                  = "post-url"
 	TMputURL                   = "put-url"
 	TMsourceURL                = "source-url"
+	TMdestURL                  = "dest-url"
 )
 
 type ConfigIDer interface {
@@ -335,6 +336,44 @@ func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*R
 	}
 
 	return pr, ar, nil
+}
+
+func (c *Client) DownloadFile(ctx context.Context, url string) (*AttachedFile, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "DownloadFile.NewRequest").
+			Err(err)
+		return nil, err
+	}
+
+	resp, err := c.BareDo(ctx, req)
+	if err != nil {
+		c.Logger.Error().
+			Str("service", c.serviceName).
+			Str("method", "DownloadFile.BareDo").
+			Err(err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	filename, err := pu.GetFilename(resp.Header.Get("Content-Disposition"))
+	if err != nil {
+		filename = "defaultFilename"
+	}
+
+	return &AttachedFile{
+		Filename:    filename,
+		File:        data,
+		ContentType: resp.Header.Get("Content-Type"),
+	}, nil
+
 }
 
 func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, fd FileData) error {

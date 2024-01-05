@@ -24,7 +24,7 @@ const (
 )
 
 var timeNow = time.Now()
-var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
+var timeStr = timeNow.Format("20060102_150405")
 var KEY_ED25519_algorithm = vault.AAed25519
 var KEY_ED25519_private_key = "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIGthqegkjgddRAn0PWN2FeYC6HcCVQf/Ph9sUbeprTBO\n-----END PRIVATE KEY-----\n"
 var KEY_ED25519_public_key = "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAPlGrDliJXUbPc2YWEhFxlL2UbBfLHc3ed1f36FrDtTc=\n-----END PUBLIC KEY-----\n"

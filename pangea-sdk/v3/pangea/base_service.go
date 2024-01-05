@@ -14,6 +14,7 @@ type BaseServicer interface {
 	PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error)
 	PollResultByID(ctx context.Context, rid string, v any) (*PangeaResponse[any], error)
 	PollResultRaw(ctx context.Context, requestID string) (*PangeaResponse[map[string]any], error)
+	DownloadFile(ctx context.Context, url string) (*AttachedFile, error)
 }
 
 func NewBaseService(name string, baseCfg *Config) BaseService {
@@ -63,6 +64,10 @@ func (bs *BaseService) PollResultRaw(ctx context.Context, rid string) (*PangeaRe
 		Response: *resp,
 		Result:   &r,
 	}, nil
+}
+
+func (bs *BaseService) DownloadFile(ctx context.Context, url string) (*AttachedFile, error) {
+	return bs.Client.DownloadFile(ctx, url)
 }
 
 func (bs *BaseService) GetPendingRequestID() []string {
