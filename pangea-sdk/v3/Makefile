@@ -17,7 +17,7 @@ unit:
 #######################
 integration:
 	@echo "Started integration tests"
-	go test -count=1 -tags "integration" -v -run '^Test_Integration' ${SDK_CLIENT_PKGS}
+	go test -count=1 -tags "integration" -v ${SDK_CLIENT_PKGS}
 	@echo "Finished integration tests"
 
 coverage.out: $(shell find . -type f -print | grep -v vendor | grep "\.go")
