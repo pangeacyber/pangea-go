@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
 )
@@ -31,11 +32,13 @@ type ResponseHeader struct {
 
 type Response struct {
 	ResponseHeader
-	HTTPResponse *http.Response
-	// Query raw result
+	HTTPResponse  *http.Response
 	AttachedFiles []AttachedFile
-	RawResult     json.RawMessage `json:"result"`
-	rawResponse   []byte
+
+	// Query raw result
+	RawResult json.RawMessage `json:"result"`
+
+	rawResponse []byte
 }
 
 func (r *ResponseHeader) String() string {
@@ -156,7 +159,7 @@ func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
 		}
 	}
 
-	filePath := folder + filename
+	filePath := path.Join(folder, filename)
 
 	err := os.WriteFile(filePath, af.File, 0644)
 	if err != nil {
