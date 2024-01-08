@@ -271,7 +271,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Empty(t, respPut2.Result.Object.SHA512)
 	assert.NotEmpty(t, respPut2.Result.Object.SHA256)
 
-	// Update file. full metadata and tags
+	// Update file with full metadata and tags
 	respUpdate, err := client.Update(ctx, &store.UpdateRequest{
 		ID:       respPut.Result.Object.ID,
 		Metadata: METADATA,
@@ -286,7 +286,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, store.Metadata(METADATA), respUpdate.Result.Object.Metadata)
 	assert.Equal(t, store.Tags(TAGS), respUpdate.Result.Object.Tags)
 
-	// Update file. add metadata and tags
+	// Update file with add metadata and tags
 	respUpdate2, err := client.Update(ctx, &store.UpdateRequest{
 		ID:          respPut2.Result.Object.ID,
 		AddMetadata: ADD_METADATA,
