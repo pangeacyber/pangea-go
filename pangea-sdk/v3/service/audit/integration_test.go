@@ -1,4 +1,5 @@
-// go:build integration && !unit
+//go:build integration
+
 package audit_test
 
 import (

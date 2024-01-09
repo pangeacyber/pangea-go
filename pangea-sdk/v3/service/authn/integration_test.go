@@ -1,4 +1,5 @@
-// go:build integration && !unit
+//go:build integration
+
 package authn_test
 
 import (
