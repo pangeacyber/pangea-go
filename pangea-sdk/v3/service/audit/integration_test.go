@@ -557,7 +557,7 @@ func Test_Integration_SearchAll(t *testing.T) {
 	start := ct.Add(-30 * 24 * time.Hour).Truncate(1 * time.Microsecond)
 
 	searchInput := &audit.SearchInput{
-		Query:   `message:""`,
+		Query:   "message:" + MSG_NO_SIGNED,
 		Verbose: pangea.Bool(true),
 		Limit:   3,
 		Order:   "asc",
