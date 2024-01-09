@@ -1,3 +1,5 @@
+// go:build unit
+
 package audit_test
 
 import (
