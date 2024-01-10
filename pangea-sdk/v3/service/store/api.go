@@ -298,12 +298,7 @@ type UpdateResult struct {
 //		RemoveTags: store.Tags{"irs_2023", "personal"},
 //	}
 //
-//	file, err := os.Open("./path/to/file.pdf")
-//	if err != nil {
-//		log.Fatal("Error opening file: %v", err)
-//	}
-//
-//	res, err := storecli.Update(ctx, input, file)
+//	res, err := storecli.Update(ctx, input)
 func (e *store) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/update", input, &UpdateResult{})
 }
