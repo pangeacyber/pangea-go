@@ -1,4 +1,5 @@
-// go:build integration && !unit
+//go:build integration
+
 package authn_test
 
 import (
@@ -27,7 +28,7 @@ var PROFILE_NEW = map[string]string{}
 var PASSWORD_OLD string
 var PASSWORD_NEW string
 var timeNow = time.Now()
-var timeStr = timeNow.Format("yyyyMMdd_HHmmss")
+var timeStr = timeNow.Format("20060102_150405")
 var CB_URI = "https://someurl.com/callbacklink"
 
 const (

@@ -30,6 +30,12 @@ type Client interface {
 	JWTVerify(ctx context.Context, req *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error)
 	FolderCreate(ctx context.Context, req *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error)
 
+	// Encrypt parts of a JSON object.
+	EncryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error)
+
+	// Decrypt parts of a JSON object.
+	DecryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error)
+
 	// Base service methods
 	pangea.BaseServicer
 }

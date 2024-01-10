@@ -1,3 +1,5 @@
+//go:build unit
+
 package pangeautil_test
 
 import (
