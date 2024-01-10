@@ -60,3 +60,40 @@ type DecryptResult struct {
 	Algorithm string `json:"algorithm"`
 	PlainText string `json:"plain_text"`
 }
+
+// Parameters for an encrypt/decrypt structured request.
+type EncryptStructuredRequest struct {
+	pangea.BaseRequest
+
+	// The ID of the key to use. It must be an item of type `symmetric_key` or
+	// `asymmetric_key` and purpose `encryption`.
+	ID string `json:"id"`
+
+	// Structured data for applying bulk operations.
+	StructuredData map[string]interface{} `json:"structured_data"`
+
+	// A filter expression. It must point to string elements of the
+	// `StructuredData` field.
+	Filter string `json:"filter"`
+
+	// The item version. Defaults to the current version.
+	Version *int `json:"version,omitempty"`
+
+	// User provided authentication data.
+	AdditionalData *string `json:"additional_data,omitempty"`
+}
+
+// Result of an encrypt/decrypt structured request.
+type EncryptStructuredResult struct {
+	// The ID of the item.
+	ID string `json:"id"`
+
+	//  The item version.
+	Version int `json:"version"`
+
+	// The algorithm of the key.
+	Algorithm string `json:"algorithm"`
+
+	// Structured data with filtered fields encrypted/decrypted.
+	StructuredData map[string]interface{} `json:"structured_data"`
+}

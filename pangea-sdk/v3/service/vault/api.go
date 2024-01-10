@@ -570,3 +570,53 @@ func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea
 func (v *vault) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
 	return request.DoPost(ctx, v.Client, "v1/folder/create", input, &FolderCreateResult{})
 }
+
+// @summary Encrypt structured
+//
+// @description Encrypt parts of a JSON object.
+//
+// @operationId vault_post_v1_key_encrypt_structured
+//
+// @example
+//
+//	data := map[string]interface{}{
+//		"field1": [4]interface{}{1, 2, "true", "false"},
+//		"field2": "true",
+//	}
+//
+//	encryptedResponse, err := client.EncryptStructured(
+//		ctx,
+//		&vault.EncryptStructuredRequest{
+//			ID:             "pvi_[...]",
+//			StructuredData: data,
+//			Filter:         "$.field1[2:4]",
+//		},
+//	)
+func (v *vault) EncryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/key/encrypt/structured", input, &EncryptStructuredResult{})
+}
+
+// @summary Decrypt structured
+//
+// @description Decrypt parts of a JSON object.
+//
+// @operationId vault_post_v1_key_decrypt_structured
+//
+// @example
+//
+//	data := map[string]interface{}{
+//		"field1": [4]interface{}{1, 2, "kxcbC9E9IlgVaSCChPWUMgUC3ko=", "6FfI/LCzatLRLNAc8SuBK/TDnGxp"},
+//		"field2": "true",
+//	}
+//
+//	decryptedResponse, err := client.DecryptStructured(
+//		ctx,
+//		&vault.EncryptStructuredRequest{
+//			ID:             "pvi_[...]",
+//			StructuredData: data,
+//			Filter:         "$.field1[2:4]",
+//		},
+//	)
+func (v *vault) DecryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/key/decrypt/structured", input, &EncryptStructuredResult{})
+}

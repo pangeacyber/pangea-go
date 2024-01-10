@@ -9,7 +9,7 @@ TEST_TIMEOUT=-timeout 5m
 ###################
 unit:
 	@echo "Started unit tests"
-	go test ${TEST_TIMEOUT} -v -count=1 -race ${SDK_CORE_PKGS}
+	go test ${TEST_TIMEOUT} -tags=unit -v -count=1 -race ${SDK_ALL_PKGS}
 	@echo "Finished unit tests"
 
 #######################
@@ -17,7 +17,7 @@ unit:
 #######################
 integration:
 	@echo "Started integration tests"
-	go test -count=1 -tags "integration" -v ${SDK_CLIENT_PKGS}
+	go test -count=1 -tags integration -v ./service/...
 	@echo "Finished integration tests"
 
 coverage.out: $(shell find . -type f -print | grep -v vendor | grep "\.go")

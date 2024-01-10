@@ -1,3 +1,5 @@
+//go:build unit
+
 package embargo_test
 
 import (

@@ -1,4 +1,5 @@
-// go:build unit
+//go:build integration
+
 package redact_test
 
 import (

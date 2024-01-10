@@ -1,4 +1,5 @@
-// go:build integration
+//go:build integration
+
 package url_intel_test
 
 import (
