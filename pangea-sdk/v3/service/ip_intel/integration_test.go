@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func Test_Integration_IpGeolocate(t *testing.T) {

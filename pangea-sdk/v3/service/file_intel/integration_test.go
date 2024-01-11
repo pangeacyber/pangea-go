@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Develop
+	testingEnvironment = pangeatesting.Live
 )
 
 func intelFileIntegrationCfg(t *testing.T) *pangea.Config {
