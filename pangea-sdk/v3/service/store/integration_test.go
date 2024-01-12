@@ -1,4 +1,5 @@
-// go:build integration
+//go:build integration
+
 package store_test
 
 import (
@@ -243,7 +244,6 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.NotEmpty(t, respPut.Result.Object.SHA256)
 
 	// Upload a file with parent id and name
-	// Upload a file with path as unique param
 	file, err = os.Open(PDF_FILEPATH)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
