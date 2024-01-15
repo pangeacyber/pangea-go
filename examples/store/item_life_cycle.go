@@ -183,7 +183,7 @@ func main() {
 	ll := []store.ShareLinkCreateItem{store.ShareLinkCreateItem{
 		// Set targets to the share link
 		Targets:        []string{folderID},
-		LinkType:       store.LTall,
+		LinkType:       store.LTeditor,
 		Authenticators: authenticators,
 		MaxAccessCount: pangea.Int(3),
 	}}

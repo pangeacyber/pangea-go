@@ -346,7 +346,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	}}
 	ll := []store.ShareLinkCreateItem{store.ShareLinkCreateItem{
 		Targets:        []string{folderID},
-		LinkType:       store.LTall,
+		LinkType:       store.LTeditor,
 		Authenticators: authenticators,
 		MaxAccessCount: pangea.Int(3),
 	}}

@@ -29,7 +29,7 @@ type LinkType string
 const (
 	LTupload   LinkType = "upload"
 	LTdownload          = "download"
-	LTall               = "all"
+	LTeditor            = "editor"
 )
 
 type AuthenticatorType string
