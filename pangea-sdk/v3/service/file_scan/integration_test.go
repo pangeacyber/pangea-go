@@ -172,10 +172,20 @@ func Test_Integration_FileScan_NoRetry_reversinglabs(t *testing.T) {
 	assert.Nil(t, resp)
 	ae := err.(*pangea.AcceptedError)
 
-	// Wait until result should be ready
-	time.Sleep(time.Duration(40 * time.Second))
+	var pr *pangea.PangeaResponse[any]
+	i := 0
 
-	pr, err := client.PollResultByError(ctx, *ae)
+	for i < 24 {
+		// Wait until result should be ready
+		time.Sleep(time.Duration(10 * time.Second))
+
+		pr, err = client.PollResultByError(ctx, *ae)
+		if err == nil {
+			break
+		}
+		i++
+	}
+
 	assert.NoError(t, err)
 	assert.NotNil(t, pr)
 	assert.NotNil(t, pr.Result)
