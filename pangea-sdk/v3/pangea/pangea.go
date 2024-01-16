@@ -312,6 +312,14 @@ func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*R
 		return nil, nil, err
 	}
 
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "GetPresignedURL").
+		Str("url", url).
+		Interface("header", pr.ResponseHeader).
+		Interface("result", pr.RawResult).
+		Send()
+
 	err = c.CheckResponse(pr, &AcceptedResult{})
 	var ae *AcceptedError
 	var ok bool
@@ -587,6 +595,7 @@ func (c *Client) simplePost(ctx context.Context, req *http.Request) (*Response, 
 			Err(err)
 		return nil, err
 	}
+
 	return r, nil
 }
 
@@ -604,6 +613,19 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any, handleQueue b
 		return nil, err
 	}
 
+	u := ""
+	if r != nil && r.HTTPResponse != nil && r.HTTPResponse.Request != nil && r.HTTPResponse.Request.URL != nil {
+		u = r.HTTPResponse.Request.URL.String()
+	}
+
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "Do").
+		Str("url", u).
+		Interface("header", r.ResponseHeader).
+		Interface("result", r.RawResult).
+		Send()
+
 	if handleQueue {
 		r, err = c.handledQueued(ctx, r)
 		if err != nil {
@@ -613,11 +635,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v any, handleQueue b
 				Err(err)
 			return nil, err
 		}
-	}
-
-	u := ""
-	if r != nil && r.HTTPResponse != nil && r.HTTPResponse.Request != nil && r.HTTPResponse.Request.URL != nil {
-		u = r.HTTPResponse.Request.URL.String()
 	}
 
 	err = c.CheckResponse(r, v)
@@ -773,6 +790,14 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 		Str("service", c.serviceName).
 		Str("method", "handledQueued.Exit").
 		Str("url", u).
+		Send()
+
+	c.Logger.Debug().
+		Str("service", c.serviceName).
+		Str("method", "handleQueued").
+		Str("url", u).
+		Interface("header", r.ResponseHeader).
+		Interface("result", r.RawResult).
 		Send()
 
 	return r, nil
