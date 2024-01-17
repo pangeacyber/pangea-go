@@ -55,6 +55,8 @@ const (
 	SYAaes128_cfb SymmetricAlgorithm = "AES-CFB-128"
 	SYAaes256_cfb SymmetricAlgorithm = "AES-CFB-256"
 	SYAaes256_gcm SymmetricAlgorithm = "AES-GCM-256"
+	SYAaes128_cbc SymmetricAlgorithm = "AES-CBC-128"
+	SYAaes256_cbc SymmetricAlgorithm = "AES-CBC-256"
 	SYAaes        SymmetricAlgorithm = "AES-CFB-128" // deprecated, use SYAaes128_cfb instead
 )
 
