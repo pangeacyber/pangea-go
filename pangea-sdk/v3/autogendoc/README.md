@@ -19,11 +19,11 @@ The documentation pipeline here looks like:
 
 From the directory `pangea-go/pangea-sdk/v3` run:
 ```sh
-go run ./dev/autogendoc/main.go
+go run ./autogendoc/main.go
 ```
 That will output the script in the terminal. If you're on a mac, you can do
 ```sh
-go run ./dev/autogendoc/main.go | pbcopy
+go run ./autogendoc/main.go | pbcopy
 ```
 to copy the output from the script into your clipboard.
 
