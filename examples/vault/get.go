@@ -1,4 +1,4 @@
-// vault rotate is an example of how to use the rotate method
+// vault get is an example of how to get a token to access audit service
 package main
 
 import (
@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/vault"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v2/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
 )
 
 func main() {
