@@ -15,44 +15,47 @@ import (
 func main() {
 	token := os.Getenv("PANGEA_VAULT_TOKEN")
 	if token == "" {
-		log.Fatal("Unauthorized: No token present")
+		log.Fatal("Error: No token present")
 	}
 
 	auditTokenID := os.Getenv("PANGEA_AUDIT_TOKEN_ID")
 	if auditTokenID == "" {
-		log.Fatal("Unauthorized: No audit token id present")
+		log.Fatal("Error: No audit token id present")
 	}
-    vaultConfig := pangea.Config{
+	vaultConfig := pangea.Config{
 		Token:  token,
 		Domain: os.Getenv("PANGEA_DOMAIN"),
 	}
-	vaultObj := vault.New(&vaultConfig)
+	vaultClient := vault.New(&vaultConfig)
 
 	ctx := context.Background()
 
 	fmt.Println("Fetch the audit token...")
 	getRequest := &vault.GetRequest{
-        ID: auditTokenID,
+		ID: auditTokenID,
 	}
-	storeResponse, err := vaultObj.Get(ctx, getRequest)
+	storeResponse, err := vaultClient.Get(ctx, getRequest)
 	if err != nil {
 		log.Fatal(err)
 	}
-    auditToken := storeResponse.Result.CurrentVersion.Secret
+	auditToken := storeResponse.Result.CurrentVersion.Secret
+	if auditToken == nil {
+		log.Fatal("Unexpected: token not present")
+	}
 
 	fmt.Println("Initialize Log...")
-    auditConfig := pangea.Config{
+	auditConfig := pangea.Config{
 		Token:  *auditToken,
 		Domain: os.Getenv("PANGEA_DOMAIN"),
 	}
-    auditObj, err := audit.New(&auditConfig)
+	auditClient, err := audit.New(&auditConfig)
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}
-    event := &audit.StandardEvent{
+	event := &audit.StandardEvent{
 		Message: "Hello, World!",
 	}
-    lr, err := auditObj.Log(ctx, event, true)
+	lr, err := auditClient.Log(ctx, event, true)
 	if err != nil {
 		log.Fatal(err)
 	}
