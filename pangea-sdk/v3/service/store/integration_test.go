@@ -82,8 +82,10 @@ func Test_Integration_PutTransferMethodPostURL(t *testing.T) {
 	name := TIME + "_file_post_url"
 
 	input := &store.PutRequest{
-		Name:           name,
-		TransferMethod: pangea.TMpostURL,
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMpostURL,
+		},
 	}
 
 	file, err := os.Open(PDF_FILEPATH)
@@ -112,8 +114,10 @@ func Test_Integration_PutTransferMethodMultipart(t *testing.T) {
 	name := TIME + "_file_multipart"
 
 	input := &store.PutRequest{
-		Name:           name,
-		TransferMethod: pangea.TMmultipart,
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMmultipart,
+		},
 	}
 
 	file, err := os.Open(PDF_FILEPATH)
@@ -142,8 +146,10 @@ func Test_Integration_SplitUpload_Put(t *testing.T) {
 	name := TIME + "_file_split_put_url"
 
 	input := &store.PutRequest{
-		Name:           name,
-		TransferMethod: pangea.TMputURL,
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMputURL,
+		},
 	}
 
 	file, err := os.Open(PDF_FILEPATH)
@@ -225,8 +231,10 @@ func Test_Integration_LifeCycle(t *testing.T) {
 
 	respPut, err := client.Put(ctx,
 		&store.PutRequest{
-			Path:           FOLDER_FILES + "/" + TIME + "_file_multipart_1",
-			TransferMethod: pangea.TMmultipart,
+			Path: FOLDER_FILES + "/" + TIME + "_file_multipart_1",
+			TransferRequest: pangea.TransferRequest{
+				TransferMethod: pangea.TMmultipart,
+			},
 		},
 		file)
 
@@ -251,11 +259,13 @@ func Test_Integration_LifeCycle(t *testing.T) {
 
 	respPut2, err := client.Put(ctx,
 		&store.PutRequest{
-			Name:           TIME + "_file_multipart_2",
-			ParentID:       folderID,
-			TransferMethod: pangea.TMmultipart,
-			Metadata:       METADATA,
-			Tags:           TAGS,
+			Name:     TIME + "_file_multipart_2",
+			ParentID: folderID,
+			TransferRequest: pangea.TransferRequest{
+				TransferMethod: pangea.TMmultipart,
+			},
+			Metadata: METADATA,
+			Tags:     TAGS,
 		},
 		file)
 	if err != nil {

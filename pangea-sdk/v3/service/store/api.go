@@ -186,21 +186,21 @@ func (e *store) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 
 type PutRequest struct {
 	pangea.BaseRequest
+	pangea.TransferRequest
 
-	Name           string                `json:"name,omitempty"`
-	Format         *FileFormat           `json:"format,omitempty"`
-	Metadata       Metadata              `json:"metadata,omitempty"`
-	MimeType       string                `json:"mimetype,omitempty"`
-	ParentID       string                `json:"parent_id,omitempty"`
-	Path           string                `json:"path,omitempty"`
-	CRC32C         string                `json:"crc32c,omitempty"`
-	MD5            string                `json:"md5,omitempty"`
-	SHA1           string                `json:"sha1,omitempty"`
-	SHA256         string                `json:"sha256,omitempty"`
-	SHA512         string                `json:"sha512,omitempty"`
-	Size           *int                  `json:"size,omitempty"`
-	Tags           Tags                  `json:"tags,omitempty"`
-	TransferMethod pangea.TransferMethod `json:"transfer_method,omitempty"`
+	Name     string      `json:"name,omitempty"`
+	Format   *FileFormat `json:"format,omitempty"`
+	Metadata Metadata    `json:"metadata,omitempty"`
+	MimeType string      `json:"mimetype,omitempty"`
+	ParentID string      `json:"parent_id,omitempty"`
+	Path     string      `json:"path,omitempty"`
+	CRC32C   string      `json:"crc32c,omitempty"`
+	MD5      string      `json:"md5,omitempty"`
+	SHA1     string      `json:"sha1,omitempty"`
+	SHA256   string      `json:"sha256,omitempty"`
+	SHA512   string      `json:"sha512,omitempty"`
+	Size     *int        `json:"size,omitempty"`
+	Tags     Tags        `json:"tags,omitempty"`
 }
 
 type PutResult struct {
