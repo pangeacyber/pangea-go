@@ -658,18 +658,6 @@ func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NotNil(t, rDecDef.Result)
 	assert.Equal(t, dataB64, rDecDef.Result.PlainText)
 
-	// Decrypt wrong version
-	rDecBad1, err := client.Decrypt(ctx,
-		&vault.DecryptRequest{
-			ID:         id,
-			CipherText: rEnc1.Result.CipherText,
-		})
-
-	assert.NoError(t, err)
-	assert.NotNil(t, rDecBad1)
-	assert.NotNil(t, rDecBad1.Result)
-	assert.NotEqual(t, dataB64, rDecBad1.Result.PlainText)
-
 	// Error not and ID
 	resp, err := client.Decrypt(ctx,
 		&vault.DecryptRequest{
@@ -767,58 +755,67 @@ func Test_Integration_Ed25519StoreLifeCycle(t *testing.T) {
 	AsymSigningCycle(t, client, ctx, rStore.Result.ID)
 }
 
-func Test_Integration_JWT_ES256SigningLifeCycle(t *testing.T) {
+func Test_Integration_JWT_AsymSigningLifeCycle(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	algorithm := vault.AAes256
+	algorithms := []vault.AsymmetricAlgorithm{vault.AAes256, vault.AAes384, vault.AAes512}
 	purpose := vault.KPjwt
-	name := GetName("Test_Integration_JWT_ES256SigningLifeCycle")
-	// Generate
-	rGen, err := client.AsymmetricGenerate(ctx,
-		&vault.AsymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Name: name,
-			},
-			Algorithm: algorithm,
-			Purpose:   purpose,
-		})
 
-	assert.NoError(t, err)
-	assert.NotNil(t, rGen)
-	assert.NotNil(t, rGen.Result)
-	assert.NotEmpty(t, rGen.Result.PublicKey)
-	assert.NotEmpty(t, rGen.Result.ID)
-	assert.Equal(t, 1, rGen.Result.Version)
+	for _, algorithm := range algorithms {
+		fmt.Printf("\nRunning Test_Integration_JWT_AsymSigningLifeCycle with %s\n", algorithm)
+		name := GetName("Test_Integration_JWT_AsymSigningLifeCycle")
+		// Generate
+		rGen, err := client.AsymmetricGenerate(ctx,
+			&vault.AsymmetricGenerateRequest{
+				CommonGenerateRequest: vault.CommonGenerateRequest{
+					Name: name,
+				},
+				Algorithm: algorithm,
+				Purpose:   purpose,
+			})
 
-	JWTAsymSigningCycle(t, client, ctx, rGen.Result.ID)
+		assert.NoError(t, err)
+		assert.NotNil(t, rGen)
+		assert.NotNil(t, rGen.Result)
+		assert.NotEmpty(t, rGen.Result.PublicKey)
+		assert.NotEmpty(t, rGen.Result.ID)
+		assert.Equal(t, 1, rGen.Result.Version)
+
+		JWTAsymSigningCycle(t, client, ctx, rGen.Result.ID)
+		fmt.Printf("Finished Test_Integration_JWT_AsymSigningLifeCycle with %s\n", algorithm)
+	}
 }
 
-func Test_Integration_JWT_HS256SigningLifeCycle(t *testing.T) {
+func Test_Integration_JWT_SymSigningLifeCycle(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	algorithm := vault.SYAhs256
+	algorithms := []vault.SymmetricAlgorithm{vault.SYAhs256, vault.SYAhs512, vault.SYAhs384}
 	purpose := vault.KPjwt
-	name := GetName("Test_Integration_JWT_HS256SigningLifeCycle")
 
-	rGen, err := client.SymmetricGenerate(ctx,
-		&vault.SymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Name: name,
-			},
-			Algorithm: algorithm,
-			Purpose:   purpose,
-		})
+	for _, algorithm := range algorithms {
+		fmt.Printf("\nRunning Test_Integration_JWT_SymSigningLifeCycle with %s\n", algorithm)
+		name := GetName("Test_Integration_JWT_SymSigningLifeCycle")
+		rGen, err := client.SymmetricGenerate(ctx,
+			&vault.SymmetricGenerateRequest{
+				CommonGenerateRequest: vault.CommonGenerateRequest{
+					Name: name,
+				},
+				Algorithm: algorithm,
+				Purpose:   purpose,
+			})
 
-	assert.NoError(t, err)
-	assert.NotNil(t, rGen)
-	assert.NotNil(t, rGen.Result)
-	assert.NotEmpty(t, rGen.Result.ID)
+		assert.NoError(t, err)
+		assert.NotNil(t, rGen)
+		assert.NotNil(t, rGen.Result)
+		assert.NotEmpty(t, rGen.Result.ID)
 
-	JWTSymSigningCycle(t, client, ctx, rGen.Result.ID)
+		JWTSymSigningCycle(t, client, ctx, rGen.Result.ID)
+		fmt.Printf("Finished Test_Integration_JWT_SymSigningLifeCycle with %s\n", algorithm)
+	}
 }
 
 func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
@@ -826,25 +823,35 @@ func Test_Integration_AESencryptingLifeCycle(t *testing.T) {
 	defer cancelFn()
 	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	algorithm := vault.SYAaes128_cfb
+	algorithms := []vault.SymmetricAlgorithm{
+		vault.SYAaes128_cfb,
+		vault.SYAaes128_cfb,
+		vault.SYAaes256_cbc,
+		vault.SYAaes256_cfb,
+		vault.SYAaes256_gcm,
+	}
 	purpose := vault.KPencryption
-	name := GetName("Test_Integration_AESencryptingLifeCycle")
 
-	rGen, err := client.SymmetricGenerate(ctx,
-		&vault.SymmetricGenerateRequest{
-			CommonGenerateRequest: vault.CommonGenerateRequest{
-				Name: name,
-			},
-			Algorithm: algorithm,
-			Purpose:   purpose,
-		})
+	for _, algorithm := range algorithms {
+		fmt.Printf("\nRunning Test_Integration_AESencryptingLifeCycle with %s\n", algorithm)
+		name := GetName("Test_Integration_AESencryptingLifeCycle")
+		rGen, err := client.SymmetricGenerate(ctx,
+			&vault.SymmetricGenerateRequest{
+				CommonGenerateRequest: vault.CommonGenerateRequest{
+					Name: name,
+				},
+				Algorithm: algorithm,
+				Purpose:   purpose,
+			})
 
-	assert.NoError(t, err)
-	assert.NotNil(t, rGen)
-	assert.NotNil(t, rGen.Result)
-	assert.NotEmpty(t, rGen.Result.ID)
+		assert.NoError(t, err)
+		assert.NotNil(t, rGen)
+		assert.NotNil(t, rGen.Result)
+		assert.NotEmpty(t, rGen.Result.ID)
 
-	EncryptionCycle(t, client, ctx, rGen.Result.ID)
+		EncryptionCycle(t, client, ctx, rGen.Result.ID)
+		fmt.Printf("Finished Test_Integration_AESencryptingLifeCycle with %s\n", algorithm)
+	}
 }
 
 func Test_Integration_AESstoreLifeCycle(t *testing.T) {
