@@ -40,8 +40,10 @@ func main() {
 	// Create a PutRequest to request an presigned upload url.
 	// In this case TransferMethod is set to TMputURL
 	input := &store.PutRequest{
-		Name:           name,
-		TransferMethod: pangea.TMputURL,
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMputURL,
+		},
 	}
 
 	file, err := os.Open(filePath)

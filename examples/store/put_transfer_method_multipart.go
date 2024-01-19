@@ -36,8 +36,10 @@ func main() {
 	// Create a PutRequest. In this case TransferMethod is set to TMpostURL
 	// So SDK is going to request a post url, upload the file to that url and then request to pangea for the /put result
 	input := &store.PutRequest{
-		Name:           name,
-		TransferMethod: pangea.TMmultipart,
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMmultipart,
+		},
 	}
 
 	file, err := os.Open(filePath)

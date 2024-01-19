@@ -59,8 +59,10 @@ func main() {
 	fmt.Println("Uploading file with Path field...")
 	respPut, err := client.Put(ctx,
 		&store.PutRequest{
-			Path:           path.Join(folder, "file_multipart_1"),
-			TransferMethod: pangea.TMmultipart,
+			Path: path.Join(folder, "file_multipart_1"),
+			TransferRequest: pangea.TransferRequest{
+				TransferMethod: pangea.TMmultipart,
+			},
 		},
 		file)
 
@@ -83,11 +85,13 @@ func main() {
 	fmt.Println("Uploading file with Name and ParentID...")
 	respPut2, err := client.Put(ctx,
 		&store.PutRequest{
-			Name:           "file_multipart_2",
-			ParentID:       folderID,
-			TransferMethod: pangea.TMmultipart,
-			Metadata:       metadata,
-			Tags:           tags,
+			Name:     "file_multipart_2",
+			ParentID: folderID,
+			TransferRequest: pangea.TransferRequest{
+				TransferMethod: pangea.TMmultipart,
+			},
+			Metadata: metadata,
+			Tags:     tags,
 		},
 		file)
 	if err != nil {
