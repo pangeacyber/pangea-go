@@ -14,7 +14,7 @@ A Go SDK for integrating with Pangea services.
 ## Installation
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3
 ```
 
 ## Usage
