@@ -1,4 +1,4 @@
-module examples/intel
+module examples/file_scan
 
 go 1.19
 

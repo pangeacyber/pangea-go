@@ -3,6 +3,8 @@
 # This script is to run all examples at once in order to check them
 # Need to run this script from `./examples/` folder
 
+set -e
+
 # Root directory
 root_directory=$(pwd)
 
