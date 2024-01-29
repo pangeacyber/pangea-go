@@ -1,0 +1,88 @@
+.examples-base:
+  stage: examples
+  needs: []
+  parallel:
+    matrix:
+      - GO_VERSION: ['1.19', '1.20', '1.21']
+  image: golang:${GO_VERSION}
+  before_script:
+    - export PANGEA_AUDIT_CONFIG_ID="${PANGEA_AUDIT_CONFIG_ID_1_LVE}"
+    - export PANGEA_AUDIT_CUSTOM_SCHEMA_TOKEN="${PANGEA_INTEGRATION_CUSTOM_SCHEMA_TOKEN_LVE}"
+    - export PANGEA_AUDIT_MULTICONFIG_TOKEN="${PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_LVE}"
+    - export PANGEA_AUDIT_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_AUTHN_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_DOMAIN_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_DOMAIN="${PANGEA_INTEGRATION_DOMAIN_LVE}"
+    - export PANGEA_EMBARGO_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_FILE_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_FILE_SCAN_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_IP_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_REDACT_CONFIG_ID="${PANGEA_REDACT_CONFIG_ID_1_LVE}"
+    - export PANGEA_REDACT_MULTICONFIG_TOKEN="${PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_LVE}"
+    - export PANGEA_REDACT_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_URL_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_USER_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+    - export PANGEA_VAULT_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE}"
+
+examples-audit:
+  extends: .examples-base
+  script:
+    - cd examples/audit
+    - go run audit_multiconfig.go
+    - go run log_bulk_async.go
+    - go run log_bulk.go
+    - go run log_custom_schema.go
+    - go run log_standard_schema.go
+    - go run results_custom_schema.go
+    - go run results_standard_schema.go
+    - go run root.go
+    - go run search_custom_schema.go
+    - go run search_standard_schema.go
+
+    # Skipped because it depends on a `PANGEA_AUDIT_TOKEN_VAULT_ID` which does
+    # not exist in CI.
+    # - go run log_bulk_async_with_vault.go
+
+examples-authn:
+  extends: .examples-base
+  script:
+    - cd examples/authn
+    - bash ../../dev/run_examples.sh
+
+examples-embargo:
+  extends: .examples-base
+  script:
+    - cd examples/embargo
+    - bash ../../dev/run_examples.sh
+
+examples-file-scan:
+  extends: .examples-base
+  script:
+    - cd examples/file_scan
+    - bash ../../dev/run_examples.sh
+
+examples-intel:
+  extends: .examples-base
+  script:
+    - cd examples/intel
+    - bash ../../dev/run_examples.sh
+
+examples-redact:
+  extends: .examples-base
+  script:
+    - cd examples/redact
+    - bash ../../dev/run_examples.sh
+
+examples-vault:
+  extends: .examples-base
+  script:
+    - cd examples/vault
+    - go run encrypt.go
+    - go run rotate.go
+    - go run sign.go
+    - go run structured_encrypt.go
+
+    # Skipped because it depends on a `PANGEA_AUDIT_TOKEN_VAULT_ID` which does
+    # not exist in CI.
+    # - go run get.go

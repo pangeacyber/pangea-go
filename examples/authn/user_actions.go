@@ -14,7 +14,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/authn"
 )
 
-var CB_URI = "https://www.usgs.gov/faqs/what-was-pangea"
+var CB_URI = "https://someurl.com/callbacklink"
 
 func flowHandlePasswordPhase(ctx context.Context, client *authn.AuthN, flow_id, password string) *authn.FlowUpdateResult {
 	fmt.Println("Handling password phase...")
