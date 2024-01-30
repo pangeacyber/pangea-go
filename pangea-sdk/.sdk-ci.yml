@@ -160,7 +160,7 @@ vault:
     - go test -count=1 -tags integration -v ./service/vault/...
 
 staging-tests:
-  extends: .pangea-sdk-test-base
+  extends: .go-sdk-test-base
   stage: staging_tests
   variables:
     ENV: STG
