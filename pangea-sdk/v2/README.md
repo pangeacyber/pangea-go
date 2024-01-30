@@ -23,8 +23,8 @@ A Go SDK for integrating with Pangea Services.
 
 To add Pangea Go SDK to your project, will need to run next command on your project root directory where you should have `go.mod` file:
 
-```
-go get github.com/pangeacyber/pangea-go/pangea-sdk
+```bash
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v2
 ```
 
 ## Usage
