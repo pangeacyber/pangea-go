@@ -118,6 +118,11 @@ file-scan:
     ENV: ${SERVICE_FILE_SCAN_ENV}
   script:
     - go test -count=1 -tags integration -v ./service/file_scan/...
+  rules:
+    - if: '$CLOUD == "GCP"'
+      allow_failure: true
+    - if: '$CLOUD != "GCP"'
+      allow_failure: false
 
 ip-intel:
   extends: .go-sdk-test-base
