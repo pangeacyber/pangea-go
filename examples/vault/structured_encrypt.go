@@ -35,7 +35,7 @@ func main() {
 		Algorithm: vault.SYAaes256_cfb,
 		Purpose:   vault.KPencryption,
 		CommonGenerateRequest: vault.CommonGenerateRequest{
-			Name: "Go encrypt example " + time.Now().Format(time.RFC3339),
+			Name: "Go structured encrypt example " + time.Now().Format(time.RFC3339),
 		},
 	}
 	generateResponse, err := vaultClient.SymmetricGenerate(ctx, generateInput)
