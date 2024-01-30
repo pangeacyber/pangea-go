@@ -13,9 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testingEnvironment = pangeatesting.Live
-)
+var testingEnvironment = pangeatesting.LoadTestEnvironment("domain-intel", pangeatesting.Live)
 
 func intelDomainIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()

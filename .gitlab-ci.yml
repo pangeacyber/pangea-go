@@ -16,6 +16,7 @@ stages:
   - unit_tests
   - integration_tests
   - examples
+  - staging_tests
 
 include:
   - /pangea-sdk/.sdk-ci.yml

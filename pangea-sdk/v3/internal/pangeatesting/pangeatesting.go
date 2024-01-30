@@ -173,3 +173,21 @@ func (e *CustomSchemaEvent) Tenant() string {
 func (e *CustomSchemaEvent) SetTenant(tid string) {
 	e.TenantID = tid
 }
+
+func LoadTestEnvironment(serviceName string, def TestEnvironment) TestEnvironment {
+	serviceName = strings.ReplaceAll(serviceName, "-", "_")
+	varName := fmt.Sprintf("SERVICE_%s_ENV", serviceName)
+	value := os.Getenv(varName)
+	if value == "" {
+		fmt.Printf("%s is empty. Returning default value: %s\n", varName, def)
+		return def
+	} else if value == "DEV" {
+		return Develop
+	} else if value == "STG" {
+		return Staging
+	} else if value == "LVE" {
+		return Live
+	} else {
+		panic(fmt.Sprintf("%s not allowed value: %s\n", varName, value))
+	}
+}
