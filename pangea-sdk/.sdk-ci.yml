@@ -47,13 +47,13 @@
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-lint:
+go-sdk-lint:
   extends: .go-sdk-base
   stage: lint
   script:
     - make verify
 
-generate_docs:
+go-sdk-generate-docs:
   extends: .go-sdk-base
   stage: lint
   allow_failure: true
@@ -65,13 +65,13 @@ generate_docs:
     paths: ['pangea-sdk/go_sdk.json']
     when: on_success
 
-testing:
+go-sdk-unit-testing:
   extends: .go-sdk-base
   stage: unit_tests
   script:
     - make unit
 
-audit:
+go-sdk-it-audit:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -79,7 +79,7 @@ audit:
   script:
     - go test -count=1 -tags integration -v ./service/audit/...
 
-authn:
+go-sdk-it-authn:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -87,7 +87,7 @@ authn:
   script:
     - go test -count=1 -tags integration -v ./service/authn/...
 
-domain-intel:
+go-sdk-it-domain-intel:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -95,7 +95,7 @@ domain-intel:
   script:
     - go test -count=1 -tags integration -v ./service/domain_intel/...
 
-embargo:
+go-sdk-it-embargo:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -103,7 +103,7 @@ embargo:
   script:
     - go test -count=1 -tags integration -v ./service/embargo/...
 
-file-intel:
+go-sdk-it-file-intel:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -111,7 +111,7 @@ file-intel:
   script:
     - go test -count=1 -tags integration -v ./service/file_intel/...
 
-file-scan:
+go-sdk-it-file-scan:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -124,7 +124,7 @@ file-scan:
     - if: '$CLOUD != "GCP"'
       allow_failure: false
 
-ip-intel:
+go-sdk-it-ip-intel:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -132,7 +132,7 @@ ip-intel:
   script:
     - go test -count=1 -tags integration -v ./service/ip_intel/...
 
-redact:
+go-sdk-it-redact:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -140,7 +140,7 @@ redact:
   script:
     - go test -count=1 -tags integration -v ./service/redact/...
 
-url-intel:
+go-sdk-it-url-intel:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -148,7 +148,7 @@ url-intel:
   script:
     - go test -count=1 -tags integration -v ./service/url_intel/...
 
-user-intel:
+go-sdk-it-user-intel:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -156,7 +156,7 @@ user-intel:
   script:
     - go test -count=1 -tags integration -v ./service/user_intel/...
 
-vault:
+go-sdk-it-vault:
   extends: .go-sdk-test-base
   stage: integration_tests
   variables:
@@ -164,9 +164,8 @@ vault:
   script:
     - go test -count=1 -tags integration -v ./service/vault/...
 
-staging-tests:
+.go-sdk-staging-tests:
   extends: .go-sdk-test-base
-  stage: staging_tests
   variables:
     ENV: STG
     SERVICE_AUDIT_ENV: STG
@@ -182,4 +181,3 @@ staging-tests:
     SERVICE_VAULT_ENV: STG
   script:
     - make integration
-  when: manual
