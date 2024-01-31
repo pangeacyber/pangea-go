@@ -132,7 +132,7 @@ func Test_Integration_IpGetDomain_NotFound(t *testing.T) {
 }
 
 func Test_Integration_IpGetDomainBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -220,7 +220,7 @@ func Test_Integration_IpIsVPN_DefaultProvider(t *testing.T) {
 }
 
 func Test_Integration_IpIsVPNBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -308,7 +308,7 @@ func Test_Integration_IpIsProxy_DefaultProvider(t *testing.T) {
 }
 
 func Test_Integration_IpIsProxyBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
@@ -424,7 +424,7 @@ func Test_Integration_IpReputation_2(t *testing.T) {
 }
 
 func Test_Integration_IpReputationBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := ip_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))

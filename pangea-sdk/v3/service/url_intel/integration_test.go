@@ -39,7 +39,7 @@ func Test_Integration_UrlReputation(t *testing.T) {
 }
 
 func Test_Integration_UrlReputationBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	intelcli := url_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
