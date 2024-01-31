@@ -13,9 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testingEnvironment = pangeatesting.Live
-)
+var testingEnvironment = pangeatesting.LoadTestEnvironment("user-intel", pangeatesting.Live)
 
 func Test_Integration_UserBreachedByPhone(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)

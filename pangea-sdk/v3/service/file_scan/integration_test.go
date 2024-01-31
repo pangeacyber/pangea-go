@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
-	TESTFILE_PATH      = "./testdata/testfile.pdf"
+	TESTFILE_PATH = "./testdata/testfile.pdf"
 )
+
+var testingEnvironment = pangeatesting.LoadTestEnvironment("file-scan", pangeatesting.Live)
 
 func Test_Integration_FileScan_crowdstrike(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)

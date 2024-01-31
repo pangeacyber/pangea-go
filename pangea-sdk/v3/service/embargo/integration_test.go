@@ -15,9 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testingEnvironment = pangeatesting.Live
-)
+var testingEnvironment = pangeatesting.LoadTestEnvironment("embargo", pangeatesting.Live)
 
 func embargoIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()

@@ -31,9 +31,7 @@ var timeNow = time.Now()
 var timeStr = timeNow.Format("20060102_150405")
 var CB_URI = "https://someurl.com/callbacklink"
 
-const (
-	testingEnvironment = pangeatesting.Live
-)
+var testingEnvironment = pangeatesting.LoadTestEnvironment("authn", pangeatesting.Live)
 
 func authnIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()

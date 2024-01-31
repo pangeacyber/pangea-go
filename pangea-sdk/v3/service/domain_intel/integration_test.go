@@ -13,9 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testingEnvironment = pangeatesting.Live
-)
+var testingEnvironment = pangeatesting.LoadTestEnvironment("domain-intel", pangeatesting.Live)
 
 func intelDomainIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
@@ -47,7 +45,7 @@ func Test_Integration_DomainReputation(t *testing.T) {
 }
 
 func Test_Integration_DomainReputationBulk(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
 	cfg := intelDomainIntegrationCfg(t)
