@@ -175,7 +175,7 @@ func (e *CustomSchemaEvent) SetTenant(tid string) {
 }
 
 func LoadTestEnvironment(serviceName string, def TestEnvironment) TestEnvironment {
-	serviceName = strings.ReplaceAll(serviceName, "-", "_")
+	serviceName = strings.ToUpper(strings.ReplaceAll(serviceName, "-", "_"))
 	varName := fmt.Sprintf("SERVICE_%s_ENV", serviceName)
 	value := os.Getenv(varName)
 	if value == "" {
