@@ -6,7 +6,7 @@
     - if: $CI_PIPELINE_SOURCE == "push"
 
 go-sdk-test-it:
-  state: integration_tests
+  stage: integration_tests
   variables:
   # Set each service test environment
     SERVICE_AUDIT_ENV: LVE
