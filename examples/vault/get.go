@@ -18,7 +18,7 @@ func main() {
 		log.Fatal("Error: No token present")
 	}
 
-	auditTokenID := os.Getenv("PANGEA_AUDIT_TOKEN_ID")
+	auditTokenID := os.Getenv("PANGEA_AUDIT_TOKEN_VAULT_ID")
 	if auditTokenID == "" {
 		log.Fatal("Error: No audit token id present")
 	}
