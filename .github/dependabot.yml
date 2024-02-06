@@ -6,6 +6,6 @@ updates:
       interval: daily
 
   - package-ecosystem: gomod
-    directory: /examples
+    directory: /
     schedule:
       interval: daily
