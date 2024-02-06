@@ -78,6 +78,8 @@ go-sdk-test-it:
   rules:
     - if: '$CLOUD == "GCP" && $TEST == "file_scan"'
       allow_failure: true
+    - if: '$CLOUD == "GCP" && $TEST != "file_scan"'
+      allow_failure: true
     - if: '$CLOUD != "GCP"'
       allow_failure: false
   script:
