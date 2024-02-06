@@ -5,7 +5,8 @@
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-.go-sdk-test-base:
+go-sdk-test-it:
+  stage: integration_tests
   variables:
   # Set each service test environment
     SERVICE_AUDIT_ENV: LVE
@@ -19,7 +20,6 @@
     SERVICE_USER_INTEL_ENV: LVE
     SERVICE_REDACT_ENV: LVE
     SERVICE_VAULT_ENV: LVE
-
   before_script:
     - echo $ENV
     - echo $CLOUD
@@ -43,9 +43,45 @@
   parallel:
     matrix:
       - CLOUD: [AWS, GCP]
-
+        ENV: ${SERVICE_AUDIT_ENV}
+        TEST: audit
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_AUTHN_ENV}
+        TEST: authn
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_EMBARGO_ENV}
+        TEST: embargo
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_DOMAIN_INTEL_ENV}
+        TEST: domain_intel
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_IP_INTEL_ENV}
+        TEST: ip_intel
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_URL_INTEL_ENV}
+        TEST: url_intel
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_USER_INTEL_ENV}
+        TEST: user_intel
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_FILE_INTEL_ENV}
+        TEST: file_intel
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_FILE_SCAN_ENV}
+        TEST: file_scan
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_REDACT_ENV}
+        TEST: redact
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_VAULT_ENV}
+        TEST: vault
   rules:
-    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: '$CLOUD == "GCP" && $TEST == "file_scan"'
+      allow_failure: true
+    - if: '$CLOUD != "GCP"'
+      allow_failure: false
+  script:
+    - go test -count=1 -tags integration -v ./service/${TEST}/...
 
 go-sdk-lint:
   extends: .go-sdk-base
@@ -70,114 +106,3 @@ go-sdk-unit-testing:
   stage: unit_tests
   script:
     - make unit
-
-go-sdk-it-audit:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_AUDIT_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/audit/...
-
-go-sdk-it-authn:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_AUTHN_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/authn/...
-
-go-sdk-it-domain-intel:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_DOMAIN_INTEL_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/domain_intel/...
-
-go-sdk-it-embargo:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_EMBARGO_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/embargo/...
-
-go-sdk-it-file-intel:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_FILE_INTEL_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/file_intel/...
-
-go-sdk-it-file-scan:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_FILE_SCAN_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/file_scan/...
-  rules:
-    - if: '$CLOUD == "GCP"'
-      allow_failure: true
-    - if: '$CLOUD != "GCP"'
-      allow_failure: false
-
-go-sdk-it-ip-intel:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_IP_INTEL_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/ip_intel/...
-
-go-sdk-it-redact:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_REDACT_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/redact/...
-
-go-sdk-it-url-intel:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_URL_INTEL_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/url_intel/...
-
-go-sdk-it-user-intel:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_USER_INTEL_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/user_intel/...
-
-go-sdk-it-vault:
-  extends: .go-sdk-test-base
-  stage: integration_tests
-  variables:
-    ENV: ${SERVICE_VAULT_ENV}
-  script:
-    - go test -count=1 -tags integration -v ./service/vault/...
-
-.go-sdk-staging-tests:
-  extends: .go-sdk-test-base
-  variables:
-    ENV: STG
-    SERVICE_AUDIT_ENV: STG
-    SERVICE_AUTHN_ENV: STG
-    SERVICE_EMBARGO_ENV: STG
-    SERVICE_FILE_SCAN_ENV: STG
-    SERVICE_IP_INTEL_ENV: STG
-    SERVICE_DOMAIN_INTEL_ENV: STG
-    SERVICE_URL_INTEL_ENV: STG
-    SERVICE_FILE_INTEL_ENV: STG
-    SERVICE_USER_INTEL_ENV: STG
-    SERVICE_REDACT_ENV: STG
-    SERVICE_VAULT_ENV: STG
-  script:
-    - make integration
