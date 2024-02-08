@@ -6,6 +6,41 @@ updates:
       interval: daily
 
   - package-ecosystem: gomod
-    directory: /
+    directory: /examples/audit
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /examples/authn
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /examples/embargo
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /examples/file_scan
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /examples/intel
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /examples/redact
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /examples/vault
+    schedule:
+      interval: daily
+
+  - package-ecosystem: gomod
+    directory: /pangea-sdk/v3
     schedule:
       interval: daily
