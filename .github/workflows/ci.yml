@@ -56,7 +56,7 @@ jobs:
           cache-dependency-path: ./pangea-sdk/v3/go.sum
 
       - name: Unit test
-        run: make test
+        run: make unit
 
   examples:
     needs: [prefetch]
