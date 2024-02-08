@@ -33,8 +33,30 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5.0.0
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           cache-dependency-path: "**/*.sum"
+
+  test-unit:
+    needs: [prefetch]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.18", "1.19", "1.20", "1.21", "1.22"]
+    defaults:
+      run:
+        working-directory: ./pangea-sdk/v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./pangea-sdk/v3/go.sum
+
+      - name: Unit test
+        run: make test
 
   examples:
     needs: [prefetch]
@@ -63,7 +85,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5.0.0
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           cache-dependency-path: ./examples/${{ matrix.example }}/go.sum
 
       # TODO: reorganize each individual example into their own directory to
