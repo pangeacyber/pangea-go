@@ -27,9 +27,9 @@ const (
 	MSG_CUSTOM_SCHEMA_SIGNED_LOCAL = "go-sdk-custom-schema-sign-local"
 	MSG_CUSTOM_SCHEMA_SIGNED_VAULT = "go-sdk-custom-schema-sign-vault"
 	LONG_FIELD                     = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia, orci eget commodo commodo non."
-
-	testingEnvironment = pangeatesting.Live
 )
+
+var testingEnvironment = pangeatesting.LoadTestEnvironment("audit", pangeatesting.Live)
 
 var customSchemaEvent = pangeatesting.CustomSchemaEvent{
 	Message:       MSG_CUSTOM_SCHEMA_NO_SIGNED,

@@ -38,7 +38,7 @@ func main() {
 		FieldBool:     true,
 		FieldStrShort: "no-signed",
 		FieldStrLong:  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia, orci eget commodo commodo non.",
-		FieldTime:     pangea.Time(time.Now()),
+		FieldTime:     pangea.Time(time.Now().Truncate(time.Microsecond)),
 	}
 
 	fmt.Printf("Logging: %s\n", event.Message)

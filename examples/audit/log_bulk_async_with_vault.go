@@ -14,27 +14,27 @@ import (
 func main() {
 	vaultToken := os.Getenv("PANGEA_VAULT_TOKEN")
 	domain := os.Getenv("PANGEA_DOMAIN")
-    auditTokenVaultId := os.Getenv("PANGEA_AUDIT_TOKEN_VAULT_ID")
+	auditTokenVaultId := os.Getenv("PANGEA_AUDIT_TOKEN_VAULT_ID")
 	if vaultToken == "" {
 		log.Fatal("Unauthorized: No vault token present")
 	}
 
-    vaultcli := vault.New(&pangea.Config{
+	vaultcli := vault.New(&pangea.Config{
 		Token:  vaultToken,
 		Domain: domain,
 	})
-    getInput := &vault.GetRequest{
+	getInput := &vault.GetRequest{
 		ID: auditTokenVaultId,
 	}
 	ctx := context.Background()
-    getResponse, err := vaultcli.Get(ctx, getInput)
+	getResponse, err := vaultcli.Get(ctx, getInput)
 	if err != nil {
 		log.Fatal(err)
 	}
-    auditToken := getResponse.Result.CurrentVersion.Secret
-    if auditToken == nil {
+	auditToken := getResponse.Result.CurrentVersion.Secret
+	if auditToken == nil {
 		log.Fatal("Unexpected nil auditToken")
-    }
+	}
 
 	auditcli, err := audit.New(&pangea.Config{
 		Token:  *auditToken,

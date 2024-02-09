@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+  merge_group:
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prefetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.0
+        with:
+          go-version: "1.22"
+          cache-dependency-path: "**/*.sum"
+
+  test-unit:
+    needs: [prefetch]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ["1.18", "1.19", "1.20", "1.21", "1.22"]
+    defaults:
+      run:
+        working-directory: ./pangea-sdk/v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: ./pangea-sdk/v3/go.sum
+
+      - name: Unit test
+        run: make unit
+
+  examples:
+    needs: [prefetch]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example:
+          - audit
+          - authn
+          - embargo
+          - file_scan
+          - intel
+          - redact
+          - vault
+    defaults:
+      run:
+        working-directory: ./examples/${{ matrix.example }}
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.0
+        with:
+          go-version: "1.22"
+          cache-dependency-path: ./examples/${{ matrix.example }}/go.sum
+
+      # TODO: reorganize each individual example into their own directory to
+      # enable tools like this.
+      # - name: golangci-lint
+      #   uses: golangci/golangci-lint-action@v3.7.0
+      #   with:
+      #     version: v1.55.2
+      #     working-directory: ./examples/${{ matrix.example }}

@@ -20,9 +20,10 @@ import (
 )
 
 const (
-	testingEnvironment = pangeatesting.Live
-	actor              = "GoSDKTest"
+	actor = "GoSDKTest"
 )
+
+var testingEnvironment = pangeatesting.LoadTestEnvironment("vault", pangeatesting.Live)
 
 var timeNow = time.Now()
 var timeStr = timeNow.Format("20060102_150405")

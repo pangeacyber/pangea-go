@@ -101,11 +101,11 @@ func CreateFile(t *testing.T, contents []byte) *os.File {
 	return file
 }
 
-func GetEnvVarOrSkip(t *testing.T, varname string) string {
+func GetEnvVarOrFail(t *testing.T, varname string) string {
 	t.Helper()
 	envVar := os.Getenv(varname)
 	if envVar == "" {
-		t.Skipf("set %v env variable to run this test", varname)
+		t.Fatalf("set %v env variable to run this test", varname)
 	}
 	return envVar
 }
@@ -121,37 +121,37 @@ const (
 func GetTestDomain(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_DOMAIN_" + string(env)
-	return GetEnvVarOrSkip(t, varname)
+	return GetEnvVarOrFail(t, varname)
 }
 
 func GetTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_TOKEN_" + string(env)
-	return GetEnvVarOrSkip(t, varname)
+	return GetEnvVarOrFail(t, varname)
 }
 
 func GetVaultSignatureTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_VAULT_TOKEN_" + string(env)
-	return GetEnvVarOrSkip(t, varname)
+	return GetEnvVarOrFail(t, varname)
 }
 
 func GetCustomSchemaTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_CUSTOM_SCHEMA_TOKEN_" + string(env)
-	return GetEnvVarOrSkip(t, varname)
+	return GetEnvVarOrFail(t, varname)
 }
 
 func GetMultiConfigTestToken(t *testing.T, env TestEnvironment) string {
 	t.Helper()
 	varname := "PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_" + string(env)
-	return GetEnvVarOrSkip(t, varname)
+	return GetEnvVarOrFail(t, varname)
 }
 
 func GetConfigID(t *testing.T, env TestEnvironment, service string, configNumber int) string {
 	t.Helper()
 	varname := fmt.Sprintf("PANGEA_%s_CONFIG_ID_%d_%s", strings.ToUpper(service), configNumber, string(env))
-	return GetEnvVarOrSkip(t, varname)
+	return GetEnvVarOrFail(t, varname)
 }
 
 type CustomSchemaEvent struct {
@@ -172,4 +172,22 @@ func (e *CustomSchemaEvent) Tenant() string {
 
 func (e *CustomSchemaEvent) SetTenant(tid string) {
 	e.TenantID = tid
+}
+
+func LoadTestEnvironment(serviceName string, def TestEnvironment) TestEnvironment {
+	serviceName = strings.ToUpper(strings.ReplaceAll(serviceName, "-", "_"))
+	varName := fmt.Sprintf("SERVICE_%s_ENV", serviceName)
+	value := os.Getenv(varName)
+	if value == "" {
+		fmt.Printf("%s is empty. Returning default value: %s\n", varName, def)
+		return def
+	} else if value == "DEV" {
+		return Develop
+	} else if value == "STG" {
+		return Staging
+	} else if value == "LVE" {
+		return Live
+	} else {
+		panic(fmt.Sprintf("%s not allowed value: %s\n", varName, value))
+	}
 }
