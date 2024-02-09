@@ -11,6 +11,7 @@ go-sdk-examples:
           - intel
           - redact
           - vault
+          - store
   image: golang:${GO_VERSION}
   before_script:
     - export PANGEA_AUDIT_CONFIG_ID="${PANGEA_AUDIT_CONFIG_ID_1_LVE_AWS}"
