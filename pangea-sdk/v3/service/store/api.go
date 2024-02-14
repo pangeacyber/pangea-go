@@ -393,6 +393,8 @@ type ShareLinkCreateItem struct {
 	ExpiresAt      string          `json:"expires_at,omitempty"`
 	MaxAccessCount *int            `json:"max_access_count,omitempty"`
 	Authenticators []Authenticator `json:"authenticators,omitempty"`
+	Message        string          `json:"message,omitempty"`
+	Title          string          `json:"title,omitempty"`
 }
 
 type ShareLinkCreateRequest struct {

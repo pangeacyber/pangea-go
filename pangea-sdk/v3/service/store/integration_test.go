@@ -359,6 +359,8 @@ func Test_Integration_LifeCycle(t *testing.T) {
 		LinkType:       store.LTeditor,
 		Authenticators: authenticators,
 		MaxAccessCount: pangea.Int(3),
+		Message:        "share message",
+		Title:          "share title",
 	}}
 	respCreateLink, err := client.ShareLinkCreate(ctx, &store.ShareLinkCreateRequest{
 		Links: ll,
