@@ -635,6 +635,45 @@ func (e *store) RequestUploadURL(ctx context.Context, input *PutRequest) (*pange
 	return request.GetUploadURL(ctx, e.Client, "v1beta/put", input, &PutResult{})
 }
 
+type ShareLinkSendItem struct {
+	Id    string `json:"id"`
+	Email string `json:"email"`
+}
+
+type ShareLinkSendRequest struct {
+	pangea.BaseRequest
+
+	Links       []ShareLinkSendItem `json:"links"`
+	SenderEmail string              `json:"sender_email"`
+	SenderName  string              `json:"sender_name,omitempty"`
+}
+
+type ShareLinkSendResult struct {
+	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
+}
+
+// @summary Send share link(s)
+//
+// @description Send share link(s)
+//
+// @operationId store_post_v1beta_share_link_send
+//
+// @example
+//
+//	res, err := client.ShareLinkSend(ctx, &store.ShareLinkSendRequest{
+//		Links: []store.ShareLinkSendItem{
+//			store.ShareLinkSendItem{
+//				Id:    link.ID,
+//				Email: "user@email.com",
+//			},
+//		},
+//		SenderEmail: "sender@email.com",
+//		SenderName:  "Sender Name",
+//	})
+func (e *store) ShareLinkSend(ctx context.Context, input *ShareLinkSendRequest) (*pangea.PangeaResponse[ShareLinkSendResult], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/share/link/send", input, &ShareLinkSendResult{})
+}
+
 func (fu *FileUploader) UploadFile(ctx context.Context, url string, tm pangea.TransferMethod, fd pangea.FileData) error {
 	if tm == pangea.TMmultipart {
 		return errors.New(fmt.Sprintf("%s is not supported in UploadFile. Use Put() instead", tm))

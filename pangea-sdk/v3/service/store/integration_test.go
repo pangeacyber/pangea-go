@@ -382,6 +382,20 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.NotEmpty(t, link.ID)
 	assert.Equal(t, len(link.Targets), 1)
 
+	// Send share link
+	respSendLink, err := client.ShareLinkSend(ctx, &store.ShareLinkSendRequest{
+		Links: []store.ShareLinkSendItem{
+			store.ShareLinkSendItem{
+				Id:    link.ID,
+				Email: "user@email.com",
+			},
+		},
+		SenderEmail: "sender@email.com",
+		SenderName:  "Sender Name",
+	})
+
+	assert.Equal(t, 1, len(respSendLink.Result.ShareLinkObjects))
+
 	// Get share link
 	respGetLink, err := client.ShareLinkGet(ctx, &store.ShareLinkGetRequest{
 		ID: link.ID,
