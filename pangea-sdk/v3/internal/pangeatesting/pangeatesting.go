@@ -42,11 +42,8 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 func TestConfig(url string) *pangea.Config {
 	// Clean scheme. It will be adden after decide if it should be secure o insecure
 	// It only happens on testing because of local server
-	if strings.HasPrefix(url, "https://") {
-		url = strings.TrimPrefix(url, "https://")
-	} else if strings.HasPrefix(url, "http://") {
-		url = strings.TrimPrefix(url, "http://")
-	}
+	url = strings.TrimPrefix(url, "https://")
+	url = strings.TrimPrefix(url, "http://")
 
 	return &pangea.Config{
 		Token:      "TestToken",
@@ -97,7 +94,7 @@ func CreateFile(t *testing.T, contents []byte) *os.File {
 	if err != nil {
 		t.Fatal("failed to create temp file")
 	}
-	file.Write(contents)
+	file.Write(contents) //nolint:errcheck
 	return file
 }
 

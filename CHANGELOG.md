@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Documented Vault's asymmetric and symmetric key algorithms.
+
 ### Changed
 
 - Replaced usage of the deprecated io/ioutil package.

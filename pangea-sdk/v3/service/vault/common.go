@@ -21,29 +21,30 @@ const (
 	KPjwt        KeyPurpose = "jwt"
 )
 
+// Asymmetric key algorithm.
 type AsymmetricAlgorithm string
 
 const (
-	AAed25519                               AsymmetricAlgorithm = "ED25519"
-	AAes256                                 AsymmetricAlgorithm = "ES256"
-	AAes384                                 AsymmetricAlgorithm = "ES384"
-	AAes512                                 AsymmetricAlgorithm = "ES512"
-	AArsa2048_pkcs1v15_sha256               AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256"
-	AArsa2048_oaep_sha256                   AsymmetricAlgorithm = "RSA-OAEP-2048-SHA256"
-	AAes256K                                AsymmetricAlgorithm = "ES256K"
-	AArsa2048_oaep_sha1                     AsymmetricAlgorithm = "RSA-OAEP-2048-SHA1"
-	AArsa2048_oaep_sha512                   AsymmetricAlgorithm = "RSA-OAEP-2048-SHA512"
-	AArsa3072_oaep_sha1                     AsymmetricAlgorithm = "RSA-OAEP-3072-SHA1"
-	AArsa3072_oaep_sha256                   AsymmetricAlgorithm = "RSA-OAEP-3072-SHA256"
-	AArsa3072_oaep_sha512                   AsymmetricAlgorithm = "RSA-OAEP-3072-SHA512"
-	AArsa4096_oaep_sha1                     AsymmetricAlgorithm = "RSA-OAEP-4096-SHA1"
-	AArsa4096_oaep_sha256                   AsymmetricAlgorithm = "RSA-OAEP-4096-SHA256"
-	AArsa4096_oaep_sha512                   AsymmetricAlgorithm = "RSA-OAEP-4096-SHA512"
-	AArsa2048_pss_sha256                    AsymmetricAlgorithm = "RSA-PSS-2048-SHA256"
-	AArsa3072_pss_sha256                    AsymmetricAlgorithm = "RSA-PSS-3072-SHA256"
-	AA4096_pss_sha256                       AsymmetricAlgorithm = "RSA-PSS-4096-SHA256" // deprecated by typo. use AArsa4096_pss_sha256 instead
-	AArsa4096_pss_sha256                    AsymmetricAlgorithm = "RSA-PSS-4096-SHA256"
-	AArsa4096_pss_sha512                    AsymmetricAlgorithm = "RSA-PSS-4096-SHA512"
+	AAed25519                               AsymmetricAlgorithm = "ED25519"                  // Ed25519.
+	AAes256                                 AsymmetricAlgorithm = "ES256"                    // ECDSA with SHA256 digest.
+	AAes384                                 AsymmetricAlgorithm = "ES384"                    // ECDSA with SHA384 digest.
+	AAes512                                 AsymmetricAlgorithm = "ES512"                    // ECDSA with SHA512 digest.
+	AArsa2048_pkcs1v15_sha256               AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256" // RSA 2048-bit key, PKCS#1v1.5 signature, SHA256 digest.
+	AArsa2048_oaep_sha256                   AsymmetricAlgorithm = "RSA-OAEP-2048-SHA256"     // RSA 2048-bit key, OAEP padding, SHA256 digest.
+	AAes256K                                AsymmetricAlgorithm = "ES256K"                   // ECDSA with secp256k1 curve and SHA256 digest.
+	AArsa2048_oaep_sha1                     AsymmetricAlgorithm = "RSA-OAEP-2048-SHA1"       // RSA 2048-bit key, OAEP padding, SHA1 digest.
+	AArsa2048_oaep_sha512                   AsymmetricAlgorithm = "RSA-OAEP-2048-SHA512"     // RSA 2048-bit key, OAEP padding, SHA512 digest.
+	AArsa3072_oaep_sha1                     AsymmetricAlgorithm = "RSA-OAEP-3072-SHA1"       // RSA 3072-bit key, OAEP padding, SHA1 digest.
+	AArsa3072_oaep_sha256                   AsymmetricAlgorithm = "RSA-OAEP-3072-SHA256"     // RSA 3072-bit key, OAEP padding, SHA256 digest.
+	AArsa3072_oaep_sha512                   AsymmetricAlgorithm = "RSA-OAEP-3072-SHA512"     // RSA 3072-bit key, OAEP padding, SHA512 digest.
+	AArsa4096_oaep_sha1                     AsymmetricAlgorithm = "RSA-OAEP-4096-SHA1"       // RSA 4096-bit key, OAEP padding, SHA1 digest.
+	AArsa4096_oaep_sha256                   AsymmetricAlgorithm = "RSA-OAEP-4096-SHA256"     // RSA 4096-bit key, OAEP padding, SHA256 digest.
+	AArsa4096_oaep_sha512                   AsymmetricAlgorithm = "RSA-OAEP-4096-SHA512"     // RSA 4096-bit key, OAEP padding, SHA512 digest.
+	AArsa2048_pss_sha256                    AsymmetricAlgorithm = "RSA-PSS-2048-SHA256"      // RSA 2048-bit key, PSS padding, SHA256 digest.
+	AArsa3072_pss_sha256                    AsymmetricAlgorithm = "RSA-PSS-3072-SHA256"      // RSA 3072-bit key, PSS padding, SHA256 digest.
+	AA4096_pss_sha256                       AsymmetricAlgorithm = "RSA-PSS-4096-SHA256"      // deprecated by typo. use AArsa4096_pss_sha256 instead
+	AArsa4096_pss_sha256                    AsymmetricAlgorithm = "RSA-PSS-4096-SHA256"      // RSA 4096-bit key, PSS padding, SHA256 digest.
+	AArsa4096_pss_sha512                    AsymmetricAlgorithm = "RSA-PSS-4096-SHA512"      // RSA 4096-bit key, PSS padding, SHA512 digest.
 	AArsa                                   AsymmetricAlgorithm = "RSA-PKCS1V15-2048-SHA256" // deprecated, use AArsa2048_pkcs1v15_sha256 instead
 	AAed25519_dilithium2_beta               AsymmetricAlgorithm = "ED25519-DILITHIUM2-BETA"
 	AAed488_dilithium3_beta                 AsymmetricAlgorithm = "ED448-DILITHIUM3-BETA"
@@ -62,17 +63,18 @@ const (
 	AAfalcon1024_beta                       AsymmetricAlgorithm = "FALCON-1024-BETA"
 )
 
+// Symmetric key algorithm.
 type SymmetricAlgorithm string
 
 const (
-	SYAhs256      SymmetricAlgorithm = "HS256"
-	SYAhs384      SymmetricAlgorithm = "HS384"
-	SYAhs512      SymmetricAlgorithm = "HS512"
-	SYAaes128_cfb SymmetricAlgorithm = "AES-CFB-128"
-	SYAaes256_cfb SymmetricAlgorithm = "AES-CFB-256"
-	SYAaes256_gcm SymmetricAlgorithm = "AES-GCM-256"
-	SYAaes128_cbc SymmetricAlgorithm = "AES-CBC-128"
-	SYAaes256_cbc SymmetricAlgorithm = "AES-CBC-256"
+	SYAhs256      SymmetricAlgorithm = "HS256"       // HMAC with SHA256 digest.
+	SYAhs384      SymmetricAlgorithm = "HS384"       // HMAC with SHA384 digest.
+	SYAhs512      SymmetricAlgorithm = "HS512"       // HMAC with SHA512 digest.
+	SYAaes128_cfb SymmetricAlgorithm = "AES-CFB-128" // AES cipher feedback mode, 128-bit key.
+	SYAaes256_cfb SymmetricAlgorithm = "AES-CFB-256" // AES cipher feedback mode, 256-bit key.
+	SYAaes256_gcm SymmetricAlgorithm = "AES-GCM-256" // AES Galois/counter mode, 256-bit key.
+	SYAaes128_cbc SymmetricAlgorithm = "AES-CBC-128" // AES cipher block chaining mode, 128-bit key.
+	SYAaes256_cbc SymmetricAlgorithm = "AES-CBC-256" // AES cipher block chaining mode, 256-bit key.
 	SYAaes        SymmetricAlgorithm = "AES-CFB-128" // deprecated, use SYAaes128_cfb instead
 )
 

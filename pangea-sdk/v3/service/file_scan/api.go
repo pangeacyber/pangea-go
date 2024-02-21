@@ -168,7 +168,7 @@ func GetUploadFileParams(file *os.File) (*FileScanFileParams, error) {
 	crc32c := crcHash.Sum32()
 
 	// Reset to be sent
-	file.Seek(0, 0)
+	file.Seek(0, 0) //nolint:errcheck
 
 	return &FileScanFileParams{
 		CRC:    strconv.FormatUint(uint64(crc32c), 16),
@@ -180,7 +180,7 @@ func GetUploadFileParams(file *os.File) (*FileScanFileParams, error) {
 
 func (fu *FileUploader) UploadFile(ctx context.Context, url string, tm pangea.TransferMethod, fd pangea.FileData) error {
 	if tm == pangea.TMmultipart {
-		return errors.New(fmt.Sprintf("%s is not supported in UploadFile. Use Scan() instead", tm))
+		return fmt.Errorf("%s is not supported in UploadFile. Use Scan() instead", tm)
 	}
 
 	fds := pangea.FileData{

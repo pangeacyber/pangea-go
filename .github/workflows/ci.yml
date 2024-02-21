@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - kenany/GEA-12682
 
   pull_request:
     types:
@@ -35,6 +36,25 @@ jobs:
         with:
           go-version: "1.22"
           cache-dependency-path: "**/*.sum"
+
+  lint:
+    needs: [prefetch]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.0
+        with:
+          go-version: "1.22"
+          cache-dependency-path: ./pangea-sdk/v3/go.sum
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4.0.0
+        with:
+          version: v1.56.2
+          working-directory: ./pangea-sdk/v3
 
   test-unit:
     needs: [prefetch]
@@ -91,7 +111,7 @@ jobs:
       # TODO: reorganize each individual example into their own directory to
       # enable tools like this.
       # - name: golangci-lint
-      #   uses: golangci/golangci-lint-action@v3.7.0
+      #   uses: golangci/golangci-lint-action@v4.0.0
       #   with:
-      #     version: v1.55.2
+      #     version: v1.56.2
       #     working-directory: ./examples/${{ matrix.example }}

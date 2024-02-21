@@ -20,7 +20,7 @@ func CanonicalizeStruct(v interface{}) ([]byte, error) {
 		return nil, err
 	}
 	// Order keys
-	json.Unmarshal(ebytes, &smap)
+	json.Unmarshal(ebytes, &smap) //nolint:errcheck
 	mbytes, err := json.Marshal(smap)
 	if err != nil {
 		return nil, err
