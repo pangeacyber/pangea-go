@@ -1,6 +1,6 @@
 module examples/embargo
 
-go 1.19
+go 1.22.0
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.6.0
 
