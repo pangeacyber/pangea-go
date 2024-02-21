@@ -38,9 +38,9 @@ type TransferMethod string
 
 const (
 	TMmultipart TransferMethod = "multipart"
-	TMpostURL                  = "post-url"
-	TMputURL                   = "put-url"
-	TMsourceURL                = "source-url"
+	TMpostURL   TransferMethod = "post-url"
+	TMputURL    TransferMethod = "put-url"
+	TMsourceURL TransferMethod = "source-url"
 )
 
 type ConfigIDer interface {

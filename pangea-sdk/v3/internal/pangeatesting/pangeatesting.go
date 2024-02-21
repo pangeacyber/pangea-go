@@ -114,8 +114,8 @@ type TestEnvironment string
 
 const (
 	Live    TestEnvironment = "LVE"
-	Develop                 = "DEV"
-	Staging                 = "STG"
+	Develop TestEnvironment = "DEV"
+	Staging TestEnvironment = "STG"
 )
 
 func GetTestDomain(t *testing.T, env TestEnvironment) string {

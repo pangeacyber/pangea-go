@@ -29,7 +29,7 @@ type LogSigningMode int
 
 const (
 	Unsigned  LogSigningMode = 0
-	LocalSign                = 1
+	LocalSign LogSigningMode = 1
 )
 
 type audit struct {
