@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 
@@ -159,7 +159,7 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		body := &reqbody{}
-		data, _ := ioutil.ReadAll(r.Body)
+		data, _ := io.ReadAll(r.Body)
 		json.Unmarshal(data, body)
 		if body.Key == nil && *body.Key != "value" {
 			w.WriteHeader(http.StatusInternalServerError)

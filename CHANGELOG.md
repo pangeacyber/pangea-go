@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced usage of the deprecated io/ioutil package.
+
 ### Fixed
 
 - All enums now have consistent types across their values.
