@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/defaults"
@@ -38,7 +38,7 @@ func (a *Arweave) TransactionByID(ctx context.Context, id string) ([]byte, error
 		return nil, fmt.Errorf("arweave: GET %v with status code %v", url, resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("arweave: GET %v failed to read response body: %w", url, err)
 	}
@@ -86,7 +86,7 @@ func (a *Arweave) TransactionConnectionByTags(ctx context.Context, tags TagFilte
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("arweave: POST %v with status code %v", url, resp.StatusCode)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("arweave: POST %v failed to read response body: %w", url, err)
 	}
