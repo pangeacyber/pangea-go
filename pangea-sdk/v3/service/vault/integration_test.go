@@ -1046,7 +1046,7 @@ func Test_List_And_Delete(t *testing.T) {
 
 	assert.Greater(t, lresp.Result.Count, 0)
 	for _, i := range lresp.Result.Items {
-		if i.ID != "" && i.Type != "folder" {
+		if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
 			dresp, err := client.Delete(ctx, &vault.DeleteRequest{
 				ID: i.ID,
 			})
