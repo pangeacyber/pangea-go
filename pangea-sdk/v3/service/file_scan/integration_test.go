@@ -36,12 +36,12 @@ func Test_Integration_FileScan_crowdstrike(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	resp, err := client.Scan(ctx, input, file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err.Error())
+		t.Fatalf("unexpected error: %v", err.Error())
 	}
 
 	assert.NotNil(t, resp)
@@ -69,12 +69,12 @@ func Test_Integration_FileScan_multipart(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	resp, err := client.Scan(ctx, input, file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err.Error())
+		t.Fatalf("unexpected error: %v", err.Error())
 	}
 
 	assert.NotNil(t, resp)
@@ -99,7 +99,7 @@ func Test_Integration_FileScan_NoRetry_crowdstrike(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	resp, err := client.Scan(ctx, input, file)
@@ -135,12 +135,12 @@ func Test_Integration_FileScan_reversinglabs(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	resp, err := client.Scan(ctx, input, file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err.Error())
+		t.Fatalf("unexpected error: %v", err.Error())
 	}
 
 	assert.NotNil(t, resp)
@@ -165,7 +165,7 @@ func Test_Integration_FileScan_NoRetry_reversinglabs(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	resp, err := client.Scan(ctx, input, file)
@@ -204,12 +204,12 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	params, err := file_scan.GetUploadFileParams(file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	input := &file_scan.FileScanGetURLRequest{
@@ -222,7 +222,7 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 
 	resp, err := client.RequestUploadURL(ctx, input, file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err.Error())
+		t.Fatalf("unexpected error: %v", err.Error())
 	}
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.AcceptedResult)
@@ -241,7 +241,7 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 	uploader := file_scan.NewFileUploader()
 	err = uploader.UploadFile(ctx, url, pangea.TMpostURL, fd)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	var pr *pangea.PangeaResponse[any]
@@ -274,7 +274,7 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	input := &file_scan.FileScanGetURLRequest{
@@ -286,7 +286,7 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 
 	resp, err := client.RequestUploadURL(ctx, input, file)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err.Error())
+		t.Fatalf("unexpected error: %v", err.Error())
 	}
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.AcceptedResult)
@@ -304,7 +304,7 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 	uploader := file_scan.NewFileUploader()
 	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	var pr *pangea.PangeaResponse[any]
@@ -338,7 +338,7 @@ func Test_Integration_FileScan_SplitUpload_Post_ErrorNoParams(t *testing.T) {
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		t.Fatalf("expected no error got: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	input := &file_scan.FileScanGetURLRequest{

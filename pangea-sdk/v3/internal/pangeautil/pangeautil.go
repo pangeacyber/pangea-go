@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"mime"
 	"reflect"
 	"sort"
 	"strings"
@@ -124,4 +126,47 @@ func Sleep(t time.Duration, ctx context.Context) bool {
 	case <-time.After(t): //timeout
 		return true
 	}
+}
+
+func GetBoundary(contentType string) (string, error) {
+	// Parse the Content-Type header
+	mediaType, params, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		return "", err
+	}
+
+	// Check if it's a multipart media type
+	if !strings.HasPrefix(mediaType, "multipart/") {
+		return "", err
+	}
+
+	// Extract the boundary parameter
+	boundary, ok := params["boundary"]
+	if !ok {
+		return "", errors.New("Boundary parameter not found in Content-Type")
+	}
+
+	return boundary, nil
+}
+
+func GetFilename(contentDisposition string) (string, error) {
+	if contentDisposition == "" {
+		return "", fmt.Errorf("Content-Disposition header is empty")
+	}
+
+	// Split the header into parts
+	parts := strings.Split(contentDisposition, ";")
+
+	// Search for the "filename" parameter
+	for _, part := range parts {
+		if strings.Contains(part, "filename") {
+			// Extract the filename
+			filenamePart := strings.Split(part, "=")
+			if len(filenamePart) == 2 {
+				return strings.Trim(filenamePart[1], "\" "), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("Filename not found in Content-Disposition header")
 }
