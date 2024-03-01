@@ -178,7 +178,7 @@ func TestDo_Request_With_Body_Sends_Request_With_Json_Body(t *testing.T) {
 
 	resp, err := client.Do(context.Background(), req, nil, true)
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "Not initialized struct. Can't unmarshal result from response")
+	assert.Equal(t, err.Error(), "not initialized struct. Can't unmarshal result from response")
 	assert.Nil(t, resp)
 }
 
