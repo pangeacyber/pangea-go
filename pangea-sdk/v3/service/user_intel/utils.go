@@ -10,8 +10,8 @@ type PasswordStatus int
 
 const (
 	PSbreached     PasswordStatus = 0
-	PSunbreached                  = 1
-	PSinconclusive                = 2
+	PSunbreached   PasswordStatus = 1
+	PSinconclusive PasswordStatus = 2
 )
 
 func IsPasswordBreached(r *pangea.PangeaResponse[UserPasswordBreachedResult], h string) (PasswordStatus, error) {

@@ -104,7 +104,7 @@ go-sdk-generate-docs:
   artifacts:
     expire_in: 1 month
     expose_as: go_sdk
-    paths: ['pangea-sdk/go_sdk.json']
+    paths: ['pangea-sdk/v3/go_sdk.json']
     when: on_success
 
 go-sdk-unit-testing:

@@ -128,25 +128,25 @@ type IDProvider string
 
 const (
 	IDPFacebook        IDProvider = "facebook"
-	IDPGithub                     = "github"
-	IDPGoogle                     = "google"
-	IDPMicrosoftOnline            = "microsoftonline"
-	IDPPassword                   = "password"
+	IDPGithub          IDProvider = "github"
+	IDPGoogle          IDProvider = "google"
+	IDPMicrosoftOnline IDProvider = "microsoftonline"
+	IDPPassword        IDProvider = "password"
 )
 
 type MFAProvider string
 
 const (
 	MFAPTOTP     MFAProvider = "totp"
-	MFAPEmailOTP             = "email_otp"
-	IDPSMSOTP                = "sms_otp"
+	MFAPEmailOTP MFAProvider = "email_otp"
+	IDPSMSOTP    MFAProvider = "sms_otp"
 )
 
 type FlowType string
 
 const (
 	FTsignin FlowType = "signin"
-	FTsignup          = "signup"
+	FTsignup FlowType = "signup"
 )
 
 type ProfileData map[string]string
@@ -310,23 +310,23 @@ type UserListOrderBy string
 
 const (
 	ULOBid          UserListOrderBy = "id"
-	ULOBcreatedAt                   = "created_at"
-	ULOBlastLoginAt                 = "last_login_at"
-	ULOBemail                       = "email"
+	ULOBcreatedAt   UserListOrderBy = "created_at"
+	ULOBlastLoginAt UserListOrderBy = "last_login_at"
+	ULOBemail       UserListOrderBy = "email"
 )
 
 type UserInviteListOrderBy string
 
 const (
 	UILOBid        UserListOrderBy = "id"
-	UILOBcreatedAt                 = "created_at"
-	UILOBtype                      = "type"
-	UILOBexpire                    = "expire"
-	UILOBcallback                  = "callback"
-	UILOBstate                     = "state"
-	UILOBemail                     = "email"
-	UILOBinviter                   = "inviter"
-	UILOBinviteOrg                 = "invite_org"
+	UILOBcreatedAt UserListOrderBy = "created_at"
+	UILOBtype      UserListOrderBy = "type"
+	UILOBexpire    UserListOrderBy = "expire"
+	UILOBcallback  UserListOrderBy = "callback"
+	UILOBstate     UserListOrderBy = "state"
+	UILOBemail     UserListOrderBy = "email"
+	UILOBinviter   UserListOrderBy = "inviter"
+	UILOBinviteOrg UserListOrderBy = "invite_org"
 )
 
 type FilterUserList struct {
@@ -847,19 +847,19 @@ type FlowChoice string
 
 const (
 	FCAgreements            FlowChoice = "agreements"
-	FCCaptcha                          = "captcha"
-	FCEmailOTP                         = "email_otp"
-	FCMagiclink                        = "magiclink"
-	FCPassword                         = "password"
-	FCProfile                          = "profile"
-	FCProvisionalEnrollment            = "provisional_enrollment"
-	FCResetPassword                    = "reset_password"
-	FCSetEmail                         = "set_mail"
-	FCSetPassword                      = "set_password"
-	FCSMSOTP                           = "sms_otp"
-	FCSocial                           = "social"
-	FCTOTP                             = "totp"
-	FCVerifyEmail                      = "verify_email"
+	FCCaptcha               FlowChoice = "captcha"
+	FCEmailOTP              FlowChoice = "email_otp"
+	FCMagiclink             FlowChoice = "magiclink"
+	FCPassword              FlowChoice = "password"
+	FCProfile               FlowChoice = "profile"
+	FCProvisionalEnrollment FlowChoice = "provisional_enrollment"
+	FCResetPassword         FlowChoice = "reset_password"
+	FCSetEmail              FlowChoice = "set_mail"
+	FCSetPassword           FlowChoice = "set_password"
+	FCSMSOTP                FlowChoice = "sms_otp"
+	FCSocial                FlowChoice = "social"
+	FCTOTP                  FlowChoice = "totp"
+	FCVerifyEmail           FlowChoice = "verify_email"
 )
 
 type FlowUpdateRequest struct {
@@ -1031,19 +1031,19 @@ type SessionListOrderBy string
 
 const (
 	SLOBid            SessionListOrderBy = "id"
-	SLOBcreatedAt                        = "created_at"
-	SLOBtype                             = "type"
-	SLOBidentity                         = "identity"
-	SLOBemail                            = "email"
-	SLOBexpire                           = "expire"
-	SLOBactiveTokenID                    = "active_token_id"
+	SLOBcreatedAt     SessionListOrderBy = "created_at"
+	SLOBtype          SessionListOrderBy = "type"
+	SLOBidentity      SessionListOrderBy = "identity"
+	SLOBemail         SessionListOrderBy = "email"
+	SLOBexpire        SessionListOrderBy = "expire"
+	SLOBactiveTokenID SessionListOrderBy = "active_token_id"
 )
 
 type ItemOrder string
 
 const (
 	IOasc  ItemOrder = "asc"
-	IOdesc           = "desc"
+	IOdesc ItemOrder = "desc"
 )
 
 type FilterSessionList struct {
@@ -1300,7 +1300,7 @@ type AgreementType string
 
 const (
 	ATeula          AgreementType = "eula"
-	ATprivacyPolicy               = "privacy_policy"
+	ATprivacyPolicy AgreementType = "privacy_policy"
 )
 
 type AgreementCreateRequest struct {
@@ -1375,9 +1375,9 @@ type AgreementListOrderBy string
 
 const (
 	ALOBid        AgreementListOrderBy = "id"
-	ALOBcreatedAt                      = "created_at"
-	ALOBname                           = "name"
-	ALOBtext                           = "text"
+	ALOBcreatedAt AgreementListOrderBy = "created_at"
+	ALOBname      AgreementListOrderBy = "name"
+	ALOBtext      AgreementListOrderBy = "text"
 )
 
 type FilterAgreementList struct {

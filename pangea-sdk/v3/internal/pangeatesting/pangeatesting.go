@@ -2,7 +2,7 @@ package pangeatesting
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -65,7 +65,7 @@ func TestMethod(t *testing.T, r *http.Request, want string) {
 
 func TestBody(t *testing.T, r *http.Request, want string) {
 	t.Helper()
-	b, err := ioutil.ReadAll(r.Body)
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		t.Fatalf("Error reading request body: %v", err)
 	}
@@ -93,9 +93,9 @@ func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.
 func CreateFile(t *testing.T, contents []byte) *os.File {
 	t.Helper()
 	tmpdir := t.TempDir()
-	file, err := ioutil.TempFile(tmpdir, "*")
+	file, err := os.CreateTemp(tmpdir, "*")
 	if err != nil {
-		t.Fatal("failed to creat temp file")
+		t.Fatal("failed to create temp file")
 	}
 	file.Write(contents)
 	return file
@@ -114,8 +114,8 @@ type TestEnvironment string
 
 const (
 	Live    TestEnvironment = "LVE"
-	Develop                 = "DEV"
-	Staging                 = "STG"
+	Develop TestEnvironment = "DEV"
+	Staging TestEnvironment = "STG"
 )
 
 func GetTestDomain(t *testing.T, env TestEnvironment) string {

@@ -697,6 +697,132 @@ func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 
 }
 
+func Test_Integration_AsymmetricSigningGenerate(t *testing.T) {
+	algorithms := []vault.AsymmetricAlgorithm{
+		vault.AAed25519,
+		vault.AArsa2048_pss_sha256,
+		vault.AArsa3072_pss_sha256,
+		vault.AArsa4096_pss_sha256,
+		vault.AArsa4096_pss_sha512,
+		vault.AArsa2048_pkcs1v15_sha256,
+		vault.AAes256K,
+		vault.AAed25519_dilithium2_beta,
+		vault.AAed488_dilithium3_beta,
+		vault.AAsphincsplus_128f_shake256_simple_beta,
+		vault.AAsphincsplus_128f_shake256_robust_beta,
+		vault.AAsphincsplus_192f_shake256_simple_beta,
+		vault.AAsphincsplus_192f_shake256_robust_beta,
+		vault.AAsphincsplus_256f_shake256_simple_beta,
+		vault.AAsphincsplus_256f_shake256_robust_beta,
+		vault.AAsphincsplus_128f_sha256_simple_beta,
+		vault.AAsphincsplus_128f_sha256_robust_beta,
+		vault.AAsphincsplus_192f_sha256_simple_beta,
+		vault.AAsphincsplus_192f_sha256_robust_beta,
+		vault.AAsphincsplus_256f_sha256_simple_beta,
+		vault.AAsphincsplus_256f_sha256_robust_beta,
+		vault.AAfalcon1024_beta,
+	}
+
+	failed := false
+	purpose := vault.KPsigning
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	for _, algorithm := range algorithms {
+		name := GetName(fmt.Sprintf("Test_Integration_%s_%s_generate", purpose, algorithm))
+		// Generate
+		_, err := client.AsymmetricGenerate(ctx,
+			&vault.AsymmetricGenerateRequest{
+				CommonGenerateRequest: vault.CommonGenerateRequest{
+					Name: name,
+				},
+				Algorithm: algorithm,
+				Purpose:   purpose,
+			})
+
+		if err != nil {
+			fmt.Printf("Failed to generate %s %s\n%s...\n\n", algorithm, purpose, err)
+			failed = true
+		}
+	}
+	assert.False(t, failed)
+}
+
+func Test_Integration_AsymmetricEncryptionGenerate(t *testing.T) {
+	algorithms := []vault.AsymmetricAlgorithm{
+		vault.AArsa2048_oaep_sha256,
+		vault.AArsa2048_oaep_sha1,
+		vault.AArsa2048_oaep_sha512,
+		vault.AArsa3072_oaep_sha1,
+		vault.AArsa3072_oaep_sha256,
+		vault.AArsa3072_oaep_sha512,
+		vault.AArsa4096_oaep_sha1,
+		vault.AArsa4096_oaep_sha256,
+		vault.AArsa4096_oaep_sha512,
+	}
+
+	failed := false
+	purpose := vault.KPencryption
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	for _, algorithm := range algorithms {
+		name := GetName(fmt.Sprintf("Test_Integration_%s_%s_generate", purpose, algorithm))
+		// Generate
+		_, err := client.AsymmetricGenerate(ctx,
+			&vault.AsymmetricGenerateRequest{
+				CommonGenerateRequest: vault.CommonGenerateRequest{
+					Name: name,
+				},
+				Algorithm: algorithm,
+				Purpose:   purpose,
+			})
+
+		if err != nil {
+			fmt.Printf("Failed to generate %s %s...\n%s\n\n", algorithm, purpose, err)
+			failed = true
+		}
+	}
+	assert.False(t, failed)
+}
+
+func Test_Integration_SymmetricEncryptionGenerate(t *testing.T) {
+	algorithms := []vault.SymmetricAlgorithm{
+		vault.SYAaes128_cfb,
+		vault.SYAaes256_cfb,
+		vault.SYAaes256_gcm,
+		vault.SYAaes128_cbc,
+		vault.SYAaes256_cbc,
+	}
+
+	failed := false
+	purpose := vault.KPencryption
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	for _, algorithm := range algorithms {
+		name := GetName(fmt.Sprintf("Test_Integration_%s_%s_generate", purpose, algorithm))
+		// Generate
+		_, err := client.SymmetricGenerate(ctx,
+			&vault.SymmetricGenerateRequest{
+				CommonGenerateRequest: vault.CommonGenerateRequest{
+					Name: name,
+				},
+				Algorithm: algorithm,
+				Purpose:   purpose,
+			})
+
+		if err != nil {
+			fmt.Printf("Failed to generate %s %s...\n%s\n\n", algorithm, purpose, err)
+			failed = true
+		}
+	}
+	assert.False(t, failed)
+}
+
 func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
@@ -920,7 +1046,7 @@ func Test_List_And_Delete(t *testing.T) {
 
 	assert.Greater(t, lresp.Result.Count, 0)
 	for _, i := range lresp.Result.Items {
-		if i.ID != "" && i.Type != "folder" {
+		if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
 			dresp, err := client.Delete(ctx, &vault.DeleteRequest{
 				ID: i.ID,
 			})

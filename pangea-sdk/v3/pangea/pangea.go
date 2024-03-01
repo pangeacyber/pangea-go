@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	version         = "3.6.0"
+	version         = "3.7.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
@@ -38,10 +38,10 @@ type TransferMethod string
 
 const (
 	TMmultipart TransferMethod = "multipart"
-	TMpostURL                  = "post-url"
-	TMputURL                   = "put-url"
-	TMsourceURL                = "source-url"
-	TMdestURL                  = "dest-url"
+	TMpostURL   TransferMethod = "post-url"
+	TMputURL    TransferMethod = "put-url"
+	TMsourceURL TransferMethod = "source-url"
+	TMdestURL   TransferMethod = "dest-url"
 )
 
 type ConfigIDer interface {

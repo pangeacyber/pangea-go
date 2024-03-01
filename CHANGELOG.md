@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replaced usage of the deprecated io/ioutil package.
+
+### Fixed
+
+- All enums now have consistent types across their values.
+
+## [3.7.0] - 2024-02-26
+
+### Added 
+
+- Vault service. Post quantum signing algorithms support
+
+### Changed
+
 - Rewrote `README.md`.
 
 ## [3.6.0] - 2024-01-16
@@ -268,7 +282,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redact client
 
 
-[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.6.0...main
+[unreleased]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.7.0...main
+[3.7.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/pangeacyber/pangea-go/compare/pangea-sdk/v3.3.0...v3.4.0
