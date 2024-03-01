@@ -301,7 +301,7 @@ func SearchAll(ctx context.Context, client Client, input *SearchInput) (*Root, S
 }
 
 func (a *audit) processLogBulkResult(ctx context.Context, br *LogBulkResult) error {
-	for i, _ := range br.Results {
+	for i := range br.Results {
 		err := a.processLogResult(ctx, &br.Results[i])
 		if err != nil {
 			return err
@@ -583,6 +583,13 @@ const (
 	NotVerified EventVerification = iota
 	Success
 	Failed
+)
+
+type DownloadFormat string
+
+const (
+	DFjson DownloadFormat = "json"
+	DFcsv  DownloadFormat = "csv"
 )
 
 func (ev EventVerification) String() string {
@@ -924,4 +931,20 @@ type Root struct {
 
 type RootOutput struct {
 	Data Root `json:"data"`
+}
+
+type DownloadRequest struct {
+	pangea.BaseRequest
+
+	ResultID string         `json:"result_id"`
+	Format   DownloadFormat `json:"format,omitempty"`
+}
+
+type DownloadResult struct {
+	DestURL string `json:"dest_url"`
+}
+
+// TODO: Docs
+func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error) {
+	return request.DoPost(ctx, a.Client, "v1/download_results", input, &DownloadResult{})
 }

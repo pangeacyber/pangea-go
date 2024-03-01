@@ -172,12 +172,12 @@ func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
 // MarshalJSON implements the json.Marshaler interface for CustomType.
 func (r Response) MarshalJSON() ([]byte, error) {
 	if r.rawResponse == nil {
-		return nil, errors.New("Unable to read response body")
+		return nil, errors.New("unable to read response body")
 	}
 	b := make([]byte, len(r.rawResponse))
 	nc := copy(b, r.rawResponse)
 	if nc != len(r.rawResponse) {
-		return nil, errors.New("Unable to copy raw response")
+		return nil, errors.New("unable to copy raw response")
 	}
 	return b, nil
 }

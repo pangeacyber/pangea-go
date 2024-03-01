@@ -143,13 +143,13 @@ func GetBoundary(contentType string) (string, error) {
 	// Extract the boundary parameter
 	boundary, ok := params["boundary"]
 	if !ok {
-		return "", errors.New("Boundary parameter not found in Content-Type")
+		return "", errors.New("boundary parameter not found in Content-Type")
 	}
 
 	return boundary, nil
 }
 
-func GetFilename(contentDisposition string) (string, error) {
+func GetFilenameFromContentDisposition(contentDisposition string) (string, error) {
 	if contentDisposition == "" {
 		return "", fmt.Errorf("Content-Disposition header is empty")
 	}
@@ -168,5 +168,10 @@ func GetFilename(contentDisposition string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Filename not found in Content-Disposition header")
+	return "", fmt.Errorf("filename not found in Content-Disposition header")
+}
+
+func GetFileNameFromURL(url string) string {
+	parts := strings.Split(url, "/")
+	return strings.Split(parts[len(parts)-1], "?")[0]
 }
