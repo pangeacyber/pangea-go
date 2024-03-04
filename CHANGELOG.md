@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replaced usage of the deprecated io/ioutil package.
+- Audit /download_results endpoint support
+
 
 ### Fixed
 
