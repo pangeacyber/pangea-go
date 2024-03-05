@@ -126,7 +126,6 @@ func DoPostWithFile[T any](ctx context.Context, c *pangea.Client, path string, i
 	}
 
 	var resp *pangea.Response
-	err = nil
 	v, ok := input.(pangea.TransferRequester)
 
 	if ok && v.GetTransferMethod() == pangea.TMpostURL { // Check TransferMethod

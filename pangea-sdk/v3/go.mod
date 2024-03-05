@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/rs/zerolog v1.32.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.20.0
 )
 
