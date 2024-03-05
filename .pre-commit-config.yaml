@@ -16,7 +16,7 @@ repos:
           - --branch
           - main
   - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.0
+    rev: v0.5.1
     hooks:
       - id: go-fmt
       - id: go-mod-tidy
