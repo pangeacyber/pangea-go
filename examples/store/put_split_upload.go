@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/store"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/share"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	defer cancelFn()
 
 	// create a new store client with pangea token and domain
-	client := store.New(&pangea.Config{
+	client := share.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
 		QueuedRetryEnabled: true,
@@ -39,7 +39,7 @@ func main() {
 
 	// Create a PutRequest to request an presigned upload url.
 	// In this case TransferMethod is set to TMputURL
-	input := &store.PutRequest{
+	input := &share.PutRequest{
 		Name: name,
 		TransferRequest: pangea.TransferRequest{
 			TransferMethod: pangea.TMputURL,
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	// Create an upload
-	uploader := store.NewFileUploader()
+	uploader := share.NewFileUploader()
 
 	// Upload the file to the url get previously
 	// Need to set transfer method again to TMputURL
@@ -82,7 +82,7 @@ func main() {
 		// Wait until result should be ready
 		time.Sleep(time.Duration(10 * time.Second))
 
-		pr, err = client.PollResultByID(ctx, *resp.RequestID, &store.PutResult{})
+		pr, err = client.PollResultByID(ctx, *resp.RequestID, &share.PutResult{})
 		if err == nil {
 			break
 		}
@@ -90,7 +90,7 @@ func main() {
 	}
 
 	// Once got the result, cast it to use it
-	rPut := (*pr.Result).(*store.PutResult)
+	rPut := (*pr.Result).(*share.PutResult)
 
 	fmt.Println("File uploaded:")
 	fmt.Printf("\tID: %s\n", rPut.Object.ID)

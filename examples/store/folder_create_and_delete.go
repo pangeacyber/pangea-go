@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/store"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/share"
 )
 
 func main() {
@@ -25,13 +25,13 @@ func main() {
 	defer cancelFn()
 
 	// create a new store client with pangea token and domain
-	client := store.New(&pangea.Config{
+	client := share.New(&pangea.Config{
 		Token:  token,
 		Domain: os.Getenv("PANGEA_DOMAIN"),
 	})
 
 	// Create a FolderCreateRequest and set the path of the folder to be created
-	input := &store.FolderCreateRequest{
+	input := &share.FolderCreateRequest{
 		Path: path,
 	}
 
@@ -47,7 +47,7 @@ func main() {
 
 	fmt.Printf("Let's create this folder now\n")
 	// Create a DeleteRequest and set the ID of the item to be deleted
-	input2 := &store.DeleteRequest{
+	input2 := &share.DeleteRequest{
 		ID: id,
 	}
 

@@ -1,6 +1,6 @@
 //go:build integration
 
-package store_test
+package share_test
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeatesting"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/store"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/share"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +30,7 @@ var ADD_METADATA = map[string]string{"field3": "value3"}
 var TAGS = []string{"tag1", "tag2"}
 var ADD_TAGS = []string{"tag3"}
 
-func storeIntegrationCfg(t *testing.T) *pangea.Config {
+func shareIntegrationCfg(t *testing.T) *pangea.Config {
 	t.Helper()
 	return pangeatesting.IntegrationConfig(t, testingEnvironment)
 }
@@ -39,10 +39,10 @@ func Test_Integration_Folder(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelFn()
 
-	cfg := storeIntegrationCfg(t)
-	client := store.New(cfg)
+	cfg := shareIntegrationCfg(t)
+	client := share.New(cfg)
 
-	input := &store.FolderCreateRequest{
+	input := &share.FolderCreateRequest{
 		Path: FOLDER_DELETE,
 	}
 
@@ -60,7 +60,7 @@ func Test_Integration_Folder(t *testing.T) {
 	assert.Equal(t, out.Result.Object.Type, "folder")
 	id := out.Result.Object.ID
 
-	input2 := &store.DeleteRequest{
+	input2 := &share.DeleteRequest{
 		ID: id,
 	}
 	rDel, err := client.Delete(ctx, input2)
@@ -76,12 +76,12 @@ func Test_Integration_PutTransferMethodPostURL(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
 
-	cfg := storeIntegrationCfg(t)
-	client := store.New(cfg)
+	cfg := shareIntegrationCfg(t)
+	client := share.New(cfg)
 
 	name := TIME + "_file_post_url"
 
-	input := &store.PutRequest{
+	input := &share.PutRequest{
 		Name: name,
 		TransferRequest: pangea.TransferRequest{
 			TransferMethod: pangea.TMpostURL,
@@ -108,12 +108,12 @@ func Test_Integration_PutTransferMethodMultipart(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelFn()
 
-	cfg := storeIntegrationCfg(t)
-	client := store.New(cfg)
+	cfg := shareIntegrationCfg(t)
+	client := share.New(cfg)
 
 	name := TIME + "_file_multipart"
 
-	input := &store.PutRequest{
+	input := &share.PutRequest{
 		Name: name,
 		TransferRequest: pangea.TransferRequest{
 			TransferMethod: pangea.TMmultipart,
@@ -141,11 +141,11 @@ func Test_Integration_SplitUpload_Put(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
-	client := store.New(cfg)
+	client := share.New(cfg)
 
 	name := TIME + "_file_split_put_url"
 
-	input := &store.PutRequest{
+	input := &share.PutRequest{
 		Name: name,
 		TransferRequest: pangea.TransferRequest{
 			TransferMethod: pangea.TMputURL,
@@ -175,7 +175,7 @@ func Test_Integration_SplitUpload_Put(t *testing.T) {
 		Name: "someName",
 	}
 
-	uploader := store.NewFileUploader()
+	uploader := share.NewFileUploader()
 	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -188,7 +188,7 @@ func Test_Integration_SplitUpload_Put(t *testing.T) {
 		// Wait until result should be ready
 		time.Sleep(time.Duration(10 * time.Second))
 
-		pr, err = client.PollResultByID(ctx, *resp.RequestID, &store.PutResult{})
+		pr, err = client.PollResultByID(ctx, *resp.RequestID, &share.PutResult{})
 		if err == nil {
 			break
 		}
@@ -198,7 +198,7 @@ func Test_Integration_SplitUpload_Put(t *testing.T) {
 	assert.NotNil(t, pr)
 	assert.NotNil(t, pr.Result)
 
-	_, ok := (*pr.Result).(*store.PutResult)
+	_, ok := (*pr.Result).(*share.PutResult)
 	assert.True(t, ok)
 
 }
@@ -208,10 +208,10 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
-	client := store.New(cfg)
+	client := share.New(cfg)
 
 	// Create a folder
-	respCreate, err := client.FolderCreate(ctx, &store.FolderCreateRequest{
+	respCreate, err := client.FolderCreate(ctx, &share.FolderCreateRequest{
 		Path: FOLDER_FILES,
 	})
 	if err != nil {
@@ -230,7 +230,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	}
 
 	respPut, err := client.Put(ctx,
-		&store.PutRequest{
+		&share.PutRequest{
 			Path: FOLDER_FILES + "/" + TIME + "_file_multipart_1",
 			TransferRequest: pangea.TransferRequest{
 				TransferMethod: pangea.TMmultipart,
@@ -258,7 +258,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	}
 
 	respPut2, err := client.Put(ctx,
-		&store.PutRequest{
+		&share.PutRequest{
 			Name:     TIME + "_file_multipart_2",
 			ParentID: folderID,
 			TransferRequest: pangea.TransferRequest{
@@ -275,14 +275,14 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.NotNil(t, respPut2)
 	assert.NotNil(t, respPut2.Result)
 	assert.Equal(t, folderID, respPut2.Result.Object.ParentID)
-	assert.Equal(t, store.Metadata(METADATA), respPut2.Result.Object.Metadata)
-	assert.Equal(t, store.Tags(TAGS), respPut2.Result.Object.Tags)
+	assert.Equal(t, share.Metadata(METADATA), respPut2.Result.Object.Metadata)
+	assert.Equal(t, share.Tags(TAGS), respPut2.Result.Object.Tags)
 	assert.Empty(t, respPut2.Result.Object.MD5)
 	assert.Empty(t, respPut2.Result.Object.SHA512)
 	assert.NotEmpty(t, respPut2.Result.Object.SHA256)
 
 	// Update file with full metadata and tags
-	respUpdate, err := client.Update(ctx, &store.UpdateRequest{
+	respUpdate, err := client.Update(ctx, &share.UpdateRequest{
 		ID:       respPut.Result.Object.ID,
 		Metadata: METADATA,
 		Tags:     TAGS,
@@ -293,11 +293,11 @@ func Test_Integration_LifeCycle(t *testing.T) {
 
 	assert.NotNil(t, respUpdate)
 	assert.NotNil(t, respUpdate.Result)
-	assert.Equal(t, store.Metadata(METADATA), respUpdate.Result.Object.Metadata)
-	assert.Equal(t, store.Tags(TAGS), respUpdate.Result.Object.Tags)
+	assert.Equal(t, share.Metadata(METADATA), respUpdate.Result.Object.Metadata)
+	assert.Equal(t, share.Tags(TAGS), respUpdate.Result.Object.Tags)
 
 	// Update file with add metadata and tags
-	respUpdate2, err := client.Update(ctx, &store.UpdateRequest{
+	respUpdate2, err := client.Update(ctx, &share.UpdateRequest{
 		ID:          respPut2.Result.Object.ID,
 		AddMetadata: ADD_METADATA,
 		AddTags:     ADD_TAGS,
@@ -310,9 +310,9 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.NotNil(t, respUpdate2.Result)
 
 	// Get archive
-	respGetArchive, err := client.GetArchive(ctx, &store.GetArchiveRequest{
+	respGetArchive, err := client.GetArchive(ctx, &share.GetArchiveRequest{
 		Ids:            []string{folderID},
-		Format:         store.AFzip,
+		Format:         share.AFzip,
 		TransferMethod: pangea.TMmultipart,
 	})
 
@@ -329,9 +329,9 @@ func Test_Integration_LifeCycle(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
-	respGetArchive2, err := client.GetArchive(ctx, &store.GetArchiveRequest{
+	respGetArchive2, err := client.GetArchive(ctx, &share.GetArchiveRequest{
 		Ids:            []string{folderID},
-		Format:         store.AFzip,
+		Format:         share.AFzip,
 		TransferMethod: pangea.TMdestURL,
 	})
 
@@ -350,19 +350,19 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.NotEmpty(t, attachedFile.ContentType)
 
 	// Create share link
-	authenticators := []store.Authenticator{store.Authenticator{
-		AuthType:    store.ATpassword,
+	authenticators := []share.Authenticator{share.Authenticator{
+		AuthType:    share.ATpassword,
 		AuthContext: "somepassword",
 	}}
-	ll := []store.ShareLinkCreateItem{store.ShareLinkCreateItem{
+	ll := []share.ShareLinkCreateItem{share.ShareLinkCreateItem{
 		Targets:        []string{folderID},
-		LinkType:       store.LTeditor,
+		LinkType:       share.LTeditor,
 		Authenticators: authenticators,
 		MaxAccessCount: pangea.Int(3),
 		Message:        "share message",
 		Title:          "share title",
 	}}
-	respCreateLink, err := client.ShareLinkCreate(ctx, &store.ShareLinkCreateRequest{
+	respCreateLink, err := client.ShareLinkCreate(ctx, &share.ShareLinkCreateRequest{
 		Links: ll,
 	})
 
@@ -377,15 +377,15 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, link.AccessCount, 0)
 	assert.Equal(t, link.MaxAccessCount, 3)
 	assert.Equal(t, len(link.Authenticators), 1)
-	assert.Equal(t, string(link.Authenticators[0].AuthType), string(store.ATpassword))
+	assert.Equal(t, string(link.Authenticators[0].AuthType), string(share.ATpassword))
 	assert.NotEmpty(t, link.Link)
 	assert.NotEmpty(t, link.ID)
 	assert.Equal(t, len(link.Targets), 1)
 
 	// Send share link
-	respSendLink, err := client.ShareLinkSend(ctx, &store.ShareLinkSendRequest{
-		Links: []store.ShareLinkSendItem{
-			store.ShareLinkSendItem{
+	respSendLink, err := client.ShareLinkSend(ctx, &share.ShareLinkSendRequest{
+		Links: []share.ShareLinkSendItem{
+			share.ShareLinkSendItem{
 				Id:    link.ID,
 				Email: "user@email.com",
 			},
@@ -397,7 +397,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, 1, len(respSendLink.Result.ShareLinkObjects))
 
 	// Get share link
-	respGetLink, err := client.ShareLinkGet(ctx, &store.ShareLinkGetRequest{
+	respGetLink, err := client.ShareLinkGet(ctx, &share.ShareLinkGetRequest{
 		ID: link.ID,
 	})
 
@@ -407,7 +407,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, respGetLink.Result.ShareLinkObject, link)
 
 	// List share link
-	respListLink, err := client.ShareLinkList(ctx, &store.ShareLinkListRequest{})
+	respListLink, err := client.ShareLinkList(ctx, &share.ShareLinkListRequest{})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, respListLink)
@@ -415,7 +415,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.True(t, len(respListLink.Result.ShareLinkObjects) > 0)
 
 	// Delete share link
-	respDeleteLink, err := client.ShareLinkDelete(ctx, &store.ShareLinkDeleteRequest{
+	respDeleteLink, err := client.ShareLinkDelete(ctx, &share.ShareLinkDeleteRequest{
 		Ids: []string{link.ID},
 	})
 
@@ -424,10 +424,10 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, len(respDeleteLink.Result.ShareLinkObjects), 1)
 
 	// List files in folder
-	listFilter := store.NewFilterList()
+	listFilter := share.NewFilterList()
 	listFilter.Folder().Set(pangea.String(FOLDER_FILES))
 
-	respList, err := client.List(ctx, &store.ListRequest{
+	respList, err := client.List(ctx, &share.ListRequest{
 		Filter: listFilter.Filter(),
 	})
 

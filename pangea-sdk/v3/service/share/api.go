@@ -1,4 +1,4 @@
-package store
+package share
 
 import (
 	"context"
@@ -107,12 +107,12 @@ type DeleteResult struct {
 //
 // @example
 //
-//	input := &store.DeleteRequest{
+//	input := &share.DeleteRequest{
 //		ID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm"
 //	}
 //
 //	res, err := storecli.Delete(ctx, input)
-func (e *store) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
+func (e *share) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/delete", input, &DeleteResult{})
 }
 
@@ -138,18 +138,18 @@ type FolderCreateResult struct {
 //
 // @example
 //
-//	input := &store.FolderCreateRequest{
-//		Metadata: store.Metadata{
+//	input := &share.FolderCreateRequest{
+//		Metadata: share.Metadata{
 //			"created_by": "jim",
 //			"priority": "medium",
 //		},
 //		ParentID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
 //		Path: "/",
-//		Tags: store.Tags{"irs_2023", "personal"},
+//		Tags: share.Tags{"irs_2023", "personal"},
 //	}
 //
 //	res, err := storecli.FolderCreate(ctx, input)
-func (e *store) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
+func (e *share) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/folder/create", input, &FolderCreateResult{})
 }
 
@@ -174,13 +174,13 @@ type GetResult struct {
 //
 // @example
 //
-//	input := &store.GetRequest{
+//	input := &share.GetRequest{
 //		ID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
 //		Path: "/",
 //	}
 //
 //	res, err := storecli.Get(ctx, input)
-func (e *store) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
+func (e *share) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/get", input, &GetResult{})
 }
 
@@ -215,15 +215,15 @@ type PutResult struct {
 //
 // @example
 //
-//	input := &store.PutRequest{
+//	input := &share.PutRequest{
 //		TransferMethod: pangea.TMmultipart,
-//		Metadata: store.Metadata{
+//		Metadata: share.Metadata{
 //			"created_by": "jim",
 //			"priority": "medium",
 //		},
 //		ParentID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
 //		Path: "/",
-//		Tags: store.Tags{"irs_2023", "personal"},
+//		Tags: share.Tags{"irs_2023", "personal"},
 //	}
 //
 //	file, err := os.Open("./path/to/file.pdf")
@@ -231,8 +231,8 @@ type PutResult struct {
 //		log.Fatal("Error opening file: %v", err)
 //	}
 //
-//	res, err := storecli.Put(ctx, input, file)
-func (e *store) Put(ctx context.Context, input *PutRequest, file *os.File) (*pangea.PangeaResponse[PutResult], error) {
+//	res, err := sharecli.Put(ctx, input, file)
+func (e *share) Put(ctx context.Context, input *PutRequest, file *os.File) (*pangea.PangeaResponse[PutResult], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
 	}
@@ -284,22 +284,22 @@ type UpdateResult struct {
 //
 // @description Update a file.
 //
-// @operationId store_post_v1beta_update
+// @operationId share_post_v1beta_update
 //
 // @example
 //
-//	input := &store.UpdateRequest{
+//	input := &share.UpdateRequest{
 //		ID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
 //		Path: "/",
-//		RemoveMetadata: store.Metadata{
+//		RemoveMetadata: share.Metadata{
 //			"created_by": "jim",
 //			"priority": "medium",
 //		},
-//		RemoveTags: store.Tags{"irs_2023", "personal"},
+//		RemoveTags: share.Tags{"irs_2023", "personal"},
 //	}
 //
-//	res, err := storecli.Update(ctx, input)
-func (e *store) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
+//	res, err := sharecli.Update(ctx, input)
+func (e *share) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/update", input, &UpdateResult{})
 }
 
@@ -341,14 +341,14 @@ type ListResult struct {
 //
 // @description List or filter/search records.
 //
-// @operationId store_post_v1beta_list
+// @operationId share_post_v1beta_list
 //
 // @example
 //
-//	input := &store.ListRequest{}
+//	input := &share.ListRequest{}
 //
-//	res, err := storecli.List(ctx, input)
-func (e *store) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
+//	res, err := sharecli.List(ctx, input)
+func (e *share) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/list", input, &ListResult{})
 }
 
@@ -369,16 +369,16 @@ type GetArchiveResult struct {
 //
 // @description Get an archive file of multiple objects.
 //
-// @operationId store_post_v1beta_get_archive
+// @operationId share_post_v1beta_get_archive
 //
 // @example
 //
-//	input := &store.GetArchiveRequest{
+//	input := &share.GetArchiveRequest{
 //		Ids: []string{"pos_3djfmzg2db4c6donarecbyv5begtj2bm"},
 //	}
 //
-//	res, err := storecli.GetArchive(ctx, input)
-func (e *store) GetArchive(ctx context.Context, input *GetArchiveRequest) (*pangea.PangeaResponse[GetArchiveResult], error) {
+//	res, err := sharecli.GetArchive(ctx, input)
+func (e *share) GetArchive(ctx context.Context, input *GetArchiveRequest) (*pangea.PangeaResponse[GetArchiveResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/get_archive", input, &GetArchiveResult{})
 }
 
@@ -425,27 +425,27 @@ type ShareLinkCreateResult struct {
 //
 // @description Create a share link.
 //
-// @operationId store_post_v1beta_share_link_create
+// @operationId share_post_v1beta_share_link_create
 //
 // @example
 //
-//	authenticator := store.Authenticator{
-//		AuthType: store.ATpassword,
+//	authenticator := share.Authenticator{
+//		AuthType: share.ATpassword,
 //		AuthContext: "my_fav_Pa55word",
 //	}
 //
-//	link := store.ShareLinkCreateItem{
+//	link := share.ShareLinkCreateItem{
 //		Targets: []string{"pos_3djfmzg2db4c6donarecbyv5begtj2bm"},
 //		LinkType: "download",
 //		Authenticators: []Authenticator{authenticator},
 //	}
 //
-//	input := &store.ShareLinkCreateRequest{
-//		Links: []store.ShareLinkCreateItem{link},
+//	input := &share.ShareLinkCreateRequest{
+//		Links: []share.ShareLinkCreateItem{link},
 //	}
 //
-//	res, err := storecli.ShareLinkCreate(ctx, input)
-func (e *store) ShareLinkCreate(ctx context.Context, input *ShareLinkCreateRequest) (*pangea.PangeaResponse[ShareLinkCreateResult], error) {
+//	res, err := sharecli.ShareLinkCreate(ctx, input)
+func (e *share) ShareLinkCreate(ctx context.Context, input *ShareLinkCreateRequest) (*pangea.PangeaResponse[ShareLinkCreateResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/create", input, &ShareLinkCreateResult{})
 }
 
@@ -463,16 +463,16 @@ type ShareLinkGetResult struct {
 //
 // @description Get a share link.
 //
-// @operationId store_post_v1beta_share_link_get
+// @operationId share_post_v1beta_share_link_get
 //
 // @example
 //
-//	input := &store.ShareLinkGetRequest{
+//	input := &share.ShareLinkGetRequest{
 //		ID: "psl_3djfmzg2db4c6donarecbyv5begtj2bm",
 //	}
 //
-//	res, err := storecli.ShareLinkGet(ctx, input)
-func (e *store) ShareLinkGet(ctx context.Context, input *ShareLinkGetRequest) (*pangea.PangeaResponse[ShareLinkGetResult], error) {
+//	res, err := sharecli.ShareLinkGet(ctx, input)
+func (e *share) ShareLinkGet(ctx context.Context, input *ShareLinkGetRequest) (*pangea.PangeaResponse[ShareLinkGetResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/get", input, &ShareLinkGetResult{})
 }
 
@@ -566,14 +566,14 @@ type ShareLinkListResult struct {
 //
 // @description Look up share links by filter options.
 //
-// @operationId store_post_v1beta_share_link_list
+// @operationId share_post_v1beta_share_link_list
 //
 // @example
 //
-//	input := &store.ShareLinkListRequest{}
+//	input := &share.ShareLinkListRequest{}
 //
-//	res, err := storecli.ShareLinkList(ctx, input)
-func (e *store) ShareLinkList(ctx context.Context, input *ShareLinkListRequest) (*pangea.PangeaResponse[ShareLinkListResult], error) {
+//	res, err := sharecli.ShareLinkList(ctx, input)
+func (e *share) ShareLinkList(ctx context.Context, input *ShareLinkListRequest) (*pangea.PangeaResponse[ShareLinkListResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/list", input, &ShareLinkListResult{})
 }
 
@@ -591,16 +591,16 @@ type ShareLinkDeleteResult struct {
 //
 // @description Delete share links.
 //
-// @operationId store_post_v1beta_share_link_delete
+// @operationId share_post_v1beta_share_link_delete
 //
 // @example
 //
-//	input := &store.ShareLinkDeleteRequest{
+//	input := &share.ShareLinkDeleteRequest{
 //		Ids: []string{"psl_3djfmzg2db4c6donarecbyv5begtj2bm"},
 //	}
 //
-//	res, err := storecli.ShareLinkDelete(ctx, input)
-func (e *store) ShareLinkDelete(ctx context.Context, input *ShareLinkDeleteRequest) (*pangea.PangeaResponse[ShareLinkDeleteResult], error) {
+//	res, err := sharecli.ShareLinkDelete(ctx, input)
+func (e *share) ShareLinkDelete(ctx context.Context, input *ShareLinkDeleteRequest) (*pangea.PangeaResponse[ShareLinkDeleteResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/delete", input, &ShareLinkDeleteResult{})
 }
 
@@ -608,26 +608,26 @@ func (e *store) ShareLinkDelete(ctx context.Context, input *ShareLinkDeleteReque
 //
 // @description Request an upload URL.
 //
-// @operationId store_post_v1beta_put 2
+// @operationId share_post_v1beta_put 2
 //
 // @example
 //
-//	input := &store.PutRequest{
+//	input := &share.PutRequest{
 //		TransferMethod: pangea.TMpostURL,
 //		CRC32C: "515f7c32",
 //		SHA256: "c0b56b1a154697f79d27d57a3a2aad4c93849aa2239cd23048fc6f45726271cc",
 //		Size: 222089,
-//		Metadata: store.Metadata{
+//		Metadata: share.Metadata{
 //			"created_by": "jim",
 //			"priority": "medium",
 //		},
 //		ParentID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
 //		Path: "/",
-//		Tags: store.Tags{"irs_2023", "personal"},
+//		Tags: share.Tags{"irs_2023", "personal"},
 //	}
 //
-//	res, err := storecli.RequestUploadURL(ctx, input)
-func (e *store) RequestUploadURL(ctx context.Context, input *PutRequest) (*pangea.PangeaResponse[PutResult], error) {
+//	res, err := sharecli.RequestUploadURL(ctx, input)
+func (e *share) RequestUploadURL(ctx context.Context, input *PutRequest) (*pangea.PangeaResponse[PutResult], error) {
 	if input.TransferMethod == pangea.TMpostURL && (input.CRC32C == "" || input.SHA256 == "" || input.Size == nil) {
 		return nil, errors.New("Need to set CRC32C, SHA256 and Size in order to use TransferMethod TMpostURL")
 	}
@@ -656,13 +656,13 @@ type ShareLinkSendResult struct {
 //
 // @description Send share link(s)
 //
-// @operationId store_post_v1beta_share_link_send
+// @operationId share_post_v1beta_share_link_send
 //
 // @example
 //
-//	res, err := client.ShareLinkSend(ctx, &store.ShareLinkSendRequest{
-//		Links: []store.ShareLinkSendItem{
-//			store.ShareLinkSendItem{
+//	res, err := client.ShareLinkSend(ctx, &share.ShareLinkSendRequest{
+//		Links: []share.ShareLinkSendItem{
+//			share.ShareLinkSendItem{
 //				Id:    link.ID,
 //				Email: "user@email.com",
 //			},
@@ -670,7 +670,7 @@ type ShareLinkSendResult struct {
 //		SenderEmail: "sender@email.com",
 //		SenderName:  "Sender Name",
 //	})
-func (e *store) ShareLinkSend(ctx context.Context, input *ShareLinkSendRequest) (*pangea.PangeaResponse[ShareLinkSendResult], error) {
+func (e *share) ShareLinkSend(ctx context.Context, input *ShareLinkSendRequest) (*pangea.PangeaResponse[ShareLinkSendResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/send", input, &ShareLinkSendResult{})
 }
 

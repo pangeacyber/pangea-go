@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/store"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/share"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	defer cancelFn()
 
 	// create a new store client with pangea token and domain
-	client := store.New(&pangea.Config{
+	client := share.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
 		QueuedRetryEnabled: true,
@@ -35,7 +35,7 @@ func main() {
 
 	// Create a PutRequest. In this case TransferMethod is set to TMpostURL
 	// So SDK is going to request a post url, upload the file to that url and then request to pangea for the /put result
-	input := &store.PutRequest{
+	input := &share.PutRequest{
 		Name: name,
 		TransferRequest: pangea.TransferRequest{
 			TransferMethod: pangea.TMmultipart,

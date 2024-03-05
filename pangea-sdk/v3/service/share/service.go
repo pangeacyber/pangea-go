@@ -1,4 +1,4 @@
-package store
+package share
 
 import (
 	"context"
@@ -26,13 +26,13 @@ type Client interface {
 	pangea.BaseServicer
 }
 
-type store struct {
+type share struct {
 	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) Client {
-	cli := &store{
-		BaseService: pangea.NewBaseService("store", cfg),
+	cli := &share{
+		BaseService: pangea.NewBaseService("share", cfg),
 	}
 	return cli
 }
@@ -47,6 +47,6 @@ func NewFileUploader() FileUploader {
 	}
 
 	return FileUploader{
-		client: pangea.NewClient("StoreUploader", cfg),
+		client: pangea.NewClient("ShareUploader", cfg),
 	}
 }

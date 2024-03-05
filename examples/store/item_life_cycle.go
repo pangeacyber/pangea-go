@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/store"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/share"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 	// create a new store client with pangea token and domain
 	fmt.Println("Creating new folder...")
-	client := store.New(&pangea.Config{
+	client := share.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
 		QueuedRetryEnabled: true,
@@ -40,7 +40,7 @@ func main() {
 	})
 
 	// Create a folder
-	respCreate, err := client.FolderCreate(ctx, &store.FolderCreateRequest{
+	respCreate, err := client.FolderCreate(ctx, &share.FolderCreateRequest{
 		Path: folder,
 	})
 	if err != nil {
@@ -58,7 +58,7 @@ func main() {
 
 	fmt.Println("Uploading file with Path field...")
 	respPut, err := client.Put(ctx,
-		&store.PutRequest{
+		&share.PutRequest{
 			Path: path.Join(folder, "file_multipart_1"),
 			TransferRequest: pangea.TransferRequest{
 				TransferMethod: pangea.TMmultipart,
@@ -84,7 +84,7 @@ func main() {
 
 	fmt.Println("Uploading file with Name and ParentID...")
 	respPut2, err := client.Put(ctx,
-		&store.PutRequest{
+		&share.PutRequest{
 			Name:     "file_multipart_2",
 			ParentID: folderID,
 			TransferRequest: pangea.TransferRequest{
@@ -102,7 +102,7 @@ func main() {
 
 	// Update file with full metadata and tags
 	fmt.Println("Updating object with metadata and tags...")
-	respUpdate, err := client.Update(ctx, &store.UpdateRequest{
+	respUpdate, err := client.Update(ctx, &share.UpdateRequest{
 		ID:       respPut.Result.Object.ID,
 		Metadata: metadata,
 		Tags:     tags,
@@ -118,7 +118,7 @@ func main() {
 	var addMetadata = map[string]string{"field3": "value3"}
 	var addTags = []string{"tag3"}
 
-	respUpdate2, err := client.Update(ctx, &store.UpdateRequest{
+	respUpdate2, err := client.Update(ctx, &share.UpdateRequest{
 		ID:          respPut2.Result.Object.ID,
 		AddMetadata: addMetadata,
 		AddTags:     addTags,
@@ -130,9 +130,9 @@ func main() {
 
 	// Get archive as a multipart response
 	fmt.Println("Getting archive as multipart...")
-	respGetArchive, err := client.GetArchive(ctx, &store.GetArchiveRequest{
+	respGetArchive, err := client.GetArchive(ctx, &share.GetArchiveRequest{
 		Ids:            []string{folderID},
-		Format:         store.AFzip,
+		Format:         share.AFzip,
 		TransferMethod: pangea.TMmultipart,
 	})
 
@@ -149,9 +149,9 @@ func main() {
 
 	// Get archive as a download url
 	fmt.Println("Getting archive as dest-url...")
-	respGetArchive2, err := client.GetArchive(ctx, &store.GetArchiveRequest{
+	respGetArchive2, err := client.GetArchive(ctx, &share.GetArchiveRequest{
 		Ids:            []string{folderID},
-		Format:         store.AFzip,
+		Format:         share.AFzip,
 		TransferMethod: pangea.TMdestURL,
 	})
 
@@ -179,19 +179,19 @@ func main() {
 	// Create share link...
 	fmt.Println("Creating share link...")
 	// Create authenticator methods to access the share link
-	authenticators := []store.Authenticator{store.Authenticator{
-		AuthType:    store.ATpassword,
+	authenticators := []share.Authenticator{share.Authenticator{
+		AuthType:    share.ATpassword,
 		AuthContext: "somepassword",
 	}}
 
-	ll := []store.ShareLinkCreateItem{store.ShareLinkCreateItem{
+	ll := []share.ShareLinkCreateItem{share.ShareLinkCreateItem{
 		// Set targets to the share link
 		Targets:        []string{folderID},
-		LinkType:       store.LTeditor,
+		LinkType:       share.LTeditor,
 		Authenticators: authenticators,
 		MaxAccessCount: pangea.Int(3),
 	}}
-	respCreateLink, err := client.ShareLinkCreate(ctx, &store.ShareLinkCreateRequest{
+	respCreateLink, err := client.ShareLinkCreate(ctx, &share.ShareLinkCreateRequest{
 		Links: ll,
 	})
 
@@ -202,19 +202,19 @@ func main() {
 
 	// Get share link
 	fmt.Println("Getting an already created share link...")
-	respGetLink, err := client.ShareLinkGet(ctx, &store.ShareLinkGetRequest{
+	respGetLink, err := client.ShareLinkGet(ctx, &share.ShareLinkGetRequest{
 		ID: link.ID,
 	})
 	fmt.Printf("Get success: %s\n", respGetLink.Result.ShareLinkObject.Link)
 
 	// List share link
 	fmt.Println("Getting a list of links...")
-	respListLink, err := client.ShareLinkList(ctx, &store.ShareLinkListRequest{})
+	respListLink, err := client.ShareLinkList(ctx, &share.ShareLinkListRequest{})
 	fmt.Printf("Got %d link(s)\n", respListLink.Result.Count)
 
 	// Delete share link
 	fmt.Println("Deleting share link...")
-	respDeleteLink, err := client.ShareLinkDelete(ctx, &store.ShareLinkDeleteRequest{
+	respDeleteLink, err := client.ShareLinkDelete(ctx, &share.ShareLinkDeleteRequest{
 		Ids: []string{link.ID},
 	})
 
@@ -224,10 +224,10 @@ func main() {
 	fmt.Println("Listing objects in folder...")
 
 	// Create a ListFilter an set its possible values
-	listFilter := store.NewFilterList()
+	listFilter := share.NewFilterList()
 	listFilter.Folder().Set(pangea.String(folder))
 
-	respList, err := client.List(ctx, &store.ListRequest{
+	respList, err := client.List(ctx, &share.ListRequest{
 		Filter: listFilter.Filter(),
 	})
 

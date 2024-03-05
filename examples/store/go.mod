@@ -2,7 +2,7 @@ module examples/redact
 
 go 1.19
 
-require github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.6.0
+require github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.7.0
 
 require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -13,4 +13,4 @@ require (
 	golang.org/x/sys v0.15.0 // indirect
 )
 
-replace github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.6.0 => ../../pangea-sdk/v3
+replace github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.7.0 => ../../pangea-sdk/v3
