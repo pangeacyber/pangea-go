@@ -1,4 +1,4 @@
-module examples/redact
+module examples/share
 
 go 1.19
 
