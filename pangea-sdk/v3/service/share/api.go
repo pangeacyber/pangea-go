@@ -395,6 +395,8 @@ type ShareLinkCreateItem struct {
 	Authenticators []Authenticator `json:"authenticators,omitempty"`
 	Message        string          `json:"message,omitempty"`
 	Title          string          `json:"title,omitempty"`
+	NotifyEmail    string          `json:"notify_email,omitempty"`
+	Tags           Tags            `json:"tags,omitempty"`
 }
 
 type ShareLinkCreateRequest struct {
@@ -415,6 +417,10 @@ type ShareLinkItem struct {
 	LastAccessedAt *string         `json:"last_accessed_at,omitempty"`
 	Authenticators []Authenticator `json:"authenticators,omitempty"`
 	Link           string          `json:"link"`
+	Message        string          `json:"message,omitempty"`
+	Title          string          `json:"title,omitempty"`
+	NotifyEmail    string          `json:"notify_email,omitempty"`
+	Tags           Tags            `json:"tags,omitempty"`
 }
 
 type ShareLinkCreateResult struct {
