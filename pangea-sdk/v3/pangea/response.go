@@ -5,7 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path"
+
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
 )
 
 type ResponseHeader struct {
@@ -27,9 +32,12 @@ type ResponseHeader struct {
 
 type Response struct {
 	ResponseHeader
-	HTTPResponse *http.Response
+	HTTPResponse  *http.Response
+	AttachedFiles []AttachedFile
+
 	// Query raw result
-	RawResult   json.RawMessage `json:"result"`
+	RawResult json.RawMessage `json:"result"`
+
 	rawResponse []byte
 }
 
@@ -56,9 +64,54 @@ func (r *Response) UnmarshalResult(target interface{}) error {
 func newResponse(r *http.Response) (*Response, error) {
 	response := &Response{HTTPResponse: r}
 	defer r.Body.Close()
-	data, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, NewUnmarshalError(err, []byte{}, r)
+	var data []byte
+	if isMultipart(r.Header) {
+		boundary, err := pu.GetBoundary(r.Header.Get("Content-Type"))
+		if err != nil {
+			return nil, err
+		}
+		// Create a multipart reader
+		multipartReader := multipart.NewReader(r.Body, boundary)
+		var n = 0
+
+		// Iterate through each part in the multipart response
+		for {
+			part, err := multipartReader.NextRawPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return nil, err
+			}
+			defer part.Close()
+			if n == 0 {
+				// Read the part's content
+				data, err = io.ReadAll(part)
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				// Read the part's content
+				fb, err := io.ReadAll(part)
+				if err != nil {
+					return nil, err
+				}
+				af := AttachedFile{
+					Filename:    part.FileName(),
+					File:        fb,
+					ContentType: part.Header.Get("Content-Type"),
+				}
+				response.AttachedFiles = append(response.AttachedFiles, af)
+			}
+
+			n += 1
+		}
+	} else {
+		var err error
+		data, err = io.ReadAll(r.Body)
+		if err != nil {
+			return nil, NewUnmarshalError(err, []byte{}, r)
+		}
 	}
 	response.rawResponse = data
 	if err := json.Unmarshal(data, response); err != nil {
@@ -67,15 +120,64 @@ func newResponse(r *http.Response) (*Response, error) {
 	return response, nil
 }
 
+// Check if the response is multipart
+func isMultipart(header http.Header) bool {
+	contentType := header.Get("Content-Type")
+	return len(contentType) > 0 && contentType[:10] == "multipart/"
+}
+
+type AttachedFile struct {
+	Filename    string
+	File        []byte
+	ContentType string
+}
+
+type AttachedFileSaveInfo struct {
+	Filename string
+	Folder   string
+}
+
+func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
+	folder := "./"
+	if info.Folder != "" {
+		folder = info.Folder
+	}
+
+	filename := "defaultFilename"
+	if af.Filename != "" {
+		filename = af.Filename
+	}
+	if info.Filename != "" {
+		filename = info.Filename
+	}
+
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		// Directory does not exist, create it
+		err := os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	filePath := path.Join(folder, filename)
+
+	err := os.WriteFile(filePath, af.File, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // MarshalJSON implements the json.Marshaler interface for CustomType.
 func (r Response) MarshalJSON() ([]byte, error) {
 	if r.rawResponse == nil {
-		return nil, errors.New("Unable to read response body")
+		return nil, errors.New("unable to read response body")
 	}
 	b := make([]byte, len(r.rawResponse))
 	nc := copy(b, r.rawResponse)
 	if nc != len(r.rawResponse) {
-		return nil, errors.New("Unable to copy raw response")
+		return nil, errors.New("unable to copy raw response")
 	}
 	return b, nil
 }
