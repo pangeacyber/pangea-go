@@ -230,7 +230,7 @@ func (c *Client) GetURL(path string) (string, error) {
 		endpoint = fmt.Sprintf("%s/%s", domain, path)
 	} else {
 		scheme := "https://"
-		if cfg.Insecure == true {
+		if cfg.Insecure {
 			scheme = "http://"
 		}
 		if cfg.Enviroment == "local" {
@@ -386,7 +386,7 @@ func (c *Client) DownloadFile(ctx context.Context, url string) (*AttachedFile, e
 
 func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, fd FileData) error {
 	if tm == TMputURL && fd.Details != nil {
-		return errors.New(fmt.Sprintf("Data param should be nil in order to use TransferMethod %s\n", TMputURL))
+		return fmt.Errorf("data param should be nil in order to use TransferMethod %s", TMputURL)
 	}
 
 	method := "POST"
@@ -413,7 +413,7 @@ func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, 
 
 	if psURLr.StatusCode < 200 || psURLr.StatusCode >= 300 {
 		defer psURLr.Body.Close()
-		return errors.New("Presigned url upload failure")
+		return errors.New("presigned url upload failure")
 	}
 	return nil
 }
@@ -508,7 +508,7 @@ func (c *Client) NewRequestMultipart(method, url string, body any, fd FileData) 
 
 	// Write request body
 	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name=request;`))
+	h.Set("Content-Disposition", `form-data; name=request;`)
 	h.Set("Content-Type", "application/json")
 	if fw, err = w.CreatePart(h); err != nil {
 		return nil, err
@@ -725,9 +725,9 @@ func (c *Client) pollPresignedURL(ctx context.Context, ae *AcceptedError) (*Acce
 
 	for !aeLoop.AcceptedResult.HasUploadURL() && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
-		if pu.Sleep(delay, ctx) == false {
+		if !pu.Sleep(delay, ctx) {
 			// If context closed, return inmediatly
-			return nil, errors.New("Context closed")
+			return nil, errors.New("context closed")
 		}
 
 		req, err := c.NewRequest("GET", u, nil)
@@ -771,7 +771,7 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 		return r, nil
 	}
 
-	if c.config.QueuedRetryEnabled == false || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
+	if !c.config.QueuedRetryEnabled || r == nil || r.HTTPResponse.StatusCode != http.StatusAccepted {
 		return r, nil
 	}
 
@@ -794,7 +794,7 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 
 	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
-		if pu.Sleep(delay, ctx) == false {
+		if !pu.Sleep(delay, ctx) {
 			// If context closed, return inmediatly
 			return r, nil
 		}
@@ -862,8 +862,7 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 		switch v.(type) {
 		case nil:
 			// This should never be fired to user because Client is to internal use
-			err := fmt.Errorf("Not initialized struct. Can't unmarshal result from response")
-			return err
+			return errors.New("not initialized struct. Can't unmarshal result from response")
 		default:
 			err := r.UnmarshalResult(v)
 			if err != nil {
@@ -896,10 +895,6 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 		RawResult:      r.RawResult,
 		PangeaErrors:   pa,
 	}
-}
-
-func configHeaderName(key string) string {
-	return fmt.Sprintf("x-pangea-%v-config-id", key)
 }
 
 // MergeIn merges the passed in configs into the existing config object.
