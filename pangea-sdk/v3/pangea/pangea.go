@@ -389,12 +389,20 @@ func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, 
 		return fmt.Errorf("data param should be nil in order to use TransferMethod %s", TMputURL)
 	}
 
-	method := "POST"
+	var req *http.Request
+	var err error
+
 	if tm == TMputURL {
-		method = "PUT"
+		var buffer bytes.Buffer
+		_, err = io.Copy(&buffer, fd.File)
+		if err != nil {
+			return err
+		}
+		req, err = http.NewRequest("PUT", url, bytes.NewReader(buffer.Bytes()))
+	} else {
+		req, err = c.NewRequestForm("POST", url, fd, false)
 	}
 
-	req, err := c.NewRequestForm(method, url, fd, false)
 	if err != nil {
 		return err
 	}
@@ -405,9 +413,6 @@ func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, 
 			Str("service", c.serviceName).
 			Str("method", "UploadFile.BareDo").
 			Err(err)
-		return err
-	}
-	if err != nil {
 		return err
 	}
 
