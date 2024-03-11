@@ -36,17 +36,3 @@ func New(cfg *pangea.Config) Client {
 	}
 	return cli
 }
-
-type FileUploader struct {
-	client *pangea.Client
-}
-
-func NewFileUploader() FileUploader {
-	cfg := &pangea.Config{
-		QueuedRetryEnabled: false,
-	}
-
-	return FileUploader{
-		client: pangea.NewClient("ShareUploader", cfg),
-	}
-}

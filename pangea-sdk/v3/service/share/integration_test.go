@@ -175,7 +175,7 @@ func Test_Integration_SplitUpload_Put(t *testing.T) {
 		Name: "someName",
 	}
 
-	uploader := share.NewFileUploader()
+	uploader := pangea.NewFileUploader()
 	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)

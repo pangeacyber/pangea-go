@@ -3,7 +3,6 @@ package share
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/request"
@@ -678,19 +677,6 @@ type ShareLinkSendResult struct {
 //	})
 func (e *share) ShareLinkSend(ctx context.Context, input *ShareLinkSendRequest) (*pangea.PangeaResponse[ShareLinkSendResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/send", input, &ShareLinkSendResult{})
-}
-
-func (fu *FileUploader) UploadFile(ctx context.Context, url string, tm pangea.TransferMethod, fd pangea.FileData) error {
-	if tm == pangea.TMmultipart {
-		return errors.New(fmt.Sprintf("%s is not supported in UploadFile. Use Put() instead", tm))
-	}
-
-	fds := pangea.FileData{
-		File:    fd.File,
-		Name:    "file",
-		Details: fd.Details,
-	}
-	return fu.client.UploadFile(ctx, url, tm, fds)
 }
 
 type FileFormat string
