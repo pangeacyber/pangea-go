@@ -19,6 +19,7 @@ const (
 	KPsigning    KeyPurpose = "signing"
 	KPencryption KeyPurpose = "encryption"
 	KPjwt        KeyPurpose = "jwt"
+	KPfpe        KeyPurpose = "fpe" // Format-preserving encryption.
 )
 
 type AsymmetricAlgorithm string
@@ -65,15 +66,17 @@ const (
 type SymmetricAlgorithm string
 
 const (
-	SYAhs256      SymmetricAlgorithm = "HS256"
-	SYAhs384      SymmetricAlgorithm = "HS384"
-	SYAhs512      SymmetricAlgorithm = "HS512"
-	SYAaes128_cfb SymmetricAlgorithm = "AES-CFB-128"
-	SYAaes256_cfb SymmetricAlgorithm = "AES-CFB-256"
-	SYAaes256_gcm SymmetricAlgorithm = "AES-GCM-256"
-	SYAaes128_cbc SymmetricAlgorithm = "AES-CBC-128"
-	SYAaes256_cbc SymmetricAlgorithm = "AES-CBC-256"
-	SYAaes        SymmetricAlgorithm = "AES-CFB-128" // deprecated, use SYAaes128_cfb instead
+	SYAhs256         SymmetricAlgorithm = "HS256"
+	SYAhs384         SymmetricAlgorithm = "HS384"
+	SYAhs512         SymmetricAlgorithm = "HS512"
+	SYAaes128_cfb    SymmetricAlgorithm = "AES-CFB-128"
+	SYAaes256_cfb    SymmetricAlgorithm = "AES-CFB-256"
+	SYAaes256_gcm    SymmetricAlgorithm = "AES-GCM-256"
+	SYAaes128_cbc    SymmetricAlgorithm = "AES-CBC-128"
+	SYAaes256_cbc    SymmetricAlgorithm = "AES-CBC-256"
+	SYAaes           SymmetricAlgorithm = "AES-CFB-128"        // deprecated, use SYAaes128_cfb instead
+	SYAaes_ff3_1_128 SymmetricAlgorithm = "AES-FF3-1-128-BETA" // 128-bit encryption using the FF3-1 algorithm. Beta feature.
+	SYAaes_ff3_1_256 SymmetricAlgorithm = "AES-FF3-1-256-BETA" // 256-bit encryption using the FF3-1 algorithm. Beta feature.
 )
 
 type ItemVersionState string

@@ -1196,3 +1196,63 @@ func Test_Integration_EncryptStructured(t *testing.T) {
 	assert.Len(t, decryptedResponse.Result.StructuredData["field1"], 4)
 	assert.Equal(t, data["field2"], decryptedResponse.Result.StructuredData["field2"])
 }
+
+func Test_Integration_EncryptTransform(t *testing.T) {
+	// Test data.
+	plainText := "123-4567-8901"
+	tweak := "MTIzMTIzMT=="
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	// Generate an encryption key.
+	rGen, err := client.SymmetricGenerate(
+		ctx,
+		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: GetName("Test_Integration_EncryptTransform"),
+			},
+			Algorithm: vault.SYAaes_ff3_1_256,
+			Purpose:   vault.KPfpe,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.ID)
+	key := rGen.Result.ID
+
+	// Encrypt.
+	encryptedResponse, err := client.EncryptTransform(
+		ctx,
+		&vault.EncryptTransformRequest{
+			ID:        key,
+			PlainText: plainText,
+			Tweak:     &tweak,
+			Alphabet:  vault.TAalphanumeric,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, encryptedResponse)
+	assert.NotNil(t, encryptedResponse.Result)
+	assert.Equal(t, key, encryptedResponse.Result.ID)
+	assert.Len(t, encryptedResponse.Result.CipherText, len(plainText))
+
+	// Decrypt what we encrypted.
+	decryptedResponse, err := client.DecryptTransform(
+		ctx,
+		&vault.DecryptTransformRequest{
+			ID:         key,
+			CipherText: encryptedResponse.Result.CipherText,
+			Tweak:      tweak,
+			Alphabet:   vault.TAalphanumeric,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, decryptedResponse)
+	assert.NotNil(t, decryptedResponse.Result)
+	assert.Equal(t, key, decryptedResponse.Result.ID)
+	assert.Equal(t, plainText, decryptedResponse.Result.PlainText)
+}
