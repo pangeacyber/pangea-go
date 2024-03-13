@@ -19,3 +19,4 @@ pangea_sdk_log.json
 download/
 
 *.gz
+sanitized.*
