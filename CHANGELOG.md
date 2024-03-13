@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Sanitize service support
+
 ## v3.8.0-beta.1 - 2024-03-18
+
+### Added
+
+- Audit /download_results endpoint support
 
 ### Changed
 
 - Replaced usage of the deprecated io/ioutil package.
-- Audit /download_results endpoint support
 
 ### Fixed
 

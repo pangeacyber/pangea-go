@@ -244,7 +244,7 @@ func (e *share) Put(ctx context.Context, input *PutRequest, file *os.File) (*pan
 		if err != nil {
 			return nil, err
 		}
-		input.CRC32C = params.CRC
+		input.CRC32C = params.CRC32C
 		input.SHA256 = params.SHA256
 		input.Size = pangea.Int(params.Size)
 	} else if size, err := pangea.GetFileSize(file); err == nil && size == 0 {

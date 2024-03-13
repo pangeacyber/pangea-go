@@ -20,6 +20,7 @@ sdk-test-it:
     SERVICE_REDACT_ENV: LVE
     SERVICE_VAULT_ENV: LVE
     SERVICE_SHARE_ENV: LVE
+    SERVICE_SANITIZE_ENV: LVE
   before_script:
     - echo $ENV
     - echo $CLOUD
@@ -77,7 +78,9 @@ sdk-test-it:
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_SHARE_ENV}
         TEST: share
-  allow_failure: false
+      - CLOUD: [AWS]  # FIXME: Add GCP when supported
+        ENV: ${SERVICE_SANITIZE_ENV}
+        TEST: sanitize
   rules:
     - if: $CI_COMMIT_BRANCH
   script:
