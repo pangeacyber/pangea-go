@@ -20,6 +20,7 @@ go-sdk-test-it:
     SERVICE_USER_INTEL_ENV: LVE
     SERVICE_REDACT_ENV: LVE
     SERVICE_VAULT_ENV: LVE
+    SERVICE_SANITIZE_ENV: LVE
   before_script:
     - echo $ENV
     - echo $CLOUD
@@ -75,6 +76,9 @@ go-sdk-test-it:
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_VAULT_ENV}
         TEST: vault
+      - CLOUD: [AWS]  # FIXME: Add GCP when supported
+        ENV: ${SERVICE_SANITIZE_ENV}
+        TEST: sanitize
   rules:
     - if: '$CLOUD == "GCP" && $TEST == "file_scan"'
       allow_failure: true
