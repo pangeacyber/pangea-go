@@ -30,7 +30,7 @@ func NewBaseService(name string, baseCfg *Config) BaseService {
 
 func (bs *BaseService) PollResultByError(ctx context.Context, e AcceptedError) (*PangeaResponse[any], error) {
 	if e.RequestID == nil {
-		return nil, errors.New("Request ID is empty")
+		return nil, errors.New("request ID is empty")
 	}
 
 	resp, err := bs.PollResultByID(ctx, *e.RequestID, e.ResultField)

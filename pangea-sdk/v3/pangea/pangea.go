@@ -526,7 +526,7 @@ func (c *Client) NewRequestMultipart(method, url string, body any, fd FileData) 
 	}
 
 	// Write file
-	if fw, err = w.CreateFormFile(fd.Name, "filename.exe"); err != nil {
+	if fw, err = w.CreateFormFile(fd.Name, fd.Name); err != nil {
 		return nil, err
 	}
 	if _, err = io.Copy(fw, fd.File); err != nil {
@@ -570,7 +570,7 @@ func (c *Client) NewRequestForm(method, url string, fd FileData, setHeaders bool
 
 	// Write file
 	var err error
-	part, err := w.CreateFormFile(fd.Name, "filename.exe")
+	part, err := w.CreateFormFile(fd.Name, fd.Name)
 	if err != nil {
 		return nil, err
 	}
