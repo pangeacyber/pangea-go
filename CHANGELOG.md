@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replaced usage of the deprecated io/ioutil package.
+- Audit /download_results endpoint support
 
 ### Fixed
 
 - All enums now have consistent types across their values.
+- Put to presigned url. It should just put file in raw, not in form format.
+
 
 ## [3.7.0] - 2024-02-26
 

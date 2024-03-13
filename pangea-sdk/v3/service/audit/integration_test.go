@@ -905,3 +905,46 @@ func Test_Integration_Log_Bulk_Async(t *testing.T) {
 	assert.Nil(t, out.Result)
 	assert.NotNil(t, out.AcceptedResult)
 }
+
+func Test_Integration_Download(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg, audit.WithCustomSchema(pangeatesting.CustomSchemaEvent{}))
+	maxResults := 5
+	limit := 2
+
+	input := &audit.SearchInput{
+		MaxResults: maxResults,
+		Limit:      limit,
+		Order:      "desc",
+		Query:      "message:\"\"",
+		Verbose:    pangea.Bool(false),
+	}
+
+	outSearch, err := client.Search(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, outSearch.Result)
+	assert.NotNil(t, outSearch.Result.ID)
+	assert.NotEmpty(t, outSearch.Result.ID)
+	assert.NotNil(t, outSearch.Result.ExpiresAt)
+	assert.LessOrEqual(t, outSearch.Result.Count, maxResults)
+	assert.Greater(t, outSearch.Result.Count, 0)
+	assert.Equal(t, limit, len(outSearch.Result.Events))
+
+	outDownload, err := client.DownloadResults(ctx, &audit.DownloadRequest{
+		ResultID: outSearch.Result.ID,
+		Format:   audit.DFjson,
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, outDownload)
+	assert.NotNil(t, outDownload.Result)
+	assert.NotEmpty(t, outDownload.Result.DestURL)
+
+	af, err := client.DownloadFile(ctx, outDownload.Result.DestURL)
+
+	af.Save(pangea.AttachedFileSaveInfo{})
+
+}

@@ -17,3 +17,5 @@ go_sdk.json
 
 pangea_sdk_log.json
 download/
+
+*.gz

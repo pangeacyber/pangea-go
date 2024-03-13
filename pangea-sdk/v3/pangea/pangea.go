@@ -371,9 +371,12 @@ func (c *Client) DownloadFile(ctx context.Context, url string) (*AttachedFile, e
 		return nil, err
 	}
 
-	filename, err := pu.GetFilename(resp.Header.Get("Content-Disposition"))
-	if err != nil {
-		filename = "defaultFilename"
+	filename, _ := pu.GetFilenameFromContentDisposition(resp.Header.Get("Content-Disposition"))
+	if filename == "" {
+		filename = pu.GetFileNameFromURL(url)
+		if filename == "" {
+			filename = "default_filename"
+		}
 	}
 
 	return &AttachedFile{
@@ -867,7 +870,7 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 		switch v.(type) {
 		case nil:
 			// This should never be fired to user because Client is to internal use
-			return errors.New("not initialized struct. Can't unmarshal result from response")
+			return fmt.Errorf("not initialized struct. Can't unmarshal result from response")
 		default:
 			err := r.UnmarshalResult(v)
 			if err != nil {

@@ -15,6 +15,7 @@ type Client interface {
 	Search(ctx context.Context, req *SearchInput) (*pangea.PangeaResponse[SearchOutput], error)
 	SearchResults(ctx context.Context, req *SearchResultsInput) (*pangea.PangeaResponse[SearchResultsOutput], error)
 	Root(ctx context.Context, req *RootInput) (*pangea.PangeaResponse[RootOutput], error)
+	DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error)
 
 	// Base service methods
 	pangea.BaseServicer
