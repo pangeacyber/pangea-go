@@ -1,14 +1,13 @@
-.go-sdk-base:
+.sdk-base:
   before_script:
     - cd pangea-sdk/v3
-    - go install github.com/boumenot/gocover-cobertura@latest
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
-go-sdk-test-it:
+sdk-test-it:
   stage: integration_tests
   variables:
-  # Set each service test environment
+    # Set each service test environment
     SERVICE_AUDIT_ENV: LVE
     SERVICE_AUTHN_ENV: LVE
     SERVICE_EMBARGO_ENV: LVE
@@ -23,22 +22,21 @@ go-sdk-test-it:
   before_script:
     - echo $ENV
     - echo $CLOUD
-  # Update environment variables
-  # Domain
+    # Update environment variables
+    # Domain
     - export PANGEA_INTEGRATION_DOMAIN_${ENV}="$(eval echo \$PANGEA_INTEGRATION_DOMAIN_${ENV}_${CLOUD})"
-  # Tokens
+    # Tokens
     - export PANGEA_INTEGRATION_TOKEN_${ENV}="$(eval echo \$PANGEA_INTEGRATION_TOKEN_${ENV}_${CLOUD})"
     - export PANGEA_INTEGRATION_VAULT_TOKEN_${ENV}="$(eval echo \$PANGEA_INTEGRATION_VAULT_TOKEN_${ENV}_${CLOUD})"
     - export PANGEA_INTEGRATION_CUSTOM_SCHEMA_TOKEN_${ENV}="$(eval echo \$PANGEA_INTEGRATION_CUSTOM_SCHEMA_TOKEN_${ENV}_${CLOUD})"
     - export PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_${ENV}="$(eval echo \$PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_${ENV}_${CLOUD})"
-  # Config IDs
+    # Config IDs
     - export PANGEA_AUDIT_CONFIG_ID_1_${ENV}="$(eval echo \$PANGEA_AUDIT_CONFIG_ID_1_${ENV}_${CLOUD})"
     - export PANGEA_AUDIT_CONFIG_ID_2_${ENV}="$(eval echo \$PANGEA_AUDIT_CONFIG_ID_2_${ENV}_${CLOUD})"
     - export PANGEA_REDACT_CONFIG_ID_1_${ENV}="$(eval echo \$PANGEA_REDACT_CONFIG_ID_1_${ENV}_${CLOUD})"
     - export PANGEA_REDACT_CONFIG_ID_2_${ENV}="$(eval echo \$PANGEA_REDACT_CONFIG_ID_2_${ENV}_${CLOUD})"
 
     - cd pangea-sdk/v3
-    - go install github.com/boumenot/gocover-cobertura@latest
 
   parallel:
     matrix:
@@ -76,23 +74,23 @@ go-sdk-test-it:
         ENV: ${SERVICE_VAULT_ENV}
         TEST: vault
   rules:
-    - if: '$CLOUD == "GCP" && $TEST == "file_scan"'
+    - if: $CI_COMMIT_BRANCH && '$CLOUD == "GCP" && $TEST == "file_scan"'
       allow_failure: true
-    - if: '$CLOUD == "GCP" && $TEST != "file_scan"'
+    - if: $CI_COMMIT_BRANCH && '$CLOUD == "GCP" && $TEST != "file_scan"'
       allow_failure: true
-    - if: '$CLOUD != "GCP"'
+    - if: $CI_COMMIT_BRANCH && '$CLOUD != "GCP"'
       allow_failure: false
   script:
     - go test -count=1 -tags integration -v ./service/${TEST}/...
 
-go-sdk-lint:
-  extends: .go-sdk-base
+sdk-lint:
+  extends: .sdk-base
   stage: lint
   script:
     - make verify
 
-go-sdk-generate-docs:
-  extends: .go-sdk-base
+sdk-generate-docs:
+  extends: .sdk-base
   stage: lint
   allow_failure: true
   script:
@@ -100,11 +98,21 @@ go-sdk-generate-docs:
   artifacts:
     expire_in: 1 month
     expose_as: go_sdk
-    paths: ['pangea-sdk/v3/go_sdk.json']
+    paths: ["pangea-sdk/v3/go_sdk.json"]
     when: on_success
 
-go-sdk-unit-testing:
-  extends: .go-sdk-base
+sdk-unit-testing:
+  extends: .sdk-base
   stage: unit_tests
   script:
     - make unit
+
+sdk-publish:
+  stage: publish
+  variables:
+    GOPROXY: proxy.golang.org
+  script:
+    - bash ./dev/validate_tag.sh "$CI_COMMIT_TAG"
+    - go list -m github.com/pangeacyber/pangea-go/pangea-sdk/v3@"$CI_COMMIT_TAG"
+  rules:
+    - if: $CI_COMMIT_TAG
