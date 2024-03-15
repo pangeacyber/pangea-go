@@ -321,6 +321,10 @@ func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*R
 		Interface("result", pr.RawResult).
 		Send()
 
+	if *pr.Status == "Success" { // If this request already success, just return. Not need to poll presigned URL
+		return pr, nil, nil
+	}
+
 	err = c.CheckResponse(pr, &AcceptedResult{})
 	var ae *AcceptedError
 	var ok bool
@@ -436,28 +440,30 @@ func (c *Client) FullPostPresignedURL(ctx context.Context, url string, input Con
 		return nil, err
 	}
 
-	fds := FileData{
-		File:    fd.File,
-		Name:    fd.Name,
-		Details: ar.PostFormData,
-	}
+	if ar != nil { // This is the case that GetPresignedURL return an already success response
+		fds := FileData{
+			File:    fd.File,
+			Name:    fd.Name,
+			Details: ar.PostFormData,
+		}
 
-	err = c.UploadFile(ctx, ar.PostURL, TMpostURL, fds)
-	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "PostPresignedURL.PostPresignedURL").
-			Err(err)
-		return nil, err
-	}
+		err = c.UploadFile(ctx, ar.PostURL, TMpostURL, fds)
+		if err != nil {
+			c.Logger.Error().
+				Str("service", c.serviceName).
+				Str("method", "PostPresignedURL.PostPresignedURL").
+				Err(err)
+			return nil, err
+		}
 
-	pr, err = c.handledQueued(ctx, pr)
-	if err != nil {
-		c.Logger.Error().
-			Str("service", c.serviceName).
-			Str("method", "PostPresignedURL.handleQueued").
-			Err(err)
-		return nil, err
+		pr, err = c.handledQueued(ctx, pr)
+		if err != nil {
+			c.Logger.Error().
+				Str("service", c.serviceName).
+				Str("method", "PostPresignedURL.handleQueued").
+				Err(err)
+			return nil, err
+		}
 	}
 
 	err = c.CheckResponse(pr, out)

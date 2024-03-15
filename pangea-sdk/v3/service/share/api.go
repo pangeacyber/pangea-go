@@ -155,9 +155,9 @@ func (e *share) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*
 type GetRequest struct {
 	pangea.BaseRequest
 
-	ID             string                 `json:"id,omitempty"`
-	Path           string                 `json:"path,omitempty"`
-	TransferMethod *pangea.TransferMethod `json:"transfer_method,omitempty"`
+	ID             string                `json:"id,omitempty"`
+	Path           string                `json:"path,omitempty"`
+	TransferMethod pangea.TransferMethod `json:"transfer_method,omitempty"`
 }
 
 type GetResult struct {
@@ -245,6 +245,8 @@ func (e *share) Put(ctx context.Context, input *PutRequest, file *os.File) (*pan
 		input.CRC32C = params.CRC
 		input.SHA256 = params.SHA256
 		input.Size = pangea.Int(params.Size)
+	} else if size, err := pangea.GetFileSize(file); err == nil && size == 0 {
+		input.Size = pangea.Int(0)
 	}
 
 	name := "file"

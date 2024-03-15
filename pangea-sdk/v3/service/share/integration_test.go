@@ -21,6 +21,7 @@ const (
 )
 
 var PDF_FILEPATH = "./testdata/testfile.pdf"
+var ZERO_BYTES_FILEPATH = "./testdata/zerobytes.txt"
 var timeNow = time.Now()
 var TIME = timeNow.Format("20060102_150405")
 var FOLDER_DELETE = "/sdk_tests/delete/" + TIME
@@ -102,6 +103,102 @@ func Test_Integration_PutTransferMethodPostURL(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotEmpty(t, out.Result.Object.ID)
 	assert.NotEmpty(t, out.Result.Object.Name)
+
+	// Get multipart
+	getResp, err := client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMmultipart,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotEmpty(t, getResp.AttachedFiles)
+	assert.Equal(t, len(getResp.AttachedFiles), 1)
+	getResp.AttachedFiles[0].Save(pangea.AttachedFileSaveInfo{
+		Folder: "./download",
+	})
+
+	// Get dest-url
+	getResp, err = client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMdestURL,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.NotNil(t, getResp.Result.DestURL)
+	assert.Empty(t, getResp.AttachedFiles)
+}
+
+func Test_Integration_PutTransferMethodPostURL_ZeroBytesFile(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := shareIntegrationCfg(t)
+	client := share.New(cfg)
+
+	name := TIME + "_file_zero_bytes_post_url"
+
+	input := &share.PutRequest{
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMpostURL,
+		},
+	}
+
+	file, err := os.Open(ZERO_BYTES_FILEPATH)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	out, err := client.Put(ctx, input, file)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Object.ID)
+	assert.NotEmpty(t, out.Result.Object.Name)
+
+	// Get multipart
+	getResp, err := client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMmultipart,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotEmpty(t, getResp.AttachedFiles)
+	assert.Equal(t, len(getResp.AttachedFiles), 1)
+	getResp.AttachedFiles[0].Save(pangea.AttachedFileSaveInfo{
+		Folder: "./download",
+	})
+
+	// Get dest-url
+	getResp, err = client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMdestURL,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.Empty(t, getResp.AttachedFiles)
 }
 
 func Test_Integration_PutTransferMethodMultipart(t *testing.T) {
@@ -134,6 +231,104 @@ func Test_Integration_PutTransferMethodMultipart(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotEmpty(t, out.Result.Object.ID)
 	assert.NotEmpty(t, out.Result.Object.Name)
+
+	// Get multipart
+	getResp, err := client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMmultipart,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotEmpty(t, getResp.AttachedFiles)
+	assert.Equal(t, len(getResp.AttachedFiles), 1)
+	getResp.AttachedFiles[0].Save(pangea.AttachedFileSaveInfo{
+		Folder: "./download",
+	})
+
+	// Get dest-url
+	getResp, err = client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMdestURL,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.NotNil(t, getResp.Result.DestURL)
+	assert.Empty(t, getResp.AttachedFiles)
+
+}
+
+func Test_Integration_PutTransferMethodMultipart_ZeroBytesFile(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelFn()
+
+	cfg := shareIntegrationCfg(t)
+	client := share.New(cfg)
+
+	name := TIME + "_file_zero_bytes_multipart"
+
+	input := &share.PutRequest{
+		Name: name,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMmultipart,
+		},
+	}
+
+	file, err := os.Open(ZERO_BYTES_FILEPATH)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	out, err := client.Put(ctx, input, file)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Object.ID)
+	assert.NotEmpty(t, out.Result.Object.Name)
+
+	// Get multipart
+	getResp, err := client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMmultipart,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotEmpty(t, getResp.AttachedFiles)
+	assert.Equal(t, len(getResp.AttachedFiles), 1)
+	getResp.AttachedFiles[0].Save(pangea.AttachedFileSaveInfo{
+		Folder: "./download",
+	})
+
+	// Get dest-url
+	getResp, err = client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMdestURL,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.Empty(t, getResp.AttachedFiles)
+
 }
 
 func Test_Integration_SplitUpload_Put(t *testing.T) {

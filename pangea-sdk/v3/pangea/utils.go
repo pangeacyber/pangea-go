@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func HashSHA256(i string) string {
@@ -72,10 +73,34 @@ func GetUploadFileParams(file *os.File) (*UploadFileParams, error) {
 	// Reset to be sent
 	file.Seek(0, 0)
 
+	// Convert the CRC32 value to hexadecimal
+	crcStr := strconv.FormatUint(uint64(crc32c), 16)
+	// Pad "0" on the left to make it 8 characters long. It's for the zero bytes file case
+	paddedCRCStr := strings.Repeat("0", 8-len(crcStr)) + crcStr
+
 	return &UploadFileParams{
-		CRC:    strconv.FormatUint(uint64(crc32c), 16),
+		CRC:    paddedCRCStr,
 		SHA256: hex.EncodeToString(hashInBytes),
 		Size:   int(size),
 	}, nil
+}
 
+func GetFileSize(file *os.File) (int64, error) {
+	_, err := file.Seek(0, io.SeekStart)
+	if err != nil {
+		return 0, err
+	}
+
+	// Seek to the end of the file
+	size, err := file.Seek(0, io.SeekEnd)
+	if err != nil {
+		return 0, err
+	}
+
+	// Reset to be sent
+	file.Seek(0, io.SeekStart)
+	if err != nil {
+		return 0, err
+	}
+	return size, nil
 }
