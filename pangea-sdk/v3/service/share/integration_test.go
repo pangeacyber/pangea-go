@@ -16,10 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testingEnvironment = pangeatesting.Develop
-)
-
+var testingEnvironment = pangeatesting.LoadTestEnvironment("share", pangeatesting.Live)
 var PDF_FILEPATH = "./testdata/testfile.pdf"
 var ZERO_BYTES_FILEPATH = "./testdata/zerobytes.txt"
 var timeNow = time.Now()
