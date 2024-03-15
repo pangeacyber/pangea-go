@@ -79,8 +79,7 @@ go-sdk-test-it:
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_SHARE_ENV}
         TEST: share
-  rules:
-      allow_failure: false
+  allow_failure: false
   script:
     - go test -count=1 -tags integration -v ./service/${TEST}/...
 
