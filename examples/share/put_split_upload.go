@@ -65,7 +65,7 @@ func main() {
 	}
 
 	// Create an upload
-	uploader := share.NewFileUploader()
+	uploader := pangea.NewFileUploader()
 
 	// Upload the file to the url get previously
 	// Need to set transfer method again to TMputURL
