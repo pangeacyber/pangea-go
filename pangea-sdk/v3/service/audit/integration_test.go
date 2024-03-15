@@ -946,5 +946,4 @@ func Test_Integration_Download(t *testing.T) {
 	af, err := client.DownloadFile(ctx, outDownload.Result.DestURL)
 
 	af.Save(pangea.AttachedFileSaveInfo{})
-
 }
