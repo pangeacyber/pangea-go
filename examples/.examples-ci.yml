@@ -2,7 +2,7 @@ go-sdk-examples:
   stage: examples
   parallel:
     matrix:
-      - GO_VERSION: ['1.19', '1.20', '1.21']
+      - GO_VERSION: ["1.19", "1.20", "1.21"]
         EXAMPLE_FOLDER:
           - audit
           - authn
@@ -34,3 +34,5 @@ go-sdk-examples:
   script:
     - cd examples/${EXAMPLE_FOLDER}
     - bash ../../dev/run_examples.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH
