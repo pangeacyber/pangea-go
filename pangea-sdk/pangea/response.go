@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
 )
@@ -143,7 +144,7 @@ func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
 		folder = info.Folder
 	}
 
-	filename := "defaultFilename"
+	filename := "defaultSaveFilename"
 	if af.Filename != "" {
 		filename = af.Filename
 	}
@@ -151,7 +152,7 @@ func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
 		filename = info.Filename
 	}
 
-	if _, err := os.Stat(folder); os.IsNotExist(err) {
+	if !fileExists(folder) {
 		// Directory does not exist, create it
 		err := os.MkdirAll(folder, os.ModePerm)
 		if err != nil {
@@ -160,6 +161,7 @@ func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
 	}
 
 	filePath := path.Join(folder, filename)
+	filePath = findAvailableFile(filePath)
 
 	err := os.WriteFile(filePath, af.File, 0644)
 	if err != nil {
@@ -167,6 +169,32 @@ func (af AttachedFile) Save(info AttachedFileSaveInfo) error {
 	}
 
 	return nil
+}
+
+func fileExists(filePath string) bool {
+	_, err := os.Stat(filePath)
+	return !os.IsNotExist(err)
+}
+
+func findAvailableFile(filePath string) string {
+	if !fileExists(filePath) {
+		return filePath
+	}
+
+	// Split the file path into directory, file name, and extension
+	dir, file := filepath.Split(filePath)
+	ext := filepath.Ext(file)
+	fileNameWithoutExt := file[:len(file)-len(ext)]
+
+	counter := 1
+	// Construct the new file path format
+	newFilePath := filepath.Join(dir, fmt.Sprintf("%s_%d%s", fileNameWithoutExt, counter, ext))
+	for fileExists(newFilePath) {
+		counter++
+		newFilePath = filepath.Join(dir, fmt.Sprintf("%s_%d%s", fileNameWithoutExt, counter, ext))
+	}
+
+	return newFilePath
 }
 
 // MarshalJSON implements the json.Marshaler interface for CustomType.

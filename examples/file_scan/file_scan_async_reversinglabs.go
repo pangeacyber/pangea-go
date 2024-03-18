@@ -58,16 +58,28 @@ func main() {
 	}
 	fmt.Println("Accepted error received (as expected).")
 
-	fmt.Println("Sleep some time before polling.")
-	// multiple polling attempts may be required
-	time.Sleep(time.Duration(20 * time.Second))
+	var pr *pangea.PangeaResponse[any]
+	i := 0
+	maxRetry := 24
 
-	fmt.Println("File Scan poll result...")
-	pr, err := client.PollResultByError(ctx, *ae)
-	if err != nil {
-		log.Fatal(err)
+	fmt.Println("Let's try to poll result...")
+	for i < maxRetry {
+		// Wait for result
+		time.Sleep(time.Duration(10 * time.Second))
+
+		pr, err = client.PollResultByError(ctx, *ae)
+		if err == nil {
+			break
+		}
+		i++
+		fmt.Printf("Result is not ready yet. Retry: %d\n", i)
 	}
 
-	fmt.Println("File Scan poll result success.")
-	fmt.Println(pangea.Stringify(pr.Result))
+	if i == maxRetry {
+		log.Fatal("Result still not ready")
+	} else {
+		r := (*pr.Result).(*file_scan.FileScanResult)
+		fmt.Println("File Scan success.")
+		fmt.Println(pangea.Stringify(r))
+	}
 }
