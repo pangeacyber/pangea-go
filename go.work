@@ -8,6 +8,7 @@ use (
 	./examples/file_scan
 	./examples/intel
 	./examples/redact
+	./examples/share
 	./examples/vault
 	./pangea-sdk
 )
