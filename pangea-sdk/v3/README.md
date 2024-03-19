@@ -17,6 +17,19 @@ A Go SDK for integrating with Pangea services. Supports Go v1.18 and above.
 $ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3
 ```
 
+<a name="beta-releases"></a>
+
+### Beta releases
+
+Pre-release versions may be available with the `beta` denotation in the version
+number. These releases serve to preview beta services and APIs. Per Semantic
+Versioning, they are considered unstable and do not carry the same compatibility
+guarantees as stable releases. [Beta changelog](https://github.com/pangeacyber/pangea-go/blob/beta/CHANGELOG.md).
+
+```bash
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3@v3.8.0-beta.1
+```
+
 ## Usage
 
 - [Documentation][]
@@ -100,17 +113,6 @@ fmt.Printf("Logged event: %s", pangea.Stringify(e))
 ```
 
 Full code for the above example available in [the examples directory](https://github.com/pangeacyber/pangea-go/blob/main/examples/audit/log_standard_schema.go).
-
-<a name="beta-releases"></a>
-
-## Beta releases
-
-Pre-release versions may be available with the `beta` denotation in the version
-number. These releases serve to preview beta services and APIs. Per Semantic
-Versioning, they are considered unstable and do not carry the same compatibility
-guarantees as stable releases.
-
-
 
    [Documentation]: https://pangea.cloud/docs/sdk/go/
    [Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
