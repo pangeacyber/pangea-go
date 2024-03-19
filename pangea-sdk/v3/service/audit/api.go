@@ -588,8 +588,8 @@ const (
 type DownloadFormat string
 
 const (
-	DFjson DownloadFormat = "json"
-	DFcsv  DownloadFormat = "csv"
+	DFjson DownloadFormat = "json" // JSON.
+	DFcsv  DownloadFormat = "csv"  // CSV.
 )
 
 func (ev EventVerification) String() string {
@@ -715,7 +715,7 @@ type SearchOutput struct {
 
 type SearchEvents []*SearchEvent
 
-// VerifiableRecords retuns a slice of records that can be verifiable by the published proof
+// VerifiableRecords returns a slice of records that can be verifiable by the published proof
 func (events SearchEvents) VerifiableRecords() SearchEvents {
 	evs := make(SearchEvents, 0)
 	for _, event := range events {
@@ -749,7 +749,7 @@ type SearchEvent struct {
 	SignatureVerification   EventVerification
 }
 
-// IsVerifiable checks if a record can be verfiable with the published proof
+// IsVerifiable checks if a record can be verifiable with the published proof
 func (event *SearchEvent) IsVerifiable() bool {
 	return event.LeafIndex != nil && *event.LeafIndex >= 0
 }
@@ -936,15 +936,30 @@ type RootOutput struct {
 type DownloadRequest struct {
 	pangea.BaseRequest
 
-	ResultID string         `json:"result_id"`
-	Format   DownloadFormat `json:"format,omitempty"`
+	// ID returned by the search API.
+	ResultID string `json:"result_id"`
+
+	// Format for the records.
+	Format DownloadFormat `json:"format,omitempty"`
 }
 
 type DownloadResult struct {
+	// URL where search results can be downloaded.
 	DestURL string `json:"dest_url"`
 }
 
-// TODO: Docs
+// @summary Download search results
+//
+// @description Get all search results as a compressed (gzip) CSV file.
+//
+// @operationId audit_post_v1_download_results
+//
+// @example
+//
+//	response, err := client.DownloadResults(ctx, &audit.DownloadRequest{
+//		ResultID: "pas_[...]",
+//		Format:   audit.DFcsv,
+//	})
 func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/download_results", input, &DownloadResult{})
 }
