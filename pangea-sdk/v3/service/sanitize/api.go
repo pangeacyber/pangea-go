@@ -13,7 +13,7 @@ import (
 // @summary Sanitize
 //
 // @description Apply file sanitization actions according to specified rules.
-// Beta API.
+// [Beta API].
 //
 // @operationId sanitize_post_v1beta_sanitize
 //
@@ -25,6 +25,8 @@ import (
 //		},
 //		UploadedFileName: "uploaded_file",
 //	}, file)
+//
+// [Beta API]: https://pangea.cloud/docs/sdk/go/#beta-releases
 func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io.ReadSeeker) (*pangea.PangeaResponse[SanitizeResult], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
@@ -56,7 +58,7 @@ func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io
 // @summary Sanitize via presigned URL
 //
 // @description Apply file sanitization actions according to specified rules via
-// a presigned URL. Beta API.
+// a presigned URL. [Beta API].
 //
 // @operationId sanitize_post_v1beta_sanitize 2
 //
@@ -73,6 +75,8 @@ func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io
 //
 //	// Poll for Sanitize's result
 //	response, err := client.PollResultByID(ctx, *presignedUrl.RequestID, &sanitize.SanitizeResult{})
+//
+// [Beta API]: https://pangea.cloud/docs/sdk/go/#beta-releases
 func (e *sanitize) RequestUploadURL(ctx context.Context, input *SanitizeRequest) (*pangea.PangeaResponse[SanitizeResult], error) {
 	if input.TransferMethod == pangea.TMmultipart || input.TransferMethod == pangea.TMdestURL || input.TransferMethod == pangea.TMsourceURL {
 		return nil, fmt.Errorf("transfer method [%s] is not supported in RequestUploadURL. Use Sanitize() method instead.", input.TransferMethod)
