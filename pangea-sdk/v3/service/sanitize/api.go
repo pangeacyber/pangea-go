@@ -10,6 +10,21 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
+// @summary Sanitize
+//
+// @description Apply file sanitization actions according to specified rules.
+// Beta API.
+//
+// @operationId sanitize_post_v1beta_sanitize
+//
+// @example
+//
+//	response, err := client.Sanitize(ctx, &sanitize.SanitizeRequest{
+//		TransferRequest: pangea.TransferRequest{
+//			TransferMethod: pangea.TMpostURL,
+//		},
+//		UploadedFileName: "uploaded_file",
+//	}, file)
 func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io.ReadSeeker) (*pangea.PangeaResponse[SanitizeResult], error) {
 	if input == nil {
 		return nil, errors.New("nil input")
@@ -38,6 +53,26 @@ func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io
 	return request.DoPostWithFile(ctx, e.Client, "v1beta/sanitize", input, &SanitizeResult{}, fd)
 }
 
+// @summary Sanitize via presigned URL
+//
+// @description Apply file sanitization actions according to specified rules via
+// a presigned URL. Beta API.
+//
+// @operationId sanitize_post_v1beta_sanitize 2
+//
+// @example
+//
+//	presignedUrl, err := client.RequestUploadURL(ctx, &sanitize.SanitizeRequest{
+//		TransferRequest: pangea.TransferRequest{
+//			TransferMethod: pangea.TMputURL,
+//		},
+//		UploadedFileName: "uploaded_file",
+//	})
+//
+//	// Upload file to `presignedUrl.AcceptedResult.PutURL`.
+//
+//	// Poll for Sanitize's result
+//	response, err := client.PollResultByID(ctx, *presignedUrl.RequestID, &sanitize.SanitizeResult{})
 func (e *sanitize) RequestUploadURL(ctx context.Context, input *SanitizeRequest) (*pangea.PangeaResponse[SanitizeResult], error) {
 	if input.TransferMethod == pangea.TMmultipart || input.TransferMethod == pangea.TMdestURL || input.TransferMethod == pangea.TMsourceURL {
 		return nil, fmt.Errorf("transfer method [%s] is not supported in RequestUploadURL. Use Sanitize() method instead.", input.TransferMethod)
