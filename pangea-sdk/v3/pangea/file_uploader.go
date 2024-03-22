@@ -52,26 +52,26 @@ func GetUploadFileParams(input io.ReadSeeker) (*UploadFileParams, error) {
 	sha256Hash := sha256.New()
 
 	// Seek back to the beginning of the file
-	_, err := file.Seek(0, 0)
+	_, err := input.Seek(0, 0)
 	if err != nil {
 		return nil, err
 	}
 
 	// Copy the file content into the hash function
-	if _, err := io.Copy(sha256Hash, file); err != nil {
+	if _, err := io.Copy(sha256Hash, input); err != nil {
 		return nil, err
 	}
 	// Get the hash sum as a byte slice
 	hashInBytes := sha256Hash.Sum(nil)
 
 	// Seek back to the beginning of the file
-	_, err = file.Seek(0, 0)
+	_, err = input.Seek(0, 0)
 	if err != nil {
 		return nil, err
 	}
 
 	// Copy the file content into the hash calculation
-	size, err := io.Copy(crcHash, file)
+	size, err := io.Copy(crcHash, input)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func GetUploadFileParams(input io.ReadSeeker) (*UploadFileParams, error) {
 	crc32c := crcHash.Sum32()
 
 	// Reset to be sent
-	file.Seek(0, 0)
+	input.Seek(0, 0)
 
 	// Convert the CRC32 value to hexadecimal
 	crcStr := strconv.FormatUint(uint64(crc32c), 16)
@@ -93,20 +93,20 @@ func GetUploadFileParams(input io.ReadSeeker) (*UploadFileParams, error) {
 	}, nil
 }
 
-func GetFileSize(file *os.File) (int64, error) {
-	_, err := file.Seek(0, io.SeekStart)
+func GetFileSize(input *os.File) (int64, error) {
+	_, err := input.Seek(0, io.SeekStart)
 	if err != nil {
 		return 0, err
 	}
 
 	// Seek to the end of the file
-	size, err := file.Seek(0, io.SeekEnd)
+	size, err := input.Seek(0, io.SeekEnd)
 	if err != nil {
 		return 0, err
 	}
 
 	// Reset to be sent
-	file.Seek(0, io.SeekStart)
+	input.Seek(0, io.SeekStart)
 	if err != nil {
 		return 0, err
 	}
