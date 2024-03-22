@@ -98,10 +98,10 @@ type DeleteResult struct {
 	Count int `json:"count"`
 }
 
-// @summary Delete
+// @summary Delete (Beta)
 //
 // @description Delete object by ID or path. If both are supplied, the path must
-// match that of the object represented by the ID. Beta API.
+// match that of the object represented by the ID.
 //
 // @operationId store_post_v1beta_delete
 //
@@ -130,9 +130,9 @@ type FolderCreateResult struct {
 	Object ItemData `json:"object"`
 }
 
-// @summary Create a folder
+// @summary Create a folder (Beta)
 //
-// @description Create a folder, either by name or path and parent_id. Beta API.
+// @description Create a folder, either by name or path and parent_id.
 //
 // @operationId store_post_v1beta_folder_create
 //
@@ -166,10 +166,10 @@ type GetResult struct {
 	DestURL *string  `json:"dest_url,omitempty"`
 }
 
-// @summary Get an object
+// @summary Get an object (Beta)
 //
 // @description Get object. If both ID and path are supplied, the call will fail
-// if the target object doesn't match both properties. Beta API.
+// if the target object doesn't match both properties.
 //
 // @operationId store_post_v1beta_get
 //
@@ -208,9 +208,9 @@ type PutResult struct {
 	Object ItemData `json:"object"`
 }
 
-// @summary Upload a file
+// @summary Upload a file (Beta)
 //
-// @description Upload a file. Beta API.
+// @description Upload a file.
 //
 // @operationId store_post_v1beta_put
 //
@@ -283,9 +283,9 @@ type UpdateResult struct {
 	Object ItemData `json:"object"`
 }
 
-// @summary Update a file
+// @summary Update a file (Beta)
 //
-// @description Update a file. Beta API.
+// @description Update a file.
 //
 // @operationId share_post_v1beta_update
 //
@@ -340,7 +340,7 @@ type ListResult struct {
 	Objects []ItemData `json:"objects"`
 }
 
-// @summary List
+// @summary List (Beta)
 //
 // @description List or filter/search records. Beta. API
 //
@@ -368,9 +368,9 @@ type GetArchiveResult struct {
 	Count   int     `json:"count"`
 }
 
-// @summary Get archive
+// @summary Get archive (Beta)
 //
-// @description Get an archive file of multiple objects. Beta API.
+// @description Get an archive file of multiple objects.
 //
 // @operationId share_post_v1beta_get_archive
 //
@@ -430,9 +430,9 @@ type ShareLinkCreateResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary Create share links
+// @summary Create share links (Beta)
 //
-// @description Create a share link. Beta API.
+// @description Create a share link.
 //
 // @operationId share_post_v1beta_share_link_create
 //
@@ -468,9 +468,9 @@ type ShareLinkGetResult struct {
 	ShareLinkObject ShareLinkItem `json:"share_link_object"`
 }
 
-// @summary Get share link
+// @summary Get share link (Beta)
 //
-// @description Get a share link. Beta API.
+// @description Get a share link.
 //
 // @operationId share_post_v1beta_share_link_get
 //
@@ -571,9 +571,9 @@ type ShareLinkListResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary List share links
+// @summary List share links (Beta)
 //
-// @description Look up share links by filter options. Beta API.
+// @description Look up share links by filter options.
 //
 // @operationId share_post_v1beta_share_link_list
 //
@@ -596,9 +596,9 @@ type ShareLinkDeleteResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary Delete share links
+// @summary Delete share links (Beta)
 //
-// @description Delete share links. Beta API.
+// @description Delete share links.
 //
 // @operationId share_post_v1beta_share_link_delete
 //
@@ -613,9 +613,9 @@ func (e *share) ShareLinkDelete(ctx context.Context, input *ShareLinkDeleteReque
 	return request.DoPost(ctx, e.Client, "v1beta/share/link/delete", input, &ShareLinkDeleteResult{})
 }
 
-// @summary Request upload URL
+// @summary Request upload URL (Beta)
 //
-// @description Request an upload URL. Beta API.
+// @description Request an upload URL.
 //
 // @operationId share_post_v1beta_put 2
 //
@@ -661,9 +661,9 @@ type ShareLinkSendResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary Send share link(s)
+// @summary Send share link(s) (Beta)
 //
-// @description Send share link(s) Beta API.
+// @description Send share link(s).
 //
 // @operationId share_post_v1beta_share_link_send
 //
