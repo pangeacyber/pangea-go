@@ -10,10 +10,9 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
-// @summary Sanitize
+// @summary Sanitize (Beta)
 //
 // @description Apply file sanitization actions according to specified rules.
-// Beta API.
 //
 // @operationId sanitize_post_v1beta_sanitize
 //
@@ -53,10 +52,10 @@ func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io
 	return request.DoPostWithFile(ctx, e.Client, "v1beta/sanitize", input, &SanitizeResult{}, fd)
 }
 
-// @summary Sanitize via presigned URL
+// @summary Sanitize via presigned URL (Beta)
 //
 // @description Apply file sanitization actions according to specified rules via
-// a presigned URL. Beta API.
+// a presigned URL.
 //
 // @operationId sanitize_post_v1beta_sanitize 2
 //
