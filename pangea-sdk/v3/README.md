@@ -13,13 +13,15 @@ A Go SDK for integrating with Pangea services. Supports Go v1.18 and above.
 
 ## Installation
 
+#### GA releases
+
 ```bash
 $ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3
 ```
 
 <a name="beta-releases"></a>
 
-### Beta releases
+#### Beta releases
 
 Pre-release versions may be available with the `beta` denotation in the version
 number. These releases serve to preview beta services and APIs. Per Semantic
@@ -33,7 +35,8 @@ $ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3@v3.8.0-beta.2
 ## Usage
 
 - [Documentation][]
-- [Examples][]
+- [GA Examples][]
+- [Beta Examples][]
 
 Set up the SDK in your project in 3 steps:
 
@@ -115,7 +118,8 @@ fmt.Printf("Logged event: %s", pangea.Stringify(e))
 Full code for the above example available in [the examples directory](https://github.com/pangeacyber/pangea-go/blob/main/examples/audit/log_standard_schema.go).
 
    [Documentation]: https://pangea.cloud/docs/sdk/go/
-   [Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
+   [GA Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
+   [Beta Examples]: https://github.com/pangeacyber/pangea-go/tree/beta/examples
    [Pangea Console]: https://console.pangea.cloud/
    [Slack]: https://pangea.cloud/join-slack/
    [Secure Audit Log]: https://pangea.cloud/docs/audit
