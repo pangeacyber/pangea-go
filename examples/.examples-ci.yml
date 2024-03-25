@@ -12,6 +12,7 @@ go-sdk-examples:
           - redact
           - vault
           - share
+          - sanitize
   image: golang:${GO_VERSION}
   before_script:
     - export PANGEA_AUDIT_CONFIG_ID="${PANGEA_AUDIT_CONFIG_ID_1_LVE_AWS}"
@@ -33,6 +34,7 @@ go-sdk-examples:
     - export PANGEA_USER_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_VAULT_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_SHARE_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
+    - export PANGEA_SANITIZE_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
   script:
     - cd examples/${EXAMPLE_FOLDER}
     - bash ../../dev/run_examples.sh
