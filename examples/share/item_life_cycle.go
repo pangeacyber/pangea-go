@@ -17,7 +17,7 @@ func main() {
 	const filePath = "./testdata/testfile.pdf"
 	var folder = "/examples/files/" + t
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SHARE_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")
