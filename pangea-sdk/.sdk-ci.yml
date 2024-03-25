@@ -11,6 +11,7 @@ sdk-test-it:
     # Set each service test environment
     SERVICE_AUDIT_ENV: LVE
     SERVICE_AUTHN_ENV: LVE
+    SERVICE_AUTHZ_ENV: LVE
     SERVICE_EMBARGO_ENV: LVE
     SERVICE_FILE_SCAN_ENV: LVE
     SERVICE_IP_INTEL_ENV: LVE
@@ -48,6 +49,9 @@ sdk-test-it:
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_AUTHN_ENV}
         TEST: authn
+      - CLOUD: [AWS, GCP]
+        ENV: ${SERVICE_AUTHZ_ENV}
+        TEST: authz
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_EMBARGO_ENV}
         TEST: embargo
