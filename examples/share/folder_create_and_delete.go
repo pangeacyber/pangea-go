@@ -15,7 +15,7 @@ func main() {
 	var t = time.Now().Format("20060102_150405")
 	var path = "/sdk_example/delete/" + t
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SHARE_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")

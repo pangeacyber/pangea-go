@@ -15,7 +15,7 @@ func main() {
 	// Set filePath to your own file
 	const filePath = "./testdata/ds11.pdf"
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SANITIZE_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")
@@ -24,7 +24,7 @@ func main() {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
 
-	// create a new Sanitize client with pangea token and domain
+	// Create a new Sanitize client with Pangea token and domain
 	client := sanitize.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),

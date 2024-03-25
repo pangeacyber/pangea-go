@@ -15,7 +15,7 @@ func main() {
 	// Set filePath to your own file
 	const filePath = "./testdata/ds11.pdf"
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SANITIZE_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")

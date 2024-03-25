@@ -15,7 +15,7 @@ func main() {
 	// Set filePath to your own file
 	const filePath = "./testdata/ds11.pdf"
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SANITIZE_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")
@@ -24,7 +24,7 @@ func main() {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
 
-	// create a new Sanitize client with pangea token and domain
+	// Create a new Sanitize client with Pangea token and domain
 	client := sanitize.New(&pangea.Config{
 		Token:              token,
 		Domain:             os.Getenv("PANGEA_DOMAIN"),
@@ -100,7 +100,7 @@ func main() {
 	uploader := pangea.NewFileUploader()
 
 	fmt.Println("Uploading file...")
-	// Upload the file to the url get previously
+	// Upload the file to the returned upload URL.
 	// Need to set transfer method again to TMpostURL
 	err = uploader.UploadFile(ctx, url, pangea.TMpostURL, fd)
 	if err != nil {
@@ -128,7 +128,7 @@ func main() {
 		log.Fatal("Failed to poll result. Max retry reached.")
 	}
 
-	// Once got the result, cast it to use it
+	// After receiving the result, cast it before using it.
 	rSanitize := (*sr.Result).(*sanitize.SanitizeResult)
 
 	fmt.Println("File Sanitized:")
