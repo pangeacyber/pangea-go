@@ -29,7 +29,7 @@ Versioning, they are considered unstable and do not carry the same compatibility
 guarantees as stable releases. [Beta changelog](https://github.com/pangeacyber/pangea-go/blob/beta/CHANGELOG.md).
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3@v3.8.0-beta.2
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3@v3.8.0-beta.3
 ```
 
 ## Usage

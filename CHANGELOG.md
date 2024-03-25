@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v3.8.0-beta.3 - 2024-03-25
+
 ### Added
 
 - AuthZ service support
-
 
 ## v3.8.0-beta.2 - 2024-03-20
 
