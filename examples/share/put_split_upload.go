@@ -16,7 +16,7 @@ func main() {
 	var name = "file_name_" + t
 	const filePath = "./testdata/testfile.pdf"
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SHARE_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")
@@ -67,7 +67,7 @@ func main() {
 	// Create an upload
 	uploader := pangea.NewFileUploader()
 
-	// Upload the file to the url get previously
+	// Upload the file to the returned upload URL.
 	// Need to set transfer method again to TMputURL
 	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
 	if err != nil {
@@ -89,7 +89,7 @@ func main() {
 		i++
 	}
 
-	// Once got the result, cast it to use it
+	// After receiving the result, cast it before using it.
 	rPut := (*pr.Result).(*share.PutResult)
 
 	fmt.Println("File uploaded:")
