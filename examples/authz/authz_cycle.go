@@ -27,7 +27,7 @@ func main() {
 	var user1 = "user_1_" + timeStr
 	var user2 = "user_2_" + timeStr
 
-	// Load pangea token from environment variables
+	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_AUTHZ_TOKEN")
 	if token == "" {
 		log.Fatal("Unauthorized: No token present.")
