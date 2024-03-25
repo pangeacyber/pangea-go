@@ -33,9 +33,9 @@ type TupleCreateRequest struct {
 type TupleCreateResult struct {
 }
 
-// @summary Write tuples.
+// @summary Write tuples (Beta).
 //
-// @description Write tuples. The request will fail if there is no schema or the tuples do not validate against the schema.
+// @description Write tuples. The request will fail if tuples do not validate against the schema defined resource types.
 //
 // @operationId authz_post_v1beta_tuple_create
 //
@@ -147,7 +147,7 @@ type TupleListResult struct {
 	Count  int     `json:"count"`
 }
 
-// @summary Get tuples.
+// @summary Get tuples (Beta).
 //
 // @description Return a paginated list of filtered tuples. The filter is given in terms of a tuple. Fill out the fields that you want to filter. If the filter is empty it will return all the tuples.
 //
@@ -175,11 +175,11 @@ type TupleDeleteRequest struct {
 type TupleDeleteResult struct {
 }
 
-// @summary
+// @summary Delete tuples (Beta).
 //
-// @description
+// @description Delete tuples.
 //
-// @operationId
+// @operationId authz_post_v1beta_tuple_delete
 //
 // @example
 //
@@ -230,7 +230,7 @@ type CheckResult struct {
 	Debug         *Debug `json:"debug,omitempty"`
 }
 
-// @summary Perform a check request
+// @summary Perform a check request (Beta).
 //
 // @description Check if a subject has permission to do action on the resource.
 //
@@ -266,7 +266,7 @@ type ListResourcesResult struct {
 	IDs []string `json:"ids"`
 }
 
-// @summary List resources
+// @summary List resources (Beta).
 //
 // @description Given a namespace, action, and subject, list all the resources in the namespace that the subject has permission to the action with.
 //
@@ -297,7 +297,7 @@ type ListSubjectsResult struct {
 	Subjects []Subject `json:"subjects"`
 }
 
-// @summary List subjects
+// @summary List subjects (Beta).
 //
 // @description Given a resource and an action, return the list of subjects who have the given action to the given resource.
 //
