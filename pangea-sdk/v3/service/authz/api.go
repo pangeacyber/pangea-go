@@ -266,9 +266,9 @@ type ListResourcesResult struct {
 	IDs []string `json:"ids"`
 }
 
-// @summary List resouces
+// @summary List resources
 //
-// @description Given a namespace, action, and subject, list all the resources in the namespace that the subject has the action with.
+// @description Given a namespace, action, and subject, list all the resources in the namespace that the subject has permission to the action with.
 //
 // @operationId authz_post_v1beta_list-resources
 //
