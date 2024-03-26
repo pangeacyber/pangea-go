@@ -6,6 +6,7 @@
 
 sdk-test-it:
   stage: integration_tests
+  retry: 2
   variables:
     # Set each service test environment
     SERVICE_AUDIT_ENV: LVE
