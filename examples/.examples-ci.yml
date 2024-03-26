@@ -1,5 +1,6 @@
 go-sdk-examples:
   stage: examples
+  retry: 2
   parallel:
     matrix:
       - GO_VERSION: ["1.19", "1.20", "1.21"]
