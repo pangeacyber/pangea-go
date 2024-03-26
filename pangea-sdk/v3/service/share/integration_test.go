@@ -18,6 +18,7 @@ import (
 
 var testingEnvironment = pangeatesting.LoadTestEnvironment("share", pangeatesting.Live)
 var PDF_FILEPATH = "./testdata/testfile.pdf"
+var PDF_FILEPATH_18MB = "./testdata/interactive3.pdf"
 var ZERO_BYTES_FILEPATH = "./testdata/zerobytes.txt"
 var timeNow = time.Now()
 var TIME = timeNow.Format("20060102_150405")
@@ -195,6 +196,71 @@ func Test_Integration_PutTransferMethodPostURL_ZeroBytesFile(t *testing.T) {
 	assert.NotNil(t, getResp.Result)
 	assert.NotEmpty(t, getResp.Result.Object.ID)
 	assert.Nil(t, getResp.Result.DestURL)
+	assert.Empty(t, getResp.AttachedFiles)
+}
+
+func Test_Integration_PutTransferMethodPostURL_PathAnd18MB(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancelFn()
+
+	cfg := shareIntegrationCfg(t)
+	cfg.PollResultTimeout = time.Duration(120 * time.Second)
+	client := share.New(cfg)
+
+	path := "/sdk/tests/go/" + TIME + "_file_post_url"
+
+	input := &share.PutRequest{
+		Path: path,
+		TransferRequest: pangea.TransferRequest{
+			TransferMethod: pangea.TMpostURL,
+		},
+	}
+
+	file, err := os.Open(PDF_FILEPATH_18MB)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	out, err := client.Put(ctx, input, file)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	assert.NotNil(t, out)
+	assert.NotNil(t, out.Result)
+	assert.NotEmpty(t, out.Result.Object.ID)
+	assert.NotEmpty(t, out.Result.Object.Name)
+
+	// Get multipart
+	getResp, err := client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMmultipart,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotEmpty(t, getResp.AttachedFiles)
+	assert.Equal(t, len(getResp.AttachedFiles), 1)
+	getResp.AttachedFiles[0].Save(pangea.AttachedFileSaveInfo{
+		Folder: "./download",
+	})
+
+	// Get dest-url
+	getResp, err = client.Get(ctx,
+		&share.GetRequest{
+			ID:             out.Result.Object.ID,
+			TransferMethod: pangea.TMdestURL,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, getResp)
+	assert.NotNil(t, getResp.Result)
+	assert.NotEmpty(t, getResp.Result.Object.ID)
+	assert.NotNil(t, getResp.Result.DestURL)
 	assert.Empty(t, getResp.AttachedFiles)
 }
 
