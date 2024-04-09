@@ -967,7 +967,7 @@ type LogStreamEvent struct {
 	Data  LogStreamEventData `json:"data"`
 }
 
-type LogStreamInput struct {
+type LogStreamRequest struct {
 	pangea.BaseRequest
 
 	Logs []LogStreamEvent `json:"logs"`
@@ -993,7 +993,7 @@ func Test_Integration_LogStream(t *testing.T) {
 			UserID:      "test user ID",
 		},
 	}
-	input := LogStreamInput{
+	input := LogStreamRequest{
 		Logs: []LogStreamEvent{logStreamEvent},
 	}
 	response, err := client.LogStream(ctx, &input)

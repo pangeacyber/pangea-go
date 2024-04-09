@@ -993,7 +993,7 @@ func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*p
 //		Data  LogStreamEventData `json:"data"`
 //	}
 //
-//	type LogStreamInput struct {
+//	type LogStreamRequest struct {
 //		pangea.BaseRequest
 //
 //		Logs []LogStreamEvent `json:"logs"`
@@ -1012,7 +1012,7 @@ func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*p
 //		},
 //	}
 //
-//	input := LogStreamInput{
+//	input := LogStreamRequest{
 //		Logs: []LogStreamEvent{logStreamEvent},
 //	}
 //
