@@ -963,3 +963,61 @@ type DownloadResult struct {
 func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error) {
 	return request.DoPost(ctx, a.Client, "v1/download_results", input, &DownloadResult{})
 }
+
+// @summary Log streaming endpoint
+//
+// @description This API allows 3rd party vendors (like Auth0) to stream events
+// to this endpoint where the structure of the payload varies across different
+// vendors.
+//
+// @operationId audit_post_v1_log_stream
+//
+// @example
+//
+//	type LogStreamEventData struct {
+//		ClientID     string  `json:"client_id"`
+//		Connection   *string `json:"connection,omitempty"`
+//		ConnectionID *string `json:"connection_id,omitempty"`
+//		Date         string  `json:"date"`
+//		Description  string  `json:"description"`
+//		IP           string  `json:"ip"`
+//		Strategy     *string `json:"strategy,omitempty"`
+//		StrategyType *string `json:"strategy_type,omitempty"`
+//		Type         string  `json:"type"`
+//		UserAgent    string  `json:"user_agent"`
+//		UserID       string  `json:"user_id"`
+//	}
+//
+//	type LogStreamEvent struct {
+//		LogID string             `json:"log_id"`
+//		Data  LogStreamEventData `json:"data"`
+//	}
+//
+//	type LogStreamRequest struct {
+//		pangea.BaseRequest
+//
+//		Logs []LogStreamEvent `json:"logs"`
+//	}
+//
+//	logStreamEvent := LogStreamEvent{
+//		LogID: "some log ID",
+//		Data: LogStreamEventData{
+//			ClientID:    "test client ID",
+//			Date:        "2024-03-29T17:26:50.193Z",
+//			Description: "Create a log stream",
+//			IP:          "127.0.0.1",
+//			Type:        "some_type",
+//			UserAgent:   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0",
+//			UserID:      "test user ID",
+//		},
+//	}
+//
+//	input := LogStreamRequest{
+//		Logs: []LogStreamEvent{logStreamEvent},
+//	}
+//
+//	response, err := client.LogStream(ctx, &input)
+func (a *audit) LogStream(ctx context.Context, input pangea.ConfigIDer) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	return request.DoPost(ctx, a.Client, "v1/log_stream", input, &result)
+}
