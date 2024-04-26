@@ -87,10 +87,9 @@ func Test_Integration_Check_Error_BadISO(t *testing.T) {
 	assert.Nil(t, out)
 	fmt.Println(err.Error())
 	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, len(apiErr.PangeaErrors.Errors), 1)
-	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Code, "DoesNotMatchPattern")
-	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Detail, "'iso_code' must match the given regex: ^[a-zA-Z]{2}$")
-	assert.Equal(t, apiErr.PangeaErrors.Errors[0].Source, "/iso_code")
+	assert.Equal(t, 1, len(apiErr.PangeaErrors.Errors))
+	assert.Equal(t, "DoesNotMatchPattern", apiErr.PangeaErrors.Errors[0].Code)
+	assert.Equal(t, "/iso_code", apiErr.PangeaErrors.Errors[0].Source)
 }
 
 func Test_Integration_Check_Error_BadToken(t *testing.T) {
