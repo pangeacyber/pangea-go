@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	namespaceFolder = "folder"
-	namespaceUser   = "user"
-	relationOwner   = "owner"
-	relationEditor  = "editor"
-	relationReader  = "reader"
+	typeFolder     = "folder"
+	typeUser       = "user"
+	relationOwner  = "owner"
+	relationEditor = "editor"
+	relationReader = "reader"
 )
 
 func main() {
@@ -52,94 +52,94 @@ func main() {
 	fmt.Println("Creating tuples...")
 	_, err := client.TupleCreate(ctx, &authz.TupleCreateRequest{
 		Tuples: []authz.Tuple{
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder1,
+					Type: typeFolder,
+					ID:   folder1,
 				},
 				Relation: relationReader,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user1,
+					Type: typeUser,
+					ID:   user1,
 				},
 			},
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder1,
+					Type: typeFolder,
+					ID:   folder1,
 				},
 				Relation: relationEditor,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user2,
+					Type: typeUser,
+					ID:   user2,
 				},
 			},
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder2,
+					Type: typeFolder,
+					ID:   folder2,
 				},
 				Relation: relationEditor,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user1,
+					Type: typeUser,
+					ID:   user1,
 				},
 			},
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder2,
+					Type: typeFolder,
+					ID:   folder2,
 				},
 				Relation: relationOwner,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user2,
+					Type: typeUser,
+					ID:   user2,
 				},
 			},
 		},
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 	fmt.Println("Tuples created.")
 
 	// Tuple list with resource
 	fmt.Println("Listing tuples with resource...")
 	filter := authz.NewFilterUserList()
-	filter.ResourceNamespace().Set(pangea.String(namespaceFolder))
+	filter.ResourceType().Set(pangea.String(typeFolder))
 	filter.ResourceID().Set(pangea.String(folder1))
 
 	rListWithResource, err := client.TupleList(ctx, &authz.TupleListRequest{
 		Filter: filter.Filter(),
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 
 	fmt.Printf("Got %d tuples.\n", rListWithResource.Result.Count)
 	for i, tuple := range rListWithResource.Result.Tuples {
 		fmt.Printf("Tuple #%d\n", i)
-		fmt.Printf("\tNamespace: %s\n", tuple.Subject.Namespace)
+		fmt.Printf("\tType: %s\n", tuple.Subject.Type)
 		fmt.Printf("\tID: %s\n", tuple.Subject.ID)
 	}
 
 	// Tuple list with subject
 	filter = authz.NewFilterUserList()
 	fmt.Println("Listing tuples with subject...")
-	filter.SubjectNamespace().Set(pangea.String(namespaceUser))
+	filter.SubjectType().Set(pangea.String(typeUser))
 	filter.SubjectID().Set(pangea.String(user1))
 
 	rListWithSubject, err := client.TupleList(ctx, &authz.TupleListRequest{
 		Filter: filter.Filter(),
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 
 	fmt.Printf("Got %d tuples.\n", rListWithSubject.Result.Count)
 	for i, tuple := range rListWithResource.Result.Tuples {
 		fmt.Printf("Tuple #%d\n", i)
-		fmt.Printf("\tNamespace: %s\n", tuple.Subject.Namespace)
+		fmt.Printf("\tType: %s\n", tuple.Subject.Type)
 		fmt.Printf("\tID: %s\n", tuple.Subject.ID)
 	}
 
@@ -147,21 +147,21 @@ func main() {
 	fmt.Println("Deleting tuples...")
 	_, err = client.TupleDelete(ctx, &authz.TupleDeleteRequest{
 		Tuples: []authz.Tuple{
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder1,
+					Type: typeFolder,
+					ID:   folder1,
 				},
 				Relation: relationReader,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user1,
+					Type: typeUser,
+					ID:   user1,
 				},
 			},
 		},
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 	fmt.Println("Delete success.")
 
@@ -169,17 +169,17 @@ func main() {
 	fmt.Println("Checking tuple...")
 	rCheck, err := client.Check(ctx, &authz.CheckRequest{
 		Resource: authz.Resource{
-			Namespace: namespaceFolder,
-			ID:        folder1,
+			Type: typeFolder,
+			ID:   folder1,
 		},
 		Action: "reader",
 		Subject: authz.Subject{
-			Namespace: namespaceUser,
-			ID:        user2,
+			Type: typeUser,
+			ID:   user2,
 		},
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 
 	if rCheck.Result.Allowed {
@@ -192,18 +192,18 @@ func main() {
 	fmt.Println("Checking tuple with debug enabled...")
 	rCheck, err = client.Check(ctx, &authz.CheckRequest{
 		Resource: authz.Resource{
-			Namespace: namespaceFolder,
-			ID:        folder1,
+			Type: typeFolder,
+			ID:   folder1,
 		},
 		Action: "editor",
 		Subject: authz.Subject{
-			Namespace: namespaceUser,
-			ID:        user2,
+			Type: typeUser,
+			ID:   user2,
 		},
 		Debug: pangea.Bool(true),
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 
 	if rCheck.Result.Allowed {
@@ -218,15 +218,15 @@ func main() {
 	// List resources
 	fmt.Println("Listing resources...")
 	rListResources, err := client.ListResources(ctx, &authz.ListResourcesRequest{
-		Namespace: namespaceFolder,
-		Action:    relationEditor,
+		Type:   typeFolder,
+		Action: relationEditor,
 		Subject: authz.Subject{
-			Namespace: namespaceUser,
-			ID:        user2,
+			Type: typeUser,
+			ID:   user2,
 		},
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 
 	fmt.Printf("Got %d resources.\n", len(rListResources.Result.IDs))
@@ -238,19 +238,19 @@ func main() {
 	fmt.Println("Listing subjects...")
 	rListSubjects, err := client.ListSubjects(ctx, &authz.ListSubjectsRequest{
 		Resource: authz.Resource{
-			Namespace: namespaceFolder,
-			ID:        folder2,
+			Type: typeFolder,
+			ID:   folder2,
 		},
 		Action: relationEditor,
 	})
 	if err != nil {
-		log.Fatalf("Unexpected error.", err)
+		log.Fatal("Unexpected error.", err)
 	}
 
 	fmt.Printf("Got %d subjects.\n", len(rListSubjects.Result.Subjects))
 	for i, subject := range rListSubjects.Result.Subjects {
 		fmt.Printf("Tuple #%d\n", i)
-		fmt.Printf("\tNamespace: %s\n", subject.Namespace)
+		fmt.Printf("\tType: %s\n", subject.Type)
 		fmt.Printf("\tID: %s\n", subject.ID)
 	}
 
