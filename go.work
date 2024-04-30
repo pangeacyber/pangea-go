@@ -3,6 +3,7 @@ go 1.18
 use (
 	./examples/audit
 	./examples/authn
+	./examples/authz
 	./examples/embargo
 	./examples/file_scan
 	./examples/intel
