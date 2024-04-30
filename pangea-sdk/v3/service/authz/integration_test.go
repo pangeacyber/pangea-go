@@ -23,11 +23,11 @@ var user1 = "user_1_" + timeStr
 var user2 = "user_2_" + timeStr
 
 const (
-	namespaceFolder = "folder"
-	namespaceUser   = "user"
-	relationOwner   = "owner"
-	relationEditor  = "editor"
-	relationReader  = "reader"
+	typeFolder     = "folder"
+	typeUser       = "user"
+	relationOwner  = "owner"
+	relationEditor = "editor"
+	relationReader = "reader"
 )
 
 func Test_Integration(t *testing.T) {
@@ -39,48 +39,48 @@ func Test_Integration(t *testing.T) {
 	// Create tuples
 	rCreate, err := cli.TupleCreate(ctx, &authz.TupleCreateRequest{
 		Tuples: []authz.Tuple{
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder1,
+					Type: typeFolder,
+					ID:   folder1,
 				},
 				Relation: relationReader,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user1,
+					Type: typeUser,
+					ID:   user1,
 				},
 			},
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder1,
+					Type: typeFolder,
+					ID:   folder1,
 				},
 				Relation: relationEditor,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user2,
+					Type: typeUser,
+					ID:   user2,
 				},
 			},
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder2,
+					Type: typeFolder,
+					ID:   folder2,
 				},
 				Relation: relationEditor,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user1,
+					Type: typeUser,
+					ID:   user1,
 				},
 			},
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder2,
+					Type: typeFolder,
+					ID:   folder2,
 				},
 				Relation: relationOwner,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user2,
+					Type: typeUser,
+					ID:   user2,
 				},
 			},
 		},
@@ -92,7 +92,7 @@ func Test_Integration(t *testing.T) {
 
 	// Tuple list with resource
 	filter := authz.NewFilterUserList()
-	filter.ResourceNamespace().Set(pangea.String(namespaceFolder))
+	filter.ResourceType().Set(pangea.String(typeFolder))
 	filter.ResourceID().Set(pangea.String(folder1))
 
 	rListWithResource, err := cli.TupleList(ctx, &authz.TupleListRequest{
@@ -107,7 +107,7 @@ func Test_Integration(t *testing.T) {
 
 	// Tuple list with subject
 	filter = authz.NewFilterUserList()
-	filter.SubjectNamespace().Set(pangea.String(namespaceUser))
+	filter.SubjectType().Set(pangea.String(typeUser))
 	filter.SubjectID().Set(pangea.String(user1))
 
 	rListWithSubject, err := cli.TupleList(ctx, &authz.TupleListRequest{
@@ -123,15 +123,15 @@ func Test_Integration(t *testing.T) {
 	// Tuple delete
 	rDelete, err := cli.TupleDelete(ctx, &authz.TupleDeleteRequest{
 		Tuples: []authz.Tuple{
-			authz.Tuple{
+			{
 				Resource: authz.Resource{
-					Namespace: namespaceFolder,
-					ID:        folder1,
+					Type: typeFolder,
+					ID:   folder1,
 				},
 				Relation: relationReader,
 				Subject: authz.Subject{
-					Namespace: namespaceUser,
-					ID:        user1,
+					Type: typeUser,
+					ID:   user1,
 				},
 			},
 		},
@@ -145,13 +145,13 @@ func Test_Integration(t *testing.T) {
 	// Check no debug
 	rCheck, err := cli.Check(ctx, &authz.CheckRequest{
 		Resource: authz.Resource{
-			Namespace: namespaceFolder,
-			ID:        folder1,
+			Type: typeFolder,
+			ID:   folder1,
 		},
 		Action: "reader",
 		Subject: authz.Subject{
-			Namespace: namespaceUser,
-			ID:        user2,
+			Type: typeUser,
+			ID:   user2,
 		},
 	})
 
@@ -166,13 +166,13 @@ func Test_Integration(t *testing.T) {
 	// Check debug
 	rCheck, err = cli.Check(ctx, &authz.CheckRequest{
 		Resource: authz.Resource{
-			Namespace: namespaceFolder,
-			ID:        folder1,
+			Type: typeFolder,
+			ID:   folder1,
 		},
 		Action: "editor",
 		Subject: authz.Subject{
-			Namespace: namespaceUser,
-			ID:        user2,
+			Type: typeUser,
+			ID:   user2,
 		},
 		Debug: pangea.Bool(true),
 	})
@@ -188,11 +188,11 @@ func Test_Integration(t *testing.T) {
 
 	// List resources
 	rListResources, err := cli.ListResources(ctx, &authz.ListResourcesRequest{
-		Namespace: namespaceFolder,
-		Action:    relationEditor,
+		Type:   typeFolder,
+		Action: relationEditor,
 		Subject: authz.Subject{
-			Namespace: namespaceUser,
-			ID:        user2,
+			Type: typeUser,
+			ID:   user2,
 		},
 	})
 
@@ -204,8 +204,8 @@ func Test_Integration(t *testing.T) {
 	// List subjects
 	rListSubjects, err := cli.ListSubjects(ctx, &authz.ListSubjectsRequest{
 		Resource: authz.Resource{
-			Namespace: namespaceFolder,
-			ID:        folder2,
+			Type: typeFolder,
+			ID:   folder2,
 		},
 		Action: relationEditor,
 	})

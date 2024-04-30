@@ -8,14 +8,14 @@ import (
 )
 
 type Resource struct {
-	Namespace string `json:"namespace"`
-	ID        string `json:"id,omitempty"`
+	Type string `json:"type"`
+	ID   string `json:"id,omitempty"`
 }
 
 type Subject struct {
-	Namespace string `json:"namespace"`
-	ID        string `json:"id,omitempty"`
-	Action    string `json:"action,omitempty"`
+	Type   string `json:"type"`
+	ID     string `json:"id,omitempty"`
+	Action string `json:"action,omitempty"`
 }
 
 type Tuple struct {
@@ -37,7 +37,7 @@ type TupleCreateResult struct {
 //
 // @description Write tuples. The request will fail if tuples do not validate against the schema defined resource types.
 //
-// @operationId authz_post_v1beta_tuple_create
+// @operationId authz_post_v1_tuple_create
 //
 // @example
 //
@@ -45,60 +45,54 @@ type TupleCreateResult struct {
 //		Tuples: []authz.Tuple{
 //			authz.Tuple{
 //				Resource: authz.Resource{
-//					Namespace: "folder",
+//					Type: "folder",
 //					ID:        "folder_id",
 //				},
 //				Relation: "reader",
 //				Subject: authz.Subject{
-//					Namespace: "user",
+//					Type: "user",
 //					ID:        "user_id",
 //				},
 //			},
 //		},
 //	})
 func (e *authz) TupleCreate(ctx context.Context, input *TupleCreateRequest) (*pangea.PangeaResponse[TupleCreateResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/tuple/create", input, &TupleCreateResult{})
+	return request.DoPost(ctx, e.Client, "v1/tuple/create", input, &TupleCreateResult{})
 }
-
-// type TupleListFilter struct {
-// 	Resource *Resource `json:"resource,omitempty"`
-// 	Relation string    `json:"relation,omitempty"`
-// 	Subject  *Subject  `json:"subject,omitempty"`
-// }
 
 type TupleListFilter struct {
 	pangea.FilterBase
-	resourceNamespace *pangea.FilterMatch[string]
-	resourceID        *pangea.FilterMatch[string]
-	relation          *pangea.FilterMatch[string]
-	subjectNamespace  *pangea.FilterMatch[string]
-	subjectID         *pangea.FilterMatch[string]
-	subjectAction     *pangea.FilterMatch[string]
+	resourceType  *pangea.FilterMatch[string]
+	resourceID    *pangea.FilterMatch[string]
+	relation      *pangea.FilterMatch[string]
+	subjectType   *pangea.FilterMatch[string]
+	subjectID     *pangea.FilterMatch[string]
+	subjectAction *pangea.FilterMatch[string]
 }
 
 func NewFilterUserList() *TupleListFilter {
 	filter := make(pangea.Filter)
 	return &TupleListFilter{
-		FilterBase:        *pangea.NewFilterBase(filter),
-		resourceNamespace: pangea.NewFilterMatch[string]("resource_namespace", &filter),
-		resourceID:        pangea.NewFilterMatch[string]("resource_id", &filter),
-		subjectNamespace:  pangea.NewFilterMatch[string]("subject_namespace", &filter),
-		subjectID:         pangea.NewFilterMatch[string]("subject_id", &filter),
-		subjectAction:     pangea.NewFilterMatch[string]("subject_action", &filter),
-		relation:          pangea.NewFilterMatch[string]("relation", &filter),
+		FilterBase:    *pangea.NewFilterBase(filter),
+		resourceType:  pangea.NewFilterMatch[string]("resource_type", &filter),
+		resourceID:    pangea.NewFilterMatch[string]("resource_id", &filter),
+		subjectType:   pangea.NewFilterMatch[string]("subject_type", &filter),
+		subjectID:     pangea.NewFilterMatch[string]("subject_id", &filter),
+		subjectAction: pangea.NewFilterMatch[string]("subject_action", &filter),
+		relation:      pangea.NewFilterMatch[string]("relation", &filter),
 	}
 }
 
-func (fu *TupleListFilter) ResourceNamespace() *pangea.FilterMatch[string] {
-	return fu.resourceNamespace
+func (fu *TupleListFilter) ResourceType() *pangea.FilterMatch[string] {
+	return fu.resourceType
 }
 
 func (fu *TupleListFilter) ResourceID() *pangea.FilterMatch[string] {
 	return fu.resourceID
 }
 
-func (fu *TupleListFilter) SubjectNamespace() *pangea.FilterMatch[string] {
-	return fu.subjectNamespace
+func (fu *TupleListFilter) SubjectType() *pangea.FilterMatch[string] {
+	return fu.subjectType
 }
 
 func (fu *TupleListFilter) SubjectID() *pangea.FilterMatch[string] {
@@ -123,12 +117,12 @@ const (
 type TupleOrderBy string
 
 const (
-	TOBresourceNamespace TupleOrderBy = "resource_namespace"
-	TOBresourceID        TupleOrderBy = "resource_id"
-	TOBrelation          TupleOrderBy = "relation"
-	TOBsubjectNamespace  TupleOrderBy = "subject_namespace"
-	TOBsubjectID         TupleOrderBy = "subject_id"
-	TOBsubjectAction     TupleOrderBy = "subject_action"
+	TOBresourceType  TupleOrderBy = "resource_type"
+	TOBresourceID    TupleOrderBy = "resource_id"
+	TOBrelation      TupleOrderBy = "relation"
+	TOBsubjectType   TupleOrderBy = "subject_type"
+	TOBsubjectID     TupleOrderBy = "subject_id"
+	TOBsubjectAction TupleOrderBy = "subject_action"
 )
 
 type TupleListRequest struct {
@@ -151,19 +145,19 @@ type TupleListResult struct {
 //
 // @description Return a paginated list of filtered tuples. The filter is given in terms of a tuple. Fill out the fields that you want to filter. If the filter is empty it will return all the tuples.
 //
-// @operationId authz_post_v1beta_tuple_list
+// @operationId authz_post_v1_tuple_list
 //
 // @example
 //
 // filter := authz.NewFilterUserList()
-// filter.ResourceNamespace().Set(pangea.String("folder"))
+// filter.ResourceType().Set(pangea.String("folder"))
 // filter.ResourceID().Set(pangea.String("folder_id"))
 
 //	rListWithResource, err := cli.TupleList(ctx, &authz.TupleListRequest{
 //		Filter: filter.Filter(),
 //	})
 func (e *authz) TupleList(ctx context.Context, input *TupleListRequest) (*pangea.PangeaResponse[TupleListResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/tuple/list", input, &TupleListResult{})
+	return request.DoPost(ctx, e.Client, "v1/tuple/list", input, &TupleListResult{})
 }
 
 type TupleDeleteRequest struct {
@@ -179,7 +173,7 @@ type TupleDeleteResult struct {
 //
 // @description Delete tuples.
 //
-// @operationId authz_post_v1beta_tuple_delete
+// @operationId authz_post_v1_tuple_delete
 //
 // @example
 //
@@ -187,19 +181,19 @@ type TupleDeleteResult struct {
 //		Tuples: []authz.Tuple{
 //			authz.Tuple{
 //				Resource: authz.Resource{
-//					Namespace: "folder",
+//					Type: "folder",
 //					ID:        "folder_id",
 //				},
 //				Relation: "editor",
 //				Subject: authz.Subject{
-//					Namespace: "user",
+//					Type: "user",
 //					ID:        "user_id",
 //				},
 //			},
 //		},
 //	})
 func (e *authz) TupleDelete(ctx context.Context, input *TupleDeleteRequest) (*pangea.PangeaResponse[TupleDeleteResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/tuple/delete", input, &TupleDeleteResult{})
+	return request.DoPost(ctx, e.Client, "v1/tuple/delete", input, &TupleDeleteResult{})
 }
 
 type CheckRequest struct {
@@ -213,9 +207,9 @@ type CheckRequest struct {
 }
 
 type DebugPath struct {
-	Namespace string `json:"namespace"`
-	ID        string `json:"id"`
-	Action    string `json:"action"`
+	Type   string `json:"type"`
+	ID     string `json:"id"`
+	Action string `json:"action"`
 }
 
 type Debug struct {
@@ -234,32 +228,32 @@ type CheckResult struct {
 //
 // @description Check if a subject has permission to do action on the resource.
 //
-// @operationId authz_post_v1beta_check
+// @operationId authz_post_v1_check
 //
 // @example
 //
 //	rCheck, err = cli.Check(ctx, &authz.CheckRequest{
 //		Resource: authz.Resource{
-//			Namespace: "folder",
+//			Type: "folder",
 //			ID:        "folder_id",
 //		},
 //		Action: "editor",
 //		Subject: authz.Subject{
-//			Namespace: "user",
+//			Type: "user",
 //			ID:        "user_id",
 //		},
 //		Debug: pangea.Bool(true),
 //	})
 func (e *authz) Check(ctx context.Context, input *CheckRequest) (*pangea.PangeaResponse[CheckResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/check", input, &CheckResult{})
+	return request.DoPost(ctx, e.Client, "v1/check", input, &CheckResult{})
 }
 
 type ListResourcesRequest struct {
 	pangea.BaseRequest
 
-	Namespace string  `json:"namespace"`
-	Action    string  `json:"action"`
-	Subject   Subject `json:"subject"`
+	Type    string  `json:"type"`
+	Action  string  `json:"action"`
+	Subject Subject `json:"subject"`
 }
 
 type ListResourcesResult struct {
@@ -268,22 +262,22 @@ type ListResourcesResult struct {
 
 // @summary List resources (Beta).
 //
-// @description Given a namespace, action, and subject, list all the resources in the namespace that the subject has permission to the action with.
+// @description Given a type, action, and subject, list all the resources in the type that the subject has permission to the action with.
 //
-// @operationId authz_post_v1beta_list-resources
+// @operationId authz_post_v1_list-resources
 //
 // @example
 //
 //	rListResources, err := cli.ListResources(ctx, &authz.ListResourcesRequest{
-//		Namespace: "folder",
+//		Type: "folder",
 //		Action:    "editor",
 //		Subject: authz.Subject{
-//			Namespace: "user",
+//			Type: "user",
 //			ID:        "user_id",
 //		},
 //	})
 func (e *authz) ListResources(ctx context.Context, input *ListResourcesRequest) (*pangea.PangeaResponse[ListResourcesResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/list-resources", input, &ListResourcesResult{})
+	return request.DoPost(ctx, e.Client, "v1/list-resources", input, &ListResourcesResult{})
 }
 
 type ListSubjectsRequest struct {
@@ -301,17 +295,17 @@ type ListSubjectsResult struct {
 //
 // @description Given a resource and an action, return the list of subjects who have the given action to the given resource.
 //
-// @operationId authz_post_v1beta_list-subjects
+// @operationId authz_post_v1_list-subjects
 //
 // @example
 //
 //	rListSubjects, err := cli.ListSubjects(ctx, &authz.ListSubjectsRequest{
 //		Resource: authz.Resource{
-//			Namespace: "folder",
+//			Type: "folder",
 //			ID:        "folder_id",
 //		},
 //		Action: "editor",
 //	})
 func (e *authz) ListSubjects(ctx context.Context, input *ListSubjectsRequest) (*pangea.PangeaResponse[ListSubjectsResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/list-subjects", input, &ListSubjectsResult{})
+	return request.DoPost(ctx, e.Client, "v1/list-subjects", input, &ListSubjectsResult{})
 }
