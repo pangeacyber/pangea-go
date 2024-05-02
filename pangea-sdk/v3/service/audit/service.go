@@ -24,6 +24,9 @@ type Client interface {
 	// vendors.
 	LogStream(ctx context.Context, input pangea.ConfigIDer) (*pangea.PangeaResponse[struct{}], error)
 
+	// Bulk export of data from the Secure Audit Log, with optional filtering.
+	Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[struct{}], error)
+
 	// Base service methods
 	pangea.BaseServicer
 }

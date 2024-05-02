@@ -685,7 +685,7 @@ type SearchRestriction struct {
 	// A list of actions to restrict the search to.
 	Action []string `json:"action,omitempty"`
 
-	// A list of status to restrict the search to.
+	// A list of statuses to restrict the search to.
 	Status []string `json:"status,omitempty"`
 }
 
@@ -937,7 +937,10 @@ type DownloadRequest struct {
 	pangea.BaseRequest
 
 	// ID returned by the search API.
-	ResultID string `json:"result_id"`
+	RequestID string `json:"request_id,omitempty"`
+
+	// ID returned by the search API.
+	ResultID string `json:"result_id,omitempty"`
 
 	// Format for the records.
 	Format DownloadFormat `json:"format,omitempty"`
@@ -961,6 +964,10 @@ type DownloadResult struct {
 //		Format:   audit.DFcsv,
 //	})
 func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error) {
+	if input.RequestID == "" && input.ResultID == "" {
+		return nil, errors.New("must specify one of `RequestID` or `ResultID`")
+	}
+
 	return request.DoPost(ctx, a.Client, "v1/download_results", input, &DownloadResult{})
 }
 
@@ -1020,4 +1027,55 @@ func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*p
 func (a *audit) LogStream(ctx context.Context, input pangea.ConfigIDer) (*pangea.PangeaResponse[struct{}], error) {
 	var result struct{}
 	return request.DoPost(ctx, a.Client, "v1/log_stream", input, &result)
+}
+
+type ExportRequest struct {
+	pangea.BaseRequest
+
+	// Format for the records.
+	Format *DownloadFormat `json:"format,omitempty"`
+
+	// The start of the time range to perform the search on.
+	Start *time.Time `json:"start,omitempty"`
+
+	// The end of the time range to perform the search on. If omitted, then all
+	// records up to the latest will be searched.
+	End *time.Time `json:"end,omitempty"`
+
+	// Specify the sort order of the response, "asc" or "desc".
+	Order *string `json:"order,omitempty"`
+
+	// Name of column to sort the results by.
+	OrderBy *string `json:"order_by,omitempty"`
+
+	// Whether or not to include the root hash of the tree and the membership
+	// proof for each record.
+	Verbose *bool `json:"verbose,omitempty"`
+}
+
+// @summary Export from the audit log
+//
+// @description Bulk export of data from the Secure Audit Log, with optional filtering.
+//
+// @operationId audit_post_v1_export
+//
+// @example
+//
+//	response, err := client.Export(ctx, &audit.ExportRequest{Verbose: pangea.Bool(false)})
+func (a *audit) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	response, err := request.DoPostNoQueue(ctx, a.Client, "v1/export", input, &result)
+	if err != nil {
+		acceptedErr, ok := err.(*pangea.AcceptedError)
+		if ok {
+			return &pangea.PangeaResponse[struct{}]{
+				AcceptedResult: &acceptedErr.AcceptedResult,
+				Response:       acceptedErr.Response,
+				Result:         nil,
+			}, nil
+		}
+
+		return nil, err
+	}
+	return response, nil
 }

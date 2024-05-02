@@ -1001,3 +1001,28 @@ func Test_Integration_LogStream(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 }
+
+func Test_Integration_Export_Download(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	exportRes, err := client.Export(ctx, &audit.ExportRequest{Verbose: pangea.Bool(false)})
+	assert.NoError(t, err)
+	assert.NotNil(t, exportRes)
+	assert.Equal(t, "Accepted", pangea.StringValue(exportRes.Status))
+	assert.NotEmpty(t, exportRes.RequestID)
+
+	var pollResult *pangea.PangeaResponse[struct{}]
+	pollResponse, err := client.PollResultByID(ctx, *exportRes.RequestID, pollResult)
+	assert.Error(t, err)
+	assert.Nil(t, pollResponse)
+
+	downloadRes, err := client.DownloadResults(ctx, &audit.DownloadRequest{
+		RequestID: *exportRes.RequestID,
+	})
+	assert.Error(t, err)
+	assert.Nil(t, downloadRes)
+}
