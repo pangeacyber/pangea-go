@@ -936,7 +936,7 @@ type RootOutput struct {
 type DownloadRequest struct {
 	pangea.BaseRequest
 
-	// ID returned by the search API.
+	// ID returned by the export API.
 	RequestID string `json:"request_id,omitempty"`
 
 	// ID returned by the search API.
@@ -1036,11 +1036,11 @@ type ExportRequest struct {
 	Format *DownloadFormat `json:"format,omitempty"`
 
 	// The start of the time range to perform the search on.
-	Start *time.Time `json:"start,omitempty"`
+	Start *pu.PangeaTimestamp `json:"start,omitempty"`
 
 	// The end of the time range to perform the search on. If omitted, then all
 	// records up to the latest will be searched.
-	End *time.Time `json:"end,omitempty"`
+	End *pu.PangeaTimestamp `json:"end,omitempty"`
 
 	// Specify the sort order of the response, "asc" or "desc".
 	Order *string `json:"order,omitempty"`
