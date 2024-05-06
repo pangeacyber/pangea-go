@@ -1001,3 +1001,39 @@ func Test_Integration_LogStream(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
 }
+
+func Test_Integration_Export_Download(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	exportRes, err := client.Export(ctx, &audit.ExportRequest{
+		Start:   pangea.String("1d"),
+		Verbose: pangea.Bool(false),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, exportRes)
+	assert.Equal(t, "Accepted", pangea.StringValue(exportRes.Status))
+	assert.NotEmpty(t, exportRes.RequestID)
+
+	retry := 0
+	for retry < 10 {
+		_, err := client.PollResultByID(ctx, *exportRes.RequestID, &audit.DownloadResult{})
+		if err == nil {
+			break
+		}
+
+		// Wait until result should be ready
+		time.Sleep(time.Duration(3 * time.Second))
+		retry++
+	}
+
+	downloadRes, err := client.DownloadResults(ctx, &audit.DownloadRequest{
+		RequestID: *exportRes.RequestID,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "Success", pangea.StringValue(downloadRes.Status))
+	assert.NotEmpty(t, downloadRes.Result.DestURL)
+}
