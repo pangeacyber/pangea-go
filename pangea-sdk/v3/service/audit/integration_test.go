@@ -1010,8 +1010,7 @@ func Test_Integration_Export_Download(t *testing.T) {
 	client, _ := audit.New(cfg)
 
 	exportRes, err := client.Export(ctx, &audit.ExportRequest{
-		Start:   pangea.PangeaTime(pu.PangeaTimestamp(time.Now().UTC().Add(-12 * time.Hour))),
-		End:     pangea.PangeaTime(pu.PangeaTimestamp(time.Now().UTC())),
+		Start:   pangea.String("1d"),
 		Verbose: pangea.Bool(false),
 	})
 	assert.NoError(t, err)

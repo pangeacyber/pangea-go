@@ -1036,11 +1036,11 @@ type ExportRequest struct {
 	Format *DownloadFormat `json:"format,omitempty"`
 
 	// The start of the time range to perform the search on.
-	Start *pu.PangeaTimestamp `json:"start,omitempty"`
+	Start *string `json:"start,omitempty"`
 
 	// The end of the time range to perform the search on. If omitted, then all
 	// records up to the latest will be searched.
-	End *pu.PangeaTimestamp `json:"end,omitempty"`
+	End *string `json:"end,omitempty"`
 
 	// Specify the sort order of the response, "asc" or "desc".
 	Order *string `json:"order,omitempty"`
