@@ -186,9 +186,9 @@ const (
 )
 
 const (
-	FPEAnumeric          FPEAlphabet = "numeric"
-	FPEAaphaNumericLower FPEAlphabet = "alphanumericlower"
-	FPEAalphanumeric     FPEAlphabet = "alphanumeric"
+	FPEAnumeric           FPEAlphabet = "numeric"
+	FPEAalphaNumericLower FPEAlphabet = "alphanumericlower"
+	FPEAalphanumeric      FPEAlphabet = "alphanumeric"
 )
 
 const (
