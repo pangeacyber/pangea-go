@@ -670,6 +670,9 @@ type SearchInput struct {
 
 	// A list of keys to restrict the search results to. Useful for partitioning data available to the query string.
 	SearchRestriction *SearchRestriction `json:"search_restriction,omitempty"`
+
+	// Return the context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	ReturnContext *bool `json:"return_context,omitempty"`
 }
 
 type SearchRestriction struct {
@@ -747,6 +750,9 @@ type SearchEvent struct {
 	MembershipVerification  EventVerification
 	ConsistencyVerification EventVerification
 	SignatureVerification   EventVerification
+
+	// The context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	FPEContext *string `json:"fpe_context,omitempty"`
 }
 
 // IsVerifiable checks if a record can be verifiable with the published proof
@@ -882,6 +888,12 @@ type SearchResultsInput struct {
 
 	// Offset from the start of the result set to start returning results from.
 	Offset *int `json:"offset,omitempty"`
+
+	// If provided, fail if the original search was performed with anything but the provided search_restriction parameter.
+	AssertSearchRestriction *SearchRestriction `json:"assert_search_restriction,omitempty"`
+
+	// Return the context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	ReturnContext *bool `json:"return_context,omitempty"`
 }
 
 type SearchResultsOutput struct {
@@ -944,6 +956,9 @@ type DownloadRequest struct {
 
 	// Format for the records.
 	Format DownloadFormat `json:"format,omitempty"`
+
+	// Return the context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	ReturnContext *bool `json:"return_context,omitempty"`
 }
 
 type DownloadResult struct {
