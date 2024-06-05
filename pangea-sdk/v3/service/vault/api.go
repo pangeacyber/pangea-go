@@ -662,3 +662,15 @@ func (v *vault) EncryptTransform(ctx context.Context, input *EncryptTransformReq
 func (v *vault) DecryptTransform(ctx context.Context, input *DecryptTransformRequest) (*pangea.PangeaResponse[DecryptTransformResult], error) {
 	return request.DoPost(ctx, v.Client, "v1/key/decrypt/transform", input, &DecryptTransformResult{})
 }
+
+// @summary Export
+//
+// @description Export a symmetric or asymmetric key.
+//
+// @operationId vault_post_v1_export
+//
+// @example
+// TODO:
+func (v *vault) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/export", input, &ExportResult{})
+}
