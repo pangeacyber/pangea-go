@@ -4,9 +4,10 @@ import "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 
 type SymmetricStoreRequest struct {
 	CommonStoreRequest
-	Key       EncodedSymmetricKey `json:"key"`
-	Algorithm SymmetricAlgorithm  `json:"algorithm"`
-	Purpose   KeyPurpose          `json:"purpose,omitempty"`
+	Key        EncodedSymmetricKey `json:"key"`
+	Algorithm  SymmetricAlgorithm  `json:"algorithm"`
+	Purpose    KeyPurpose          `json:"purpose,omitempty"`
+	Exportable *bool               `json:"exportable,omitempty"`
 }
 
 type SymmetricStoreResult struct {
@@ -17,8 +18,9 @@ type SymmetricStoreResult struct {
 
 type SymmetricGenerateRequest struct {
 	CommonGenerateRequest
-	Algorithm SymmetricAlgorithm `json:"algorithm"`
-	Purpose   KeyPurpose         `json:"purpose"`
+	Algorithm  SymmetricAlgorithm `json:"algorithm"`
+	Purpose    KeyPurpose         `json:"purpose"`
+	Exportable *bool              `json:"exportable,omitempty"`
 }
 
 type SymmetricGenerateResult struct {

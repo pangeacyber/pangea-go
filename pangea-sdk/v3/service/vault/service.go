@@ -36,6 +36,9 @@ type Client interface {
 	// Decrypt parts of a JSON object.
 	DecryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error)
 
+	// Export a symmetric or asymmetric key.
+	Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error)
+
 	// Base service methods
 	pangea.BaseServicer
 }

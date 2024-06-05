@@ -620,3 +620,15 @@ func (v *vault) EncryptStructured(ctx context.Context, input *EncryptStructuredR
 func (v *vault) DecryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error) {
 	return request.DoPost(ctx, v.Client, "v1/key/decrypt/structured", input, &EncryptStructuredResult{})
 }
+
+// @summary Export
+//
+// @description Export a symmetric or asymmetric key.
+//
+// @operationId vault_post_v1_export
+//
+// @example
+// TODO:
+func (v *vault) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/export", input, &ExportResult{})
+}
