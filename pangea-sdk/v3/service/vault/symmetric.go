@@ -148,7 +148,7 @@ type EncryptTransformResult struct {
 	// User provided tweak string. If not provided, a random string will be
 	// generated and returned. The user must securely store the tweak source
 	// which will be needed to decrypt the data.
-	Tweak *string `json:"tweak,omitempty"`
+	Tweak string `json:"tweak"`
 
 	// Set of characters to use for format-preserving encryption (FPE).
 	Alphabet TransformAlphabet `json:"alphabet"`
