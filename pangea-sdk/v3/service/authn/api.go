@@ -156,8 +156,9 @@ type UserCreateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Email   string      `json:"email"`
-	Profile ProfileData `json:"profile"`
+	Email    string      `json:"email"`              // An email address.
+	Profile  ProfileData `json:"profile"`            // A user profile as a collection of string properties.
+	Username string      `json:"username,omitempty"` // A username.
 }
 
 type UserCreateResult struct {
@@ -191,8 +192,9 @@ type UserDeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Email string `json:"email,omitempty"`
-	ID    string `json:"id,omitempty"`
+	Email    string `json:"email,omitempty"`    // An email address.
+	ID       string `json:"id,omitempty"`       // The identity of a user or a service.
+	Username string `json:"username,omitempty"` // A username.
 }
 
 type UserDeleteResult struct {
@@ -216,30 +218,32 @@ func (a *User) Delete(ctx context.Context, input UserDeleteRequest) (*pangea.Pan
 }
 
 type UserItem struct {
-	ID                      string          `json:"id"`
-	Email                   string          `json:"email"`
-	Profile                 ProfileData     `json:"profile"`
-	Verified                bool            `json:"verified"`
-	Disabled                bool            `json:"disabled"`
-	AcceptedEulaID          *string         `json:"accepted_eula_id,omitempty"`
-	AcceptedPrivacyPolicyID *string         `json:"accepted_privacy_policy_id,omitempty"`
-	LastLoginAt             *string         `json:"last_login_at,omitempty"`
-	CreatedAt               string          `json:"created_at"`
+	ID                      string          `json:"id"`                                   // The identity of a user or a service.
+	Email                   string          `json:"email"`                                // An email address.
+	Username                string          `json:"username"`                             // A username.
+	Profile                 ProfileData     `json:"profile"`                              // A user profile as a collection of string properties.
+	Verified                bool            `json:"verified"`                             // True if the user's email has been verified.
+	Disabled                bool            `json:"disabled"`                             // True if the service administrator has disabled user account.
+	AcceptedEulaID          *string         `json:"accepted_eula_id,omitempty"`           // An ID for an agreement.
+	AcceptedPrivacyPolicyID *string         `json:"accepted_privacy_policy_id,omitempty"` // An ID for an agreement.
+	LastLoginAt             *string         `json:"last_login_at,omitempty"`              // A time in ISO-8601 format.
+	CreatedAt               string          `json:"created_at"`                           // A time in ISO-8601 format.
 	LoginCount              int             `json:"login_count"`
 	LastLoginIP             *string         `json:"last_login_ip,omitempty"`
 	LastLoginCity           *string         `json:"last_login_city,omitempty"`
 	LastLoginCountry        *string         `json:"last_login_country,omitempty"`
-	Authenticators          []Authenticator `json:"authenticators"`
+	Authenticators          []Authenticator `json:"authenticators"` // A list of authenticators.
 }
 
 type UserUpdateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID       *string `json:"id,omitempty"`
-	Email    *string `json:"email,omitempty"`
-	Disabled *bool   `json:"disabled,omitempty"`
-	Unlock   *bool   `json:"unlock,omitempty"`
+	ID       *string `json:"id,omitempty"`       // The identity of a user or a service.
+	Email    *string `json:"email,omitempty"`    // An email address.
+	Username *string `json:"username,omitempty"` // A username.
+	Disabled *bool   `json:"disabled,omitempty"` // New disabled value. Disabling a user account will prevent them from logging in.
+	Unlock   *bool   `json:"unlock,omitempty"`   // Unlock a user account if it has been locked out due to failed authentication attempts.
 }
 
 type UserUpdateResult struct {
@@ -479,8 +483,9 @@ type UserProfileGetRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID    *string `json:"id,omitempty"`
-	Email *string `json:"email,omitempty"`
+	ID       *string `json:"id,omitempty"`       // The identity of a user or a service.
+	Email    *string `json:"email,omitempty"`    // An email address.
+	Username *string `json:"username,omitempty"` // A username.
 }
 
 type UserProfileGetResult struct {
@@ -508,9 +513,10 @@ type UserProfileUpdateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Profile ProfileData `json:"profile"`
-	ID      *string     `json:"id,omitempty"`
-	Email   *string     `json:"email,omitempty"`
+	Profile  ProfileData `json:"profile"`            // Updates to a user profile.
+	ID       *string     `json:"id,omitempty"`       // The identity of a user or a service.
+	Email    *string     `json:"email,omitempty"`    // An email address.
+	Username *string     `json:"username,omitempty"` // A username.
 }
 
 type UserProfileUpdateResult struct {
@@ -935,9 +941,10 @@ type UserAuthenticatorsDeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID              *string `json:"id,omitempty"`
-	Email           *string `json:"email,omitempty"`
-	AuthenticatorID string  `json:"authenticator_id"`
+	ID              *string `json:"id,omitempty"`       // The identity of a user or a service.
+	Email           *string `json:"email,omitempty"`    // An email address.
+	Username        *string `json:"username,omitempty"` // A username.
+	AuthenticatorID string  `json:"authenticator_id"`   // An ID for an authenticator.
 }
 
 type UserAuthenticatorsDeleteResult struct {
@@ -964,8 +971,9 @@ func (a *UserAuthenticators) Delete(ctx context.Context, input UserAuthenticator
 type UserAuthenticatorsListRequest struct {
 	pangea.BaseRequest
 
-	ID    *string `json:"id,omitempty"`
-	Email *string `json:"email,omitempty"`
+	ID       *string `json:"id,omitempty"`       // The identity of a user or a service.
+	Email    *string `json:"email,omitempty"`    // An email address.
+	Username *string `json:"username,omitempty"` // A username.
 }
 
 type Authenticator struct {
