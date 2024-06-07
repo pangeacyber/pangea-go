@@ -50,6 +50,13 @@ func (r *redact) RedactStructured(ctx context.Context, input *StructuredRequest)
 // @description Decrypt or unredact fpe redactions
 //
 // @operationId redact_post_v1_unredact
+//
+// @example
+//
+//	redactcli.Unredact(ctx, &UnredactRequest{
+//		RedactedData: "redacted data",
+//		FPEContext:   "gAyHpblmIoUXKTiYY8xKiQ==",
+//	})
 func (r *redact) Unredact(ctx context.Context, input *UnredactRequest) (*pangea.PangeaResponse[UnredactResult], error) {
 	return request.DoPost(ctx, r.Client, "v1/unredact", input, &UnredactResult{})
 }
