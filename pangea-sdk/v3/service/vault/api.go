@@ -670,7 +670,20 @@ func (v *vault) DecryptTransform(ctx context.Context, input *DecryptTransformReq
 // @operationId vault_post_v1_export
 //
 // @example
-// TODO:
+//
+//	// Generate an exportable key.
+//	generated, err := client.AsymmetricGenerate(ctx,
+//		&vault.AsymmetricGenerateRequest{
+//			CommonGenerateRequest: vault.CommonGenerateRequest{
+//				Name: "a-name-for-the-key",
+//			},
+//			Algorithm:  vault.AAed25519,
+//			Purpose:    vault.KPsigning,
+//			Exportable: pangea.Bool(true),
+//		})
+//
+//	// Then it can be exported whenever needed.
+//	exported, err := client.Export(ctx, &vault.ExportRequest{id: generated.Result.ID})
 func (v *vault) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error) {
 	return request.DoPost(ctx, v.Client, "v1/export", input, &ExportResult{})
 }

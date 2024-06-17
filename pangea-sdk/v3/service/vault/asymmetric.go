@@ -6,7 +6,7 @@ type AsymmetricGenerateRequest struct {
 	CommonGenerateRequest
 	Algorithm  AsymmetricAlgorithm `json:"algorithm,omitempty"`
 	Purpose    KeyPurpose          `json:"purpose,omitempty"`
-	Exportable *bool               `json:"exportable,omitempty"`
+	Exportable *bool               `json:"exportable,omitempty"` // Whether the key is exportable or not.
 }
 
 type AsymmetricGenerateResult struct {
@@ -22,7 +22,7 @@ type AsymmetricStoreRequest struct {
 	PublicKey  EncodedPublicKey    `json:"public_key"`
 	PrivateKey EncodedPrivateKey   `json:"private_key"`
 	Purpose    KeyPurpose          `json:"purpose,omitempty"`
-	Exportable *bool               `json:"exportable,omitempty"`
+	Exportable *bool               `json:"exportable,omitempty"` // Whether the key is exportable or not.
 }
 
 type AsymmetricStoreResult struct {

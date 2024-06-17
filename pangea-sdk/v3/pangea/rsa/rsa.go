@@ -12,10 +12,9 @@ import (
 	cryptorand "crypto/rand"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	// "gitlab.com/pangeacyber/pangea-cli/plugins/vault/common"
 )
 
-// Generates rsa key pairs
+// Generates RSA key pairs
 func GenerateKeyPair(kbIn int) (pubKey *rsa.PublicKey, privKey *rsa.PrivateKey, err error) {
 	var (
 		keyBits  int
@@ -48,7 +47,7 @@ func GenerateKeyPair(kbIn int) (pubKey *rsa.PublicKey, privKey *rsa.PrivateKey, 
 	return pubKey, privKey, nil
 }
 
-// Encode Private Key to PKCS1 format embedded in a PEM Block
+// Encode private key to PKCS1 format embedded in a PEM block
 func EncodePEMPrivateKey(privKey crypto.PrivateKey) ([]byte, error) {
 	rsaPrivKey, ok := privKey.(*rsa.PrivateKey)
 	if !ok {
@@ -64,7 +63,7 @@ func EncodePEMPrivateKey(privKey crypto.PrivateKey) ([]byte, error) {
 	return pem.EncodeToMemory(block), nil
 }
 
-// Encode Public Key to PKIX format embedded in a PEM Block
+// Encode public key to PKIX format embedded in a PEM block
 func EncodePEMPublicKey(pubKey crypto.PublicKey) ([]byte, error) {
 	encodedKey, err := x509.MarshalPKIXPublicKey(pubKey)
 	if err != nil {

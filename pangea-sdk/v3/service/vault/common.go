@@ -133,8 +133,10 @@ const (
 	IOBversion      ItemOrderBy = "version"
 )
 
+// Algorithm of an exported public key.
 type ExportEncryptionAlgorithm string
 
+// RSA 4096-bit key, OAEP padding, SHA512 digest.
 const EEArsa4096_oaep_sha512 ExportEncryptionAlgorithm = "RSA-OAEP-4096-SHA512"
 
 type CommonStoreRequest struct {
@@ -213,7 +215,7 @@ type ItemData struct {
 	CreatedAt         string          `json:"created_at"`
 	Algorithm         string          `json:"algorithm,omitempty"`
 	Purpose           string          `json:"purpose,omitempty"`
-	Exportable        *bool           `json:"exportable,omitempty"`
+	Exportable        *bool           `json:"exportable,omitempty"` // Whether the key is exportable or not.
 }
 
 type InheritedSettings struct {
