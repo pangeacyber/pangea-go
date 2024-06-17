@@ -387,12 +387,39 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
+				if event.ConsistencyVerification == Failed {
+					// verify again with the consistency proof fetched from Pangea
+					roots, _ = a.fixConsistencyProof(ctx, root.Size)
+					event.VerifyConsistencyProof(roots)
+				}
 			} else {
 				event.VerifyMembershipProof(unpRoot)
 			}
 		}
 	}
 	return nil
+}
+
+func (a *audit) fixConsistencyProof(ctx context.Context, treeSize int) (map[int]Root, error) {
+	// on very rare occasions, the consistency proof in Arweave may be wrong
+	// override it with the proof from pangea (not the root hash, just the proof)
+
+	roots := a.rp.UpdateRoots(ctx, nil)
+
+	// get the root from Pangea
+	resp, err := a.Root(ctx, &RootInput{TreeSize: treeSize})
+	if err != nil {
+		return roots, err
+	}
+
+	// compare the hash
+	if resp.Result.Data.RootHash != roots[treeSize].RootHash {
+		return roots, errors.New("hash doesn't match")
+	}
+
+	// override root
+	a.rp.OverrideRoots(map[int]Root{treeSize: resp.Result.Data})
+	return roots, nil
 }
 
 type LogEvent struct {
