@@ -161,7 +161,7 @@ func treeSizes(root *Root, events SearchEvents) []string {
 	treeSizes[root.Size] = struct{}{}
 	for _, event := range events {
 		if event.LeafIndex != nil {
-			leafIdx := *event.LeafIndex
+			leafIdx := *event.LeafIndex + 1
 			treeSizes[leafIdx] = struct{}{}
 			if leafIdx > 1 {
 				treeSizes[leafIdx-1] = struct{}{}

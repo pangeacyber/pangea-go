@@ -387,9 +387,9 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
-				if event.ConsistencyVerification == Failed {
+				if event.ConsistencyVerification == Failed && event.LeafIndex != nil {
 					// verify again with the consistency proof fetched from Pangea
-					roots, _ = a.fixConsistencyProof(ctx, root.Size)
+					roots, _ = a.fixConsistencyProof(ctx, *event.LeafIndex+1)
 					event.VerifyConsistencyProof(roots)
 				}
 			} else {
@@ -418,7 +418,7 @@ func (a *audit) fixConsistencyProof(ctx context.Context, treeSize int) (map[int]
 	}
 
 	// override root
-	a.rp.OverrideRoots(map[int]Root{treeSize: resp.Result.Data})
+	roots = a.rp.OverrideRoots(map[int]Root{treeSize: resp.Result.Data})
 	return roots, nil
 }
 
@@ -805,7 +805,7 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 		ee.ConsistencyVerification = NotVerified
 		return
 	}
-	idx := *ee.LeafIndex
+	idx := *ee.LeafIndex + 1
 	if idx < 0 {
 		ee.ConsistencyVerification = Failed
 		return

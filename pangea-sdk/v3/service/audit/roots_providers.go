@@ -11,7 +11,7 @@ import (
 
 type RootsProvider interface {
 	UpdateRoots(ctx context.Context, treeSizes []string) map[int]Root
-	OverrideRoots(roots map[int]Root)
+	OverrideRoots(roots map[int]Root) map[int]Root
 }
 
 type ArweaveRootsProvider struct {
@@ -72,10 +72,11 @@ func (rp *ArweaveRootsProvider) UpdateRoots(ctx context.Context, treeSizes []str
 	return rp.Roots
 }
 
-func (rp *ArweaveRootsProvider) OverrideRoots(roots map[int]Root) {
+func (rp *ArweaveRootsProvider) OverrideRoots(roots map[int]Root) map[int]Root {
 	for treeSize, root := range roots {
 		rp.Roots[treeSize] = root
 	}
+	return rp.Roots
 }
 
 func treeSizeFromTransaction(tx *arweave.Transaction) (int, error) {
