@@ -42,6 +42,9 @@ type Client interface {
 	// Decrypt using a format-preserving algorithm (FPE).
 	DecryptTransform(ctx context.Context, input *DecryptTransformRequest) (*pangea.PangeaResponse[DecryptTransformResult], error)
 
+	// Export a symmetric or asymmetric key.
+	Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error)
+
 	// Base service methods
 	pangea.BaseServicer
 }

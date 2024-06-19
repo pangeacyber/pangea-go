@@ -133,6 +133,12 @@ const (
 	IOBversion      ItemOrderBy = "version"
 )
 
+// Algorithm of an exported public key.
+type ExportEncryptionAlgorithm string
+
+// RSA 4096-bit key, OAEP padding, SHA512 digest.
+const EEArsa4096_oaep_sha512 ExportEncryptionAlgorithm = "RSA-OAEP-4096-SHA512"
+
 type CommonStoreRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -209,6 +215,7 @@ type ItemData struct {
 	CreatedAt         string          `json:"created_at"`
 	Algorithm         string          `json:"algorithm,omitempty"`
 	Purpose           string          `json:"purpose,omitempty"`
+	Exportable        *bool           `json:"exportable,omitempty"` // Whether the key is exportable or not.
 }
 
 type InheritedSettings struct {
@@ -336,4 +343,25 @@ type FolderCreateRequest struct {
 
 type FolderCreateResult struct {
 	ID string `json:"id"`
+}
+
+type ExportRequest struct {
+	pangea.BaseRequest
+
+	ID                  string                     `json:"id"`                             // The ID of the item.
+	Version             *int                       `json:"version,omitempty"`              // The item version.
+	EncryptionKey       *string                    `json:"encryption_key,omitempty"`       // Public key in PEM format used to encrypt exported key(s).
+	EncryptionAlgorithm *ExportEncryptionAlgorithm `json:"encryption_algorithm,omitempty"` // The algorithm of the public key.
+}
+
+type ExportResult struct {
+	ID         string  `json:"id"`                    // The ID of the item.
+	Version    int     `json:"version"`               // The item version.
+	Type       string  `json:"type"`                  // The type of the key.
+	ItemState  string  `json:"item_state"`            // The state of the item.
+	Algorithm  string  `json:"algorithm"`             // The algorithm of the key.
+	PublicKey  *string `json:"public_key,omitempty"`  // The public key (in PEM format).
+	PrivateKey *string `json:"private_key,omitempty"` // The private key (in PEM format).
+	Key        *string `json:"key,omitempty"`         // The key material.
+	Encrypted  bool    `json:"encrypted"`             // Whether exported key(s) are encrypted with encryption_key sent on the request or not. If encrypted, the result is sent in base64, any other case they are in PEM format plain text.
 }
