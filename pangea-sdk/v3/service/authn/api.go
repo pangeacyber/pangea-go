@@ -124,6 +124,27 @@ func (a *ClientPassword) Change(ctx context.Context, input ClientPasswordChangeR
 	return request.DoPost(ctx, a.Client, "v2/client/password/change", &input, &ClientPasswordChangeResult{})
 }
 
+type ExpirePasswordRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	ID string `json:"id"` // The identity of a user or a service.
+}
+
+// @summary Expire a user's password
+//
+// @description Expire a user's password.
+//
+// @operationId authn_post_v2_user_password_expire
+//
+// @example
+//
+//	resp, err := authncli.Client.Password.Expire(ctx, "pui_[...]")
+func (a *ClientPassword) Expire(ctx context.Context, id string) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	return request.DoPost(ctx, a.Client, "v2/user/password/expire", &ExpirePasswordRequest{ID: id}, &result)
+}
+
 type IDProvider string
 
 const (

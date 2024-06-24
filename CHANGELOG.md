@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Doc example for unredact.
 - Vault `/export` support
 - `exportable` field support in Vault `/key/store` and `/key/generate`
+- AuthN user password expiration support.
 
 ## [3.9.0] - 2024-06-07
 
