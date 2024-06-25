@@ -809,7 +809,7 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
 		if !pu.Sleep(delay, ctx) {
-			// If context closed, return inmediatly
+			// If context closed, return immediately.
 			return r, nil
 		}
 
