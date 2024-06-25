@@ -114,7 +114,7 @@ type Config struct {
 	// Enable queued request retry support
 	QueuedRetryEnabled bool
 
-	// Timeout used to poll results after 202 (in secs)
+	// Timeout used to poll results after HTTP/202.
 	PollResultTimeout time.Duration
 
 	// Retry config defaults to a base retry option
