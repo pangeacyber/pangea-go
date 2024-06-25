@@ -43,6 +43,7 @@ func IntegrationCustomSchemaConfig(t *testing.T, env TestEnvironment) *pangea.Co
 		HTTPClient:         defaults.HTTPClient(),
 		Domain:             GetTestDomain(t, env),
 		Token:              GetCustomSchemaTestToken(t, env),
+		PollResultTimeout:  60 * time.Second,
 		QueuedRetryEnabled: true,
 	}
 }
