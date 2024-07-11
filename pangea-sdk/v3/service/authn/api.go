@@ -997,17 +997,24 @@ type UserAuthenticatorsListRequest struct {
 	Username *string `json:"username,omitempty"` // A username.
 }
 
+// Authenticator.
 type Authenticator struct {
-	ID       string  `json:"id"`
-	Type     string  `json:"type"`
-	Enable   bool    `json:"enable"`
-	Provider *string `json:"provider,omitempty"`
-	RPID     *string `json:"rpid,omitempty"`
-	Phase    *string `json:"phase,omitempty"`
+	ID               string  `json:"id"`                          // An ID for an authenticator.
+	Type             string  `json:"type"`                        // An authentication mechanism.
+	Enabled          bool    `json:"enabled"`                     // Enabled.
+	Provider         *string `json:"provider,omitempty"`          // Provider.
+	ProviderName     *string `json:"provider_name,omitempty"`     // Provider name.
+	RPID             *string `json:"rpid,omitempty"`              // RPID.
+	Phase            *string `json:"phase,omitempty"`             // Phase.
+	EnrollingBrowser *string `json:"enrolling_browser,omitempty"` // Enrolling browser.
+	EnrollingIp      *string `json:"enrolling_ip,omitempty"`      // Enrolling IP.
+	CreatedAt        string  `json:"created_at"`                  // A time in ISO-8601 format.
+	UpdatedAt        string  `json:"updated_at"`                  // A time in ISO-8601 format.
+	State            *string `json:"state,omitempty"`             // State.
 }
 
 type UserAuthenticatorsListResult struct {
-	Authenticators []Authenticator `json:"authenticators"`
+	Authenticators []Authenticator `json:"authenticators"` // A list of authenticators.
 }
 
 // @summary Get user authenticators
