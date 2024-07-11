@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vault `/export` support
 - `exportable` field support in Vault `/key/store` and `/key/generate`
 - AuthN user password expiration support.
+- `"state"` and other new properties to `Authenticator`.
+
+### Changed
+
+- `Enable` in `Authenticator` has been renamed to `Enabled`. The previous name
+  did not match the name used in the API's response schema and JSON
+  deserialization was not set up correctly, so `Enable` was unusable anyways.
 
 ## [3.9.0] - 2024-06-07
 
