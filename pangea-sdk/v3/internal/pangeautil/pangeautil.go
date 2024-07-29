@@ -32,6 +32,8 @@ type PangeaTimestamp time.Time
 
 const ptLayout_Z = "2006-01-02T15:04:05.000000Z"
 const ptLayout_noZ = "2006-01-02T15:04:05.000000"
+const ptLayout_ms_Z = "2006-01-02T15:04:05.000000Z"
+const ptLayout_ms_noZ = "2006-01-02T15:04:05.000000"
 
 // UnmarshalJSON Parses the json string in the custom format
 func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) (err error) {
@@ -42,6 +44,16 @@ func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) (err error) {
 		return nil
 	}
 	nt, err = time.Parse(ptLayout_noZ, s)
+	if err == nil {
+		*ct = PangeaTimestamp(nt)
+		return
+	}
+	nt, err = time.Parse(ptLayout_ms_noZ, s)
+	if err == nil {
+		*ct = PangeaTimestamp(nt)
+		return
+	}
+	nt, err = time.Parse(ptLayout_ms_Z, s)
 	if err == nil {
 		*ct = PangeaTimestamp(nt)
 		return
