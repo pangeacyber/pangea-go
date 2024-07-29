@@ -55,7 +55,7 @@ type ShareLinkOrderBy string
 
 const (
 	SLOBid             ShareLinkOrderBy = "id"
-	SLOBstoragePoolID                   = "storage_pool_id"
+	SLOBbucketID                        = "bucket_id"
 	SLOBtarget                          = "target"
 	SLOBlinkType                        = "link_type"
 	SLOBaccessCount                     = "access_count"
@@ -72,30 +72,56 @@ type Tags []string
 type DeleteRequest struct {
 	pangea.BaseRequest
 
-	ID    string `json:"id,omitempty"`
-	Force *bool  `json:"force,omitempty"`
-	Path  string `json:"path,omitempty"`
+	ID       string  `json:"id,omitempty"`
+	Force    *bool   `json:"force,omitempty"`
+	Path     string  `json:"path,omitempty"`
+	BucketID *string `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 }
 
 type ItemData struct {
-	ID           string   `json:"id"`
-	Type         string   `json:"type"`
-	Name         string   `json:"name"`
-	CreatedAt    string   `json:"created_at"`
-	UpdatedAt    string   `json:"updated_at"`
-	Size         int      `json:"size"`
-	BillableSize int      `json:"billable_size"`
-	Location     string   `json:"location"`
-	Tags         Tags     `json:"tags,omitempty"`
-	Metadata     Metadata `json:"metadata,omitempty"`
-	MD5          string   `json:"md5"`
-	SHA256       string   `json:"sha256"`
-	SHA512       string   `json:"sha512"`
-	ParentID     string   `json:"parent_id"`
+	ID                string   `json:"id"`
+	Type              string   `json:"type"`
+	Name              string   `json:"name"`
+	CreatedAt         string   `json:"created_at"`
+	UpdatedAt         string   `json:"updated_at"`
+	Size              int      `json:"size"`
+	BillableSize      int      `json:"billable_size"`
+	Location          string   `json:"location"`
+	Tags              Tags     `json:"tags,omitempty"`
+	Metadata          Metadata `json:"metadata,omitempty"`
+	MD5               string   `json:"md5"`
+	SHA256            string   `json:"sha256"`
+	SHA512            string   `json:"sha512"`
+	ParentID          string   `json:"parent_id"`
+	ExternalBucketKey string   `json:"external_bucket_key"` // The key in the external bucket that contains this file.
 }
 
 type DeleteResult struct {
 	Count int `json:"count"`
+}
+
+type Bucket struct {
+	Default         bool                    `json:"default"` // If true, is the default bucket.
+	ID              string                  `json:"id"`      // The ID of a share bucket resource.
+	Name            string                  `json:"name"`    // The bucket's friendly name.
+	TransferMethods []pangea.TransferMethod `json:"transfer_methods"`
+}
+
+type BucketsResult struct {
+	Buckets []Bucket `json:"buckets"` // A list of available buckets.
+}
+
+// @summary Buckets (Beta)
+//
+// @description Get information on the accessible buckets.
+//
+// @operationId share_post_v1beta_buckets
+//
+// @example
+//
+//	res, err := shareClient.Buckets(ctx)
+func (e *share) Buckets(ctx context.Context) (*pangea.PangeaResponse[BucketsResult], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/buckets", &pangea.BaseRequest{}, &BucketsResult{})
 }
 
 // @summary Delete (Beta)
@@ -119,6 +145,7 @@ func (e *share) Delete(ctx context.Context, input *DeleteRequest) (*pangea.Pange
 type FolderCreateRequest struct {
 	pangea.BaseRequest
 
+	BucketID *string  `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 	Name     string   `json:"name,omitempty"`
 	Metadata Metadata `json:"metadata,omitempty"`
 	ParentID string   `json:"parent_id,omitempty"`
@@ -156,6 +183,7 @@ func (e *share) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*
 type GetRequest struct {
 	pangea.BaseRequest
 
+	BucketID       *string               `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 	ID             string                `json:"id,omitempty"`
 	Path           string                `json:"path,omitempty"`
 	TransferMethod pangea.TransferMethod `json:"transfer_method,omitempty"`
@@ -189,6 +217,7 @@ type PutRequest struct {
 	pangea.BaseRequest
 	pangea.TransferRequest
 
+	BucketID *string     `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 	Name     string      `json:"name,omitempty"`
 	Format   *FileFormat `json:"format,omitempty"`
 	Metadata Metadata    `json:"metadata,omitempty"`
@@ -267,6 +296,7 @@ func (e *share) Put(ctx context.Context, input *PutRequest, file *os.File) (*pan
 type UpdateRequest struct {
 	pangea.BaseRequest
 
+	BucketID       *string  `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 	ID             string   `json:"id"`
 	Path           string   `json:"path,omitempty"`
 	AddMetadata    Metadata `json:"add_metadata,omitempty"`
@@ -327,11 +357,13 @@ func (f *FilterList) Folder() *pangea.FilterMatch[string] {
 type ListRequest struct {
 	pangea.BaseRequest
 
-	Filter  pangea.Filter `json:"filter,omitempty"`
-	Last    string        `json:"last,omitempty"`
-	Order   ItemOrder     `json:"order,omitempty"`
-	OrderBy ObjectOrderBy `json:"order_by,omitempty"`
-	Size    int           `json:"size,omitempty"`
+	BucketID                 *string       `json:"bucket_id,omitempty"`                   // The bucket to use, if not the default.
+	IncludeExternalBucketKey *bool         `json:"include_external_bucket_key,omitempty"` // If true, include the `external_bucket_key` in results.
+	Filter                   pangea.Filter `json:"filter,omitempty"`
+	Last                     string        `json:"last,omitempty"`
+	Order                    ItemOrder     `json:"order,omitempty"`
+	OrderBy                  ObjectOrderBy `json:"order_by,omitempty"`
+	Size                     int           `json:"size,omitempty"`
 }
 
 type ListResult struct {
@@ -358,6 +390,7 @@ func (e *share) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 type GetArchiveRequest struct {
 	pangea.BaseRequest
 
+	BucketID       *string               `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 	Ids            []string              `json:"ids"`
 	Format         ArchiveFormat         `json:"format,omitempty"`
 	TransferMethod pangea.TransferMethod `json:"transfer_method,omitempty"`
@@ -410,7 +443,7 @@ type ShareLinkCreateRequest struct {
 
 type ShareLinkItem struct {
 	ID             string          `json:"id"`
-	StoragePoolID  string          `json:"storage_pool_id"`
+	BucketID       string          `json:"bucket_id"` // The ID of a share bucket resource.
 	Targets        []string        `json:"targets"`
 	LinkType       string          `json:"link_type"`
 	AccessCount    int             `json:"access_count"`
@@ -488,7 +521,6 @@ func (e *share) ShareLinkGet(ctx context.Context, input *ShareLinkGetRequest) (*
 type FilterShareLinkList struct {
 	pangea.FilterBase
 	id             *pangea.FilterMatch[string]
-	storagePoolID  *pangea.FilterMatch[string]
 	target         *pangea.FilterMatch[string]
 	linkType       *pangea.FilterMatch[string]
 	accessCount    *pangea.FilterRange[string]
@@ -504,7 +536,6 @@ func NewFilterShareLinkList() *FilterShareLinkList {
 	return &FilterShareLinkList{
 		FilterBase:     *pangea.NewFilterBase(filter),
 		id:             pangea.NewFilterMatch[string]("id", &filter),
-		storagePoolID:  pangea.NewFilterMatch[string]("storage_pool_id", &filter),
 		target:         pangea.NewFilterMatch[string]("target", &filter),
 		linkType:       pangea.NewFilterMatch[string]("link_type", &filter),
 		accessCount:    pangea.NewFilterRange[string]("access_count", &filter),
@@ -518,10 +549,6 @@ func NewFilterShareLinkList() *FilterShareLinkList {
 
 func (f *FilterShareLinkList) ID() *pangea.FilterMatch[string] {
 	return f.id
-}
-
-func (f *FilterShareLinkList) StoragePoolID() *pangea.FilterMatch[string] {
-	return f.storagePoolID
 }
 
 func (f *FilterShareLinkList) Target() *pangea.FilterMatch[string] {
@@ -559,11 +586,12 @@ func (f *FilterShareLinkList) LastAccessedAt() *pangea.FilterRange[string] {
 type ShareLinkListRequest struct {
 	pangea.BaseRequest
 
-	Filter  pangea.Filter     `json:"filter,omitempty"`
-	Last    string            `json:"last,omitempty"`
-	Order   *ItemOrder        `json:"order,omitempty"`
-	OrderBy *ShareLinkOrderBy `json:"order_by,omitempty"`
-	Size    int               `json:"size,omitempty"`
+	BucketID *string           `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
+	Filter   pangea.Filter     `json:"filter,omitempty"`
+	Last     string            `json:"last,omitempty"`
+	Order    *ItemOrder        `json:"order,omitempty"`
+	OrderBy  *ShareLinkOrderBy `json:"order_by,omitempty"`
+	Size     int               `json:"size,omitempty"`
 }
 
 type ShareLinkListResult struct {
@@ -589,7 +617,8 @@ func (e *share) ShareLinkList(ctx context.Context, input *ShareLinkListRequest) 
 type ShareLinkDeleteRequest struct {
 	pangea.BaseRequest
 
-	Ids []string `json:"ids"`
+	BucketID *string  `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
+	Ids      []string `json:"ids"`
 }
 
 type ShareLinkDeleteResult struct {
