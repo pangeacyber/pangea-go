@@ -34,6 +34,19 @@ func shareIntegrationCfg(t *testing.T) *pangea.Config {
 	return pangeatesting.IntegrationConfig(t, testingEnvironment)
 }
 
+func Test_Integration_Buckets(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelFn()
+	cfg := shareIntegrationCfg(t)
+	client := share.New(cfg)
+
+	response, err := client.Buckets(ctx)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response.Result)
+	assert.NotEmpty(t, response.Result.Buckets)
+}
+
 func Test_Integration_Folder(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelFn()

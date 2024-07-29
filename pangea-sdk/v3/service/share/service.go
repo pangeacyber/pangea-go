@@ -8,6 +8,8 @@ import (
 )
 
 type Client interface {
+	// Get information on the accessible buckets.
+	Buckets(ctx context.Context) (*pangea.PangeaResponse[BucketsResult], error)
 	FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error)
 	Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error)
 	Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error)
