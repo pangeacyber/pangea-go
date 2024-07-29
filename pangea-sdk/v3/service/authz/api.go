@@ -254,7 +254,7 @@ type ListResourcesRequest struct {
 	Type       string         `json:"type"`
 	Action     string         `json:"action"`
 	Subject    Subject        `json:"subject"`
-	Attributes map[string]any `json:"attributes,omitempty"`
+	Attributes map[string]any `json:"attributes,omitempty"` // A JSON object of attribute data.
 }
 
 type ListResourcesResult struct {
