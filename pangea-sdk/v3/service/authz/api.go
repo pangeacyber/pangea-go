@@ -251,9 +251,10 @@ func (e *authz) Check(ctx context.Context, input *CheckRequest) (*pangea.PangeaR
 type ListResourcesRequest struct {
 	pangea.BaseRequest
 
-	Type    string  `json:"type"`
-	Action  string  `json:"action"`
-	Subject Subject `json:"subject"`
+	Type       string         `json:"type"`
+	Action     string         `json:"action"`
+	Subject    Subject        `json:"subject"`
+	Attributes map[string]any `json:"attributes,omitempty"` // A JSON object of attribute data.
 }
 
 type ListResourcesResult struct {
@@ -283,8 +284,9 @@ func (e *authz) ListResources(ctx context.Context, input *ListResourcesRequest) 
 type ListSubjectsRequest struct {
 	pangea.BaseRequest
 
-	Resource Resource `json:"resource"`
-	Action   string   `json:"action"`
+	Resource   Resource       `json:"resource"`
+	Action     string         `json:"action"`
+	Attributes map[string]any `json:"attributes,omitempty"` // A JSON object of attribute data.
 }
 
 type ListSubjectsResult struct {
