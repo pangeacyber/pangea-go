@@ -58,7 +58,7 @@ type TransferRequester interface {
 }
 
 type TransferRequest struct {
-	TransferMethod TransferMethod `json:"transfer_method,omitempty"`
+	TransferMethod TransferMethod `json:"transfer_method,omitempty"` // The transfer method used to upload the file data.
 }
 
 func (tr TransferRequest) GetTransferMethod() TransferMethod {
