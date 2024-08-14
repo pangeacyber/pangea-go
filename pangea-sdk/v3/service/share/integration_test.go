@@ -208,7 +208,7 @@ func Test_Integration_PutTransferMethodPostURL_ZeroBytesFile(t *testing.T) {
 	assert.NotNil(t, getResp)
 	assert.NotNil(t, getResp.Result)
 	assert.NotEmpty(t, getResp.Result.Object.ID)
-	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotNil(t, getResp.Result.DestURL)
 	assert.Empty(t, getResp.AttachedFiles)
 }
 
@@ -402,7 +402,7 @@ func Test_Integration_PutTransferMethodMultipart_ZeroBytesFile(t *testing.T) {
 	assert.NotNil(t, getResp)
 	assert.NotNil(t, getResp.Result)
 	assert.NotEmpty(t, getResp.Result.Object.ID)
-	assert.Nil(t, getResp.Result.DestURL)
+	assert.NotNil(t, getResp.Result.DestURL)
 	assert.Empty(t, getResp.AttachedFiles)
 
 }
