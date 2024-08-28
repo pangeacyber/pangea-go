@@ -24,7 +24,9 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	// The Sanitize config in the regular org was obsoleted by a breaking
+	// change, so the custom schema org is used instead.
+	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
 	cfg.PollResultTimeout = 5 * time.Minute
 	client := sanitize.New(cfg)
 
@@ -80,7 +82,9 @@ func Test_Integration_SanitizeNoShare(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	// The Sanitize config in the regular org was obsoleted by a breaking
+	// change, so the custom schema org is used instead.
+	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
 	cfg.PollResultTimeout = 5 * time.Minute
 	client := sanitize.New(cfg)
 
@@ -140,7 +144,9 @@ func Test_Integration_SanitizeAllDefaults(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	// The Sanitize config in the regular org was obsoleted by a breaking
+	// change, so the custom schema org is used instead.
+	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
 	cfg.PollResultTimeout = 5 * time.Minute
 	client := sanitize.New(cfg)
 
@@ -182,7 +188,9 @@ func Test_Integration_SanitizeMultipart(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
 	defer cancelFn()
 
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	// The Sanitize config in the regular org was obsoleted by a breaking
+	// change, so the custom schema org is used instead.
+	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
 	cfg.PollResultTimeout = 5 * time.Minute
 	client := sanitize.New(cfg)
 
@@ -242,7 +250,9 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
 
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	// The Sanitize config in the regular org was obsoleted by a breaking
+	// change, so the custom schema org is used instead.
+	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)
@@ -333,7 +343,9 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
 
-	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	// The Sanitize config in the regular org was obsoleted by a breaking
+	// change, so the custom schema org is used instead.
+	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)

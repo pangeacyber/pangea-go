@@ -10,11 +10,11 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 )
 
-// @summary Sanitize (Beta)
+// @summary Sanitize
 //
 // @description Apply file sanitization actions according to specified rules.
 //
-// @operationId sanitize_post_v1beta_sanitize
+// @operationId sanitize_post_v1_sanitize
 //
 // @example
 //
@@ -49,15 +49,15 @@ func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io
 		Name: name,
 	}
 
-	return request.DoPostWithFile(ctx, e.Client, "v1beta/sanitize", input, &SanitizeResult{}, fd)
+	return request.DoPostWithFile(ctx, e.Client, "v1/sanitize", input, &SanitizeResult{}, fd)
 }
 
-// @summary Sanitize via presigned URL (Beta)
+// @summary Sanitize via presigned URL
 //
 // @description Apply file sanitization actions according to specified rules via
 // a presigned URL.
 //
-// @operationId sanitize_post_v1beta_sanitize 2
+// @operationId sanitize_post_v1_sanitize 2
 //
 // @example
 //
@@ -81,7 +81,7 @@ func (e *sanitize) RequestUploadURL(ctx context.Context, input *SanitizeRequest)
 		return nil, errors.New("Need to set SHA256, CRC32C and Size in order to use TMpostURL")
 	}
 
-	return request.GetUploadURL(ctx, e.Client, "v1beta/sanitize", input, &SanitizeResult{})
+	return request.GetUploadURL(ctx, e.Client, "v1/sanitize", input, &SanitizeResult{})
 }
 
 // SanitizeFile represents the SanitizeFile API request model.
