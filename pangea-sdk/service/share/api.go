@@ -113,25 +113,25 @@ type BucketsResult struct {
 	Buckets []Bucket `json:"buckets"` // A list of available buckets.
 }
 
-// @summary Buckets (Beta)
+// @summary Buckets
 //
 // @description Get information on the accessible buckets.
 //
-// @operationId share_post_v1beta_buckets
+// @operationId share_post_v1_buckets
 //
 // @example
 //
 //	res, err := shareClient.Buckets(ctx)
 func (e *share) Buckets(ctx context.Context) (*pangea.PangeaResponse[BucketsResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/buckets", &pangea.BaseRequest{}, &BucketsResult{})
+	return request.DoPost(ctx, e.Client, "v1/buckets", &pangea.BaseRequest{}, &BucketsResult{})
 }
 
-// @summary Delete (Beta)
+// @summary Delete
 //
 // @description Delete object by ID or path. If both are supplied, the path must
 // match that of the object represented by the ID.
 //
-// @operationId store_post_v1beta_delete
+// @operationId store_post_v1_delete
 //
 // @example
 //
@@ -141,7 +141,7 @@ func (e *share) Buckets(ctx context.Context) (*pangea.PangeaResponse[BucketsResu
 //
 //	res, err := shareClient.Delete(ctx, input)
 func (e *share) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/delete", input, &DeleteResult{})
+	return request.DoPost(ctx, e.Client, "v1/delete", input, &DeleteResult{})
 }
 
 type FolderCreateRequest struct {
@@ -159,11 +159,11 @@ type FolderCreateResult struct {
 	Object ItemData `json:"object"` // Information on the created folder.
 }
 
-// @summary Create a folder (Beta)
+// @summary Create a folder
 //
 // @description Create a folder, either by name or path and parent_id.
 //
-// @operationId store_post_v1beta_folder_create
+// @operationId store_post_v1_folder_create
 //
 // @example
 //
@@ -179,7 +179,7 @@ type FolderCreateResult struct {
 //
 //	res, err := shareClient.FolderCreate(ctx, input)
 func (e *share) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/folder/create", input, &FolderCreateResult{})
+	return request.DoPost(ctx, e.Client, "v1/folder/create", input, &FolderCreateResult{})
 }
 
 type GetRequest struct {
@@ -197,12 +197,12 @@ type GetResult struct {
 	DestURL *string  `json:"dest_url,omitempty"` // A URL where the file can be downloaded from. (transfer_method: dest-url)
 }
 
-// @summary Get an object (Beta)
+// @summary Get an object
 //
 // @description Get object. If both ID and path are supplied, the call will fail
 // if the target object doesn't match both properties.
 //
-// @operationId store_post_v1beta_get
+// @operationId store_post_v1_get
 //
 // @example
 //
@@ -213,7 +213,7 @@ type GetResult struct {
 //
 //	res, err := shareClient.Get(ctx, input)
 func (e *share) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/get", input, &GetResult{})
+	return request.DoPost(ctx, e.Client, "v1/get", input, &GetResult{})
 }
 
 type PutRequest struct {
@@ -243,11 +243,11 @@ type PutResult struct {
 	Object ItemData `json:"object"`
 }
 
-// @summary Upload a file (Beta)
+// @summary Upload a file
 //
 // @description Upload a file.
 //
-// @operationId store_post_v1beta_put
+// @operationId store_post_v1_put
 //
 // @example
 //
@@ -296,7 +296,7 @@ func (e *share) Put(ctx context.Context, input *PutRequest, file *os.File) (*pan
 		Name: name,
 	}
 
-	return request.DoPostWithFile(ctx, e.Client, "v1beta/put", input, &PutResult{}, fd)
+	return request.DoPostWithFile(ctx, e.Client, "v1/put", input, &PutResult{}, fd)
 }
 
 type UpdateRequest struct {
@@ -323,11 +323,11 @@ type UpdateResult struct {
 	Object ItemData `json:"object"`
 }
 
-// @summary Update a file (Beta)
+// @summary Update a file
 //
 // @description Update a file.
 //
-// @operationId share_post_v1beta_update
+// @operationId share_post_v1_update
 //
 // @example
 //
@@ -343,7 +343,7 @@ type UpdateResult struct {
 //
 //	res, err := shareClient.Update(ctx, input)
 func (e *share) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/update", input, &UpdateResult{})
+	return request.DoPost(ctx, e.Client, "v1/update", input, &UpdateResult{})
 }
 
 // Just allowed to filter by folder now
@@ -430,11 +430,11 @@ type ListResult struct {
 	Objects []ItemData `json:"objects"`
 }
 
-// @summary List (Beta)
+// @summary List
 //
-// @description List or filter/search records. Beta. API
+// @description List or filter/search records.
 //
-// @operationId share_post_v1beta_list
+// @operationId share_post_v1_list
 //
 // @example
 //
@@ -442,7 +442,7 @@ type ListResult struct {
 //
 //	res, err := shareClient.List(ctx, input)
 func (e *share) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/list", input, &ListResult{})
+	return request.DoPost(ctx, e.Client, "v1/list", input, &ListResult{})
 }
 
 type GetArchiveRequest struct {
@@ -460,11 +460,11 @@ type GetArchiveResult struct {
 	Objects []ItemData `json:"objects"`            // A list of all objects included in the archive.
 }
 
-// @summary Get archive (Beta)
+// @summary Get archive
 //
 // @description Get an archive file of multiple objects.
 //
-// @operationId share_post_v1beta_get_archive
+// @operationId share_post_v1_get_archive
 //
 // @example
 //
@@ -474,7 +474,7 @@ type GetArchiveResult struct {
 //
 //	res, err := shareClient.GetArchive(ctx, input)
 func (e *share) GetArchive(ctx context.Context, input *GetArchiveRequest) (*pangea.PangeaResponse[GetArchiveResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/get_archive", input, &GetArchiveResult{})
+	return request.DoPost(ctx, e.Client, "v1/get_archive", input, &GetArchiveResult{})
 }
 
 type Authenticator struct {
@@ -522,11 +522,11 @@ type ShareLinkCreateResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary Create share links (Beta)
+// @summary Create share links
 //
 // @description Create a share link.
 //
-// @operationId share_post_v1beta_share_link_create
+// @operationId share_post_v1_share_link_create
 //
 // @example
 //
@@ -547,7 +547,7 @@ type ShareLinkCreateResult struct {
 //
 //	res, err := shareClient.ShareLinkCreate(ctx, input)
 func (e *share) ShareLinkCreate(ctx context.Context, input *ShareLinkCreateRequest) (*pangea.PangeaResponse[ShareLinkCreateResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/share/link/create", input, &ShareLinkCreateResult{})
+	return request.DoPost(ctx, e.Client, "v1/share/link/create", input, &ShareLinkCreateResult{})
 }
 
 type ShareLinkGetRequest struct {
@@ -560,11 +560,11 @@ type ShareLinkGetResult struct {
 	ShareLinkObject ShareLinkItem `json:"share_link_object"`
 }
 
-// @summary Get share link (Beta)
+// @summary Get share link
 //
 // @description Get a share link.
 //
-// @operationId share_post_v1beta_share_link_get
+// @operationId share_post_v1_share_link_get
 //
 // @example
 //
@@ -574,7 +574,7 @@ type ShareLinkGetResult struct {
 //
 //	res, err := shareClient.ShareLinkGet(ctx, input)
 func (e *share) ShareLinkGet(ctx context.Context, input *ShareLinkGetRequest) (*pangea.PangeaResponse[ShareLinkGetResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/share/link/get", input, &ShareLinkGetResult{})
+	return request.DoPost(ctx, e.Client, "v1/share/link/get", input, &ShareLinkGetResult{})
 }
 
 type FilterShareLinkList struct {
@@ -659,11 +659,11 @@ type ShareLinkListResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary List share links (Beta)
+// @summary List share links
 //
 // @description Look up share links by filter options.
 //
-// @operationId share_post_v1beta_share_link_list
+// @operationId share_post_v1_share_link_list
 //
 // @example
 //
@@ -671,7 +671,7 @@ type ShareLinkListResult struct {
 //
 //	res, err := shareClient.ShareLinkList(ctx, input)
 func (e *share) ShareLinkList(ctx context.Context, input *ShareLinkListRequest) (*pangea.PangeaResponse[ShareLinkListResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/share/link/list", input, &ShareLinkListResult{})
+	return request.DoPost(ctx, e.Client, "v1/share/link/list", input, &ShareLinkListResult{})
 }
 
 type ShareLinkDeleteRequest struct {
@@ -685,11 +685,11 @@ type ShareLinkDeleteResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary Delete share links (Beta)
+// @summary Delete share links
 //
 // @description Delete share links.
 //
-// @operationId share_post_v1beta_share_link_delete
+// @operationId share_post_v1_share_link_delete
 //
 // @example
 //
@@ -699,14 +699,14 @@ type ShareLinkDeleteResult struct {
 //
 //	res, err := shareClient.ShareLinkDelete(ctx, input)
 func (e *share) ShareLinkDelete(ctx context.Context, input *ShareLinkDeleteRequest) (*pangea.PangeaResponse[ShareLinkDeleteResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/share/link/delete", input, &ShareLinkDeleteResult{})
+	return request.DoPost(ctx, e.Client, "v1/share/link/delete", input, &ShareLinkDeleteResult{})
 }
 
-// @summary Request upload URL (Beta)
+// @summary Request upload URL
 //
 // @description Request an upload URL.
 //
-// @operationId share_post_v1beta_put 2
+// @operationId share_post_v1_put 2
 //
 // @example
 //
@@ -730,7 +730,7 @@ func (e *share) RequestUploadURL(ctx context.Context, input *PutRequest) (*pange
 		return nil, errors.New("need to set CRC32C, SHA256 and Size in order to use TransferMethod TMpostURL")
 	}
 
-	return request.GetUploadURL(ctx, e.Client, "v1beta/put", input, &PutResult{})
+	return request.GetUploadURL(ctx, e.Client, "v1/put", input, &PutResult{})
 }
 
 type ShareLinkSendItem struct {
@@ -750,11 +750,11 @@ type ShareLinkSendResult struct {
 	ShareLinkObjects []ShareLinkItem `json:"share_link_objects"`
 }
 
-// @summary Send share link(s) (Beta)
+// @summary Send share link(s)
 //
 // @description Send share link(s).
 //
-// @operationId share_post_v1beta_share_link_send
+// @operationId share_post_v1_share_link_send
 //
 // @example
 //
@@ -769,7 +769,7 @@ type ShareLinkSendResult struct {
 //		SenderName:  "Sender Name",
 //	})
 func (e *share) ShareLinkSend(ctx context.Context, input *ShareLinkSendRequest) (*pangea.PangeaResponse[ShareLinkSendResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/share/link/send", input, &ShareLinkSendResult{})
+	return request.DoPost(ctx, e.Client, "v1/share/link/send", input, &ShareLinkSendResult{})
 }
 
 type FileFormat string
