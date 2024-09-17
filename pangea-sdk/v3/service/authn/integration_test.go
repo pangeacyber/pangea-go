@@ -445,6 +445,11 @@ func Test_Integration_Session(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, resp3)
 	}
+
+	expireResp, err := client.Client.Password.Expire(ctx, USER_ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, expireResp)
+	assert.Equal(t, "Success", pangea.StringValue(expireResp.Status))
 }
 
 func Test_Integration_User_Invite(t *testing.T) {

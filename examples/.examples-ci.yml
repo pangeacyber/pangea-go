@@ -1,11 +1,13 @@
 go-sdk-examples:
   stage: examples
+  retry: 2
   parallel:
     matrix:
       - GO_VERSION: ["1.19", "1.20", "1.21"]
         EXAMPLE_FOLDER:
           - audit
           - authn
+          - authz
           - embargo
           - file_scan
           - intel
@@ -21,6 +23,7 @@ go-sdk-examples:
     - export PANGEA_AUDIT_MULTICONFIG_TOKEN="${PANGEA_INTEGRATION_MULTI_CONFIG_TOKEN_LVE_AWS}"
     - export PANGEA_AUDIT_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_AUTHN_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
+    - export PANGEA_AUTHZ_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_DOMAIN_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_DOMAIN="${PANGEA_INTEGRATION_DOMAIN_LVE_AWS}"
     - export PANGEA_EMBARGO_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"

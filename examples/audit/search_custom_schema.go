@@ -1,3 +1,5 @@
+// Search for events with a custom schema.
+
 package main
 
 import (
@@ -6,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/audit"
@@ -19,8 +22,10 @@ func main() {
 
 	auditcli, err := audit.New(
 		&pangea.Config{
-			Token:  token,
-			Domain: os.Getenv("PANGEA_DOMAIN"),
+			Token:              token,
+			Domain:             os.Getenv("PANGEA_DOMAIN"),
+			PollResultTimeout:  60 * time.Second,
+			QueuedRetryEnabled: true,
 		},
 		audit.WithCustomSchema(util.CustomSchemaEvent{}),
 	)

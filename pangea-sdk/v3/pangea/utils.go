@@ -5,7 +5,12 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"errors"
 )
+
+var ErrInvalidPrivateKey = errors.New("invalid private key")
+var ErrInvalidPublicKey = errors.New("invalid public key")
+var ErrDecryptionFailed = errors.New("decryption failed")
 
 func HashSHA256(i string) string {
 	b := sha256.Sum256([]byte(i))

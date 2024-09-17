@@ -16,6 +16,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Objects` field to Share `GetArchiveResult`
 - `Title` and `Message` to Share `ShareCreateLinkItem` 
 
+### Added 
+
+- `attributes` field in `/list-resources` and `/list-subjects` endpoint
+
+## [3.10.0] - 2024-07-19
+
+### Added
+
+- Improvements in verification of Audit consistency proofs
+- Doc example for unredact.
+- Vault `/export` support
+- `exportable` field support in Vault `/key/store` and `/key/generate`
+- AuthN user password expiration support.
+- `"state"` and other new properties to `Authenticator`.
+
+### Changed
+
+- `Enable` in `Authenticator` has been renamed to `Enabled`. The previous name
+  did not match the name used in the API's response schema and JSON
+  deserialization was not set up correctly, so `Enable` was unusable anyways.
+
+## [3.9.0] - 2024-06-07
+
+### Added
+
+- `fpe_context` field in Audit search events
+- `return_context` support in Audit `/search`, `/results` and `/download` endpoints
+- Redact `/unredact` endpoint support
+- `redaction_method_overrides` field support in `/redact` and `redact_structured` endpoints
+- AuthN usernames support.
+- Support for format-preserving encryption.
+
+### Removed
+
+- Beta tags from AuthZ.
+
+## [3.8.0] - 2024-05-10
+
+Note that Sanitize and Secure Share did not make it into this release.
+
+### Added
+
+- Support for Secure Audit Log's log stream API.
+- Support for Secure Audit Log's export API.
+- AuthZ service support.
+
+### Changed
+
+- Replaced usage of the deprecated io/ioutil package.
+
+### Fixed
+
+- All enums now have consistent types across their values.
+- Put to presigned url. It should just put file in raw, not in form format.
 
 ## v3.8.0-beta.3 - 2024-03-25
 
@@ -34,16 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Audit /download_results endpoint support
-
-### Changed
-
-- Replaced usage of the deprecated io/ioutil package.
-
-### Fixed
-
-- All enums now have consistent types across their values.
-- Put to presigned url. It should just put file in raw, not in form format.
-
 
 ## [3.7.0] - 2024-02-26
 

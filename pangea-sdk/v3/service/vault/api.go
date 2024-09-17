@@ -620,3 +620,70 @@ func (v *vault) EncryptStructured(ctx context.Context, input *EncryptStructuredR
 func (v *vault) DecryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error) {
 	return request.DoPost(ctx, v.Client, "v1/key/decrypt/structured", input, &EncryptStructuredResult{})
 }
+
+// @summary Encrypt transform
+//
+// @description Encrypt using a format-preserving algorithm (FPE).
+//
+// @operationId vault_post_v1_key_encrypt_transform
+//
+// @example
+//
+//	encryptedResponse, err := client.EncryptTransform(
+//		ctx,
+//		&vault.EncryptTransformRequest{
+//			ID:        "pvi_[...]",
+//			PlainText: "123-4567-8901",
+//			Tweak:     "MTIzMTIzMT==",
+//			Alphabet:  vault.TAalphanumeric,
+//		},
+//	)
+func (v *vault) EncryptTransform(ctx context.Context, input *EncryptTransformRequest) (*pangea.PangeaResponse[EncryptTransformResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/key/encrypt/transform", input, &EncryptTransformResult{})
+}
+
+// @summary Decrypt transform
+//
+// @description Decrypt using a format-preserving algorithm (FPE).
+//
+// @operationId vault_post_v1_key_decrypt_transform
+//
+// @example
+//
+//	decryptedResponse, err := client.DecryptTransform(
+//		ctx,
+//		&vault.DecryptTransformRequest{
+//			ID:         "pvi_[...]",
+//			CipherText: "tZB-UKVP-MzTM",
+//			Tweak:      "MTIzMTIzMT==",
+//			Alphabet:   vault.TAalphanumeric,
+//		},
+//	)
+func (v *vault) DecryptTransform(ctx context.Context, input *DecryptTransformRequest) (*pangea.PangeaResponse[DecryptTransformResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/key/decrypt/transform", input, &DecryptTransformResult{})
+}
+
+// @summary Export
+//
+// @description Export a symmetric or asymmetric key.
+//
+// @operationId vault_post_v1_export
+//
+// @example
+//
+//	// Generate an exportable key.
+//	generated, err := client.AsymmetricGenerate(ctx,
+//		&vault.AsymmetricGenerateRequest{
+//			CommonGenerateRequest: vault.CommonGenerateRequest{
+//				Name: "a-name-for-the-key",
+//			},
+//			Algorithm:  vault.AAed25519,
+//			Purpose:    vault.KPsigning,
+//			Exportable: pangea.Bool(true),
+//		})
+//
+//	// Then it can be exported whenever needed.
+//	exported, err := client.Export(ctx, &vault.ExportRequest{id: generated.Result.ID})
+func (v *vault) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error) {
+	return request.DoPost(ctx, v.Client, "v1/export", input, &ExportResult{})
+}

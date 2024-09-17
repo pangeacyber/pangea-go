@@ -15,6 +15,7 @@ import (
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeatesting"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea/rsa"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
 	"github.com/stretchr/testify/assert"
 )
@@ -1195,4 +1196,373 @@ func Test_Integration_EncryptStructured(t *testing.T) {
 	assert.Equal(t, key, decryptedResponse.Result.ID)
 	assert.Len(t, decryptedResponse.Result.StructuredData["field1"], 4)
 	assert.Equal(t, data["field2"], decryptedResponse.Result.StructuredData["field2"])
+}
+
+func Test_Integration_EncryptTransform(t *testing.T) {
+	// Test data.
+	plainText := "123-4567-8901"
+	tweak := "MTIzMTIzMT=="
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	// Generate an encryption key.
+	rGen, err := client.SymmetricGenerate(
+		ctx,
+		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: GetName("Test_Integration_EncryptTransform"),
+			},
+			Algorithm: vault.SYAaes_ff3_1_256,
+			Purpose:   vault.KPfpe,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.ID)
+	key := rGen.Result.ID
+
+	// Encrypt.
+	encryptedResponse, err := client.EncryptTransform(
+		ctx,
+		&vault.EncryptTransformRequest{
+			ID:        key,
+			PlainText: plainText,
+			Tweak:     &tweak,
+			Alphabet:  vault.TAalphanumeric,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, encryptedResponse)
+	assert.NotNil(t, encryptedResponse.Result)
+	assert.Equal(t, key, encryptedResponse.Result.ID)
+	assert.Len(t, encryptedResponse.Result.CipherText, len(plainText))
+
+	// Decrypt what we encrypted.
+	decryptedResponse, err := client.DecryptTransform(
+		ctx,
+		&vault.DecryptTransformRequest{
+			ID:         key,
+			CipherText: encryptedResponse.Result.CipherText,
+			Tweak:      tweak,
+			Alphabet:   vault.TAalphanumeric,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, decryptedResponse)
+	assert.NotNil(t, decryptedResponse.Result)
+	assert.Equal(t, key, decryptedResponse.Result.ID)
+	assert.Equal(t, plainText, decryptedResponse.Result.PlainText)
+}
+
+func Test_Integration_ExportGenerateAsymmetric(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	algorithm := vault.AAed25519
+	purpose := vault.KPsigning
+	name := GetName("Test_Integration_ExportGenerateAsymmetric")
+
+	// Generate
+	rGen, err := client.AsymmetricGenerate(ctx,
+		&vault.AsymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: name,
+			},
+			Algorithm:  algorithm,
+			Purpose:    purpose,
+			Exportable: pangea.Bool(true),
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.PublicKey)
+	assert.NotEmpty(t, rGen.Result.ID)
+	id := rGen.Result.ID
+	assert.Equal(t, 1, rGen.Result.Version)
+
+	// Export with no encryption
+	rExp, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:      id,
+			Version: pangea.Int(1),
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rExp.Result.PrivateKey)
+	assert.NotEmpty(t, *rExp.Result.PrivateKey)
+	assert.NotNil(t, rExp.Result.PublicKey)
+	assert.NotEmpty(t, *rExp.Result.PublicKey)
+	assert.Nil(t, rExp.Result.Key)
+	assert.False(t, rExp.Result.Encrypted)
+
+	// Export with encryption
+
+	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
+	assert.NoError(t, err)
+
+	rsaPubKeyPEM, err := rsa.EncodePEMPublicKey(rsaPubKey)
+	assert.NoError(t, err)
+
+	ea := vault.EEArsa4096_oaep_sha512
+
+	rExpEnc, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
+			EncryptionAlgorithm: &ea,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rExpEnc.Result.PrivateKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PrivateKey)
+	assert.NotNil(t, rExpEnc.Result.PublicKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PublicKey)
+	assert.Nil(t, rExpEnc.Result.Key)
+	assert.True(t, rExpEnc.Result.Encrypted)
+
+	expPrivKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
+	assert.NoError(t, err)
+	expPrivKey, err := rsa.DecryptSHA512(rsaPrivKey, expPrivKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.PrivateKey, string(expPrivKey))
+
+	expPubKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PublicKey)
+	assert.NoError(t, err)
+	expPubKey, err := rsa.DecryptSHA512(rsaPrivKey, expPubKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.PublicKey, string(expPubKey))
+}
+
+func Test_Integration_ExportStoreAsymmetric(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	name := GetName("Test_Integration_ExportStoreAsymmetric")
+
+	// Generate
+	rGen, err := client.AsymmetricStore(ctx,
+		&vault.AsymmetricStoreRequest{
+			CommonStoreRequest: vault.CommonStoreRequest{
+				Name: name,
+			},
+			Exportable: pangea.Bool(true),
+			Algorithm:  KEY_ED25519_algorithm,
+			Purpose:    vault.KPsigning,
+			PublicKey:  vault.EncodedPublicKey(KEY_ED25519_public_key),
+			PrivateKey: vault.EncodedPrivateKey(KEY_ED25519_private_key),
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.PublicKey)
+	assert.NotEmpty(t, rGen.Result.ID)
+	id := rGen.Result.ID
+	assert.Equal(t, 1, rGen.Result.Version)
+
+	// Export with no encryption
+	rExp, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:      id,
+			Version: pangea.Int(1),
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rExp.Result.PrivateKey)
+	assert.NotEmpty(t, *rExp.Result.PrivateKey)
+	assert.NotNil(t, rExp.Result.PublicKey)
+	assert.NotEmpty(t, *rExp.Result.PublicKey)
+	assert.Nil(t, rExp.Result.Key)
+	assert.False(t, rExp.Result.Encrypted)
+
+	// Export with encryption
+
+	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
+	assert.NoError(t, err)
+
+	rsaPubKeyPEM, err := rsa.EncodePEMPublicKey(rsaPubKey)
+	assert.NoError(t, err)
+
+	ea := vault.EEArsa4096_oaep_sha512
+
+	rExpEnc, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
+			EncryptionAlgorithm: &ea,
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rExpEnc.Result.PrivateKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PrivateKey)
+	assert.NotNil(t, rExpEnc.Result.PublicKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PublicKey)
+	assert.Nil(t, rExpEnc.Result.Key)
+	assert.True(t, rExpEnc.Result.Encrypted)
+
+	expPrivKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
+	assert.NoError(t, err)
+	expPrivKey, err := rsa.DecryptSHA512(rsaPrivKey, expPrivKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.PrivateKey, string(expPrivKey))
+
+	expPubKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PublicKey)
+	assert.NoError(t, err)
+	expPubKey, err := rsa.DecryptSHA512(rsaPrivKey, expPubKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.PublicKey, string(expPubKey))
+}
+
+func Test_Integration_ExportGenerateSymmetric(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	algorithm := vault.SYAaes128_cbc
+	purpose := vault.KPencryption
+	name := GetName("Test_Integration_ExportGenerateSymmetric")
+
+	// Generate
+	rGen, err := client.SymmetricGenerate(ctx,
+		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: name,
+			},
+			Algorithm:  algorithm,
+			Purpose:    purpose,
+			Exportable: pangea.Bool(true),
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.ID)
+	id := rGen.Result.ID
+	assert.Equal(t, 1, rGen.Result.Version)
+
+	// Export with no encryption
+	rExp, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:      id,
+			Version: pangea.Int(1),
+		})
+
+	assert.NoError(t, err)
+	assert.Nil(t, rExp.Result.PrivateKey)
+	assert.Nil(t, rExp.Result.PublicKey)
+	assert.NotNil(t, rExp.Result.Key)
+	assert.NotEmpty(t, *rExp.Result.Key)
+	assert.False(t, rExp.Result.Encrypted)
+
+	// Export with encryption
+
+	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
+	assert.NoError(t, err)
+
+	rsaPubKeyPEM, err := rsa.EncodePEMPublicKey(rsaPubKey)
+	assert.NoError(t, err)
+
+	ea := vault.EEArsa4096_oaep_sha512
+
+	rExpEnc, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
+			EncryptionAlgorithm: &ea,
+		})
+
+	assert.NoError(t, err)
+	assert.Nil(t, rExp.Result.PrivateKey)
+	assert.Nil(t, rExp.Result.PublicKey)
+	assert.NotNil(t, rExp.Result.Key)
+	assert.NotEmpty(t, *rExp.Result.Key)
+	assert.True(t, rExpEnc.Result.Encrypted)
+
+	expKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.Key)
+	assert.NoError(t, err)
+	expKey, err := rsa.DecryptSHA512(rsaPrivKey, expKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.Key, string(expKey))
+}
+
+func Test_Integration_ExportStoreSymmetric(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	name := GetName("Test_Integration_ExportStoreSymmetric")
+
+	// Generate
+	rGen, err := client.SymmetricStore(ctx,
+		&vault.SymmetricStoreRequest{
+			CommonStoreRequest: vault.CommonStoreRequest{
+				Name: name,
+			},
+			Exportable: pangea.Bool(true),
+			Algorithm:  KEY_AES_algorithm,
+			Purpose:    vault.KPencryption,
+			Key:        vault.EncodedSymmetricKey(KEY_AES_key),
+		})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.ID)
+	id := rGen.Result.ID
+	assert.Equal(t, 1, rGen.Result.Version)
+
+	// Export with no encryption
+	rExp, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:      id,
+			Version: pangea.Int(1),
+		})
+
+	assert.NoError(t, err)
+	assert.Nil(t, rExp.Result.PrivateKey)
+	assert.Nil(t, rExp.Result.PublicKey)
+	assert.NotNil(t, rExp.Result.Key)
+	assert.NotEmpty(t, *rExp.Result.Key)
+	assert.False(t, rExp.Result.Encrypted)
+
+	// Export with encryption
+
+	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
+	assert.NoError(t, err)
+
+	rsaPubKeyPEM, err := rsa.EncodePEMPublicKey(rsaPubKey)
+	assert.NoError(t, err)
+
+	ea := vault.EEArsa4096_oaep_sha512
+
+	rExpEnc, err := client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
+			EncryptionAlgorithm: &ea,
+		})
+
+	assert.NoError(t, err)
+	assert.Nil(t, rExp.Result.PrivateKey)
+	assert.Nil(t, rExp.Result.PublicKey)
+	assert.NotNil(t, rExp.Result.Key)
+	assert.NotEmpty(t, *rExp.Result.Key)
+	assert.True(t, rExpEnc.Result.Encrypted)
+
+	expKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.Key)
+	assert.NoError(t, err)
+	expKey, err := rsa.DecryptSHA512(rsaPrivKey, expKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.Key, string(expKey))
 }

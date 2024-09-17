@@ -19,6 +19,14 @@ type Client interface {
 	// Get all search results as a compressed (gzip) CSV file.
 	DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error)
 
+	// This API allows 3rd party vendors (like Auth0) to stream events to this
+	// endpoint where the structure of the payload varies across different
+	// vendors.
+	LogStream(ctx context.Context, input pangea.ConfigIDer) (*pangea.PangeaResponse[struct{}], error)
+
+	// Bulk export of data from the Secure Audit Log, with optional filtering.
+	Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[struct{}], error)
+
 	// Base service methods
 	pangea.BaseServicer
 }

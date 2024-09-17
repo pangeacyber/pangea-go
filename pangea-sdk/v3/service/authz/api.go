@@ -33,7 +33,7 @@ type TupleCreateRequest struct {
 type TupleCreateResult struct {
 }
 
-// @summary Write tuples (Beta).
+// @summary Write tuples.
 //
 // @description Write tuples. The request will fail if tuples do not validate against the schema defined resource types.
 //
@@ -141,7 +141,7 @@ type TupleListResult struct {
 	Count  int     `json:"count"`
 }
 
-// @summary Get tuples (Beta).
+// @summary Get tuples.
 //
 // @description Return a paginated list of filtered tuples. The filter is given in terms of a tuple. Fill out the fields that you want to filter. If the filter is empty it will return all the tuples.
 //
@@ -169,7 +169,7 @@ type TupleDeleteRequest struct {
 type TupleDeleteResult struct {
 }
 
-// @summary Delete tuples (Beta).
+// @summary Delete tuples.
 //
 // @description Delete tuples.
 //
@@ -224,7 +224,7 @@ type CheckResult struct {
 	Debug         *Debug `json:"debug,omitempty"`
 }
 
-// @summary Perform a check request (Beta).
+// @summary Perform a check request.
 //
 // @description Check if a subject has permission to do action on the resource.
 //
@@ -251,16 +251,17 @@ func (e *authz) Check(ctx context.Context, input *CheckRequest) (*pangea.PangeaR
 type ListResourcesRequest struct {
 	pangea.BaseRequest
 
-	Type    string  `json:"type"`
-	Action  string  `json:"action"`
-	Subject Subject `json:"subject"`
+	Type       string         `json:"type"`
+	Action     string         `json:"action"`
+	Subject    Subject        `json:"subject"`
+	Attributes map[string]any `json:"attributes,omitempty"` // A JSON object of attribute data.
 }
 
 type ListResourcesResult struct {
 	IDs []string `json:"ids"`
 }
 
-// @summary List resources (Beta).
+// @summary List resources.
 //
 // @description Given a type, action, and subject, list all the resources in the type that the subject has permission to the action with.
 //
@@ -283,15 +284,16 @@ func (e *authz) ListResources(ctx context.Context, input *ListResourcesRequest) 
 type ListSubjectsRequest struct {
 	pangea.BaseRequest
 
-	Resource Resource `json:"resource"`
-	Action   string   `json:"action"`
+	Resource   Resource       `json:"resource"`
+	Action     string         `json:"action"`
+	Attributes map[string]any `json:"attributes,omitempty"` // A JSON object of attribute data.
 }
 
 type ListSubjectsResult struct {
 	Subjects []Subject `json:"subjects"`
 }
 
-// @summary List subjects (Beta).
+// @summary List subjects.
 //
 // @description Given a resource and an action, return the list of subjects who have the given action to the given resource.
 //
