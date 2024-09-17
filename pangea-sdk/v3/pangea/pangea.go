@@ -50,6 +50,7 @@ type ConfigIDer interface {
 }
 
 type BaseRequest struct {
+	// Config ID.
 	ConfigID string `json:"config_id,omitempty"`
 }
 

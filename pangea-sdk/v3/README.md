@@ -5,7 +5,7 @@
 <br />
 
 [![documentation](https://img.shields.io/badge/documentation-pangea-blue?style=for-the-badge&labelColor=551B76)][Documentation]
-[![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)][Slack]
+[![Discourse](https://img.shields.io/badge/Discourse-4A154B?style=for-the-badge&logo=discourse&logoColor=white)][Discourse]
 
 # Pangea Go SDK
 
@@ -117,20 +117,9 @@ fmt.Printf("Logged event: %s", pangea.Stringify(e))
 
 Full code for the above example available in [the examples directory](https://github.com/pangeacyber/pangea-go/blob/main/examples/audit/log_standard_schema.go).
 
-<a name="beta-releases"></a>
-
-## Beta releases
-
-Pre-release versions may be available with the `beta` denotation in the version
-number. These releases serve to preview beta services and APIs. Per Semantic
-Versioning, they are considered unstable and do not carry the same compatibility
-guarantees as stable releases.
-
-
-
    [Documentation]: https://pangea.cloud/docs/sdk/go/
    [GA Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
    [Beta Examples]: https://github.com/pangeacyber/pangea-go/tree/beta/examples
    [Pangea Console]: https://console.pangea.cloud/
-   [Slack]: https://pangea.cloud/join-slack/
+   [Discourse]: https://l.pangea.cloud/Jd4wlGs
    [Secure Audit Log]: https://pangea.cloud/docs/audit

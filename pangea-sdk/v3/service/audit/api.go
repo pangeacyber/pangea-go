@@ -387,12 +387,39 @@ func (a *audit) processSearchEvents(ctx context.Context, events SearchEvents, ro
 			if event.Published != nil && *event.Published {
 				event.VerifyMembershipProof(root)
 				event.VerifyConsistencyProof(roots)
+				if event.ConsistencyVerification == Failed && event.LeafIndex != nil {
+					// verify again with the consistency proof fetched from Pangea
+					roots, _ = a.fixConsistencyProof(ctx, *event.LeafIndex+1)
+					event.VerifyConsistencyProof(roots)
+				}
 			} else {
 				event.VerifyMembershipProof(unpRoot)
 			}
 		}
 	}
 	return nil
+}
+
+func (a *audit) fixConsistencyProof(ctx context.Context, treeSize int) (map[int]Root, error) {
+	// on very rare occasions, the consistency proof in Arweave may be wrong
+	// override it with the proof from pangea (not the root hash, just the proof)
+
+	roots := a.rp.UpdateRoots(ctx, nil)
+
+	// get the root from Pangea
+	resp, err := a.Root(ctx, &RootInput{TreeSize: treeSize})
+	if err != nil {
+		return roots, err
+	}
+
+	// compare the hash
+	if resp.Result.Data.RootHash != roots[treeSize].RootHash {
+		return roots, errors.New("hash doesn't match")
+	}
+
+	// override root
+	roots = a.rp.OverrideRoots(map[int]Root{treeSize: resp.Result.Data})
+	return roots, nil
 }
 
 type LogEvent struct {
@@ -670,6 +697,9 @@ type SearchInput struct {
 
 	// A list of keys to restrict the search results to. Useful for partitioning data available to the query string.
 	SearchRestriction *SearchRestriction `json:"search_restriction,omitempty"`
+
+	// Return the context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	ReturnContext *bool `json:"return_context,omitempty"`
 }
 
 type SearchRestriction struct {
@@ -685,7 +715,7 @@ type SearchRestriction struct {
 	// A list of actions to restrict the search to.
 	Action []string `json:"action,omitempty"`
 
-	// A list of status to restrict the search to.
+	// A list of statuses to restrict the search to.
 	Status []string `json:"status,omitempty"`
 }
 
@@ -747,6 +777,9 @@ type SearchEvent struct {
 	MembershipVerification  EventVerification
 	ConsistencyVerification EventVerification
 	SignatureVerification   EventVerification
+
+	// The context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	FPEContext *string `json:"fpe_context,omitempty"`
 }
 
 // IsVerifiable checks if a record can be verifiable with the published proof
@@ -772,7 +805,7 @@ func (ee *SearchEvent) VerifyConsistencyProof(publishedRoots map[int]Root) {
 		ee.ConsistencyVerification = NotVerified
 		return
 	}
-	idx := *ee.LeafIndex
+	idx := *ee.LeafIndex + 1
 	if idx < 0 {
 		ee.ConsistencyVerification = Failed
 		return
@@ -882,6 +915,12 @@ type SearchResultsInput struct {
 
 	// Offset from the start of the result set to start returning results from.
 	Offset *int `json:"offset,omitempty"`
+
+	// If provided, fail if the original search was performed with anything but the provided search_restriction parameter.
+	AssertSearchRestriction *SearchRestriction `json:"assert_search_restriction,omitempty"`
+
+	// Return the context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	ReturnContext *bool `json:"return_context,omitempty"`
 }
 
 type SearchResultsOutput struct {
@@ -936,11 +975,17 @@ type RootOutput struct {
 type DownloadRequest struct {
 	pangea.BaseRequest
 
+	// ID returned by the export API.
+	RequestID string `json:"request_id,omitempty"`
+
 	// ID returned by the search API.
-	ResultID string `json:"result_id"`
+	ResultID string `json:"result_id,omitempty"`
 
 	// Format for the records.
 	Format DownloadFormat `json:"format,omitempty"`
+
+	// Return the context data needed to decrypt secure audit events that have been redacted with format preserving encryption.
+	ReturnContext *bool `json:"return_context,omitempty"`
 }
 
 type DownloadResult struct {
@@ -961,5 +1006,118 @@ type DownloadResult struct {
 //		Format:   audit.DFcsv,
 //	})
 func (a *audit) DownloadResults(ctx context.Context, input *DownloadRequest) (*pangea.PangeaResponse[DownloadResult], error) {
+	if input.RequestID == "" && input.ResultID == "" {
+		return nil, errors.New("must specify one of `RequestID` or `ResultID`")
+	}
+
 	return request.DoPost(ctx, a.Client, "v1/download_results", input, &DownloadResult{})
+}
+
+// @summary Log streaming endpoint
+//
+// @description This API allows 3rd party vendors (like Auth0) to stream events
+// to this endpoint where the structure of the payload varies across different
+// vendors.
+//
+// @operationId audit_post_v1_log_stream
+//
+// @example
+//
+//	type LogStreamEventData struct {
+//		ClientID     string  `json:"client_id"`
+//		Connection   *string `json:"connection,omitempty"`
+//		ConnectionID *string `json:"connection_id,omitempty"`
+//		Date         string  `json:"date"`
+//		Description  string  `json:"description"`
+//		IP           string  `json:"ip"`
+//		Strategy     *string `json:"strategy,omitempty"`
+//		StrategyType *string `json:"strategy_type,omitempty"`
+//		Type         string  `json:"type"`
+//		UserAgent    string  `json:"user_agent"`
+//		UserID       string  `json:"user_id"`
+//	}
+//
+//	type LogStreamEvent struct {
+//		LogID string             `json:"log_id"`
+//		Data  LogStreamEventData `json:"data"`
+//	}
+//
+//	type LogStreamRequest struct {
+//		pangea.BaseRequest
+//
+//		Logs []LogStreamEvent `json:"logs"`
+//	}
+//
+//	logStreamEvent := LogStreamEvent{
+//		LogID: "some log ID",
+//		Data: LogStreamEventData{
+//			ClientID:    "test client ID",
+//			Date:        "2024-03-29T17:26:50.193Z",
+//			Description: "Create a log stream",
+//			IP:          "127.0.0.1",
+//			Type:        "some_type",
+//			UserAgent:   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0",
+//			UserID:      "test user ID",
+//		},
+//	}
+//
+//	input := LogStreamRequest{
+//		Logs: []LogStreamEvent{logStreamEvent},
+//	}
+//
+//	response, err := client.LogStream(ctx, &input)
+func (a *audit) LogStream(ctx context.Context, input pangea.ConfigIDer) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	return request.DoPost(ctx, a.Client, "v1/log_stream", input, &result)
+}
+
+type ExportRequest struct {
+	pangea.BaseRequest
+
+	// Format for the records.
+	Format *DownloadFormat `json:"format,omitempty"`
+
+	// The start of the time range to perform the search on.
+	Start *string `json:"start,omitempty"`
+
+	// The end of the time range to perform the search on. If omitted, then all
+	// records up to the latest will be searched.
+	End *string `json:"end,omitempty"`
+
+	// Specify the sort order of the response, "asc" or "desc".
+	Order *string `json:"order,omitempty"`
+
+	// Name of column to sort the results by.
+	OrderBy *string `json:"order_by,omitempty"`
+
+	// Whether or not to include the root hash of the tree and the membership
+	// proof for each record.
+	Verbose *bool `json:"verbose,omitempty"`
+}
+
+// @summary Export from the audit log
+//
+// @description Bulk export of data from the Secure Audit Log, with optional filtering.
+//
+// @operationId audit_post_v1_export
+//
+// @example
+//
+//	response, err := client.Export(ctx, &audit.ExportRequest{Verbose: pangea.Bool(false)})
+func (a *audit) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	response, err := request.DoPostNoQueue(ctx, a.Client, "v1/export", input, &result)
+	if err != nil {
+		acceptedErr, ok := err.(*pangea.AcceptedError)
+		if ok {
+			return &pangea.PangeaResponse[struct{}]{
+				AcceptedResult: &acceptedErr.AcceptedResult,
+				Response:       acceptedErr.Response,
+				Result:         nil,
+			}, nil
+		}
+
+		return nil, err
+	}
+	return response, nil
 }

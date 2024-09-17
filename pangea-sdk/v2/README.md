@@ -10,7 +10,7 @@
 <br />
 
 [![documentation](https://img.shields.io/badge/documentation-pangea-blue?style=for-the-badge&labelColor=551B76)](https://pangea.cloud/docs/sdk/go/)
-[![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)](https://pangea.cloud/join-slack/)
+[![Discourse](https://img.shields.io/badge/Discourse-4A154B?style=for-the-badge&logo=discourse&logoColor=white)](https://l.pangea.cloud/Jd4wlGs)
 
 <br />
 </p>
@@ -115,7 +115,7 @@ Full code for the above example available in [the examples directory](https://gi
 
 If faced some issue using or testing this SDK or a new feature request feel free to open an issue [clicking here](https://github.com/pangeacyber/pangea-go/issues).
 We would need you to provide some basic information like what SDK's version you are using, stack trace if you got it, framework used, and steps to reproduce the issue.
-Also feel free to contact [Pangea support](mailto:support@pangea.cloud) by email or send us a message on [Slack](https://pangea.cloud/join-slack/)
+Also feel free to contact [Pangea support](mailto:support@pangea.cloud) by email or send us a message on [Discourse](https://l.pangea.cloud/Jd4wlGs)
 
 ## Contributing
 

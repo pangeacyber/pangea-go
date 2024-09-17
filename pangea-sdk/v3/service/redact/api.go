@@ -45,6 +45,22 @@ func (r *redact) RedactStructured(ctx context.Context, input *StructuredRequest)
 	return request.DoPost(ctx, r.Client, "v1/redact_structured", input, &StructuredResult{})
 }
 
+// @summary Unredact
+//
+// @description Decrypt or unredact fpe redactions
+//
+// @operationId redact_post_v1_unredact
+//
+// @example
+//
+//	redactcli.Unredact(ctx, &UnredactRequest{
+//		RedactedData: "redacted data",
+//		FPEContext:   "gAyHpblmIoUXKTiYY8xKiQ==",
+//	})
+func (r *redact) Unredact(ctx context.Context, input *UnredactRequest) (*pangea.PangeaResponse[UnredactResult], error) {
+	return request.DoPost(ctx, r.Client, "v1/unredact", input, &UnredactResult{})
+}
+
 type TextRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -64,6 +80,9 @@ type TextRequest struct {
 
 	// Setting this value to false will omit the redacted result only returning count
 	ReturnResult *bool `json:"return_result,omitempty"`
+
+	// A set of redaction method overrides for any enabled rule. These methods override the config declared methods
+	RedactionMethodOverrides *RedactionMethodOverrides `json:"redaction_method_overrides,omitempty"`
 }
 
 type TextResult struct {
@@ -130,6 +149,9 @@ type StructuredRequest struct {
 
 	// Setting this value to false will omit the redacted result only returning count
 	ReturnResult *bool `json:"return_result,omitempty"`
+
+	// A set of redaction method overrides for any enabled rule. These methods override the config declared methods
+	RedactionMethodOverrides *RedactionMethodOverrides `json:"redaction_method_overrides,omitempty"`
 }
 
 type StructuredResult struct {
@@ -140,4 +162,61 @@ type StructuredResult struct {
 	Count int `json:"count"`
 
 	Report *DebugReport `json:"report"`
+}
+
+type UnredactRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	// Data to unredact
+	RedactedData any `json:"redacted_data"`
+
+	// FPE context used to decrypt and unredact data (in base64)
+	FPEContext string `json:"fpe_context"`
+}
+
+type UnredactResult struct {
+	Data any `json:"data"`
+}
+
+type MaskingType string
+type RedactType string
+type FPEAlphabet string
+
+const (
+	RTmask           RedactType = "mask"
+	RTpartialMasking RedactType = "partial_masking"
+	RTreplacement    RedactType = "replacement"
+	RTdetectOnly     RedactType = "detect_only"
+	RThash           RedactType = "hash"
+	RTfpe            RedactType = "fpe"
+)
+
+const (
+	FPEAnumeric           FPEAlphabet = "numeric"
+	FPEAalphaNumericLower FPEAlphabet = "alphanumericlower"
+	FPEAalphanumeric      FPEAlphabet = "alphanumeric"
+)
+
+const (
+	MTmask   MaskingType = "mask"
+	MTunmask MaskingType = "unmask"
+)
+
+type PartialMasking struct {
+	MaskingType       *MaskingType `json:"masking_type,omitempty"`
+	UnmaskedFromLeft  *int         `json:"unmasked_from_left,omitempty"`
+	UnmaskedFromRight *int         `json:"unmasked_from_right,omitempty"`
+	MaskedFromLeft    *int         `json:"masked_from_left,omitempty"`
+	MaskedFromRight   *int         `json:"masked_from_right,omitempty"`
+	CharsToIgnore     []string     `json:"chars_to_ignore,omitempty"`
+	MaskingChar       []string     `json:"masking_char,omitempty"`
+}
+
+type RedactionMethodOverrides struct {
+	RedactionType  RedactType             `json:"redaction_type"`
+	Hash           map[string]interface{} `json:"hash,omitempty"`
+	FPEAlphabet    *FPEAlphabet           `json:"fpe_alphabet,omitempty"`
+	PartialMasking *PartialMasking        `json:"partial_masking,omitempty"`
+	RedactionValue *string                `json:"redaction_value,omitempty"`
 }

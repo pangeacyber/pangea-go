@@ -947,3 +947,93 @@ func Test_Integration_Download(t *testing.T) {
 
 	af.Save(pangea.AttachedFileSaveInfo{})
 }
+
+type LogStreamEventData struct {
+	ClientID     string  `json:"client_id"`
+	Connection   *string `json:"connection,omitempty"`
+	ConnectionID *string `json:"connection_id,omitempty"`
+	Date         string  `json:"date"`
+	Description  string  `json:"description"`
+	IP           string  `json:"ip"`
+	Strategy     *string `json:"strategy,omitempty"`
+	StrategyType *string `json:"strategy_type,omitempty"`
+	Type         string  `json:"type"`
+	UserAgent    string  `json:"user_agent"`
+	UserID       string  `json:"user_id"`
+}
+
+type LogStreamEvent struct {
+	LogID string             `json:"log_id"`
+	Data  LogStreamEventData `json:"data"`
+}
+
+type LogStreamRequest struct {
+	pangea.BaseRequest
+
+	Logs []LogStreamEvent `json:"logs"`
+}
+
+func Test_Integration_LogStream(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
+	cfgId := pangeatesting.GetConfigID(t, testingEnvironment, "audit", 3)
+	client, _ := audit.New(cfg, audit.WithConfigID(cfgId))
+
+	logStreamEvent := LogStreamEvent{
+		LogID: "some log ID",
+		Data: LogStreamEventData{
+			ClientID:    "test client ID",
+			Date:        "2024-03-29T17:26:50.193Z",
+			Description: "Create a log stream",
+			IP:          "127.0.0.1",
+			Type:        "some_type",
+			UserAgent:   "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0",
+			UserID:      "test user ID",
+		},
+	}
+	input := LogStreamRequest{
+		Logs: []LogStreamEvent{logStreamEvent},
+	}
+	response, err := client.LogStream(ctx, &input)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
+}
+
+func Test_Integration_Export_Download(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+
+	cfg := auditIntegrationCfg(t)
+	client, _ := audit.New(cfg)
+
+	exportRes, err := client.Export(ctx, &audit.ExportRequest{
+		Start:   pangea.String("1d"),
+		Verbose: pangea.Bool(false),
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, exportRes)
+	assert.Equal(t, "Accepted", pangea.StringValue(exportRes.Status))
+	assert.NotEmpty(t, exportRes.RequestID)
+
+	retry := 0
+	for retry < 10 {
+		_, err := client.PollResultByID(ctx, *exportRes.RequestID, &audit.DownloadResult{})
+		if err == nil {
+			break
+		}
+
+		// Wait until result should be ready
+		time.Sleep(time.Duration(3 * time.Second))
+		retry++
+	}
+
+	downloadRes, err := client.DownloadResults(ctx, &audit.DownloadRequest{
+		RequestID: *exportRes.RequestID,
+	})
+	assert.NoError(t, err)
+	assert.Equal(t, "Success", pangea.StringValue(downloadRes.Status))
+	assert.NotEmpty(t, downloadRes.Result.DestURL)
+}
