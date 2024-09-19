@@ -103,7 +103,7 @@ func main() {
 				}
 				defer f.Close()
 
-				uploadResponse, err := client.Put(ctx, &share.PutRequest{Path: fmt.Sprintf("%s/%s", dest, filepath.Base(file))}, f)
+				uploadResponse, err := client.Put(ctx, &share.PutRequest{Folder: fmt.Sprintf("%s/%s", dest, filepath.Base(file))}, f)
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err)
 					os.Exit(1)

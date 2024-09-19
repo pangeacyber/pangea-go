@@ -41,7 +41,7 @@ func main() {
 
 	// Create a folder
 	respCreate, err := client.FolderCreate(ctx, &share.FolderCreateRequest{
-		Path: folder,
+		Folder: folder,
 	})
 	if err != nil {
 		log.Fatalf("unexpected error: %v", err)
@@ -59,7 +59,7 @@ func main() {
 	fmt.Println("Uploading file with Path field...")
 	respPut, err := client.Put(ctx,
 		&share.PutRequest{
-			Path: path.Join(folder, "file_multipart_1"),
+			Folder: path.Join(folder, "file_multipart_1"),
 			TransferRequest: pangea.TransferRequest{
 				TransferMethod: pangea.TMmultipart,
 			},

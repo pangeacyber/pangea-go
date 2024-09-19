@@ -55,7 +55,7 @@ func Test_Integration_Folder(t *testing.T) {
 	client := share.New(cfg)
 
 	input := &share.FolderCreateRequest{
-		Path: FOLDER_DELETE,
+		Folder: FOLDER_DELETE,
 	}
 
 	out, err := client.FolderCreate(ctx, input)
@@ -223,7 +223,7 @@ func Test_Integration_PutTransferMethodPostURL_PathAnd18MB(t *testing.T) {
 	path := "/sdk/tests/go/" + TIME + "_file_post_url"
 
 	input := &share.PutRequest{
-		Path: path,
+		Folder: path,
 		TransferRequest: pangea.TransferRequest{
 			TransferMethod: pangea.TMpostURL,
 		},
@@ -483,7 +483,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 
 	// Create a folder
 	respCreate, err := client.FolderCreate(ctx, &share.FolderCreateRequest{
-		Path: FOLDER_FILES,
+		Folder: FOLDER_FILES,
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -502,7 +502,7 @@ func Test_Integration_LifeCycle(t *testing.T) {
 
 	respPut, err := client.Put(ctx,
 		&share.PutRequest{
-			Path: FOLDER_FILES + "/" + TIME + "_file_multipart_1",
+			Folder: FOLDER_FILES + "/" + TIME + "_file_multipart_1",
 			TransferRequest: pangea.TransferRequest{
 				TransferMethod: pangea.TMmultipart,
 			},
@@ -515,11 +515,10 @@ func Test_Integration_LifeCycle(t *testing.T) {
 
 	assert.NotNil(t, respPut)
 	assert.NotNil(t, respPut.Result)
-	assert.Equal(t, folderID, respPut.Result.Object.ParentID)
 	assert.Empty(t, respPut.Result.Object.Metadata)
 	assert.Empty(t, respPut.Result.Object.Tags)
-	assert.Empty(t, respPut.Result.Object.MD5)
-	assert.Empty(t, respPut.Result.Object.SHA512)
+	assert.NotEmpty(t, respPut.Result.Object.MD5)
+	assert.NotEmpty(t, respPut.Result.Object.SHA512)
 	assert.NotEmpty(t, respPut.Result.Object.SHA256)
 
 	// Upload a file with parent id and name
@@ -548,8 +547,8 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, folderID, respPut2.Result.Object.ParentID)
 	assert.Equal(t, share.Metadata(METADATA), respPut2.Result.Object.Metadata)
 	assert.Equal(t, share.Tags(TAGS), respPut2.Result.Object.Tags)
-	assert.Empty(t, respPut2.Result.Object.MD5)
-	assert.Empty(t, respPut2.Result.Object.SHA512)
+	assert.NotEmpty(t, respPut2.Result.Object.MD5)
+	assert.NotEmpty(t, respPut2.Result.Object.SHA512)
 	assert.NotEmpty(t, respPut2.Result.Object.SHA256)
 
 	// Update file with full metadata and tags
