@@ -74,7 +74,6 @@ type DeleteRequest struct {
 
 	ID       string  `json:"id,omitempty"`        // The ID of the object to delete.
 	Force    *bool   `json:"force,omitempty"`     // If true, delete a folder even if it's not empty. Deletes the contents of folder as well.
-	Path     string  `json:"path,omitempty"`      // The path of the object to delete.
 	BucketID *string `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 }
 
@@ -128,8 +127,7 @@ func (e *share) Buckets(ctx context.Context) (*pangea.PangeaResponse[BucketsResu
 
 // @summary Delete
 //
-// @description Delete object by ID or path. If both are supplied, the path must
-// match that of the object represented by the ID.
+// @description Delete object by ID.
 //
 // @operationId store_post_v1_delete
 //
@@ -150,7 +148,7 @@ type FolderCreateRequest struct {
 	Name     string   `json:"name,omitempty"`      // The name of an object.
 	Metadata Metadata `json:"metadata,omitempty"`  // A set of string-based key/value pairs used to provide additional data about an object.
 	ParentID string   `json:"parent_id,omitempty"` // The ID of a stored object.
-	Path     string   `json:"path,omitempty"`      // An case-sensitive path to an object. Contains a sequence of path segments delimited by the the / character. Any path ending in a / character refers to a folder.
+	Folder   string   `json:"folder,omitempty"`    // The folder to place the folder in. Must match `parent_id` if also set.
 	Tags     Tags     `json:"tags,omitempty"`      // A list of user-defined tags
 	BucketID *string  `json:"bucket_id,omitempty"` // The bucket to use, if not the default.
 }
@@ -173,7 +171,7 @@ type FolderCreateResult struct {
 //			"priority": "medium",
 //		},
 //		ParentID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
-//		Path: "/",
+//		Folder: "/",
 //		Tags: share.Tags{"irs_2023", "personal"},
 //	}
 //
@@ -186,7 +184,6 @@ type GetRequest struct {
 	pangea.BaseRequest
 
 	ID             string                `json:"id,omitempty"`              // The ID of the object to retrieve.
-	Path           string                `json:"path,omitempty"`            // The path of the object to retrieve.
 	Password       *string               `json:"password,omitempty"`        // If the file was protected with a password, the password to decrypt with.
 	TransferMethod pangea.TransferMethod `json:"transfer_method,omitempty"` // The requested transfer method for the file data.
 	BucketID       *string               `json:"bucket_id,omitempty"`       // The bucket to use, if not the default.
@@ -199,8 +196,7 @@ type GetResult struct {
 
 // @summary Get an object
 //
-// @description Get object. If both ID and path are supplied, the call will fail
-// if the target object doesn't match both properties.
+// @description Get object.
 //
 // @operationId store_post_v1_get
 //
@@ -208,7 +204,6 @@ type GetResult struct {
 //
 //	input := &share.GetRequest{
 //		ID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
-//		Path: "/",
 //	}
 //
 //	res, err := shareClient.Get(ctx, input)
@@ -230,7 +225,7 @@ type PutRequest struct {
 	Metadata          Metadata    `json:"metadata,omitempty"`           // A set of string-based key/value pairs used to provide additional data about an object.
 	MimeType          string      `json:"mimetype,omitempty"`           // The MIME type of the file, which will be verified by the server if provided. Uploads not matching the supplied MIME type will be rejected.
 	ParentID          string      `json:"parent_id,omitempty"`          // The parent ID of the object (a folder). Leave blank to keep in the root folder.
-	Path              string      `json:"path,omitempty"`               // An optional path where the file should be placed. It will auto-create directories if necessary.
+	Folder            string      `json:"folder,omitempty"`             // The path to the parent folder. Leave blank for the root folder. Path must resolve to `parent_id` if also set.
 	Password          string      `json:"password,omitempty"`           // An optional password to protect the file with. Downloading the file will require this password.
 	PasswordAlgorithm string      `json:"password_algorithm,omitempty"` // An optional password algorithm to protect the file with. See symmetric vault password_algorithm.
 	SHA1              string      `json:"sha1,omitempty"`               // The hexadecimal-encoded SHA1 hash of the file data, which will be verified by the server if provided.
@@ -258,7 +253,7 @@ type PutResult struct {
 //			"priority": "medium",
 //		},
 //		ParentID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
-//		Path: "/",
+//		Folder: "/",
 //		Tags: share.Tags{"irs_2023", "personal"},
 //	}
 //
@@ -303,7 +298,7 @@ type UpdateRequest struct {
 	pangea.BaseRequest
 
 	ID                   string   `json:"id"`                               // An identifier for the file to update.
-	Path                 string   `json:"path,omitempty"`                   // An alternative to ID for identifying the target file.
+	Folder               string   `json:"folder,omitempty"`                 // Set the parent (folder). Leave blank for the root folder. Path must resolve to `parent_id` if also set.
 	BucketID             *string  `json:"bucket_id,omitempty"`              // The bucket to use, if not the default.
 	AddMetadata          Metadata `json:"add_metadata,omitempty"`           // A list of Metadata key/values to set in the object. If a provided key exists, the value will be replaced.
 	AddPassword          string   `json:"add_password,omitempty"`           // Protect the file with the supplied password.
@@ -333,7 +328,7 @@ type UpdateResult struct {
 //
 //	input := &share.UpdateRequest{
 //		ID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
-//		Path: "/",
+//		Folder: "/",
 //		RemoveMetadata: share.Metadata{
 //			"created_by": "jim",
 //			"priority": "medium",
@@ -720,7 +715,7 @@ func (e *share) ShareLinkDelete(ctx context.Context, input *ShareLinkDeleteReque
 //			"priority": "medium",
 //		},
 //		ParentID: "pos_3djfmzg2db4c6donarecbyv5begtj2bm",
-//		Path: "/",
+//		Folder: "/",
 //		Tags: share.Tags{"irs_2023", "personal"},
 //	}
 //

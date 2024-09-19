@@ -32,7 +32,7 @@ func main() {
 
 	// Create a FolderCreateRequest and set the path of the folder to be created
 	input := &share.FolderCreateRequest{
-		Path: path,
+		Folder: path,
 	}
 
 	fmt.Printf("Let's create a folder: %s\n", path)
