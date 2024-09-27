@@ -98,8 +98,12 @@ type SanitizeContent struct {
 	Defang              *bool  `json:"defang,omitempty"`
 	DefangThreshold     *int   `json:"defang_threshold,omitempty"`
 	Redact              *bool  `json:"redact,omitempty"`
-	RemoveAttachments   *bool  `json:"remove_attachments,omitempty"`
-	RemoveInteractive   *bool  `json:"remove_interactive,omitempty"`
+
+	// If redact is enabled, avoids redacting the file and instead returns the
+	// PII analysis engine results. Only works if redact is enabled.
+	RedactDetectOnly  *bool `json:"redact_detect_only,omitempty"`
+	RemoveAttachments *bool `json:"remove_attachments,omitempty"`
+	RemoveInteractive *bool `json:"remove_interactive,omitempty"`
 }
 
 // SanitizeShareOutput represents the SanitizeShareOutput API request model.
@@ -133,10 +137,22 @@ type DefangData struct {
 	DomainIntelSummary   string `json:"domain_intel_summary"`
 }
 
+type RedactRecognizerResult struct {
+	FieldType string  `json:"field_type"` // The entity name.
+	Score     float64 `json:"score"`      // The certainty score that the entity matches this specific snippet.
+	Text      string  `json:"text"`       // The text snippet that matched.
+	Start     int     `json:"start"`      // The starting index of a snippet.
+	End       int     `json:"end"`        // The ending index of a snippet.
+	Redacted  bool    `json:"redacted"`   // Indicates if this rule was used to anonymize a text snippet.
+}
+
 // RedactData represents the RedactData PangeaResponseResult.
 type RedactData struct {
 	RedactionCount int            `json:"redaction_count"`
 	SummaryCounts  map[string]int `json:"summary_counts"`
+
+	// The scoring result of a set of rules.
+	RecognizerResults []RedactRecognizerResult `json:"recognizer_results,omitempty"`
 }
 
 // CDR represents the CDR PangeaResponseResult.
