@@ -203,6 +203,29 @@ func Test_Integration_UserBreachedByIPBulk(t *testing.T) {
 	assert.Equal(t, len(resp.Result.Data), 2)
 }
 
+func Test_Integration_UserBreachedByDomainBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	intelcli := user_intel.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &user_intel.UserBreachedBulkRequest{
+		Domains:  []string{"example.com"},
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "spycloud",
+	}
+	resp, err := intelcli.UserBreachedBulk(ctx, input)
+	if err != nil {
+		t.Fatalf("expected no error got: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	assert.NotNil(t, resp.Result)
+	assert.NotNil(t, resp.Result.Data)
+	assert.Equal(t, len(resp.Result.Data), 1)
+}
+
 func Test_Integration_UserBreachedDefaultProvider(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancelFn()
