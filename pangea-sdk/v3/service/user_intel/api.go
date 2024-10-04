@@ -83,6 +83,7 @@ type UserBreachedBulkRequest struct {
 	Usernames    []string `json:"usernames,omitempty"`
 	PhoneNumbers []string `json:"phone_numbers,omitempty"`
 	IPs          []string `json:"ips,omitempty"`
+	Domains      []string `json:"domains,omitempty"`
 	Start        string   `json:"start,omitempty"`
 	End          string   `json:"end,omitempty"`
 	Verbose      *bool    `json:"verbose,omitempty"`
