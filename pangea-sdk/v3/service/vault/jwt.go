@@ -19,33 +19,33 @@ type JWKGetRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID      string  `json:"id"`
-	Version *string `json:"version,omitempty"`
+	ID      string  `json:"id"`                // The item ID
+	Version *string `json:"version,omitempty"` // The key version(s). all for all versions, num for a specific version, -num for the num latest versions
 }
 
 type JWKGetResult struct {
-	Keys []JWT `json:"keys"`
+	Keys []JWT `json:"keys"` // The JSON Web Key Set (JWKS) object. Fields with key information are base64URL encoded.
 }
 
 type JWTSignRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID      string `json:"id"`
-	Payload string `json:"payload"`
+	ID      string `json:"id"`      // The item ID
+	Payload string `json:"payload"` // The JWT payload (in JSON)
 }
 
 type JWTSignResult struct {
-	JWS string `json:"jws"`
+	JWS string `json:"jws"` // The signed JSON Web Token (JWS)
 }
 
 type JWTVerifyRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	JWS string `json:"jws"`
+	JWS string `json:"jws"` // The signed JSON Web Token (JWS)
 }
 
 type JWTVerifyResult struct {
-	ValidSignature bool `json:"valid_signature"`
+	ValidSignature bool `json:"valid_signature"` // Indicates if messages have been verified.
 }

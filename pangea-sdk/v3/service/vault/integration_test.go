@@ -70,6 +70,7 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	input := &vault.SecretStoreRequest{
 		CommonStoreRequest: vault.CommonStoreRequest{
 			Name: name,
+			Type: vault.ITsecret,
 		},
 		Secret: secretV1,
 	}
@@ -81,9 +82,9 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rStore)
 	assert.NotNil(t, rStore.Result)
-	assert.Equal(t, secretV1, rStore.Result.Secret)
 	assert.NotEmpty(t, rStore.Result.ID)
-	assert.Equal(t, 1, rStore.Result.Version)
+	assert.Equal(t, 1, rStore.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rStore.Result.NumVersions)
 	assert.Equal(t, string(vault.ITsecret), rStore.Result.Type)
 
 	ID := rStore.Result.ID
@@ -99,8 +100,10 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rRotate)
 	assert.NotNil(t, rRotate.Result)
-	assert.Equal(t, secretV2, rRotate.Result.Secret)
-	assert.Equal(t, 2, rRotate.Result.Version)
+	assert.Equal(t, 1, len(rRotate.Result.ItemVersions))
+	assert.Nil(t, rRotate.Result.ItemVersions[0].Secret)
+	assert.Equal(t, 2, rRotate.Result.ItemVersions[0].Version)
+	assert.Equal(t, 2, rRotate.Result.NumVersions)
 	assert.Equal(t, string(vault.ITsecret), rRotate.Result.Type)
 
 	rUpdate, err := client.Update(ctx,
@@ -123,11 +126,11 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 0, len(rGet.Result.Versions))
-	assert.Equal(t, secretV2, *rGet.Result.CurrentVersion.Secret)
-	assert.Equal(t, string(vault.IVSactive), rGet.Result.CurrentVersion.State)
-	assert.Nil(t, rGet.Result.CurrentVersion.PublicKey)
-	assert.Nil(t, rGet.Result.CurrentVersion.DestroyAt)
+	assert.Equal(t, 1, len(rGet.Result.ItemVersions))
+	assert.Equal(t, secretV2, *rGet.Result.ItemVersions[0].Secret)
+	assert.Equal(t, string(vault.IVSactive), rGet.Result.ItemVersions[0].State)
+	assert.Nil(t, rGet.Result.ItemVersions[0].PublicKey)
+	assert.Nil(t, rGet.Result.ItemVersions[0].DestroyedAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 
 	rStateChange, err := client.StateChange(ctx,
@@ -150,11 +153,11 @@ func Test_Integration_SecretLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 0, len(rGet.Result.Versions))
-	assert.Equal(t, secretV2, *rGet.Result.CurrentVersion.Secret)
-	assert.Nil(t, rGet.Result.CurrentVersion.PublicKey)
-	assert.Equal(t, string(vault.IVSsuspended), rGet.Result.CurrentVersion.State)
-	assert.Nil(t, rGet.Result.CurrentVersion.DestroyAt)
+	assert.Equal(t, 1, len(rGet.Result.ItemVersions))
+	assert.Equal(t, secretV2, *rGet.Result.ItemVersions[0].Secret)
+	assert.Nil(t, rGet.Result.ItemVersions[0].PublicKey)
+	assert.Equal(t, string(vault.IVSsuspended), rGet.Result.ItemVersions[0].State)
+	assert.Nil(t, rGet.Result.ItemVersions[0].DestroyedAt)
 	assert.Equal(t, string(vault.ITsecret), rGet.Result.Type)
 }
 
@@ -186,8 +189,9 @@ func AsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, id
 	assert.NoError(t, err)
 	assert.NotNil(t, rRotate)
 	assert.NotNil(t, rRotate.Result)
-	assert.NotNil(t, rRotate.Result.PublicKey)
-	assert.Equal(t, 2, rRotate.Result.Version)
+	assert.Nil(t, rRotate.Result.ItemVersions[0].PublicKey)
+	assert.Equal(t, 2, rRotate.Result.ItemVersions[0].Version)
+	assert.Equal(t, 2, rRotate.Result.NumVersions)
 	assert.Equal(t, id, rRotate.Result.ID)
 
 	// Sign 2
@@ -365,7 +369,8 @@ func JWTSymSigningCycle(t *testing.T, client vault.Client, ctx context.Context, 
 	assert.NoError(t, err)
 	assert.NotNil(t, rRotate)
 	assert.NotNil(t, rRotate.Result)
-	assert.Equal(t, 2, rRotate.Result.Version)
+	assert.Equal(t, 2, rRotate.Result.ItemVersions[0].Version)
+	assert.Equal(t, 2, rRotate.Result.NumVersions)
 	assert.Equal(t, id, rRotate.Result.ID)
 
 	// Sign 2
@@ -462,7 +467,8 @@ func JWTAsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context,
 	assert.NoError(t, err)
 	assert.NotNil(t, rRotate)
 	assert.NotNil(t, rRotate.Result)
-	assert.Equal(t, 2, rRotate.Result.Version)
+	assert.Equal(t, 2, rRotate.Result.ItemVersions[0].Version)
+	assert.Equal(t, 2, rRotate.Result.NumVersions)
 	assert.Equal(t, id, rRotate.Result.ID)
 
 	// Sign 2
@@ -550,7 +556,7 @@ func JWTAsymSigningCycle(t *testing.T, client vault.Client, ctx context.Context,
 	assert.NoError(t, err)
 	assert.NotNil(t, rGet)
 	assert.NotNil(t, rGet.Result)
-	assert.Equal(t, 2, len(rGet.Result.Keys))
+	assert.Equal(t, 1, len(rGet.Result.Keys))
 
 	rStateChange, err := client.StateChange(ctx,
 		&vault.StateChangeRequest{
@@ -607,7 +613,8 @@ func EncryptionCycle(t *testing.T, client vault.Client, ctx context.Context, id 
 	assert.NoError(t, err)
 	assert.NotNil(t, rRot1)
 	assert.NotNil(t, rRot1.Result)
-	assert.Equal(t, 2, rRot1.Result.Version)
+	assert.Equal(t, 2, rRot1.Result.ItemVersions[0].Version)
+	assert.Equal(t, 2, rRot1.Result.NumVersions)
 
 	// Encode 2
 	rEnc2, err := client.Encrypt(ctx,
@@ -846,9 +853,11 @@ func Test_Integration_Ed25519SigningLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
-	assert.NotEmpty(t, rGen.Result.PublicKey)
+	assert.Equal(t, 1, len(rGen.Result.ItemVersions))
+	assert.Nil(t, rGen.Result.ItemVersions[0].PublicKey)
 	assert.NotEmpty(t, rGen.Result.ID)
-	assert.Equal(t, 1, rGen.Result.Version)
+	assert.Equal(t, 1, rGen.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rGen.Result.NumVersions)
 
 	AsymSigningCycle(t, client, ctx, rGen.Result.ID)
 }
@@ -876,9 +885,10 @@ func Test_Integration_Ed25519StoreLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rStore)
 	assert.NotNil(t, rStore.Result)
-	assert.NotEmpty(t, rStore.Result.PublicKey)
+	assert.Nil(t, rStore.Result.ItemVersions[0].PublicKey)
 	assert.NotEmpty(t, rStore.Result.ID)
-	assert.Equal(t, 1, rStore.Result.Version)
+	assert.Equal(t, 1, rStore.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rStore.Result.NumVersions)
 
 	AsymSigningCycle(t, client, ctx, rStore.Result.ID)
 }
@@ -907,9 +917,11 @@ func Test_Integration_JWT_AsymSigningLifeCycle(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, rGen)
 		assert.NotNil(t, rGen.Result)
-		assert.NotEmpty(t, rGen.Result.PublicKey)
+		assert.Equal(t, 1, len(rGen.Result.ItemVersions))
+		assert.Nil(t, rGen.Result.ItemVersions[0].PublicKey)
 		assert.NotEmpty(t, rGen.Result.ID)
-		assert.Equal(t, 1, rGen.Result.Version)
+		assert.Equal(t, 1, rGen.Result.ItemVersions[0].Version)
+		assert.Equal(t, 1, rGen.Result.NumVersions)
 
 		JWTAsymSigningCycle(t, client, ctx, rGen.Result.ID)
 		fmt.Printf("Finished Test_Integration_JWT_AsymSigningLifeCycle with %s\n", algorithm)
@@ -1103,11 +1115,14 @@ func Test_Integration_Folders(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, fcr.Result.ID, ur.Result.ID)
 
+	filter := vault.NewFilterList()
+	filter.Folder().Set(pangea.String(FOLDER_PARENT))
+
 	// List
 	lr, err := client.List(
 		ctx,
 		&vault.ListRequest{
-			Filter: map[string]string{"folder": FOLDER_PARENT},
+			Filter: filter.Filter(),
 		},
 	)
 	assert.NoError(t, err)
@@ -1281,10 +1296,12 @@ func Test_Integration_ExportGenerateAsymmetric(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
-	assert.NotEmpty(t, rGen.Result.PublicKey)
+	assert.Equal(t, 1, len(rGen.Result.ItemVersions))
+	assert.Nil(t, rGen.Result.ItemVersions[0].PublicKey)
 	assert.NotEmpty(t, rGen.Result.ID)
 	id := rGen.Result.ID
-	assert.Equal(t, 1, rGen.Result.Version)
+	assert.Equal(t, 1, rGen.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rGen.Result.NumVersions)
 
 	// Export with no encryption
 	rExp, err := client.Export(ctx,
@@ -1299,10 +1316,9 @@ func Test_Integration_ExportGenerateAsymmetric(t *testing.T) {
 	assert.NotNil(t, rExp.Result.PublicKey)
 	assert.NotEmpty(t, *rExp.Result.PublicKey)
 	assert.Nil(t, rExp.Result.Key)
-	assert.False(t, rExp.Result.Encrypted)
+	assert.Equal(t, rExp.Result.EncryptionType, "none")
 
-	// Export with encryption
-
+	// Export with asymmetric encryption
 	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
 	assert.NoError(t, err)
 
@@ -1315,8 +1331,8 @@ func Test_Integration_ExportGenerateAsymmetric(t *testing.T) {
 		&vault.ExportRequest{
 			ID:                  id,
 			Version:             pangea.Int(1),
-			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
-			EncryptionAlgorithm: &ea,
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
 		})
 
 	assert.NoError(t, err)
@@ -1325,19 +1341,47 @@ func Test_Integration_ExportGenerateAsymmetric(t *testing.T) {
 	assert.NotNil(t, rExpEnc.Result.PublicKey)
 	assert.NotEmpty(t, *rExpEnc.Result.PublicKey)
 	assert.Nil(t, rExpEnc.Result.Key)
-	assert.True(t, rExpEnc.Result.Encrypted)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "asymmetric")
 
-	expPrivKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
+	expPrivKeyDec, err := base64.StdEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
 	assert.NoError(t, err)
 	expPrivKey, err := rsa.DecryptSHA512(rsaPrivKey, expPrivKeyDec)
 	assert.NoError(t, err)
 	assert.Equal(t, *rExp.Result.PrivateKey, string(expPrivKey))
+	assert.Equal(t, *rExp.Result.PublicKey, *rExpEnc.Result.PublicKey)
 
-	expPubKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PublicKey)
+	// Export encrypted kem
+	ea = vault.EEArsa4096_no_padding_kem
+	password := "mypassword"
+
+	rExpEnc, err = client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
+			KEMPassword:         &password,
+		})
+
 	assert.NoError(t, err)
-	expPubKey, err := rsa.DecryptSHA512(rsaPrivKey, expPubKeyDec)
+	assert.NotNil(t, rExpEnc.Result.PrivateKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PrivateKey)
+	assert.NotNil(t, rExpEnc.Result.PublicKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PublicKey)
+	assert.Nil(t, rExpEnc.Result.Key)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "kem")
+
+	expPrivKeyDec, err = base64.StdEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
 	assert.NoError(t, err)
-	assert.Equal(t, *rExp.Result.PublicKey, string(expPubKey))
+
+	input, err := vault.NewKEMDecryptInput(*rExpEnc.Result, password, *rsaPrivKey)
+	assert.NoError(t, err)
+	assert.NotNil(t, input)
+
+	expPrivKey, err = vault.KEMDecrypt(*input)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.PrivateKey, string(expPrivKey))
+	assert.Equal(t, *rExp.Result.PublicKey, *rExpEnc.Result.PublicKey)
 }
 
 func Test_Integration_ExportStoreAsymmetric(t *testing.T) {
@@ -1363,10 +1407,12 @@ func Test_Integration_ExportStoreAsymmetric(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, rGen)
 	assert.NotNil(t, rGen.Result)
-	assert.NotEmpty(t, rGen.Result.PublicKey)
+	assert.Equal(t, 1, len(rGen.Result.ItemVersions))
+	assert.Nil(t, rGen.Result.ItemVersions[0].PublicKey)
 	assert.NotEmpty(t, rGen.Result.ID)
 	id := rGen.Result.ID
-	assert.Equal(t, 1, rGen.Result.Version)
+	assert.Equal(t, 1, rGen.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rGen.Result.NumVersions)
 
 	// Export with no encryption
 	rExp, err := client.Export(ctx,
@@ -1381,24 +1427,26 @@ func Test_Integration_ExportStoreAsymmetric(t *testing.T) {
 	assert.NotNil(t, rExp.Result.PublicKey)
 	assert.NotEmpty(t, *rExp.Result.PublicKey)
 	assert.Nil(t, rExp.Result.Key)
-	assert.False(t, rExp.Result.Encrypted)
+	assert.Equal(t, rExp.Result.EncryptionType, "none")
 
 	// Export with encryption
-
 	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
 	assert.NoError(t, err)
+	assert.NotNil(t, rsaPrivKey)
+	assert.NotNil(t, rsaPubKey)
 
 	rsaPubKeyPEM, err := rsa.EncodePEMPublicKey(rsaPubKey)
 	assert.NoError(t, err)
 
+	// Export encrypted asymmetric
 	ea := vault.EEArsa4096_oaep_sha512
 
 	rExpEnc, err := client.Export(ctx,
 		&vault.ExportRequest{
 			ID:                  id,
 			Version:             pangea.Int(1),
-			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
-			EncryptionAlgorithm: &ea,
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
 		})
 
 	assert.NoError(t, err)
@@ -1407,19 +1455,47 @@ func Test_Integration_ExportStoreAsymmetric(t *testing.T) {
 	assert.NotNil(t, rExpEnc.Result.PublicKey)
 	assert.NotEmpty(t, *rExpEnc.Result.PublicKey)
 	assert.Nil(t, rExpEnc.Result.Key)
-	assert.True(t, rExpEnc.Result.Encrypted)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "asymmetric")
 
-	expPrivKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
+	expPrivKeyDec, err := base64.StdEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
 	assert.NoError(t, err)
 	expPrivKey, err := rsa.DecryptSHA512(rsaPrivKey, expPrivKeyDec)
 	assert.NoError(t, err)
 	assert.Equal(t, *rExp.Result.PrivateKey, string(expPrivKey))
+	assert.Equal(t, *rExp.Result.PublicKey, *rExpEnc.Result.PublicKey)
 
-	expPubKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.PublicKey)
+	// Export encrypted kem
+	ea = vault.EEArsa4096_no_padding_kem
+	password := "mypassword"
+
+	rExpEnc, err = client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
+			KEMPassword:         &password,
+		})
+
 	assert.NoError(t, err)
-	expPubKey, err := rsa.DecryptSHA512(rsaPrivKey, expPubKeyDec)
+	assert.NotNil(t, rExpEnc.Result.PrivateKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PrivateKey)
+	assert.NotNil(t, rExpEnc.Result.PublicKey)
+	assert.NotEmpty(t, *rExpEnc.Result.PublicKey)
+	assert.Nil(t, rExpEnc.Result.Key)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "kem")
+
+	expPrivKeyDec, err = base64.StdEncoding.DecodeString(*rExpEnc.Result.PrivateKey)
 	assert.NoError(t, err)
-	assert.Equal(t, *rExp.Result.PublicKey, string(expPubKey))
+
+	input, err := vault.NewKEMDecryptInput(*rExpEnc.Result, password, *rsaPrivKey)
+	assert.NoError(t, err)
+	assert.NotNil(t, input)
+
+	expPrivKey, err = vault.KEMDecrypt(*input)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.PrivateKey, string(expPrivKey))
+	assert.Equal(t, *rExp.Result.PublicKey, *rExpEnc.Result.PublicKey)
 }
 
 func Test_Integration_ExportGenerateSymmetric(t *testing.T) {
@@ -1447,7 +1523,9 @@ func Test_Integration_ExportGenerateSymmetric(t *testing.T) {
 	assert.NotNil(t, rGen.Result)
 	assert.NotEmpty(t, rGen.Result.ID)
 	id := rGen.Result.ID
-	assert.Equal(t, 1, rGen.Result.Version)
+	assert.Equal(t, 1, len(rGen.Result.ItemVersions))
+	assert.Equal(t, 1, rGen.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rGen.Result.NumVersions)
 
 	// Export with no encryption
 	rExp, err := client.Export(ctx,
@@ -1461,10 +1539,9 @@ func Test_Integration_ExportGenerateSymmetric(t *testing.T) {
 	assert.Nil(t, rExp.Result.PublicKey)
 	assert.NotNil(t, rExp.Result.Key)
 	assert.NotEmpty(t, *rExp.Result.Key)
-	assert.False(t, rExp.Result.Encrypted)
+	assert.Equal(t, rExp.Result.EncryptionType, "none")
 
-	// Export with encryption
-
+	// Export with asymmetric encryption
 	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
 	assert.NoError(t, err)
 
@@ -1477,8 +1554,8 @@ func Test_Integration_ExportGenerateSymmetric(t *testing.T) {
 		&vault.ExportRequest{
 			ID:                  id,
 			Version:             pangea.Int(1),
-			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
-			EncryptionAlgorithm: &ea,
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
 		})
 
 	assert.NoError(t, err)
@@ -1486,11 +1563,42 @@ func Test_Integration_ExportGenerateSymmetric(t *testing.T) {
 	assert.Nil(t, rExp.Result.PublicKey)
 	assert.NotNil(t, rExp.Result.Key)
 	assert.NotEmpty(t, *rExp.Result.Key)
-	assert.True(t, rExpEnc.Result.Encrypted)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "asymmetric")
 
-	expKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.Key)
+	expKeyDec, err := base64.StdEncoding.DecodeString(*rExpEnc.Result.Key)
 	assert.NoError(t, err)
 	expKey, err := rsa.DecryptSHA512(rsaPrivKey, expKeyDec)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.Key, string(expKey))
+
+	// Export encrypted kem
+	ea = vault.EEArsa4096_no_padding_kem
+	password := "mypassword"
+
+	rExpEnc, err = client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
+			KEMPassword:         &password,
+		})
+
+	assert.NoError(t, err)
+	assert.Nil(t, rExpEnc.Result.PrivateKey)
+	assert.Nil(t, rExpEnc.Result.PublicKey)
+	assert.NotNil(t, rExpEnc.Result.Key)
+	assert.NotEmpty(t, *rExpEnc.Result.Key)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "kem")
+
+	expKeyDec, err = base64.StdEncoding.DecodeString(*rExpEnc.Result.Key)
+	assert.NoError(t, err)
+
+	input, err := vault.NewKEMDecryptInput(*rExpEnc.Result, password, *rsaPrivKey)
+	assert.NoError(t, err)
+	assert.NotNil(t, input)
+
+	expKey, err = vault.KEMDecrypt(*input)
 	assert.NoError(t, err)
 	assert.Equal(t, *rExp.Result.Key, string(expKey))
 }
@@ -1519,7 +1627,9 @@ func Test_Integration_ExportStoreSymmetric(t *testing.T) {
 	assert.NotNil(t, rGen.Result)
 	assert.NotEmpty(t, rGen.Result.ID)
 	id := rGen.Result.ID
-	assert.Equal(t, 1, rGen.Result.Version)
+	assert.Equal(t, 1, len(rGen.Result.ItemVersions))
+	assert.Equal(t, 1, rGen.Result.ItemVersions[0].Version)
+	assert.Equal(t, 1, rGen.Result.NumVersions)
 
 	// Export with no encryption
 	rExp, err := client.Export(ctx,
@@ -1533,10 +1643,9 @@ func Test_Integration_ExportStoreSymmetric(t *testing.T) {
 	assert.Nil(t, rExp.Result.PublicKey)
 	assert.NotNil(t, rExp.Result.Key)
 	assert.NotEmpty(t, *rExp.Result.Key)
-	assert.False(t, rExp.Result.Encrypted)
+	assert.Equal(t, rExp.Result.EncryptionType, "none")
 
-	// Export with encryption
-
+	// Export with asymmetric encryption
 	rsaPubKey, rsaPrivKey, err := rsa.GenerateKeyPair(4096)
 	assert.NoError(t, err)
 
@@ -1549,8 +1658,8 @@ func Test_Integration_ExportStoreSymmetric(t *testing.T) {
 		&vault.ExportRequest{
 			ID:                  id,
 			Version:             pangea.Int(1),
-			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
-			EncryptionAlgorithm: &ea,
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
 		})
 
 	assert.NoError(t, err)
@@ -1558,11 +1667,135 @@ func Test_Integration_ExportStoreSymmetric(t *testing.T) {
 	assert.Nil(t, rExp.Result.PublicKey)
 	assert.NotNil(t, rExp.Result.Key)
 	assert.NotEmpty(t, *rExp.Result.Key)
-	assert.True(t, rExpEnc.Result.Encrypted)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "asymmetric")
 
-	expKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.Key)
+	expKeyDec, err := base64.StdEncoding.DecodeString(*rExpEnc.Result.Key)
 	assert.NoError(t, err)
 	expKey, err := rsa.DecryptSHA512(rsaPrivKey, expKeyDec)
 	assert.NoError(t, err)
 	assert.Equal(t, *rExp.Result.Key, string(expKey))
+
+	// Export encrypted kem
+	ea = vault.EEArsa4096_no_padding_kem
+	password := "mypassword"
+
+	rExpEnc, err = client.Export(ctx,
+		&vault.ExportRequest{
+			ID:                  id,
+			Version:             pangea.Int(1),
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
+			KEMPassword:         &password,
+		})
+
+	assert.NoError(t, err)
+	assert.Nil(t, rExpEnc.Result.PrivateKey)
+	assert.Nil(t, rExpEnc.Result.PublicKey)
+	assert.NotNil(t, rExpEnc.Result.Key)
+	assert.NotEmpty(t, *rExpEnc.Result.Key)
+	assert.Equal(t, rExpEnc.Result.EncryptionType, "kem")
+
+	expKeyDec, err = base64.StdEncoding.DecodeString(*rExpEnc.Result.Key)
+	assert.NoError(t, err)
+
+	input, err := vault.NewKEMDecryptInput(*rExpEnc.Result, password, *rsaPrivKey)
+	assert.NoError(t, err)
+	assert.NotNil(t, input)
+
+	expKey, err = vault.KEMDecrypt(*input)
+	assert.NoError(t, err)
+	assert.Equal(t, *rExp.Result.Key, string(expKey))
+}
+
+func Test_Integration_GetBulk(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	filter := vault.NewFilterList()
+	filter.Folder().Set(pangea.String("/"))
+	size := 5
+
+	// List
+	gbr, err := client.GetBulk(
+		ctx,
+		&vault.GetBulkRequest{
+			Filter: filter.Filter(),
+			Size:   size,
+		},
+	)
+
+	assert.NoError(t, err)
+	// assert.Equal(t, gbr.Result.Count, size)  // FIXME: uncomment when fixed on backend
+	assert.Equal(t, size, len(gbr.Result.Items))
+
+}
+
+func Test_Integration_EncryptTransformStructured(t *testing.T) {
+	// Test data.
+	plainText := "123-4567-8901"
+	tweak := "MTIzMTIzMT=="
+
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	client := vault.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	// Generate an encryption key.
+	rGen, err := client.SymmetricGenerate(
+		ctx,
+		&vault.SymmetricGenerateRequest{
+			CommonGenerateRequest: vault.CommonGenerateRequest{
+				Name: GetName("Test_Integration_EncryptStructured"),
+			},
+			Algorithm: vault.SYAaes_ff3_1_256,
+			Purpose:   vault.KPfpe,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, rGen)
+	assert.NotNil(t, rGen.Result)
+	assert.NotEmpty(t, rGen.Result.ID)
+	key := rGen.Result.ID
+
+	// Encrypt.
+	data := map[string]interface{}{
+		"field1": [4]interface{}{plainText, 2, plainText, "false"},
+		"field2": "true",
+	}
+
+	encryptedResponse, err := client.EncryptTransformStructured(
+		ctx,
+		&vault.EncryptTransformStructuredRequest{
+			ID:             key,
+			StructuredData: data,
+			Filter:         "$.field1[2:4]",
+			Tweak:          &tweak,
+			Alphabet:       vault.TAalphanumeric,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, encryptedResponse)
+	assert.NotNil(t, encryptedResponse.Result)
+	assert.Equal(t, key, encryptedResponse.Result.ID)
+	assert.Len(t, encryptedResponse.Result.StructuredData["field1"], 4)
+	assert.Equal(t, data["field2"], encryptedResponse.Result.StructuredData["field2"])
+
+	// Decrypt what we encrypted.
+	decryptedResponse, err := client.DecryptTransformStructured(
+		ctx,
+		&vault.EncryptTransformStructuredRequest{
+			ID:             key,
+			StructuredData: encryptedResponse.Result.StructuredData,
+			Filter:         "$.field1[2:4]",
+			Tweak:          &tweak,
+			Alphabet:       vault.TAalphanumeric,
+		},
+	)
+	assert.NoError(t, err)
+	assert.NotNil(t, decryptedResponse)
+	assert.NotNil(t, decryptedResponse.Result)
+	assert.Equal(t, key, decryptedResponse.Result.ID)
+	assert.Len(t, decryptedResponse.Result.StructuredData["field1"], 4)
+	assert.Equal(t, data["field2"], decryptedResponse.Result.StructuredData["field2"])
 }

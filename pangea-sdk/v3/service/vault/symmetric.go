@@ -5,62 +5,58 @@ import "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
 type SymmetricStoreRequest struct {
 	CommonStoreRequest
 	Key        EncodedSymmetricKey `json:"key"`
-	Algorithm  SymmetricAlgorithm  `json:"algorithm"`
-	Purpose    KeyPurpose          `json:"purpose,omitempty"`
-	Exportable *bool               `json:"exportable,omitempty"`
+	Algorithm  SymmetricAlgorithm  `json:"algorithm"`            // The algorithm of the key
+	Purpose    KeyPurpose          `json:"purpose,omitempty"`    // The purpose of the key
+	Exportable *bool               `json:"exportable,omitempty"` // Whether the key is exportable or not.
 }
 
 type SymmetricStoreResult struct {
-	CommonStoreResult
-	Algorithm string `json:"algorithm"`
-	Purpose   string `json:"purpose"`
+	ItemData
 }
 
 type SymmetricGenerateRequest struct {
 	CommonGenerateRequest
-	Algorithm  SymmetricAlgorithm `json:"algorithm"`
-	Purpose    KeyPurpose         `json:"purpose"`
-	Exportable *bool              `json:"exportable,omitempty"`
+	Algorithm  SymmetricAlgorithm `json:"algorithm"`            // The algorithm of the key
+	Purpose    KeyPurpose         `json:"purpose"`              // The purpose of the key
+	Exportable *bool              `json:"exportable,omitempty"` // Whether the key is exportable or not.
 }
 
 type SymmetricGenerateResult struct {
-	CommonGenerateResult
-	Algorithm string `json:"algorithm"`
-	Purpose   string `json:"purpose"`
+	ItemData
 }
 
 type EncryptRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID             string  `json:"id"`
-	PlainText      string  `json:"plain_text"`
-	Version        *int    `json:"version,omitempty"`
-	AdditionalData *string `json:"additional_data,omitempty"`
+	ID             string  `json:"id"`                        // The item ID
+	PlainText      string  `json:"plain_text"`                // A message to be encrypted (Base64 encoded)
+	Version        *int    `json:"version,omitempty"`         // The item version
+	AdditionalData *string `json:"additional_data,omitempty"` // User provided authentication data
 }
 
 type EncryptResult struct {
-	ID         string `json:"id"`
-	Version    int    `json:"version"`
-	Algorithm  string `json:"algorithm"`
-	CipherText string `json:"cipher_text"`
+	ID         string `json:"id"`          // The item ID
+	Version    int    `json:"version"`     // The item version
+	Algorithm  string `json:"algorithm"`   // The algorithm of the key
+	CipherText string `json:"cipher_text"` // The encrypted message (Base64 encoded)
 }
 
 type DecryptRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID             string  `json:"id"`
-	CipherText     string  `json:"cipher_text"`
-	Version        *int    `json:"version,omitempty"`
-	AdditionalData *string `json:"additional_data,omitempty"`
+	ID             string  `json:"id"`                        // The item ID
+	CipherText     string  `json:"cipher_text"`               // A message encrypted by Vault (Base64 encoded)
+	Version        *int    `json:"version,omitempty"`         // The item version
+	AdditionalData *string `json:"additional_data,omitempty"` // User provided authentication data
 }
 
 type DecryptResult struct {
-	ID        string `json:"id"`
-	Version   int    `json:"version"`
-	Algorithm string `json:"algorithm"`
-	PlainText string `json:"plain_text"`
+	ID        string `json:"id"`         // The item ID
+	Version   int    `json:"version"`    // The item version
+	Algorithm string `json:"algorithm"`  // The algorithm of the key
+	PlainText string `json:"plain_text"` // The decrypted message
 }
 
 // Parameters for an encrypt/decrypt structured request.
@@ -191,4 +187,56 @@ type DecryptTransformResult struct {
 
 	// The algorithm of the key.
 	Algorithm string `json:"algorithm"`
+}
+
+type EncryptTransformStructuredRequest struct {
+	pangea.BaseRequest
+
+	// The ID of the key to use. It must be an item of type `symmetric_key` or
+	// `asymmetric_key` and purpose `encryption`.
+	ID string `json:"id"`
+
+	// Set of characters to use for format-preserving encryption (FPE).
+	Alphabet TransformAlphabet `json:"alphabet"`
+
+	// Structured data for applying bulk operations.
+	StructuredData map[string]interface{} `json:"structured_data"`
+
+	// A filter expression. It must point to string elements of the
+	// `StructuredData` field.
+	Filter string `json:"filter"`
+
+	// The item version. Defaults to the current version.
+	Version *int `json:"version,omitempty"`
+
+	// User provided authentication data.
+	AdditionalData *string `json:"additional_data,omitempty"`
+
+	// User provided tweak string. If not provided, a random string will be
+	// generated and returned. The user must securely store the tweak source
+	// which will be needed to decrypt the data.
+	Tweak *string `json:"tweak"`
+}
+
+// Result of an encrypt/decrypt structured request.
+type EncryptTransformStructuredResult struct {
+	// The ID of the item.
+	ID string `json:"id"`
+
+	// The item version.
+	Version int `json:"version"`
+
+	// The algorithm of the key.
+	Algorithm string `json:"algorithm"`
+
+	// Structured data with filtered fields encrypted/decrypted.
+	StructuredData map[string]interface{} `json:"structured_data"`
+
+	// User provided tweak string. If not provided, a random string will be
+	// generated and returned. The user must securely store the tweak source
+	// which will be needed to decrypt the data.
+	Tweak string `json:"tweak"`
+
+	// Set of characters to use for format-preserving encryption (FPE).
+	Alphabet TransformAlphabet `json:"alphabet"`
 }
