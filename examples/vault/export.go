@@ -79,7 +79,6 @@ func main() {
 			Version:             pangea.Int(1),
 			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
 			AsymmetricAlgorithm: &ea,
-			EncryptionType:      (*vault.ExportEncryptionType)(pangea.String(string(vault.EETasymmetric))),
 		})
 	if err != nil {
 		log.Fatal(err)
