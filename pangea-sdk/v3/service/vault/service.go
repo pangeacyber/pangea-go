@@ -14,9 +14,7 @@ type Client interface {
 	List(ctx context.Context, req *ListRequest) (*pangea.PangeaResponse[ListResult], error)
 	Update(ctx context.Context, req *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error)
 	SecretStore(ctx context.Context, req *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error)
-	PangeaTokenStore(ctx context.Context, req *PangeaTokenStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error)
 	SecretRotate(ctx context.Context, req *SecretRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error)
-	PangeaTokenRotate(ctx context.Context, req *PangeaTokenRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error)
 	SymmetricGenerate(ctx context.Context, req *SymmetricGenerateRequest) (*pangea.PangeaResponse[SymmetricGenerateResult], error)
 	AsymmetricGenerate(ctx context.Context, req *AsymmetricGenerateRequest) (*pangea.PangeaResponse[AsymmetricGenerateResult], error)
 	SymmetricStore(ctx context.Context, req *SymmetricStoreRequest) (*pangea.PangeaResponse[SymmetricStoreResult], error)
@@ -42,8 +40,14 @@ type Client interface {
 	// Decrypt using a format-preserving algorithm (FPE).
 	DecryptTransform(ctx context.Context, input *DecryptTransformRequest) (*pangea.PangeaResponse[DecryptTransformResult], error)
 
+	EncryptTransformStructured(ctx context.Context, input *EncryptTransformStructuredRequest) (*pangea.PangeaResponse[EncryptTransformStructuredResult], error)
+
+	DecryptTransformStructured(ctx context.Context, input *EncryptTransformStructuredRequest) (*pangea.PangeaResponse[EncryptTransformStructuredResult], error)
+
 	// Export a symmetric or asymmetric key.
 	Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error)
+
+	GetBulk(ctx context.Context, input *GetBulkRequest) (*pangea.PangeaResponse[GetBulkResult], error)
 
 	// Base service methods
 	pangea.BaseServicer
