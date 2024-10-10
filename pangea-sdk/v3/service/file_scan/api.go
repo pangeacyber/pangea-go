@@ -103,6 +103,7 @@ type FileScanRequest struct {
 	SourceURL string `json:"source_url,omitempty"`
 }
 
+// NOTE: Will be deprecated in next major update in favor of pangea.UploadFileParams
 type FileScanFileParams struct {
 	Size   int    `json:"size,omitempty"`
 	CRC    string `json:"crc32c,omitempty"`
@@ -134,6 +135,7 @@ type FileScanResult struct {
 	RawData    interface{}  `json:"raw_data,omitempty"`
 }
 
+// NOTE: Will be deprecated in next major update in favor of pangea.GetUploadFileParams(file *os.File) (*UploadFileParams, error)
 func GetUploadFileParams(file *os.File) (*FileScanFileParams, error) {
 	// Create a new CRC32C hash
 	crcHash := crc32.New(crc32.MakeTable(crc32.Castagnoli))

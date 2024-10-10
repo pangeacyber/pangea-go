@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Detect-only Redact for Sanitize.
 - Support for `domains` field in `v2/user/breached` endpoint in User Intel service
+- Secure Share support.
+- Multiple bucket ID support to Share.
 
 ## 3.11.0 - 2024-09-25
 
@@ -18,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `attributes` field in `/list-resources` and `/list-subjects` endpoint
 - Sanitize service support
+- Secure Share support.
+- Multiple bucket ID support to Share.
+- `MetadataProtected` and `TagsProtected` support to Share `ItemData`
+- `Password` and `PasswordAlgorithm` support to Share
+- Filter fields to `FilterList` on Share service
+- `Objects` field to Share `GetArchiveResult`
+- `Title` and `Message` to Share `ShareCreateLinkItem` 
 
 ## [3.10.0] - 2024-07-19
 
