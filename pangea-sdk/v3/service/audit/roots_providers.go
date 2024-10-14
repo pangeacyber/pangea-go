@@ -56,7 +56,15 @@ func (rp *ArweaveRootsProvider) UpdateRoots(ctx context.Context, treeSizes []str
 		if err != nil {
 			return rp.Roots
 		}
+
+		if resp == nil || resp.Data == nil || resp.Data.Transactions == nil || resp.Data.Transactions.Edges == nil {
+			return rp.Roots
+		}
+
 		for _, edge := range resp.Data.Transactions.Edges {
+			if edge == nil {
+				continue
+			}
 			root := Root{}
 			err = rp.fetchTransaction(ctx, *edge.Node.ID, &root)
 			if err != nil {
