@@ -18,8 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added 
 
-- `attributes` field in `/list-resources` and `/list-subjects` endpoint
-- Sanitize service support
+- `attributes` field in `/list-resources` and `/list-subjects` endpoint.
+- Sanitize service support.
+- Vault KEM export support.
+
+### Changed
+
+- Vault v2 APIs support.
 
 ## [3.10.0] - 2024-07-19
 
