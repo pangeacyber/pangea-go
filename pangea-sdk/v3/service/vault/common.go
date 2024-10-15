@@ -351,7 +351,6 @@ type ListItemData struct {
 
 type ListResult struct {
 	Items []ListItemData `json:"items"`
-	Count int            `json:"count"`          // Total number of items matching the given query
 	Last  string         `json:"last,omitempty"` // Internal ID returned in the previous look up response. Used for pagination.
 }
 

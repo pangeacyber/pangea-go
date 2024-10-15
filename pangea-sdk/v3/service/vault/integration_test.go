@@ -1057,7 +1057,7 @@ func Test_List_And_Delete(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, lresp)
 
-	assert.Greater(t, lresp.Result.Count, 0)
+	assert.Greater(t, len(lresp.Result.Items), 0)
 	for _, i := range lresp.Result.Items {
 		if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
 			dresp, err := client.Delete(ctx, &vault.DeleteRequest{
@@ -1126,7 +1126,7 @@ func Test_Integration_Folders(t *testing.T) {
 		},
 	)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, lr.Result.Count)
+	assert.Equal(t, 1, len(lr.Result.Items))
 	assert.Equal(t, FOLDER_NAME_NEW, lr.Result.Items[0].Name)
 	assert.Equal(t, fcr.Result.ID, lr.Result.Items[0].ID)
 
