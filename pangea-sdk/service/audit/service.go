@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 )
 
 type Client interface {

@@ -3,8 +3,8 @@ package embargo
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/request"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/request"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 )
 
 // @summary Check IP

@@ -10,10 +10,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
 )
 
 func testClient(t *testing.T, url string) *pangea.Client {

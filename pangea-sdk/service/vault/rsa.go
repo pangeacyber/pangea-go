@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal"
 	"golang.org/x/crypto/pbkdf2"
 )
 

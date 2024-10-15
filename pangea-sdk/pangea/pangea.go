@@ -17,13 +17,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/defaults"
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/defaults"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
 	"github.com/rs/zerolog"
 )
 
 const (
-	version         = "3.12.0"
+	version         = "4.0.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 

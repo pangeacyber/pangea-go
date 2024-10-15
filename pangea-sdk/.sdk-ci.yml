@@ -1,6 +1,6 @@
 .sdk-base:
   before_script:
-    - cd pangea-sdk/v3
+    - cd pangea-sdk
   rules:
     - if: $CI_PIPELINE_SOURCE == "push"
 
@@ -40,7 +40,7 @@ sdk-test-it:
     - export PANGEA_REDACT_CONFIG_ID_1_${ENV}="$(eval echo \$PANGEA_REDACT_CONFIG_ID_1_${ENV}_${CLOUD})"
     - export PANGEA_REDACT_CONFIG_ID_2_${ENV}="$(eval echo \$PANGEA_REDACT_CONFIG_ID_2_${ENV}_${CLOUD})"
 
-    - cd pangea-sdk/v3
+    - cd pangea-sdk
 
   parallel:
     matrix:
@@ -108,7 +108,7 @@ sdk-generate-docs:
   artifacts:
     expire_in: 1 month
     expose_as: go_sdk
-    paths: ["pangea-sdk/v3/go_sdk.json"]
+    paths: ["pangea-sdk/go_sdk.json"]
     when: on_success
 
 sdk-unit-testing:
@@ -123,6 +123,6 @@ sdk-publish:
     GOPROXY: proxy.golang.org
   script:
     - bash ./dev/validate_tag.sh "$CI_COMMIT_TAG"
-    - go list -m github.com/pangeacyber/pangea-go/pangea-sdk/v3@"$CI_COMMIT_TAG"
+    - go list -m github.com/pangeacyber/pangea-go/pangea-sdk@"$CI_COMMIT_TAG"
   rules:
     - if: $CI_COMMIT_TAG

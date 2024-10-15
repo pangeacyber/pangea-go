@@ -6,7 +6,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 	"github.com/stretchr/testify/assert"
 )
 

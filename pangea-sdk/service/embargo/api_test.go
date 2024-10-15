@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/embargo"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/embargo"
 	"github.com/stretchr/testify/assert"
 )
 

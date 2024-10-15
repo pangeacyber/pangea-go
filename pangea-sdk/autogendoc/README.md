@@ -17,7 +17,7 @@ The documentation pipeline here looks like:
 
 ## Running the autogen sdk doc script
 
-From the directory `pangea-go/pangea-sdk/v3` run:
+From the directory `pangea-go/pangea-sdk` run:
 ```sh
 go run ./autogendoc/main.go
 ```

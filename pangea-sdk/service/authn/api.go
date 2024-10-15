@@ -3,12 +3,12 @@ package authn
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/request"
-	v "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/request"
+	v "github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/vault"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	di "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/domain_intel"
-	ipi "github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	di "github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/domain_intel"
+	ipi "github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/ip_intel"
 )
 
 type ClientUserinfoResult struct {

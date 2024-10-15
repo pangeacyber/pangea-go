@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 )
 
 func getPostRequest(c *pangea.Client, path string, input pangea.ConfigIDer) (*http.Request, error) {

@@ -10,7 +10,7 @@ import (
 	"os"
 	"path"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v3/internal/pangeautil"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
 )
 
 type ResponseHeader struct {
