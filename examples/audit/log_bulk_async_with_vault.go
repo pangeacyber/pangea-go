@@ -31,7 +31,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	auditToken := getResponse.Result.CurrentVersion.Secret
+	auditToken := getResponse.Result.ItemVersions[0].Token
 	if auditToken == nil {
 		log.Fatal("Unexpected nil auditToken")
 	}

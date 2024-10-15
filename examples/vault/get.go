@@ -38,7 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	auditToken := storeResponse.Result.ItemVersions[0].Secret
+	auditToken := storeResponse.Result.ItemVersions[0].Token
 	if auditToken == nil {
 		log.Fatal("Unexpected: token not present")
 	}

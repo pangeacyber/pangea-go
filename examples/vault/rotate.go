@@ -36,6 +36,7 @@ func main() {
 		Secret: secretV1,
 		CommonStoreRequest: vault.CommonStoreRequest{
 			Name: name,
+			Type: vault.ITsecret,
 		},
 	}
 	storeResponse, err := vaultcli.SecretStore(ctx, storeInput)
