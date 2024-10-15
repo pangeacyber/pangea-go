@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/url_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/url_intel"
 )
 
 func PrintData(indicator string, data url_intel.ReputationData) {

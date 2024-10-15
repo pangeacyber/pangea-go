@@ -1,4 +1,4 @@
-//  Example of how to look up an IP's reputation using reversinglabs
+// Example of how to look up an IP's reputation using reversinglabs
 package main
 
 import (
@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/ip_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/ip_intel"
 )
 
 func PrintData(indicator string, data ip_intel.ReputationData) {

@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/file_intel"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/file_intel"
 )
 
 func PrintData(indicator string, data file_intel.ReputationData) {

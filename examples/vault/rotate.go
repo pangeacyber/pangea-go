@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/vault"
 )
 
 func main() {
@@ -36,6 +36,7 @@ func main() {
 		Secret: secretV1,
 		CommonStoreRequest: vault.CommonStoreRequest{
 			Name: name,
+			Type: vault.ITsecret,
 		},
 	}
 	storeResponse, err := vaultcli.SecretStore(ctx, storeInput)

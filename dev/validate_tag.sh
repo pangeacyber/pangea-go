@@ -29,7 +29,7 @@ VERSION="${VERSION:1}"
 PARENT_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd -P)
 pushd "$PARENT_PATH/.."
 
-GO_CONST_VERSION=$(grep -Eo "version.+=.+" pangea-sdk/v3/pangea/pangea.go | head -1)
+GO_CONST_VERSION=$(grep -Eo "version.+=.+" pangea-sdk/pangea/pangea.go | head -1)
 
 if [[ ! "$GO_CONST_VERSION" == *"$VERSION"* ]]; then
     echo "Git tag version '$VERSION' does not match Go constant version '$GO_CONST_VERSION'."

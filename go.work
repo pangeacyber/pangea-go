@@ -9,6 +9,5 @@ use (
 	./examples/intel
 	./examples/redact
 	./examples/vault
-	./pangea-sdk/v2
-	./pangea-sdk/v3
+	./pangea-sdk
 )

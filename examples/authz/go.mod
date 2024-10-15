@@ -2,7 +2,7 @@ module examples/authz
 
 go 1.19
 
-require github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.11.0
+require github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.0.0
 
 require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -13,4 +13,4 @@ require (
 	golang.org/x/sys v0.21.0 // indirect
 )
 
-replace github.com/pangeacyber/pangea-go/pangea-sdk/v3 v3.8.0 => ../../pangea-sdk/v3
+replace github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.0.0 => ../../pangea-sdk
