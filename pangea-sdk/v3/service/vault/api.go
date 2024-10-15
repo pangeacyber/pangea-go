@@ -12,7 +12,7 @@ import (
 //
 // @description Change the state of a specific version of a secret or key.
 //
-// @operationId vault_post_v1_state_change
+// @operationId vault_post_v2_state_change
 //
 // @example
 //
@@ -23,14 +23,14 @@ import (
 //
 //	scr, err := vaultcli.StateChange(ctx, input)
 func (v *vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pangea.PangeaResponse[StateChangeResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/state/change", input, &StateChangeResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/state/change", input, &StateChangeResult{})
 }
 
 // @summary Delete
 //
 // @description Delete a secret or key.
 //
-// @operationId vault_post_v1_delete
+// @operationId vault_post_v2_delete
 //
 // @example
 //
@@ -40,14 +40,14 @@ func (v *vault) StateChange(ctx context.Context, input *StateChangeRequest) (*pa
 //
 //	dr, err := vaultcli.Delete(ctx, input)
 func (v *vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.PangeaResponse[DeleteResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/delete", input, &DeleteResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/delete", input, &DeleteResult{})
 }
 
 // @summary Retrieve
 //
 // @description Retrieve a secret or key, and any associated information.
 //
-// @operationId vault_post_v1_get
+// @operationId vault_post_v2_get
 //
 // @example
 //
@@ -60,14 +60,36 @@ func (v *vault) Delete(ctx context.Context, input *DeleteRequest) (*pangea.Pange
 //
 //	gr, err := vaultcli.Get(ctx, input)
 func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaResponse[GetResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/get", input, &GetResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/get", input, &GetResult{})
+}
+
+// @summary Get Bulk
+//
+// @description Retrieve a list of secrets, keys and folders.
+//
+// @operationId vault_post_v2_get_bulk
+//
+// @example
+//
+// filter.Folder().Set(pangea.String("/"))
+// gbr, err := client.GetBulk(
+//
+//	ctx,
+//	&vault.GetBulkRequest{
+//		Filter: filter.Filter(),
+//		Size:   5,
+//	},
+//
+// )
+func (v *vault) GetBulk(ctx context.Context, input *GetBulkRequest) (*pangea.PangeaResponse[GetBulkResult], error) {
+	return request.DoPost(ctx, v.Client, "v2beta/get_bulk", input, &GetBulkResult{})
 }
 
 // @summary JWT Retrieve
 //
 // @description Retrieve a key in JWK format.
 //
-// @operationId vault_post_v1_get_jwk
+// @operationId vault_post_v2_jwk_get
 //
 // @example
 //
@@ -77,14 +99,14 @@ func (v *vault) Get(ctx context.Context, input *GetRequest) (*pangea.PangeaRespo
 //
 //	jr, err := vaultcli.JWKGet(ctx, input)
 func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.PangeaResponse[JWKGetResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/get/jwk", input, &JWKGetResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/jwk/get", input, &JWKGetResult{})
 }
 
 // @summary List
 //
 // @description Retrieve a list of secrets, keys and folders, and their associated information.
 //
-// @operationId vault_post_v1_list
+// @operationId vault_post_v2_list
 //
 // @example
 //
@@ -104,14 +126,14 @@ func (v *vault) JWKGet(ctx context.Context, input *JWKGetRequest) (*pangea.Pange
 //
 //	lr, err := vaultcli.List(ctx, input)
 func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaResponse[ListResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/list", input, &ListResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/list", input, &ListResult{})
 }
 
 // @summary Update
 //
 // @description Update information associated with a secret or key.
 //
-// @operationId vault_post_v1_update
+// @operationId vault_post_v2_update
 //
 // @example
 //
@@ -127,28 +149,26 @@ func (v *vault) List(ctx context.Context, input *ListRequest) (*pangea.PangeaRes
 //			pangea.StringValue("irs_2023"),
 //			pangea.StringValue("personal"),
 //		},
-//		RotationFrequency:   pangea.StringValue("10d"),
-//		RotationState:       pangea.StringValue("deactivated"),
-//		RotationGracePeriod: pangea.StringValue("1d"),
-//		Expiration:          pangea.StringValue("2025-01-01T10:00:00Z"),
+//		DisabledAt:          pangea.StringValue("2025-01-01T10:00:00Z"),
 //		ItemState:           vault.ISdisabled,
 //	}
 //
 //	ur, err := vaultcli.Update(ctx, input)
 func (v *vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.PangeaResponse[UpdateResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/update", input, &UpdateResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/update", input, &UpdateResult{})
 }
 
 // @summary Secret store
 //
 // @description Import a secret
 //
-// @operationId vault_post_v1_secret_store 1
+// @operationId vault_post_v2_secret_store 1
 //
 // @example
 //
 //	input := &vault.SecretStoreRequest{
 //		Secret: pangea.StringValue("12sdfgs4543qv@#%$casd"),
+//		Type: vault.ITsecret
 //		CommonStoreRequest: vault.CommonStoreRequest{
 //			Name: pangea.StringValue("my-very-secret-secret"),
 //			Folder: pangea.StringValue("/personal"),
@@ -160,64 +180,19 @@ func (v *vault) Update(ctx context.Context, input *UpdateRequest) (*pangea.Pange
 //				pangea.StringValue("irs_2023"),
 //				pangea.StringValue("personal"),
 //			},
-//			RotationFrequency: pangea.StringValue("10d"),
-//			RotationState:     pangea.StringValue("deactivated"),
-//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
 //		},
 //	}
 //
 //	ssr, err := vaultcli.SecretStore(ctx, input)
 func (v *vault) SecretStore(ctx context.Context, input *SecretStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
-	if input == nil {
-		return nil, errors.New("nil pointer to struct")
-	}
-	input.Type = ITsecret
-
-	return request.DoPost(ctx, v.Client, "v1/secret/store", input, &SecretStoreResult{})
-}
-
-// @summary Pangea token store
-//
-// @description Import a secret
-//
-// @operationId vault_post_v1_secret_store 2
-//
-// @example
-//
-//	input := &vault.PangeaTokenStoreRequest{
-//		Token: pangea.StringValue("ptv_x6fdiizbon6j3bsdvnpmwxsz2aan7fqd"),
-//		CommonStoreRequest: vault.CommonStoreRequest{
-//			Name: pangea.StringValue("my-very-secret-secret"),
-//			Folder: pangea.StringValue("/personal"),
-//			Metadata: vault.Metadata{
-//				"created_by": pangea.StringValue("John Doe"),
-//				"used_in":    pangea.StringValue("Google products"),
-//			},
-//			Tags: vault.Tags{
-//				pangea.StringValue("irs_2023"),
-//				pangea.StringValue("personal"),
-//			},
-//			RotationFrequency: pangea.StringValue("10d"),
-//			RotationState:     pangea.StringValue("deactivated"),
-//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
-//		},
-//	}
-//
-//	tsr, err := vaultcli.PangeaTokenStore(ctx, input)
-func (v *vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreRequest) (*pangea.PangeaResponse[SecretStoreResult], error) {
-	if input == nil {
-		return nil, errors.New("nil pointer to struct")
-	}
-	input.Type = ITpangeaToken
-
-	return request.DoPost(ctx, v.Client, "v1/secret/store", input, &SecretStoreResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/secret/store", input, &SecretStoreResult{})
 }
 
 // @summary Secret rotate
 //
 // @description Rotate a secret.
 //
-// @operationId vault_post_v1_secret_rotate 1
+// @operationId vault_post_v2_secret_rotate 1
 //
 // @example
 //
@@ -231,34 +206,14 @@ func (v *vault) PangeaTokenStore(ctx context.Context, input *PangeaTokenStoreReq
 //
 //	srr, err := vaultcli.SecretRotate(ctx, input)
 func (v *vault) SecretRotate(ctx context.Context, input *SecretRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/secret/rotate", input, &SecretRotateResult{})
-}
-
-// @summary Token rotate
-//
-// @description Rotate a Pangea token.
-//
-// @operationId vault_post_v1_secret_rotate 2
-//
-// @example
-//
-//	input := &vault.PangeaTokenRotateRequest{
-//		RotationGracePeriod: pangea.StringValue("1d"),
-//		CommonRotateRequest: vault.CommonRotateRequest{
-//			ID: pangea.StringValue("pvi_p6g5i3gtbvqvc3u6zugab6qs6r63tqf5"),
-//		},
-//	}
-//
-//	trp, err := vaultcli.PangeaTokenRotate(ctx, input)
-func (v *vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateRequest) (*pangea.PangeaResponse[SecretRotateResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/secret/rotate", input, &SecretRotateResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/secret/rotate", input, &SecretRotateResult{})
 }
 
 // @summary Symmetric generate
 //
 // @description Generate a symmetric key.
 //
-// @operationId vault_post_v1_key_generate 2
+// @operationId vault_post_v2_key_generate 2
 //
 // @example
 //
@@ -278,7 +233,7 @@ func (v *vault) PangeaTokenRotate(ctx context.Context, input *PangeaTokenRotateR
 //			},
 //			RotationFrequency: pangea.StringValue("10d"),
 //			RotationState:     pangea.StringValue("deactivated"),
-//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//			DisabledAt:        pangea.StringValue("2025-01-01T10:00:00Z"),
 //		},
 //	}
 //
@@ -289,14 +244,14 @@ func (v *vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateR
 	}
 	input.Type = ITsymmetricKey
 
-	return request.DoPost(ctx, v.Client, "v1/key/generate", input, &SymmetricGenerateResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/key/generate", input, &SymmetricGenerateResult{})
 }
 
 // @summary Asymmetric generate
 //
 // @description Generate an asymmetric key.
 //
-// @operationId vault_post_v1_key_generate 1
+// @operationId vault_post_v2_key_generate 1
 //
 // @example
 //
@@ -316,7 +271,7 @@ func (v *vault) SymmetricGenerate(ctx context.Context, input *SymmetricGenerateR
 //			},
 //			RotationFrequency: pangea.StringValue("10d"),
 //			RotationState:     pangea.StringValue("deactivated"),
-//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//			DisabledAt:        pangea.StringValue("2025-01-01T10:00:00Z"),
 //		},
 //	}
 //
@@ -327,14 +282,14 @@ func (v *vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerat
 	}
 	input.Type = ITasymmetricKey
 
-	return request.DoPost(ctx, v.Client, "v1/key/generate", input, &AsymmetricGenerateResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/key/generate", input, &AsymmetricGenerateResult{})
 }
 
 // @summary Asymmetric store
 //
 // @description Import an asymmetric key.
 //
-// @operationId vault_post_v1_key_store 1
+// @operationId vault_post_v2_key_store 1
 //
 // @example
 //
@@ -359,7 +314,7 @@ func (v *vault) AsymmetricGenerate(ctx context.Context, input *AsymmetricGenerat
 //			},
 //			RotationFrequency: pangea.StringValue("10d"),
 //			RotationState:     pangea.StringValue("deactivated"),
-//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//			DisabledAt:        pangea.StringValue("2025-01-01T10:00:00Z"),
 //		},
 //	}
 //
@@ -370,14 +325,14 @@ func (v *vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreReque
 	}
 	input.Type = ITasymmetricKey
 
-	return request.DoPost(ctx, v.Client, "v1/key/store", input, &AsymmetricStoreResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/key/store", input, &AsymmetricStoreResult{})
 }
 
 // @summary Symmetric store
 //
 // @description Import a symmetric key.
 //
-// @operationId vault_post_v1_key_store 2
+// @operationId vault_post_v2_key_store 2
 //
 // @example
 //
@@ -398,7 +353,7 @@ func (v *vault) AsymmetricStore(ctx context.Context, input *AsymmetricStoreReque
 //			},
 //			RotationFrequency: pangea.StringValue("10d"),
 //			RotationState:     pangea.StringValue("deactivated"),
-//			Expiration:        pangea.StringValue("2025-01-01T10:00:00Z"),
+//			DisabledAt:        pangea.StringValue("2025-01-01T10:00:00Z"),
 //		},
 //	}
 //
@@ -409,14 +364,14 @@ func (v *vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest
 	}
 	input.Type = ITsymmetricKey
 
-	return request.DoPost(ctx, v.Client, "v1/key/store", input, &SymmetricStoreResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/key/store", input, &SymmetricStoreResult{})
 }
 
 // @summary Key rotate
 //
 // @description Manually rotate a symmetric or asymmetric key.
 //
-// @operationId vault_post_v1_key_rotate
+// @operationId vault_post_v2_key_rotate
 //
 // @example
 //
@@ -432,14 +387,14 @@ func (v *vault) SymmetricStore(ctx context.Context, input *SymmetricStoreRequest
 //
 //	krr, err := vaultcli.KeyRotate(ctx, input)
 func (v *vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea.PangeaResponse[KeyRotateResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/rotate", input, &KeyRotateResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/key/rotate", input, &KeyRotateResult{})
 }
 
 // @summary Encrypt
 //
 // @description Encrypt a message using a key.
 //
-// @operationId vault_post_v1_key_encrypt
+// @operationId vault_post_v2_encrypt
 //
 // @example
 //
@@ -454,14 +409,14 @@ func (v *vault) KeyRotate(ctx context.Context, input *KeyRotateRequest) (*pangea
 //
 //	enc, err := vaultcli.Encrypt(ctx, input)
 func (v *vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.PangeaResponse[EncryptResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/encrypt", input, &EncryptResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/encrypt", input, &EncryptResult{})
 }
 
 // @summary Decrypt
 //
 // @description Decrypt a message using a key.
 //
-// @operationId vault_post_v1_key_decrypt
+// @operationId vault_post_v2_decrypt
 //
 // @example
 //
@@ -473,14 +428,14 @@ func (v *vault) Encrypt(ctx context.Context, input *EncryptRequest) (*pangea.Pan
 //
 //	dr, err := vaultcli.Decrypt(ctx, input)
 func (v *vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.PangeaResponse[DecryptResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/decrypt", input, &DecryptResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/decrypt", input, &DecryptResult{})
 }
 
 // @summary Sign
 //
 // @description Sign a message using a key.
 //
-// @operationId vault_post_v1_key_sign
+// @operationId vault_post_v2_sign
 //
 // @example
 //
@@ -495,14 +450,14 @@ func (v *vault) Decrypt(ctx context.Context, input *DecryptRequest) (*pangea.Pan
 //
 //	sr, err := vaultcli.Sign(ctx, input)
 func (v *vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaResponse[SignResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/sign", input, &SignResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/sign", input, &SignResult{})
 }
 
 // @summary Verify
 //
 // @description Verify a signature using a key.
 //
-// @operationId vault_post_v1_key_verify
+// @operationId vault_post_v2_verify
 //
 // @example
 //
@@ -515,14 +470,14 @@ func (v *vault) Sign(ctx context.Context, input *SignRequest) (*pangea.PangeaRes
 //
 //	vr, err := vaultcli.Verify(ctx, input)
 func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.PangeaResponse[VerifyResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/verify", input, &VerifyResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/verify", input, &VerifyResult{})
 }
 
 // @summary JWT Sign
 //
 // @description Sign a JSON Web Token (JWT) using a key.
 //
-// @operationId vault_post_v1_key_sign_jwt
+// @operationId vault_post_v2_jwt_sign
 //
 // @example
 //
@@ -533,14 +488,14 @@ func (v *vault) Verify(ctx context.Context, input *VerifyRequest) (*pangea.Pange
 //
 //	jr, err := vaultcli.JWTSign(ctx, input)
 func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.PangeaResponse[JWTSignResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/sign/jwt", input, &JWTSignResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/jwt/sign", input, &JWTSignResult{})
 }
 
 // @summary JWT Verify
 //
 // @description Verify the signature of a JSON Web Token (JWT).
 //
-// @operationId vault_post_v1_key_verify_jwt
+// @operationId vault_post_v2_jwt_verify
 //
 // @example
 //
@@ -550,14 +505,14 @@ func (v *vault) JWTSign(ctx context.Context, input *JWTSignRequest) (*pangea.Pan
 //
 //	jr, err := vaultcli.JWTVerify(ctx, input)
 func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea.PangeaResponse[JWTVerifyResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/verify/jwt", input, &JWTVerifyResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/jwt/verify", input, &JWTVerifyResult{})
 }
 
 // @summary Create
 //
 // @description Creates a folder.
 //
-// @operationId vault_post_v1_folder_create
+// @operationId vault_post_v2_folder_create
 //
 // @example
 //
@@ -568,14 +523,14 @@ func (v *vault) JWTVerify(ctx context.Context, input *JWTVerifyRequest) (*pangea
 //
 //	enc, err := vaultcli.FolderCreate(ctx, input)
 func (v *vault) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*pangea.PangeaResponse[FolderCreateResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/folder/create", input, &FolderCreateResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/folder/create", input, &FolderCreateResult{})
 }
 
 // @summary Encrypt structured
 //
 // @description Encrypt parts of a JSON object.
 //
-// @operationId vault_post_v1_key_encrypt_structured
+// @operationId vault_post_v2_encrypt_structured
 //
 // @example
 //
@@ -593,14 +548,14 @@ func (v *vault) FolderCreate(ctx context.Context, input *FolderCreateRequest) (*
 //		},
 //	)
 func (v *vault) EncryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/encrypt/structured", input, &EncryptStructuredResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/encrypt_structured", input, &EncryptStructuredResult{})
 }
 
 // @summary Decrypt structured
 //
 // @description Decrypt parts of a JSON object.
 //
-// @operationId vault_post_v1_key_decrypt_structured
+// @operationId vault_post_v2_decrypt_structured
 //
 // @example
 //
@@ -618,14 +573,14 @@ func (v *vault) EncryptStructured(ctx context.Context, input *EncryptStructuredR
 //		},
 //	)
 func (v *vault) DecryptStructured(ctx context.Context, input *EncryptStructuredRequest) (*pangea.PangeaResponse[EncryptStructuredResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/decrypt/structured", input, &EncryptStructuredResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/decrypt_structured", input, &EncryptStructuredResult{})
 }
 
 // @summary Encrypt transform
 //
 // @description Encrypt using a format-preserving algorithm (FPE).
 //
-// @operationId vault_post_v1_key_encrypt_transform
+// @operationId vault_post_v2_encrypt_transform
 //
 // @example
 //
@@ -639,14 +594,14 @@ func (v *vault) DecryptStructured(ctx context.Context, input *EncryptStructuredR
 //		},
 //	)
 func (v *vault) EncryptTransform(ctx context.Context, input *EncryptTransformRequest) (*pangea.PangeaResponse[EncryptTransformResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/encrypt/transform", input, &EncryptTransformResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/encrypt_transform", input, &EncryptTransformResult{})
 }
 
 // @summary Decrypt transform
 //
 // @description Decrypt using a format-preserving algorithm (FPE).
 //
-// @operationId vault_post_v1_key_decrypt_transform
+// @operationId vault_post_v2_decrypt_transform
 //
 // @example
 //
@@ -660,14 +615,14 @@ func (v *vault) EncryptTransform(ctx context.Context, input *EncryptTransformReq
 //		},
 //	)
 func (v *vault) DecryptTransform(ctx context.Context, input *DecryptTransformRequest) (*pangea.PangeaResponse[DecryptTransformResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/key/decrypt/transform", input, &DecryptTransformResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/decrypt_transform", input, &DecryptTransformResult{})
 }
 
 // @summary Export
 //
 // @description Export a symmetric or asymmetric key.
 //
-// @operationId vault_post_v1_export
+// @operationId vault_post_v2_export
 //
 // @example
 //
@@ -685,5 +640,65 @@ func (v *vault) DecryptTransform(ctx context.Context, input *DecryptTransformReq
 //	// Then it can be exported whenever needed.
 //	exported, err := client.Export(ctx, &vault.ExportRequest{id: generated.Result.ID})
 func (v *vault) Export(ctx context.Context, input *ExportRequest) (*pangea.PangeaResponse[ExportResult], error) {
-	return request.DoPost(ctx, v.Client, "v1/export", input, &ExportResult{})
+	return request.DoPost(ctx, v.Client, "v2beta/export", input, &ExportResult{})
+}
+
+// @summary Encrypt structured with FPE
+//
+// @description Encrypt using a format preserving algorithm (FPE) parts of a JSON object.
+//
+// @operationId vault_post_v2_encrypt_transform_structured
+//
+// @example
+//
+//	data := map[string]interface{}{
+//		"field1": [4]interface{}{"123-4567-8901", 2, "123-4567-8901", "false"},
+//		"field2": "true",
+//	}
+//
+// tweak := "MTIzMTIzMT=="
+// encryptedResponse, err := client.EncryptTransformStructured(
+//
+//	ctx,
+//	&vault.EncryptTransformStructuredRequest{
+//		ID:             key,
+//		StructuredData: data,
+//		Filter:         "$.field1[2:4]",
+//		Tweak:          &tweak,
+//		Alphabet:       vault.TAalphanumeric,
+//	},
+//
+// )
+func (v *vault) EncryptTransformStructured(ctx context.Context, input *EncryptTransformStructuredRequest) (*pangea.PangeaResponse[EncryptTransformStructuredResult], error) {
+	return request.DoPost(ctx, v.Client, "v2beta/encrypt_transform_structured", input, &EncryptTransformStructuredResult{})
+}
+
+// @summary Decrypt structured with FPE
+//
+// @description Decrypt using a format preserving algorithm (FPE) parts of a JSON object.
+//
+// @operationId vault_post_v2_decrypt_transform_structured
+//
+// @example
+// tweak := "MTIzMTIzMT=="
+//
+//	data := map[string]interface{}{
+//		"field1": [4]interface{}{"123-4567-8901",2,"Dbw-618a-KAty","o3ZaE"},
+//		"field2": "true",
+//	}
+//
+// decryptedResponse, err := client.DecryptTransformStructured(
+//
+//	ctx,
+//	&vault.EncryptTransformStructuredRequest{
+//		ID:             key,
+//		StructuredData: encryptedResponse.Result.StructuredData,
+//		Filter:         "$.field1[2:4]",
+//		Tweak:          &tweak,
+//		Alphabet:       vault.TAalphanumeric,
+//	},
+//
+// )
+func (v *vault) DecryptTransformStructured(ctx context.Context, input *EncryptTransformStructuredRequest) (*pangea.PangeaResponse[EncryptTransformStructuredResult], error) {
+	return request.DoPost(ctx, v.Client, "v2beta/decrypt_transform_structured", input, &EncryptTransformStructuredResult{})
 }

@@ -2,6 +2,7 @@ package rsa
 
 import (
 	"crypto"
+	cryptorand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -9,9 +10,8 @@ import (
 	"fmt"
 	"io"
 
-	cryptorand "crypto/rand"
-
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+	"golang.org/x/crypto/ssh"
 )
 
 // Generates RSA key pairs
@@ -87,4 +87,20 @@ func DecryptSHA512(rsaKey *rsa.PrivateKey, msgEncr []byte) ([]byte, error) {
 		return nil, pangea.ErrInvalidPrivateKey
 	}
 	return decryptedBytes, nil
+}
+
+var errInvalidPrivateKey = errors.New("invalid private key")
+
+func ParsePrivateKey(privKey []byte) (*rsa.PrivateKey, error) {
+	key, err := ssh.ParseRawPrivateKey(privKey)
+	if err != nil {
+		return nil, errInvalidPrivateKey
+	}
+
+	rsaKey, ok := key.(*rsa.PrivateKey)
+	if !ok {
+		return nil, errInvalidPrivateKey
+	}
+
+	return rsaKey, nil
 }

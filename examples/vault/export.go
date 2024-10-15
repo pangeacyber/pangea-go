@@ -77,15 +77,16 @@ func main() {
 		&vault.ExportRequest{
 			ID:                  id,
 			Version:             pangea.Int(1),
-			EncryptionKey:       pangea.String(string(rsaPubKeyPEM)),
-			EncryptionAlgorithm: &ea,
+			AsymmetricPublicKey: pangea.String(string(rsaPubKeyPEM)),
+			AsymmetricAlgorithm: &ea,
+			EncryptionType:      (*vault.ExportEncryptionType)(pangea.String(string(vault.EETasymmetric))),
 		})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Decode base64 key field
-	expKeyDec, err := base64.RawURLEncoding.DecodeString(*rExpEnc.Result.Key)
+	expKeyDec, err := base64.StdEncoding.DecodeString(*rExpEnc.Result.Key)
 	if err != nil {
 		log.Fatal(err)
 	}

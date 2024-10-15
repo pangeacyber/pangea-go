@@ -1,6 +1,10 @@
 package vault
 
-import "github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+import (
+	"fmt"
+
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
+)
 
 // EncodedPublicKey is a PEM public key, with no further encoding (i.e. no base64)
 // It may be used for example in openssh with no further processing
@@ -103,10 +107,13 @@ type Tags []string
 type ItemType string
 
 const (
-	ITasymmetricKey ItemType = "asymmetric_key"
-	ITsymmetricKey  ItemType = "symmetric_key"
-	ITsecret        ItemType = "secret"
-	ITpangeaToken   ItemType = "pangea_token"
+	ITasymmetricKey              ItemType = "asymmetric_key"
+	ITsymmetricKey               ItemType = "symmetric_key"
+	ITsecret                     ItemType = "secret"
+	ITpangeaToken                ItemType = "pangea_token"
+	ITfolder                     ItemType = "folder"
+	ITpangeaClientSecret         ItemType = "pangea_client_secret"
+	ITpangeaPlatformClientSecret ItemType = "pangea_platform_client_secret"
 )
 
 type ItemOrder string
@@ -119,103 +126,112 @@ const (
 type ItemOrderBy string
 
 const (
+	IOBid           ItemOrderBy = "id"
 	IOBtype         ItemOrderBy = "type"
 	IOBcreateAt     ItemOrderBy = "create_at"
 	IOBdestroyedAt  ItemOrderBy = "destroyed_at"
-	IOBidentity     ItemOrderBy = "identity"
-	IOBmanaged      ItemOrderBy = "managed"
+	IOBalgorithm    ItemOrderBy = "algorithm"
 	IOBpurpose      ItemOrderBy = "purpose"
-	IOBexpiration   ItemOrderBy = "expiration"
+	IOBdisabledAt   ItemOrderBy = "disabled_at"
 	IOBlastRotated  ItemOrderBy = "last_rotated"
 	IOBnextRotation ItemOrderBy = "next_rotation"
 	IOBname         ItemOrderBy = "name"
 	IOBfolder       ItemOrderBy = "folder"
-	IOBversion      ItemOrderBy = "version"
+	IOBitemState    ItemOrderBy = "item_state"
 )
 
 // Algorithm of an exported public key.
 type ExportEncryptionAlgorithm string
 
-// RSA 4096-bit key, OAEP padding, SHA512 digest.
-const EEArsa4096_oaep_sha512 ExportEncryptionAlgorithm = "RSA-OAEP-4096-SHA512"
+const (
+	EEArsa4096_oaep_sha512    ExportEncryptionAlgorithm = "RSA-OAEP-4096-SHA512"
+	EEArsa4096_no_padding_kem ExportEncryptionAlgorithm = "RSA-NO-PADDING-4096-KEM"
+)
+
+type ExportEncryptionType string
+
+const (
+	EETasymmetric ExportEncryptionType = "asymmetric"
+	EETkem        ExportEncryptionType = "kem"
+)
 
 type CommonStoreRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Type              ItemType         `json:"type"`
-	Name              string           `json:"name,omitempty"`
-	Folder            string           `json:"folder,omitempty"`
-	Metadata          Metadata         `json:"metadata,omitempty"`
-	Tags              Tags             `json:"tags,omitempty"`
-	RotationFrequency string           `json:"rotation_frequency,omitempty"`
-	RotationState     ItemVersionState `json:"rotation_state,omitempty"`
-	Expiration        string           `json:"expiration,omitempty"`
+	Type              ItemType         `json:"type"`                         // The type of the item
+	Name              string           `json:"name,omitempty"`               // The name of this item
+	Folder            string           `json:"folder,omitempty"`             // The folder where this item is stored
+	Metadata          Metadata         `json:"metadata,omitempty"`           // User-provided metadata
+	Tags              Tags             `json:"tags,omitempty"`               // A list of user-defined tags
+	RotationFrequency string           `json:"rotation_frequency,omitempty"` // Period of time between item rotations.
+	RotationState     ItemVersionState `json:"rotation_state,omitempty"`     // State to which the previous version should transition upon rotation
+	DisabledAt        string           `json:"disabled_at,omitempty"`        // Timestamp indicating when the item will be disabled
 }
 
 type CommonStoreResult struct {
-	ID      string `json:"id"`
-	Type    string `json:"type"`
-	Version int    `json:"version"`
+	ID      string `json:"id"`      // The ID of the item
+	Type    string `json:"type"`    // The type of the item
+	Version int    `json:"version"` // The item version
 }
 
 type CommonGenerateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Type              ItemType         `json:"type"`
-	Name              string           `json:"name,omitempty"`
-	Folder            string           `json:"folder,omitempty"`
-	Metadata          Metadata         `json:"metadata,omitempty"`
-	Tags              Tags             `json:"tags,omitempty"`
-	RotationFrequency string           `json:"rotation_frequency,omitempty"`
-	RotationState     ItemVersionState `json:"rotation_state,omitempty"`
-	Expiration        string           `json:"expiration,omitempty"`
-}
-
-type CommonGenerateResult struct {
-	ID      string `json:"id"`
-	Type    string `json:"type"`
-	Version int    `json:"version"`
+	Type              ItemType `json:"type"`                         // The type of the item
+	Name              string   `json:"name,omitempty"`               // The name of this item
+	Folder            string   `json:"folder,omitempty"`             // The folder where this item is stored
+	Metadata          Metadata `json:"metadata,omitempty"`           // User-provided metadata
+	Tags              Tags     `json:"tags,omitempty"`               // A list of user-defined tags
+	RotationFrequency string   `json:"rotation_frequency,omitempty"` // Period of time between item rotations.
+	RotationState     string   `json:"rotation_state,omitempty"`     // State to which the previous version should transition upon rotation
+	DisabledAt        string   `json:"disabled_at,omitempty"`        // Timestamp indicating when the item will be disabled
 }
 
 type GetRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID           string            `json:"id"`
-	Version      string            `json:"version,omitempty"`
-	Verbose      *bool             `json:"verbose,omitempty"`
-	VersionState *ItemVersionState `json:"version_state,omitempty"`
+	ID      string `json:"id"`
+	Version string `json:"version,omitempty"`
 }
 
 type ItemVersionData struct {
-	Version   int               `json:"version"`
-	State     string            `json:"state"`
-	CreatedAt string            `json:"created_at"`
-	DestroyAt *string           `json:"destroy_at,omitempty"`
-	PublicKey *EncodedPublicKey `json:"public_key,omitempty"`
-	Secret    *string           `json:"secret,omitempty"`
+	Version        int               `json:"version"`                // The item version
+	State          string            `json:"state"`                  // The state of the item version
+	CreatedAt      string            `json:"created_at"`             // Timestamp indicating when the item was created
+	DestroyedAt    *string           `json:"destroyed_at,omitempty"` // Timestamp indicating when the item version will be destroyed
+	RotatedAt      *string           `json:"rotated_at,omitempty"`   // Timestamp indicating when the item version will be rotated
+	PublicKey      *EncodedPublicKey `json:"public_key,omitempty"`
+	Secret         *string           `json:"secret,omitempty"`
+	Token          *string           `json:"token,omitempty"`
+	ClientSecret   *string           `json:"client_secret,omitempty"`
+	ClientSecretID *string           `json:"client_secret_id,omitempty"`
 }
 
 type ItemData struct {
-	ID                string          `json:"id"`
-	Type              string          `json:"type"`
-	ItemState         string          `json:"item_state"`
-	CurrentVersion    ItemVersionData `json:"current_version"`
-	Name              string          `json:"name,omitempty"`
-	Folder            string          `json:"folder,omitempty"`
-	Metadata          Metadata        `json:"metadata,omitempty"`
-	Tags              Tags            `json:"tags,omitempty"`
-	RotationFrequency string          `json:"rotation_frequency,omitempty"`
-	RotationState     string          `json:"rotation_state,omitempty"`
-	LastRotated       string          `json:"last_rotated,omitempty"`
-	NextRotation      string          `json:"next_rotation,omitempty"`
-	Expiration        string          `json:"expiration,omitempty"`
-	CreatedAt         string          `json:"created_at"`
-	Algorithm         string          `json:"algorithm,omitempty"`
-	Purpose           string          `json:"purpose,omitempty"`
-	Exportable        *bool           `json:"exportable,omitempty"` // Whether the key is exportable or not.
+	ID                  string             `json:"id"`                              // The ID of the item
+	Type                string             `json:"type"`                            // The type of the item
+	NumVersions         int                `json:"num_versions"`                    // Latest version number
+	Enabled             bool               `json:"enabled"`                         // True if the item is enabled
+	Name                string             `json:"name,omitempty"`                  // The name of this item
+	Folder              string             `json:"folder,omitempty"`                // The folder where this item is stored
+	Metadata            Metadata           `json:"metadata,omitempty"`              // User-provided metadata
+	Tags                Tags               `json:"tags,omitempty"`                  // A list of user-defined tags
+	RotationFrequency   string             `json:"rotation_frequency,omitempty"`    // Period of time between item rotations.
+	RotationState       string             `json:"rotation_state,omitempty"`        // State to which the previous version should transition upon rotation
+	LastRotated         string             `json:"last_rotated,omitempty"`          // Timestamp of the last rotation (if any)
+	NextRotation        string             `json:"next_rotation,omitempty"`         // Timestamp of the next rotation, if auto rotation is enabled.
+	DisabledAt          string             `json:"disabled_at,omitempty"`           // Timestamp indicating when the item will be disabled
+	CreatedAt           string             `json:"created_at"`                      // Timestamp indicating when the item was created
+	Algorithm           string             `json:"algorithm,omitempty"`             // The algorithm of the key
+	Purpose             string             `json:"purpose,omitempty"`               // The purpose of the key
+	RotationGracePeriod string             `json:"rotation_grace_period,omitempty"` // Grace period for the previous version of the secret
+	Exportable          *bool              `json:"exportable,omitempty"`            // Whether the key is exportable or not.
+	ClientID            string             `json:"client_id,omitempty"`
+	InheritedSettings   *InheritedSettings `json:"inherited_settings,omitempty"` // For settings that inherit a value from a parent folder, the full path of the folder where the value is set
+	ItemVersions        []ItemVersionData  `json:"item_versions"`
 }
 
 type InheritedSettings struct {
@@ -226,9 +242,106 @@ type InheritedSettings struct {
 
 type GetResult struct {
 	ItemData
-	Versions            []ItemVersionData  `json:"versions"`
-	RotationGracePeriod string             `json:"rotation_grace_period,omitempty"`
-	InheritedSettings   *InheritedSettings `json:"inherited_settings,omitempty"`
+}
+
+type FilterList struct {
+	pangea.FilterBase
+
+	_type        *pangea.FilterMatch[string]
+	id           *pangea.FilterMatch[string]
+	algorithm    *pangea.FilterMatch[string]
+	purpose      *pangea.FilterMatch[string]
+	name         *pangea.FilterMatch[string]
+	folder       *pangea.FilterMatch[string]
+	itemState    *pangea.FilterMatch[string]
+	createdAt    *pangea.FilterRange[string]
+	destroyedAt  *pangea.FilterRange[string]
+	expiration   *pangea.FilterRange[string]
+	lastRotated  *pangea.FilterRange[string]
+	nextRotation *pangea.FilterRange[string]
+}
+
+func NewFilterList() *FilterList {
+	filter := make(pangea.Filter)
+	return &FilterList{
+		FilterBase:   *pangea.NewFilterBase(filter),
+		_type:        pangea.NewFilterMatch[string]("type", &filter),
+		id:           pangea.NewFilterMatch[string]("id", &filter),
+		algorithm:    pangea.NewFilterMatch[string]("algorithm", &filter),
+		purpose:      pangea.NewFilterMatch[string]("purpose", &filter),
+		name:         pangea.NewFilterMatch[string]("name", &filter),
+		folder:       pangea.NewFilterMatch[string]("folder", &filter),
+		itemState:    pangea.NewFilterMatch[string]("item_state", &filter),
+		createdAt:    pangea.NewFilterRange[string]("created_at", &filter),
+		destroyedAt:  pangea.NewFilterRange[string]("destroyed_at", &filter),
+		expiration:   pangea.NewFilterRange[string]("expiration", &filter),
+		lastRotated:  pangea.NewFilterRange[string]("last_rotated", &filter),
+		nextRotation: pangea.NewFilterRange[string]("last_rotation", &filter),
+	}
+}
+
+func (fu *FilterList) Type() *pangea.FilterMatch[string] {
+	return fu._type
+}
+
+func (fu *FilterList) ID() *pangea.FilterMatch[string] {
+	return fu.id
+}
+
+func (fu *FilterList) Algorithm() *pangea.FilterMatch[string] {
+	return fu.algorithm
+}
+
+func (fu *FilterList) Purpose() *pangea.FilterMatch[string] {
+	return fu.purpose
+}
+
+func (fu *FilterList) Name() *pangea.FilterMatch[string] {
+	return fu.name
+}
+
+func (fu *FilterList) Folder() *pangea.FilterMatch[string] {
+	return fu.folder
+}
+
+func (fu *FilterList) ItemStated() *pangea.FilterMatch[string] {
+	return fu.itemState
+}
+
+func (fu *FilterList) CreatedAt() *pangea.FilterRange[string] {
+	return fu.createdAt
+}
+
+func (fu *FilterList) DestroyedAt() *pangea.FilterRange[string] {
+	return fu.destroyedAt
+}
+
+func (fu *FilterList) Expiration() *pangea.FilterRange[string] {
+	return fu.expiration
+}
+
+func (fu *FilterList) LastRotated() *pangea.FilterRange[string] {
+	return fu.lastRotated
+}
+
+func (fu *FilterList) NextRotation() *pangea.FilterRange[string] {
+	return fu.nextRotation
+}
+
+type GetBulkRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	Filter  pangea.Filter `json:"filter,omitempty"`   // A set of filters to help you customize your search
+	Last    string        `json:"last,omitempty"`     // Internal ID returned in the previous look up response. Used for pagination.
+	Size    int           `json:"size,omitempty"`     // Maximum number of items in the response
+	Order   ItemOrder     `json:"order,omitempty"`    // Ordering direction
+	OrderBy ItemOrderBy   `json:"order_by,omitempty"` // Property used to order the results
+}
+
+type GetBulkResult struct {
+	Items []ItemData `json:"items"`
+	Last  string     `json:"last,omitempty"`
 }
 
 type ListItemData struct {
@@ -238,71 +351,67 @@ type ListItemData struct {
 
 type ListResult struct {
 	Items []ListItemData `json:"items"`
-	Count int            `json:"count"`
-	Last  string         `json:"last,omitempty"`
+	Count int            `json:"count"`          // Total number of items matching the given query
+	Last  string         `json:"last,omitempty"` // Internal ID returned in the previous look up response. Used for pagination.
 }
+
+type ListInclude string
+
+const (
+	LIsecrets   ListInclude = "secrets"
+	LIencrypted ListInclude = "encrypted"
+)
 
 type ListRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Filter  map[string]string `json:"filter,omitempty"`
-	Last    string            `json:"last,omitempty"`
-	Size    int               `json:"size,omitempty"`
-	Order   ItemOrder         `json:"order,omitempty"`
-	OrderBy ItemOrderBy       `json:"order_by,omitempty"`
+	Filter  pangea.Filter `json:"filter,omitempty"`   // A set of filters to help you customize your search.
+	Last    string        `json:"last,omitempty"`     // Internal ID returned in the previous look up response. Used for pagination.
+	Size    int           `json:"size,omitempty"`     // Maximum number of items in the response
+	Order   ItemOrder     `json:"order,omitempty"`    // Ordering direction
+	OrderBy ItemOrderBy   `json:"order_by,omitempty"` // Property used to order the results
 }
 
 type CommonRotateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID            string           `json:"id"`
-	RotationState ItemVersionState `json:"rotation_state,omitempty"`
-}
-
-type CommonRotateResult struct {
-	ID      string `json:"id"`
-	Version int    `json:"version"`
-	Type    string `json:"type"`
+	ID            string           `json:"id"`                       // The ID of the key
+	RotationState ItemVersionState `json:"rotation_state,omitempty"` // State to which the previous version should transition upon rotation
 }
 
 type KeyRotateRequest struct {
 	CommonRotateRequest
-	PublicKey  *EncodedPublicKey    `json:"public_key,omitempty"`
-	PrivateKey *EncodedPrivateKey   `json:"private_key,omitempty"`
-	Key        *EncodedSymmetricKey `json:"key,omitempty"`
+	PublicKey  *EncodedPublicKey    `json:"public_key,omitempty"`  // The public key (in PEM format)
+	PrivateKey *EncodedPrivateKey   `json:"private_key,omitempty"` // The private key (in PEM format)
+	Key        *EncodedSymmetricKey `json:"key,omitempty"`         // The key material
 }
 
 type KeyRotateResult struct {
-	CommonRotateResult
-	PublicKey *EncodedPublicKey `json:"public_key,omitempty"`
-	Algorithm string            `json:"algorithm"`
-	Purpose   string            `json:"purpose"`
+	ItemData
 }
 
 type StateChangeRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID            string           `json:"id"`
-	State         ItemVersionState `json:"state"`
-	Version       *int             `json:"version,omitempty"`
-	DestroyPeriod string           `json:"destroy_period,omitempty"`
+	ID            string           `json:"id"`                       // The item ID
+	State         ItemVersionState `json:"state"`                    // The new state of the item version
+	Version       *int             `json:"version,omitempty"`        // The item version
+	DestroyPeriod string           `json:"destroy_period,omitempty"` // Period of time for the destruction of a compromised key. Only applicable if state=compromised (format: a positive number followed by a time period (secs, mins, hrs, days, weeks, months, years) or an abbreviation
 }
 
 type StateChangeResult struct {
-	ID        string  `json:"id"`
-	Version   int     `json:"version"`
-	State     string  `json:"state"`
-	DestroyAt *string `json:"destroy_at,omitempty"`
+	ItemData
 }
 
 type DeleteRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID string `json:"id"`
+	ID        string `json:"id"`                  // The item ID
+	Recursive *bool  `json:"recursive,omitempty"` // true for recursive deleting all the items inside a folder. Valid only for folders
 }
 
 type DeleteResult struct {
@@ -313,55 +422,81 @@ type UpdateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	ID                  string           `json:"id"`
-	Name                string           `json:"name,omitempty"`
-	Folder              string           `json:"folder,omitempty"`
-	Metadata            Metadata         `json:"metadata,omitempty"`
-	Tags                Tags             `json:"tags,omitempty"`
-	RotationFrequency   string           `json:"rotation_frequency,omitempty"`
-	RotationState       ItemVersionState `json:"rotation_state,omitempty"`
-	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"`
-	Expiration          string           `json:"expiration,omitempty"`
-	ItemState           ItemState        `json:"item_state,omitempty"`
+	ID                  string           `json:"id"`                              // The item ID
+	Name                string           `json:"name,omitempty"`                  // The name of this item
+	Folder              string           `json:"folder,omitempty"`                // The parent folder where this item is stored
+	Metadata            Metadata         `json:"metadata,omitempty"`              // User-provided metadata
+	Tags                Tags             `json:"tags,omitempty"`                  // A list of user-defined tags
+	DisabledAt          string           `json:"disabled_at,omitempty"`           // Timestamp indicating when the item will be disabled
+	Enabled             *bool            `json:"enabled,omitempty"`               // True if the item is enabled
+	RotationFrequency   string           `json:"rotation_frequency,omitempty"`    // Period of time between item rotations, never to disable rotation or inherited to inherit the value from the parent folder or from the default settings (format: a positive number followed by a time period (secs, mins, hrs, days, weeks, months, years) or an abbreviation
+	RotationState       ItemVersionState `json:"rotation_state,omitempty"`        // State to which the previous version should transition upon rotation or inherited to inherit the value from the parent folder or from the default settings
+	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"` // Grace period for the previous version of the Pangea Token or inherited to inherit the value from the parent folder or from the default settings (format: a positive number followed by a time period (secs, mins, hrs, days, weeks, months, years) or an abbreviation
 }
 
 type UpdateResult struct {
-	ID string `json:"id"`
+	ItemData
 }
 
 type FolderCreateRequest struct {
 	pangea.BaseRequest
 
-	Name                string           `json:"name"`
-	Folder              string           `json:"folder"`
-	Metadata            Metadata         `json:"metadata,omitempty"`
-	Tags                Tags             `json:"tags,omitempty"`
-	RotationFrequency   string           `json:"rotation_frequency,omitempty"`
-	RotationState       ItemVersionState `json:"rotation_state,omitempty"`
-	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"`
+	Name                string           `json:"name"`                            // The name of this folder
+	Folder              string           `json:"folder,omitempty"`                // The parent folder where this folder is stored
+	Metadata            Metadata         `json:"metadata,omitempty"`              // User-provided metadata
+	Tags                Tags             `json:"tags,omitempty"`                  // A list of user-defined tags
+	RotationFrequency   string           `json:"rotation_frequency,omitempty"`    // Period of time between item rotations, never to disable rotation or inherited to inherit the value from the parent folder or from the default settings (format: a positive number followed by a time period (secs, mins, hrs, days, weeks, months, years) or an abbreviation
+	RotationState       ItemVersionState `json:"rotation_state,omitempty"`        // State to which the previous version should transition upon rotation or inherited to inherit the value from the parent folder or from the default settings
+	RotationGracePeriod string           `json:"rotation_grace_period,omitempty"` // Grace period for the previous version of the Pangea Token or inherited to inherit the value from the parent folder or from the default settings (format: a positive number followed by a time period (secs, mins, hrs, days, weeks, months, years) or an abbreviation
 }
 
 type FolderCreateResult struct {
-	ID string `json:"id"`
+	ItemData
 }
 
 type ExportRequest struct {
 	pangea.BaseRequest
 
-	ID                  string                     `json:"id"`                             // The ID of the item.
-	Version             *int                       `json:"version,omitempty"`              // The item version.
-	EncryptionKey       *string                    `json:"encryption_key,omitempty"`       // Public key in PEM format used to encrypt exported key(s).
-	EncryptionAlgorithm *ExportEncryptionAlgorithm `json:"encryption_algorithm,omitempty"` // The algorithm of the public key.
+	ID                  string                     `json:"id"`                              // The ID of the item.
+	Version             *int                       `json:"version,omitempty"`               // The item version.
+	AsymmetricPublicKey *string                    `json:"asymmetric_public_key,omitempty"` // Public key in PEM format used to encrypt exported key(s).
+	AsymmetricAlgorithm *ExportEncryptionAlgorithm `json:"asymmetric_algorithm,omitempty"`  // The algorithm of the public key.
+	KEMPassword         *string                    `json:"kem_password,omitempty"`          // This is the password that will be used along with a salt to derive the symmetric key that is used to encrypt the exported key material. Required if encryption_type is kem.
 }
 
 type ExportResult struct {
 	ID         string  `json:"id"`                    // The ID of the item.
-	Version    int     `json:"version"`               // The item version.
 	Type       string  `json:"type"`                  // The type of the key.
-	ItemState  string  `json:"item_state"`            // The state of the item.
+	Version    int     `json:"version"`               // The item version.
+	Enabled    bool    `json:"enabled"`               // True if the item is enabled.
 	Algorithm  string  `json:"algorithm"`             // The algorithm of the key.
 	PublicKey  *string `json:"public_key,omitempty"`  // The public key (in PEM format).
-	PrivateKey *string `json:"private_key,omitempty"` // The private key (in PEM format).
+	PrivateKey *string `json:"private_key,omitempty"` // The private key (in PEM format), it could be encrypted or not based on 'encryption_type' value.
 	Key        *string `json:"key,omitempty"`         // The key material.
-	Encrypted  bool    `json:"encrypted"`             // Whether exported key(s) are encrypted with encryption_key sent on the request or not. If encrypted, the result is sent in base64, any other case they are in PEM format plain text.
+
+	// Encryption information
+	EncryptionType      string `json:"encryption_type"`                // Encryption format of the exported key(s). It could be none if returned in plain text, asymmetric if it is encrypted just with the public key sent in asymmetric_public_key, or kem if it was encrypted using KEM protocol.
+	AsymmetricAlgorithm string `json:"asymmetric_algorithm,omitempty"` // The algorithm of the public key used to encrypt exported material
+	SymmetricAlgorithm  string `json:"symmetric_algorithm,omitempty"`  // The algorithm of the symmetric key used to encrypt exported material
+	KDF                 string `json:"kdf,omitempty"`                  // Key derivation function used to derivate the symmetric key when `encryption_type` is `kem`
+	HashAlgorithm       string `json:"hash_algorithm,omitempty"`       // Hash algorithm used to derivate the symmetric key when `encryption_type` is `kem`
+	IterationCount      int    `json:"iteration_count,omitempty"`      // Iteration count used to derivate the symmetric key when `encryption_type` is `kem`
+	EncryptedSalt       string `json:"encrypted_salt,omitempty"`       // Salt used to derivate the symmetric key when `encryption_type` is `kem`, encrypted with the public key provided in `asymmetric_key`
+}
+
+func GetSymmetricKeyLength(algorithm string) (int, error) {
+	switch algorithm {
+	case string(SYAaes256_cbc), string(SYAaes256_cfb), string(SYAaes256_gcm):
+		return 32, nil
+	case string(SYAaes128_cfb), string(SYAaes128_cbc):
+		return 16, nil
+	case string(SYAhs256):
+		return 64, nil
+	case string(SYAhs384):
+		return 96, nil
+	case string(SYAhs512):
+		return 128, nil
+	default:
+		return 0, fmt.Errorf("invalid algorithm: '%s'", algorithm)
+	}
 }
