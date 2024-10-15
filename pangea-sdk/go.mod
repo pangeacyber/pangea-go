@@ -1,6 +1,6 @@
 module github.com/pangeacyber/pangea-go/pangea-sdk/v4
 
-go 1.18
+go 1.22
 
 require (
 	github.com/hashicorp/go-retryablehttp v0.7.7
