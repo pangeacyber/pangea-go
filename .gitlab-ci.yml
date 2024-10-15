@@ -1,5 +1,5 @@
 default:
-  image: golang:1.22-bullseye
+  image: golang:1.22-bullseye@sha256:fe7e0bb10ded06dcc1dde5c341fc169adc83f1a58452f5ff673af5770f5b867c
   tags:
     - pangea-internal
 
