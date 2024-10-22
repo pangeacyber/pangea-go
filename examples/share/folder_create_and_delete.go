@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/share"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/share"
 )
 
 func main() {
@@ -32,7 +32,7 @@ func main() {
 
 	// Create a FolderCreateRequest and set the path of the folder to be created
 	input := &share.FolderCreateRequest{
-		Path: path,
+		Folder: path,
 	}
 
 	fmt.Printf("Let's create a folder: %s\n", path)

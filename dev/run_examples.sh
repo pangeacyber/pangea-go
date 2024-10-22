@@ -4,7 +4,10 @@
 # Need to run this script from `./examples/` folder
 
 set -e
-skip_items=("/util/")
+skip_items=(
+    "/util/"
+    "share/cli.go"
+)
 
 # Root directory
 root_directory=$(pwd)

@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/sanitize"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/sanitize"
 )
 
 func main() {
@@ -56,7 +56,6 @@ func main() {
 		},
 		File: &sanitize.SanitizeFile{
 			ScanProvider: "crowdstrike",
-			CDRProvider:  "apryse",
 		},
 		UploadedFileName: "uploaded_file",
 		TransferRequest: pangea.TransferRequest{

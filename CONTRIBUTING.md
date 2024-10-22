@@ -13,7 +13,7 @@ This pipeline is triggered when a Git tag is pushed to the repository. Git tags
 should be formatted as `pangea-sdk/vX.Y.Z`, where `vX.Y.Z` is the version number
 to publish.
 
-1. Update the `version` constant in `pangea-sdk/v3/pangea/pangea.go`.
+1. Update the `version` constant in `pangea-sdk/pangea/pangea.go`.
 2. Update the release notes in `CHANGELOG.md`.
 3. Author a commit with these changes and land it on `main`.
 4. `git tag -m pangea-sdk/vX.Y.Z pangea-sdk/vX.Y.Z 0000000`. Replace `vX.Y.Z`

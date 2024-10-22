@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/audit"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v3/service/vault"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/vault"
 )
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	auditToken := storeResponse.Result.CurrentVersion.Secret
+	auditToken := storeResponse.Result.ItemVersions[0].Token
 	if auditToken == nil {
 		log.Fatal("Unexpected: token not present")
 	}

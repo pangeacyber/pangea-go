@@ -5,7 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+
+## 4.1.0 - 2024-10-16
+
+### Added
+
+- Secure Share support.
+- Multiple bucket ID support to Share.
+- `attributes` field in `/list-resources` and `/list-subjects` endpoint
+- Sanitize service support
+- Secure Share support.
+- Multiple bucket ID support to Share.
+- `MetadataProtected` and `TagsProtected` support to Share `ItemData`
+- `Password` and `PasswordAlgorithm` support to Share
+- Filter fields to `FilterList` on Share service
+- `Objects` field to Share `GetArchiveResult`
+- `Title` and `Message` to Share `ShareCreateLinkItem` 
+
+## 4.0.0 - 2024-10-15
+
+### Added
+
+- Vault KEM export support.
+
+### Changed
+
+- Vault v2 APIs support.
+- Minimum supported Go version is now v1.22.
+
+## 3.12.0 - 2024-10-15
+
+### Added
+
+- Detect-only Redact for Sanitize.
+- Support for `domains` field in `v2/user/breached` endpoint in User Intel service.
+
+## 3.11.0 - 2024-09-25
 
 ### Added
 
@@ -18,7 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added 
 
-- `attributes` field in `/list-resources` and `/list-subjects` endpoint
+- `attributes` field in `/list-resources` and `/list-subjects` endpoint.
+- Sanitize service support.
 
 ## [3.10.0] - 2024-07-19
 
