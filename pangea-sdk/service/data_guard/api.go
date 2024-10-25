@@ -12,29 +12,14 @@ import (
 //
 // @description Guard text.
 //
-// @operationId data_guard_post_v1_text_guard
+// @operationId data_guard_post_v1beta_text_guard
 //
 // @example
 //
 //	input := &data_guard.TextGuardRequest{Text: "hello world"}
 //	response, err := client.GuardText(ctx, input)
 func (e *dataGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error) {
-	return request.DoPost(ctx, e.Client, "v1/text/guard", input, &TextGuardResult{})
-}
-
-// @summary File guard (Beta)
-//
-// @description Guard file URLs.
-//
-// @operationId data_guard_post_v1_file_guard
-//
-// @example
-//
-//	input := &data_guard.FileGuardRequest{FileUrl: "https://example.org/file.txt"}
-//	response, err := client.GuardFile(ctx, input)
-func (e *dataGuard) GuardFile(ctx context.Context, input *FileGuardRequest) (*pangea.PangeaResponse[struct{}], error) {
-	var result struct{}
-	return request.DoPost(ctx, e.Client, "v1/file/guard", input, &result)
+	return request.DoPost(ctx, e.Client, "v1beta/text/guard", input, &TextGuardResult{})
 }
 
 type TextGuardArtifact struct {
@@ -51,7 +36,7 @@ type TextGuardSecurityIssues struct {
 	MaliciousDomainCount      int `json:"malicious_domain_count"`
 	MaliciousIPCount          int `json:"malicious_ip_count"`
 	MaliciousURLCount         int `json:"malicious_url_count"`
-	RedactedItemCount         int `json:"redacted_item_count"`
+	MatchedRulesCount         int `json:"matched_rules_count"`
 }
 
 type TextGuardFindings struct {
@@ -103,10 +88,4 @@ type TextGuardResult struct {
 
 	// `debug=true` only.
 	Report *TextGuardReport `json:"report,omitempty"`
-}
-
-type FileGuardRequest struct {
-	pangea.BaseRequest
-
-	FileUrl string `json:"file_url"`
 }
