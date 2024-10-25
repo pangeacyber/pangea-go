@@ -36,7 +36,7 @@ type TextGuardSecurityIssues struct {
 	MaliciousDomainCount      int `json:"malicious_domain_count"`
 	MaliciousIPCount          int `json:"malicious_ip_count"`
 	MaliciousURLCount         int `json:"malicious_url_count"`
-	MatchedRulesCount         int `json:"matched_rules_count"`
+	RedactRuleMatchCount      int `json:"redact_rule_match_count"`
 }
 
 type TextGuardFindings struct {
