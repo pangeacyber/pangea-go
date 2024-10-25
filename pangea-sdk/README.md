@@ -24,12 +24,13 @@ $ go get github.com/pangeacyber/pangea-go/pangea-sdk
 #### Beta releases
 
 Pre-release versions may be available with the `beta` denotation in the version
-number. These releases serve to preview beta services and APIs. Per Semantic
-Versioning, they are considered unstable and do not carry the same compatibility
-guarantees as stable releases. [Beta changelog](https://github.com/pangeacyber/pangea-go/blob/beta/CHANGELOG.md).
+number. These releases serve to preview Beta and Early Access services and APIs.
+Per Semantic Versioning, they are considered unstable and do not carry the same
+compatibility guarantees as stable releases.
+[Beta changelog](https://github.com/pangeacyber/pangea-go/blob/beta/CHANGELOG.md).
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v3@v3.8.0-beta.2
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v4@v4.2.0-beta.1
 ```
 
 ## Usage
