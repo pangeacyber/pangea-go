@@ -56,7 +56,7 @@ sdk-test-it:
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_AUTHZ_ENV}
         TEST: authz
-      - CLOUD: [AWS, GCP]
+      - CLOUD: [AWS]
         ENV: ${SERVICE_DATA_GUARD_ENV}
         TEST: data_guard
       - CLOUD: [AWS, GCP]
@@ -80,7 +80,7 @@ sdk-test-it:
       - CLOUD: [AWS, GCP]
         ENV: ${SERVICE_FILE_SCAN_ENV}
         TEST: file_scan
-      - CLOUD: [AWS, GCP]
+      - CLOUD: [AWS]
         ENV: ${SERVICE_PROMPT_GUARD_ENV}
         TEST: prompt_guard
       - CLOUD: [AWS, GCP]

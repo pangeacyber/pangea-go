@@ -9,7 +9,6 @@ import (
 // Data Guard API client.
 type Client interface {
 	GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error)
-	GuardFile(ctx context.Context, input *FileGuardRequest) (*pangea.PangeaResponse[struct{}], error)
 
 	// Base service methods.
 	pangea.BaseServicer
