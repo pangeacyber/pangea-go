@@ -1,4 +1,4 @@
-package data_guard
+package ai_guard
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 )
 
-// Data Guard API client.
+// AI Guard API client.
 type Client interface {
 	GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error)
 
@@ -14,13 +14,13 @@ type Client interface {
 	pangea.BaseServicer
 }
 
-type dataGuard struct {
+type aiGuard struct {
 	pangea.BaseService
 }
 
 func New(cfg *pangea.Config) Client {
-	cli := &dataGuard{
-		BaseService: pangea.NewBaseService("data-guard", cfg),
+	cli := &aiGuard{
+		BaseService: pangea.NewBaseService("ai-guard", cfg),
 	}
 
 	return cli
