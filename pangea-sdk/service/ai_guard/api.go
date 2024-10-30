@@ -1,4 +1,4 @@
-package data_guard
+package ai_guard
 
 import (
 	"context"
@@ -12,13 +12,13 @@ import (
 //
 // @description Guard text.
 //
-// @operationId data_guard_post_v1beta_text_guard
+// @operationId ai_guard_post_v1beta_text_guard
 //
 // @example
 //
-//	input := &data_guard.TextGuardRequest{Text: "hello world"}
+//	input := &ai_guard.TextGuardRequest{Text: "hello world"}
 //	response, err := client.GuardText(ctx, input)
-func (e *dataGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error) {
+func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error) {
 	return request.DoPost(ctx, e.Client, "v1beta/text/guard", input, &TextGuardResult{})
 }
 

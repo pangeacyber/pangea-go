@@ -1,6 +1,6 @@
 //go:build integration
 
-package data_guard_test
+package ai_guard_test
 
 import (
 	"context"
@@ -8,19 +8,19 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/data_guard"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/ai_guard"
 	"github.com/stretchr/testify/assert"
 )
 
-var testingEnvironment = pangeatesting.LoadTestEnvironment("data-guard", pangeatesting.Live)
+var testingEnvironment = pangeatesting.LoadTestEnvironment("ai-guard", pangeatesting.Live)
 
 func TestTextGuard(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 
-	client := data_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &data_guard.TextGuardRequest{Text: "hello world"}
+	input := &ai_guard.TextGuardRequest{Text: "hello world"}
 	out, err := client.GuardText(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
@@ -28,7 +28,7 @@ func TestTextGuard(t *testing.T) {
 	assert.Zero(t, out.Result.Findings.ArtifactCount)
 	assert.Zero(t, out.Result.Findings.MaliciousCount)
 
-	input = &data_guard.TextGuardRequest{Text: "security@pangea.cloud"}
+	input = &ai_guard.TextGuardRequest{Text: "security@pangea.cloud"}
 	out, err = client.GuardText(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
