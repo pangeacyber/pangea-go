@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- More documentation to AuthZ and Secure Share filter lists.
+
+### Fixed
+
+- Secure Share: share link list filter now uses "target_id" instead of "target".
+
 ## 4.1.0 - 2024-10-16
 
 ### Added

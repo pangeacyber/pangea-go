@@ -371,38 +371,47 @@ func NewFilterList() *FilterList {
 	}
 }
 
+// Only records where the object exists in the supplied parent folder path name.
 func (f *FilterList) Folder() *pangea.FilterEqual[string] {
 	return f.folder
 }
 
+// A list of tags that all must be present.
 func (f *FilterList) Tags() *pangea.FilterEqual[[]string] {
 	return f.tags
 }
 
+// Only records where created_at equals this value.
 func (f *FilterList) CreatedAt() *pangea.FilterRange[string] {
 	return f.createdAt
 }
 
+// Only records where id equals this value.
 func (f *FilterList) ID() *pangea.FilterMatch[string] {
 	return f.id
 }
 
+// Only records where name equals this value.
 func (f *FilterList) Name() *pangea.FilterMatch[string] {
 	return f.name
 }
 
+// Only records where parent_id equals this value.
 func (f *FilterList) ParentID() *pangea.FilterMatch[string] {
 	return f.parentId
 }
 
+// Only records where size equals this value.
 func (f *FilterList) Size() *pangea.FilterRange[string] {
 	return f.size
 }
 
+// Only records where type equals this value.
 func (f *FilterList) Type() *pangea.FilterMatch[string] {
 	return f.type_
 }
 
+// Only records where updated_at equals this value.
 func (f *FilterList) UpdatedAt() *pangea.FilterRange[string] {
 	return f.updatedAt
 }
@@ -575,7 +584,7 @@ func (e *share) ShareLinkGet(ctx context.Context, input *ShareLinkGetRequest) (*
 type FilterShareLinkList struct {
 	pangea.FilterBase
 	id             *pangea.FilterMatch[string]
-	target         *pangea.FilterMatch[string]
+	targetId       *pangea.FilterMatch[string]
 	linkType       *pangea.FilterMatch[string]
 	accessCount    *pangea.FilterRange[string]
 	maxAccessCount *pangea.FilterRange[string]
@@ -590,7 +599,7 @@ func NewFilterShareLinkList() *FilterShareLinkList {
 	return &FilterShareLinkList{
 		FilterBase:     *pangea.NewFilterBase(filter),
 		id:             pangea.NewFilterMatch[string]("id", &filter),
-		target:         pangea.NewFilterMatch[string]("target", &filter),
+		targetId:       pangea.NewFilterMatch[string]("target_id", &filter),
 		linkType:       pangea.NewFilterMatch[string]("link_type", &filter),
 		accessCount:    pangea.NewFilterRange[string]("access_count", &filter),
 		maxAccessCount: pangea.NewFilterRange[string]("max_access_count", &filter),
@@ -601,38 +610,47 @@ func NewFilterShareLinkList() *FilterShareLinkList {
 	}
 }
 
+// Only records where id equals this value.
 func (f *FilterShareLinkList) ID() *pangea.FilterMatch[string] {
 	return f.id
 }
 
-func (f *FilterShareLinkList) Target() *pangea.FilterMatch[string] {
-	return f.target
+// Only records where target_id equals this value.
+func (f *FilterShareLinkList) TargetID() *pangea.FilterMatch[string] {
+	return f.targetId
 }
 
+// Only records where link_type equals this value.
 func (f *FilterShareLinkList) LinkType() *pangea.FilterMatch[string] {
 	return f.linkType
 }
 
+// Only records where link equals this value.
 func (f *FilterShareLinkList) Link() *pangea.FilterMatch[string] {
 	return f.link
 }
 
+// Only records where access_count equals this value.
 func (f *FilterShareLinkList) AccessCount() *pangea.FilterRange[string] {
 	return f.accessCount
 }
 
+// Only records where max_access_count equals this value.
 func (f *FilterShareLinkList) MaxAccessCount() *pangea.FilterRange[string] {
 	return f.maxAccessCount
 }
 
+// Only records where created_at equals this value.
 func (f *FilterShareLinkList) CreatedAt() *pangea.FilterRange[string] {
 	return f.createdAt
 }
 
+// Only records where expires_at equals this value.
 func (f *FilterShareLinkList) ExpiresAt() *pangea.FilterRange[string] {
 	return f.expiresAt
 }
 
+// Only records where last_accessed_at equals this value.
 func (f *FilterShareLinkList) LastAccessedAt() *pangea.FilterRange[string] {
 	return f.lastAccessedAt
 }
