@@ -236,6 +236,11 @@ func gatherFuncs(docFuncs []*doc.Func, fs *token.FileSet) []*DocumentedFunc {
 	funcs := []*DocumentedFunc{}
 
 	for _, f := range docFuncs {
+		// Skip private APIs.
+		if !ast.IsExported(f.Name) {
+			continue
+		}
+
 		funcs = append(funcs, &DocumentedFunc{
 			Name:        f.Name,
 			Doc:         f.Doc,
