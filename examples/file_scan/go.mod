@@ -1,6 +1,6 @@
 module examples/file_scan
 
-go 1.22
+go 1.23.3
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.1.0
 
