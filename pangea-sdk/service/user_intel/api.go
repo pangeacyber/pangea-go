@@ -73,6 +73,7 @@ type UserBreachedRequest struct {
 	Verbose     *bool  `json:"verbose,omitempty"`
 	Raw         *bool  `json:"raw,omitempty"`
 	Provider    string `json:"provider,omitempty"`
+	Cursor      string `json:"cursor,omitempty"` // A token given in the raw response from SpyCloud. Post this back to paginate results
 }
 
 type UserBreachedBulkRequest struct {
