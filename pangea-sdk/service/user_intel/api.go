@@ -193,3 +193,35 @@ type UserPasswordBreachedBulkResult struct {
 	Parameters map[string]any                      `json:"parameters,omitempty"`
 	RawData    map[string]any                      `json:"raw_data,omitempty"`
 }
+
+// @summary Look up information about a specific breach
+//
+// @description Given a provider specific breach ID, find details about the breach.
+//
+// @operationId user_intel_post_v1_breached
+//
+// @example
+//
+//	input := &user_intel.UserPasswordBreachedBulkRequest{
+//		BreachID:     "66111",
+//	}
+//
+//	out, err := userintel.PasswordBreachedBulk(ctx, input)
+func (e *userIntel) Breached(ctx context.Context, input *BreachedRequest) (*pangea.PangeaResponse[BreachedResult], error) {
+	return request.DoPost(ctx, e.Client, "v1/breached", input, &BreachedResult{})
+}
+
+type BreachedRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	BreachID string `json:"breach_id"`          // The ID of a breach returned by a provider.
+	Verbose  *bool  `json:"verbose,omitempty"`  // Echo the API parameters in the response.
+	Provider string `json:"provider,omitempty"` // Get breach data from this provider.
+}
+
+type BreachedResult struct {
+	Found      bool           `json:"found"`                // A flag indicating if the lookup was successful
+	Data       interface{}    `json:"data,omitempty"`       // Breach details given by the provider
+	Parameters map[string]any `json:"parameters,omitempty"` // The parameters, which were passed in the request, echoed back
+}
