@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - More documentation to AuthZ and Secure Share filter lists.
-- Support for `cursor` field on `v1/user/breached` of `user-intel`
+- Support for `cursor` field on `v1/user/breached` of `user-intel` service.
+- `/v1/breached` endpoint support on `user-intel` service.
 
 ### Fixed
 
