@@ -108,4 +108,25 @@ func TestPangeaTimestamp(t *testing.T) {
 	ptt := time.Time(pt)
 	ptut := time.Time(ptu)
 	assert.Equal(t, ptt.UnixMilli(), ptut.UnixMilli())
+
+}
+
+func TestPangeaParseTimestamp(t *testing.T) {
+	ptu := pangeautil.PangeaTimestamp{}
+
+	ptb := []byte("2024-05-20T17:49:59.000000Z")
+	err := ptu.UnmarshalJSON(ptb)
+	assert.NoError(t, err)
+
+	ptb = []byte("2024-05-20T17:49:59.000Z")
+	err = ptu.UnmarshalJSON(ptb)
+	assert.NoError(t, err)
+
+	ptb = []byte("2024-05-20T17:49:59.000000")
+	err = ptu.UnmarshalJSON(ptb)
+	assert.NoError(t, err)
+
+	ptb = []byte("2024-05-20T17:49:59.000")
+	err = ptu.UnmarshalJSON(ptb)
+	assert.NoError(t, err)
 }
