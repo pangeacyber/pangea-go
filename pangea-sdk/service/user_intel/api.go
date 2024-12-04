@@ -64,16 +64,17 @@ type UserBreachedRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
 
-	Email       string `json:"email,omitempty"`
-	Username    string `json:"username,omitempty"`
-	PhoneNumber string `json:"phone_number,omitempty"`
-	IP          string `json:"ip,omitempty"`
-	Start       string `json:"start,omitempty"`
-	End         string `json:"end,omitempty"`
-	Verbose     *bool  `json:"verbose,omitempty"`
-	Raw         *bool  `json:"raw,omitempty"`
-	Provider    string `json:"provider,omitempty"`
-	Cursor      string `json:"cursor,omitempty"` // A token given in the raw response from SpyCloud. Post this back to paginate results
+	Email       string   `json:"email,omitempty"`
+	Username    string   `json:"username,omitempty"`
+	PhoneNumber string   `json:"phone_number,omitempty"`
+	IP          string   `json:"ip,omitempty"`
+	Start       string   `json:"start,omitempty"`
+	End         string   `json:"end,omitempty"`
+	Verbose     *bool    `json:"verbose,omitempty"`
+	Raw         *bool    `json:"raw,omitempty"`
+	Provider    string   `json:"provider,omitempty"`
+	Cursor      string   `json:"cursor,omitempty"`   // A token given in the raw response from SpyCloud. Post this back to paginate results
+	Severity    []string `json:"severity,omitempty"` // Filter for records that match one of the given severities
 }
 
 type UserBreachedBulkRequest struct {
@@ -90,6 +91,7 @@ type UserBreachedBulkRequest struct {
 	Verbose      *bool    `json:"verbose,omitempty"`
 	Raw          *bool    `json:"raw,omitempty"`
 	Provider     string   `json:"provider,omitempty"`
+	Severity     []string `json:"severity,omitempty"` // Filter for records that match one of the given severities
 }
 
 type UserBreachedData struct {
@@ -192,4 +194,40 @@ type UserPasswordBreachedBulkResult struct {
 	Data       map[string]UserPasswordBreachedData `json:"data"`
 	Parameters map[string]any                      `json:"parameters,omitempty"`
 	RawData    map[string]any                      `json:"raw_data,omitempty"`
+}
+
+// @summary Look up information about a specific breach
+//
+// @description Given a provider specific breach ID, find details about the breach.
+//
+// @operationId user_intel_post_v1_breach
+//
+// @example
+//
+//	input := &user_intel.BreachRequest{
+//		BreachID:     "66111",
+//	}
+//
+//	out, err := userintel.Breach(ctx, input)
+func (e *userIntel) Breach(ctx context.Context, input *BreachRequest) (*pangea.PangeaResponse[BreachResult], error) {
+	return request.DoPost(ctx, e.Client, "v1/breach", input, &BreachResult{})
+}
+
+type BreachRequest struct {
+	// Base request has ConfigID for multi-config projects
+	pangea.BaseRequest
+
+	BreachID string   `json:"breach_id,omitempty"` // The ID of a breach returned by a provider.
+	Verbose  *bool    `json:"verbose,omitempty"`   // Echo the API parameters in the response.
+	Provider string   `json:"provider,omitempty"`  // Get breach data from this provider.
+	Cursor   string   `json:"cursor,omitempty"`    // A token given in the raw response from SpyCloud. Post this back to paginate results
+	Start    string   `json:"start,omitempty"`     // This parameter allows you to define the starting point for a date range query on the spycloud_publish_date field
+	End      string   `json:"end,omitempty"`       // This parameter allows you to define the ending point for a date range query on the spycloud_publish_date field
+	Severity []string `json:"severity,omitempty"`  // Filter for records that match one of the given severities
+}
+
+type BreachResult struct {
+	Found      bool           `json:"found"`                // A flag indicating if the lookup was successful
+	Data       interface{}    `json:"data,omitempty"`       // Breach details given by the provider
+	Parameters map[string]any `json:"parameters,omitempty"` // The parameters, which were passed in the request, echoed back
 }
