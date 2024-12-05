@@ -83,6 +83,19 @@ type TextRequest struct {
 
 	// A set of redaction method overrides for any enabled rule. These methods override the config declared methods
 	RedactionMethodOverrides *RedactionMethodOverrides `json:"redaction_method_overrides,omitempty"`
+
+	VaultParameters *VaultParameters `json:"vault_parameters,omitempty"`
+
+	// Is this redact call going to be used in an LLM request?
+	LLMrequest *bool `json:"llm_request,omitempty"`
+}
+
+type VaultParameters struct {
+	// A vault key ID of an exportable key used to redact with FPE instead of using the service config default.
+	FPEkeyID string `json:"fpe_key_id,omitempty"`
+
+	// A vault secret ID of a secret used to salt a hash instead of using the service config default.
+	SaltSecretID string `json:"salt_secret_id,omitempty"`
 }
 
 type TextResult struct {
@@ -152,6 +165,11 @@ type StructuredRequest struct {
 
 	// A set of redaction method overrides for any enabled rule. These methods override the config declared methods
 	RedactionMethodOverrides *RedactionMethodOverrides `json:"redaction_method_overrides,omitempty"`
+
+	VaultParameters *VaultParameters `json:"vault_parameters,omitempty"`
+
+	// Is this redact call going to be used in an LLM request?
+	LLMrequest *bool `json:"llm_request,omitempty"`
 }
 
 type StructuredResult struct {

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More documentation to AuthZ and Secure Share filter lists.
 - Support for `cursor` field on `v1/user/breached` of `user-intel`
 - Milisecond time format support
+- `vault_parameters` and `llm_request` fields support on Redact service.
 
 ### Fixed
 
