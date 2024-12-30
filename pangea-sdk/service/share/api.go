@@ -81,6 +81,9 @@ type ItemData struct {
 	BillableSize      int      `json:"billable_size"`                // The number of billable bytes (includes Metadata, Tags, etc.) for the object.
 	CreatedAt         string   `json:"created_at"`                   // The date and time the object was created.
 	ExternalBucketKey string   `json:"external_bucket_key"`          // The key in the external bucket that contains this file.
+	FileTTL           string   `json:"file_ttl,omitempty"`           // The explicit file TTL setting for this object.
+	FileTTLEffective  string   `json:"file_ttl_effective,omitempty"` // The effective file TTL setting for this object, either explicitly set or inherited (see file_ttl_from_id.)
+	FileTTLFromID     string   `json:"file_ttl_from_id,omitempty"`   // The ID of the object the expiry / TTL is set from. Either a service configuration, the object itself, or a parent folder.
 	Folder            string   `json:"folder"`                       // The full path to the folder the object is stored in.
 	ID                string   `json:"id"`                           // The ID of a stored object.
 	MD5               string   `json:"md5"`                          // The MD5 hash of the file contents. Cannot be written to.
@@ -146,6 +149,7 @@ type FolderCreateRequest struct {
 	pangea.BaseRequest
 
 	Name     string   `json:"name,omitempty"`      // The name of an object.
+	FileTTL  *string  `json:"file_ttl,omitempty"`  // Duration until files within this folder are automatically deleted.
 	Metadata Metadata `json:"metadata,omitempty"`  // A set of string-based key/value pairs used to provide additional data about an object.
 	ParentID string   `json:"parent_id,omitempty"` // The ID of a stored object.
 	Folder   string   `json:"folder,omitempty"`    // The folder to place the folder in. Must match `parent_id` if also set.
@@ -226,6 +230,7 @@ type PutRequest struct {
 	MimeType          string      `json:"mimetype,omitempty"`           // The MIME type of the file, which will be verified by the server if provided. Uploads not matching the supplied MIME type will be rejected.
 	ParentID          string      `json:"parent_id,omitempty"`          // The parent ID of the object (a folder). Leave blank to keep in the root folder.
 	Folder            string      `json:"folder,omitempty"`             // The path to the parent folder. Leave blank for the root folder. Path must resolve to `parent_id` if also set.
+	FileTTL           *string     `json:"file_ttl,omitempty"`           // The TTL before expiry for the file.
 	Password          string      `json:"password,omitempty"`           // An optional password to protect the file with. Downloading the file will require this password.
 	PasswordAlgorithm string      `json:"password_algorithm,omitempty"` // An optional password algorithm to protect the file with. See symmetric vault password_algorithm.
 	SHA1              string      `json:"sha1,omitempty"`               // The hexadecimal-encoded SHA1 hash of the file data, which will be verified by the server if provided.
@@ -304,6 +309,7 @@ type UpdateRequest struct {
 	AddPassword          string   `json:"add_password,omitempty"`           // Protect the file with the supplied password.
 	AddPasswordAlgorithm string   `json:"add_password_algorithm,omitempty"` // The algorithm to use to password protect the file.
 	AddTags              Tags     `json:"add_tags,omitempty"`               // A list of Tags to add. It is not an error to provide a tag which already exists.
+	FileTTL              *string  `json:"file_ttl,omitempty"`               // Set the file TTL.
 	Name                 string   `json:"name,omitempty"`                   // Sets the object's Name.
 	Metadata             Metadata `json:"metadata,omitempty"`               // Set the object's metadata.
 	RemoveMetadata       Metadata `json:"remove_metadata,omitempty"`        // A list of metadata key/values to remove in the object. It is not an error for a provided key to not exist. If a provided key exists but doesn't match the provided value, it will not be removed.
