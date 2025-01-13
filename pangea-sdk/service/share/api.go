@@ -81,6 +81,9 @@ type ItemData struct {
 	BillableSize      int      `json:"billable_size"`                // The number of billable bytes (includes Metadata, Tags, etc.) for the object.
 	CreatedAt         string   `json:"created_at"`                   // The date and time the object was created.
 	ExternalBucketKey string   `json:"external_bucket_key"`          // The key in the external bucket that contains this file.
+	FileTTL           string   `json:"file_ttl,omitempty"`           // The explicit file TTL setting for this object.
+	FileTTLEffective  string   `json:"file_ttl_effective,omitempty"` // The effective file TTL setting for this object, either explicitly set or inherited (see file_ttl_from_id.)
+	FileTTLFromID     string   `json:"file_ttl_from_id,omitempty"`   // The ID of the object the expiry / TTL is set from. Either a service configuration, the object itself, or a parent folder.
 	Folder            string   `json:"folder"`                       // The full path to the folder the object is stored in.
 	ID                string   `json:"id"`                           // The ID of a stored object.
 	MD5               string   `json:"md5"`                          // The MD5 hash of the file contents. Cannot be written to.
@@ -146,6 +149,7 @@ type FolderCreateRequest struct {
 	pangea.BaseRequest
 
 	Name     string   `json:"name,omitempty"`      // The name of an object.
+	FileTTL  *string  `json:"file_ttl,omitempty"`  // Duration until files within this folder are automatically deleted.
 	Metadata Metadata `json:"metadata,omitempty"`  // A set of string-based key/value pairs used to provide additional data about an object.
 	ParentID string   `json:"parent_id,omitempty"` // The ID of a stored object.
 	Folder   string   `json:"folder,omitempty"`    // The folder to place the folder in. Must match `parent_id` if also set.
@@ -226,6 +230,7 @@ type PutRequest struct {
 	MimeType          string      `json:"mimetype,omitempty"`           // The MIME type of the file, which will be verified by the server if provided. Uploads not matching the supplied MIME type will be rejected.
 	ParentID          string      `json:"parent_id,omitempty"`          // The parent ID of the object (a folder). Leave blank to keep in the root folder.
 	Folder            string      `json:"folder,omitempty"`             // The path to the parent folder. Leave blank for the root folder. Path must resolve to `parent_id` if also set.
+	FileTTL           *string     `json:"file_ttl,omitempty"`           // The TTL before expiry for the file.
 	Password          string      `json:"password,omitempty"`           // An optional password to protect the file with. Downloading the file will require this password.
 	PasswordAlgorithm string      `json:"password_algorithm,omitempty"` // An optional password algorithm to protect the file with. See symmetric vault password_algorithm.
 	SHA1              string      `json:"sha1,omitempty"`               // The hexadecimal-encoded SHA1 hash of the file data, which will be verified by the server if provided.
@@ -304,6 +309,7 @@ type UpdateRequest struct {
 	AddPassword          string   `json:"add_password,omitempty"`           // Protect the file with the supplied password.
 	AddPasswordAlgorithm string   `json:"add_password_algorithm,omitempty"` // The algorithm to use to password protect the file.
 	AddTags              Tags     `json:"add_tags,omitempty"`               // A list of Tags to add. It is not an error to provide a tag which already exists.
+	FileTTL              *string  `json:"file_ttl,omitempty"`               // Set the file TTL.
 	Name                 string   `json:"name,omitempty"`                   // Sets the object's Name.
 	Metadata             Metadata `json:"metadata,omitempty"`               // Set the object's metadata.
 	RemoveMetadata       Metadata `json:"remove_metadata,omitempty"`        // A list of metadata key/values to remove in the object. It is not an error for a provided key to not exist. If a provided key exists but doesn't match the provided value, it will not be removed.
@@ -371,38 +377,47 @@ func NewFilterList() *FilterList {
 	}
 }
 
+// Only records where the object exists in the supplied parent folder path name.
 func (f *FilterList) Folder() *pangea.FilterEqual[string] {
 	return f.folder
 }
 
+// A list of tags that all must be present.
 func (f *FilterList) Tags() *pangea.FilterEqual[[]string] {
 	return f.tags
 }
 
+// Only records where created_at equals this value.
 func (f *FilterList) CreatedAt() *pangea.FilterRange[string] {
 	return f.createdAt
 }
 
+// Only records where id equals this value.
 func (f *FilterList) ID() *pangea.FilterMatch[string] {
 	return f.id
 }
 
+// Only records where name equals this value.
 func (f *FilterList) Name() *pangea.FilterMatch[string] {
 	return f.name
 }
 
+// Only records where parent_id equals this value.
 func (f *FilterList) ParentID() *pangea.FilterMatch[string] {
 	return f.parentId
 }
 
+// Only records where size equals this value.
 func (f *FilterList) Size() *pangea.FilterRange[string] {
 	return f.size
 }
 
+// Only records where type equals this value.
 func (f *FilterList) Type() *pangea.FilterMatch[string] {
 	return f.type_
 }
 
+// Only records where updated_at equals this value.
 func (f *FilterList) UpdatedAt() *pangea.FilterRange[string] {
 	return f.updatedAt
 }
@@ -575,7 +590,7 @@ func (e *share) ShareLinkGet(ctx context.Context, input *ShareLinkGetRequest) (*
 type FilterShareLinkList struct {
 	pangea.FilterBase
 	id             *pangea.FilterMatch[string]
-	target         *pangea.FilterMatch[string]
+	targetId       *pangea.FilterMatch[string]
 	linkType       *pangea.FilterMatch[string]
 	accessCount    *pangea.FilterRange[string]
 	maxAccessCount *pangea.FilterRange[string]
@@ -590,7 +605,7 @@ func NewFilterShareLinkList() *FilterShareLinkList {
 	return &FilterShareLinkList{
 		FilterBase:     *pangea.NewFilterBase(filter),
 		id:             pangea.NewFilterMatch[string]("id", &filter),
-		target:         pangea.NewFilterMatch[string]("target", &filter),
+		targetId:       pangea.NewFilterMatch[string]("target_id", &filter),
 		linkType:       pangea.NewFilterMatch[string]("link_type", &filter),
 		accessCount:    pangea.NewFilterRange[string]("access_count", &filter),
 		maxAccessCount: pangea.NewFilterRange[string]("max_access_count", &filter),
@@ -601,38 +616,47 @@ func NewFilterShareLinkList() *FilterShareLinkList {
 	}
 }
 
+// Only records where id equals this value.
 func (f *FilterShareLinkList) ID() *pangea.FilterMatch[string] {
 	return f.id
 }
 
-func (f *FilterShareLinkList) Target() *pangea.FilterMatch[string] {
-	return f.target
+// Only records where target_id equals this value.
+func (f *FilterShareLinkList) TargetID() *pangea.FilterMatch[string] {
+	return f.targetId
 }
 
+// Only records where link_type equals this value.
 func (f *FilterShareLinkList) LinkType() *pangea.FilterMatch[string] {
 	return f.linkType
 }
 
+// Only records where link equals this value.
 func (f *FilterShareLinkList) Link() *pangea.FilterMatch[string] {
 	return f.link
 }
 
+// Only records where access_count equals this value.
 func (f *FilterShareLinkList) AccessCount() *pangea.FilterRange[string] {
 	return f.accessCount
 }
 
+// Only records where max_access_count equals this value.
 func (f *FilterShareLinkList) MaxAccessCount() *pangea.FilterRange[string] {
 	return f.maxAccessCount
 }
 
+// Only records where created_at equals this value.
 func (f *FilterShareLinkList) CreatedAt() *pangea.FilterRange[string] {
 	return f.createdAt
 }
 
+// Only records where expires_at equals this value.
 func (f *FilterShareLinkList) ExpiresAt() *pangea.FilterRange[string] {
 	return f.expiresAt
 }
 
+// Only records where last_accessed_at equals this value.
 func (f *FilterShareLinkList) LastAccessedAt() *pangea.FilterRange[string] {
 	return f.lastAccessedAt
 }

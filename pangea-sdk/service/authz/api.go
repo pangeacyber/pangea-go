@@ -83,26 +83,32 @@ func NewFilterUserList() *TupleListFilter {
 	}
 }
 
+// Only records where resource type equals this value.
 func (fu *TupleListFilter) ResourceType() *pangea.FilterMatch[string] {
 	return fu.resourceType
 }
 
+// Only records where resource id equals this value.
 func (fu *TupleListFilter) ResourceID() *pangea.FilterMatch[string] {
 	return fu.resourceID
 }
 
+// Only records where subject type equals this value.
 func (fu *TupleListFilter) SubjectType() *pangea.FilterMatch[string] {
 	return fu.subjectType
 }
 
+// Only records where subject id equals this value.
 func (fu *TupleListFilter) SubjectID() *pangea.FilterMatch[string] {
 	return fu.subjectID
 }
 
+// Only records where subject action equals this value.
 func (fu *TupleListFilter) SubjectAction() *pangea.FilterMatch[string] {
 	return fu.subjectAction
 }
 
+// Only records where relation equals this value.
 func (fu *TupleListFilter) Relation() *pangea.FilterMatch[string] {
 	return fu.relation
 }
@@ -149,10 +155,10 @@ type TupleListResult struct {
 //
 // @example
 //
-// filter := authz.NewFilterUserList()
-// filter.ResourceType().Set(pangea.String("folder"))
-// filter.ResourceID().Set(pangea.String("folder_id"))
-
+//	filter := authz.NewFilterUserList()
+//	filter.ResourceType().Set(pangea.String("folder"))
+//	filter.ResourceID().Set(pangea.String("folder_id"))
+//
 //	rListWithResource, err := cli.TupleList(ctx, &authz.TupleListRequest{
 //		Filter: filter.Filter(),
 //	})

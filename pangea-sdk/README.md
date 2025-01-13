@@ -16,7 +16,7 @@ A Go SDK for integrating with Pangea services. Supports Go v1.22 and above.
 #### GA releases
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v4
 ```
 
 <a name="beta-releases"></a>
