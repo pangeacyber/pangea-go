@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	version         = "4.2.0"
+	version         = "4.3.0"
 	pangeaUserAgent = "pangea-go/" + version
 )
 
