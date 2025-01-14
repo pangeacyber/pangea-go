@@ -101,9 +101,7 @@ type SanitizeContent struct {
 
 	// If redact is enabled, avoids redacting the file and instead returns the
 	// PII analysis engine results. Only works if redact is enabled.
-	RedactDetectOnly  *bool `json:"redact_detect_only,omitempty"`
-	RemoveAttachments *bool `json:"remove_attachments,omitempty"`
-	RemoveInteractive *bool `json:"remove_interactive,omitempty"`
+	RedactDetectOnly *bool `json:"redact_detect_only,omitempty"`
 }
 
 // SanitizeShareOutput represents the SanitizeShareOutput API request model.
@@ -155,18 +153,11 @@ type RedactData struct {
 	RecognizerResults []RedactRecognizerResult `json:"recognizer_results,omitempty"`
 }
 
-// CDR represents the CDR PangeaResponseResult.
-type CDR struct {
-	FileAttachmentsRemoved     int `json:"file_attachments_removed"`
-	InteractiveContentsRemoved int `json:"interactive_contents_removed"`
-}
-
 // SanitizeData represents the SanitizeData PangeaResponseResult.
 type SanitizeData struct {
 	Defang        *DefangData `json:"defang,omitempty"`
 	Redact        *RedactData `json:"redact,omitempty"`
 	MaliciousFile bool        `json:"malicious_file"`
-	CDR           *CDR        `json:"cdr,omitempty"`
 }
 
 // SanitizeResult represents the SanitizeResult PangeaResponseResult.

@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Set filePath to your own file
-	const filePath = "./testdata/ds11.pdf"
+	const filePath = "./testdata/test-sanitize.txt"
 
 	// Load Pangea token from environment variables
 	token := os.Getenv("PANGEA_SANITIZE_TOKEN")
@@ -58,8 +58,6 @@ func main() {
 			DomainIntelProvider: "crowdstrike",
 			Defang:              pangea.Bool(true),
 			DefangThreshold:     pangea.Int(20),
-			RemoveInteractive:   pangea.Bool(true),
-			RemoveAttachments:   pangea.Bool(true),
 			Redact:              pangea.Bool(true),
 		},
 		// Disable Secure Share output
@@ -94,7 +92,6 @@ func main() {
 
 	fmt.Printf("\tRedact data: %s\n", pangea.Stringify(resp.Result.Data.Redact))
 	fmt.Printf("\tDefang data: %s\n", pangea.Stringify(resp.Result.Data.Defang))
-	fmt.Printf("\tCDR data: %s\n", pangea.Stringify(resp.Result.Data.CDR))
 
 	if resp.Result.Data.MaliciousFile {
 		fmt.Println("File IS malicious")
