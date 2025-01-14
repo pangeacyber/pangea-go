@@ -31,10 +31,10 @@ type PromptInjectionResult struct {
 }
 
 type PiiEntity struct {
-	Type     string   `json:"type"`
-	Value    string   `json:"value"`
-	Redacted bool     `json:"redacted"`
-	StartPos *float64 `json:"start_pos,omitempty"`
+	Type     string `json:"type"`
+	Value    string `json:"value"`
+	Redacted bool   `json:"redacted"`
+	StartPos *int   `json:"start_pos,omitempty"`
 }
 
 type PiiEntityResult struct {
@@ -45,7 +45,7 @@ type MaliciousEntity struct {
 	Type     string                 `json:"type"`
 	Value    string                 `json:"value"`
 	Redacted *bool                  `json:"redacted,omitempty"`
-	StartPos *float64               `json:"start_pos,omitempty"`
+	StartPos *int                   `json:"start_pos,omitempty"`
 	Raw      map[string]interface{} `json:"raw,omitempty"`
 }
 
