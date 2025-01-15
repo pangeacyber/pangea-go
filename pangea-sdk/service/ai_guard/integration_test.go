@@ -20,19 +20,19 @@ func TestTextGuard(t *testing.T) {
 
 	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &ai_guard.TextGuardRequest{Text: "hello world"}
+	input := &ai_guard.TextGuardRequest{Text: "hello world", Recipe: "pangea_prompt_guard"}
 	out, err := client.GuardText(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.RedactedPrompt)
-	assert.Zero(t, out.Result.Findings.ArtifactCount)
-	assert.Zero(t, out.Result.Findings.MaliciousCount)
+	assert.NotNil(t, out.Result.Prompt)
+	assert.False(t, out.Result.Detectors.PromptInjection.Detected)
+	assert.False(t, out.Result.Detectors.PiiEntity.Detected)
+	assert.False(t, out.Result.Detectors.MaliciousEntity.Detected)
 
-	input = &ai_guard.TextGuardRequest{Text: "security@pangea.cloud"}
+	input = &ai_guard.TextGuardRequest{Text: "security@pangea.cloud", Recipe: "pangea_prompt_guard"}
 	out, err = client.GuardText(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.RedactedPrompt)
-	assert.NotZero(t, out.Result.Findings.ArtifactCount)
-	assert.Zero(t, out.Result.Findings.MaliciousCount)
+	assert.NotNil(t, out.Result.Prompt)
+	assert.True(t, out.Result.Detectors.PiiEntity.Detected)
 }
