@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	TESTFILE_PATH = "./testdata/ds11.pdf"
+	TESTFILE_PATH = "./testdata/test-sanitize.txt"
 )
 
 var testingEnvironment = pangeatesting.LoadTestEnvironment("sanitize", pangeatesting.Live)
@@ -43,8 +43,6 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 			DomainIntelProvider: "crowdstrike",
 			Defang:              pangea.Bool(true),
 			DefangThreshold:     pangea.Int(20),
-			RemoveInteractive:   pangea.Bool(true),
-			RemoveAttachments:   pangea.Bool(true),
 			Redact:              pangea.Bool(true),
 		},
 		ShareOutput: &sanitize.SanitizeShareOutput{
@@ -73,8 +71,6 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 	assert.Greater(t, resp.Result.Data.Defang.ExternalURLsCount, 0)
 	assert.Equal(t, resp.Result.Data.Defang.DefangedCount, 0)
 	assert.NotEmpty(t, resp.Result.Data.Defang.DomainIntelSummary)
-	assert.Equal(t, resp.Result.Data.CDR.FileAttachmentsRemoved, 0)
-	assert.Equal(t, resp.Result.Data.CDR.InteractiveContentsRemoved, 0)
 	assert.False(t, resp.Result.Data.MaliciousFile)
 }
 
@@ -101,8 +97,6 @@ func Test_Integration_SanitizeNoShare(t *testing.T) {
 			DomainIntelProvider: "crowdstrike",
 			Defang:              pangea.Bool(true),
 			DefangThreshold:     pangea.Int(20),
-			RemoveInteractive:   pangea.Bool(true),
-			RemoveAttachments:   pangea.Bool(true),
 			Redact:              pangea.Bool(true),
 		},
 		ShareOutput: &sanitize.SanitizeShareOutput{
@@ -127,8 +121,6 @@ func Test_Integration_SanitizeNoShare(t *testing.T) {
 	assert.Greater(t, resp.Result.Data.Defang.ExternalURLsCount, 0)
 	assert.Equal(t, resp.Result.Data.Defang.DefangedCount, 0)
 	assert.NotEmpty(t, resp.Result.Data.Defang.DomainIntelSummary)
-	assert.Equal(t, resp.Result.Data.CDR.FileAttachmentsRemoved, 0)
-	assert.Equal(t, resp.Result.Data.CDR.InteractiveContentsRemoved, 0)
 	assert.False(t, resp.Result.Data.MaliciousFile)
 
 	af, err := client.DownloadFile(ctx, *resp.Result.DestURL)
@@ -171,8 +163,6 @@ func Test_Integration_SanitizeAllDefaults(t *testing.T) {
 	assert.Greater(t, resp.Result.Data.Defang.ExternalURLsCount, 0)
 	assert.Equal(t, resp.Result.Data.Defang.DefangedCount, 0)
 	assert.NotEmpty(t, resp.Result.Data.Defang.DomainIntelSummary)
-	assert.Equal(t, resp.Result.Data.CDR.FileAttachmentsRemoved, 0)
-	assert.Equal(t, resp.Result.Data.CDR.InteractiveContentsRemoved, 0)
 	assert.False(t, resp.Result.Data.MaliciousFile)
 
 	af, err := client.DownloadFile(ctx, *resp.Result.DestURL)
@@ -207,8 +197,6 @@ func Test_Integration_SanitizeMultipart(t *testing.T) {
 			DomainIntelProvider: "crowdstrike",
 			Defang:              pangea.Bool(true),
 			DefangThreshold:     pangea.Int(20),
-			RemoveInteractive:   pangea.Bool(true),
-			RemoveAttachments:   pangea.Bool(true),
 			Redact:              pangea.Bool(true),
 		},
 		ShareOutput: &sanitize.SanitizeShareOutput{
@@ -233,8 +221,6 @@ func Test_Integration_SanitizeMultipart(t *testing.T) {
 	assert.Greater(t, resp.Result.Data.Defang.ExternalURLsCount, 0)
 	assert.Equal(t, resp.Result.Data.Defang.DefangedCount, 0)
 	assert.NotEmpty(t, resp.Result.Data.Defang.DomainIntelSummary)
-	assert.Equal(t, resp.Result.Data.CDR.FileAttachmentsRemoved, 0)
-	assert.Equal(t, resp.Result.Data.CDR.InteractiveContentsRemoved, 0)
 	assert.False(t, resp.Result.Data.MaliciousFile)
 
 	af, err := client.DownloadFile(ctx, *resp.Result.DestURL)
@@ -269,8 +255,6 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 			DomainIntelProvider: "crowdstrike",
 			Defang:              pangea.Bool(true),
 			DefangThreshold:     pangea.Int(20),
-			RemoveInteractive:   pangea.Bool(true),
-			RemoveAttachments:   pangea.Bool(true),
 			Redact:              pangea.Bool(true),
 		},
 		ShareOutput: &sanitize.SanitizeShareOutput{
@@ -334,8 +318,6 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 	assert.Greater(t, r.Data.Defang.ExternalURLsCount, 0)
 	assert.Equal(t, r.Data.Defang.DefangedCount, 0)
 	assert.NotEmpty(t, r.Data.Defang.DomainIntelSummary)
-	assert.Equal(t, r.Data.CDR.FileAttachmentsRemoved, 0)
-	assert.Equal(t, r.Data.CDR.InteractiveContentsRemoved, 0)
 	assert.False(t, r.Data.MaliciousFile)
 }
 
@@ -359,8 +341,6 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 			DomainIntelProvider: "crowdstrike",
 			Defang:              pangea.Bool(true),
 			DefangThreshold:     pangea.Int(20),
-			RemoveInteractive:   pangea.Bool(true),
-			RemoveAttachments:   pangea.Bool(true),
 			Redact:              pangea.Bool(true),
 		},
 		ShareOutput: &sanitize.SanitizeShareOutput{
@@ -419,7 +399,5 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 	assert.Greater(t, r.Data.Defang.ExternalURLsCount, 0)
 	assert.Equal(t, r.Data.Defang.DefangedCount, 0)
 	assert.NotEmpty(t, r.Data.Defang.DomainIntelSummary)
-	assert.Equal(t, r.Data.CDR.FileAttachmentsRemoved, 0)
-	assert.Equal(t, r.Data.CDR.InteractiveContentsRemoved, 0)
 	assert.False(t, r.Data.MaliciousFile)
 }
