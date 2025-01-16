@@ -29,12 +29,13 @@ type Message struct {
 type GuardRequest struct {
 	pangea.BaseRequest
 
-	Messages []Message `json:"messages"`
+	Messages  []Message `json:"messages"`            // Prompt content and role array.
+	Analyzers []string  `json:"analyzers,omitempty"` // Specific analyzers to be used in the call.
 }
 
 type GuardResult struct {
-	Detected   bool   `json:"detected"`
-	Type       string `json:"type,omitempty"`
-	Detector   string `json:"detector,omitempty"`
-	Confidence int    `json:"confidence"`
+	Detected   bool   `json:"detected"`           // Boolean response for if the prompt was considered malicious or not
+	Type       string `json:"type,omitempty"`     // Type of analysis, either direct or indirect
+	Analyzer   string `json:"analyzer,omitempty"` // Prompt Analyzers for identifying and rejecting properties of prompts
+	Confidence int    `json:"confidence"`         // Percent of confidence in the detection result, ranging from 0 to 100
 }

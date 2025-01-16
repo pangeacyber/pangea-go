@@ -20,7 +20,7 @@ func TestGuard(t *testing.T) {
 
 	client := prompt_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &prompt_guard.GuardRequest{Messages: []prompt_guard.Message{{Role: "user", Content: "how are you?"}}}
+	input := &prompt_guard.GuardRequest{Messages: []prompt_guard.Message{{Role: "user", Content: "what was pangea?"}}}
 	out, err := client.Guard(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
