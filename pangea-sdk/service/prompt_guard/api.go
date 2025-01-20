@@ -26,6 +26,12 @@ type Message struct {
 	Content string `json:"content"`
 }
 
+type Classification struct {
+	Category   string  `json:"category"`   // Classification category
+	Label      string  `json:"label"`      // Classification label
+	Confidence float32 `json:"confidence"` // Confidence score for the classification
+}
+
 type GuardRequest struct {
 	pangea.BaseRequest
 
@@ -34,8 +40,10 @@ type GuardRequest struct {
 }
 
 type GuardResult struct {
-	Detected   bool   `json:"detected"`           // Boolean response for if the prompt was considered malicious or not
-	Type       string `json:"type,omitempty"`     // Type of analysis, either direct or indirect
-	Analyzer   string `json:"analyzer,omitempty"` // Prompt Analyzers for identifying and rejecting properties of prompts
-	Confidence int    `json:"confidence"`         // Percent of confidence in the detection result, ranging from 0 to 100
+	Detected        bool             `json:"detected"`           // Boolean response for if the prompt was considered malicious or not
+	Type            string           `json:"type,omitempty"`     // Type of analysis, either direct or indirect
+	Analyzer        string           `json:"analyzer,omitempty"` // Prompt Analyzers for identifying and rejecting properties of prompts
+	Confidence      int              `json:"confidence"`         // Percent of confidence in the detection result, ranging from 0 to 100
+	Info            string           `json:"info,omitempty"`     // Extra information about the detection result
+	Classifications []Classification `json:"classifications"`    // List of classification results with labels and confidence scores
 }
