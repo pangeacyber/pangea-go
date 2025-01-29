@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Deprecated `Config.Enviroment` (typo) in favor of `Config.Environment`.
+- Clarified what `Config.Environment` affects.
+
 ### Removed
 
 - CDR and PDF support in Sanitize.
