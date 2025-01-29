@@ -27,13 +27,14 @@ type AnalyzerResponse struct {
 }
 
 type PromptInjectionResult struct {
+	Action            string             `json:"action"`
 	AnalyzerResponses []AnalyzerResponse `json:"analyzer_responses"`
 }
 
 type PiiEntity struct {
 	Type     string `json:"type"`
 	Value    string `json:"value"`
-	Redacted bool   `json:"redacted"`
+	Action   string `json:"action"`
 	StartPos *int   `json:"start_pos,omitempty"`
 }
 
@@ -44,7 +45,7 @@ type PiiEntityResult struct {
 type MaliciousEntity struct {
 	Type     string                 `json:"type"`
 	Value    string                 `json:"value"`
-	Redacted *bool                  `json:"redacted,omitempty"`
+	Action   string                 `json:"action"`
 	StartPos *int                   `json:"start_pos,omitempty"`
 	Raw      map[string]interface{} `json:"raw,omitempty"`
 }
@@ -53,26 +54,55 @@ type MaliciousEntityResult struct {
 	Entities []MaliciousEntity `json:"entities"`
 }
 
+type SecretsEntity struct {
+	Type          string `json:"type"`
+	Value         string `json:"value"`
+	Action        string `json:"action"`
+	StartPos      *int   `json:"start_pos,omitempty"`
+	RedactedValue string `json:"redacted_value,omitempty"`
+}
+
+type SecretsEntityResult struct {
+	Entities []SecretsEntity `json:"entities"`
+}
+
+type LanguageDetectionResult struct {
+	Language string `json:"language"`
+	Action   string `json:"action"`
+}
+
+type CodeDetectionResult struct {
+	Language string `json:"language"`
+	Action   string `json:"action"`
+}
 type TextGuardDetector[T any] struct {
 	Detected bool `json:"detected"`
 	Data     *T   `json:"data,omitempty"`
 }
 
 type TextGuardDetectors struct {
-	PromptInjection *TextGuardDetector[PromptInjectionResult] `json:"prompt_injection,omitempty"`
-	PiiEntity       *TextGuardDetector[PiiEntityResult]       `json:"pii_entity,omitempty"`
-	MaliciousEntity *TextGuardDetector[MaliciousEntityResult] `json:"malicious_entity,omitempty"`
+	PromptInjection      *TextGuardDetector[PromptInjectionResult]   `json:"prompt_injection,omitempty"`
+	PiiEntity            *TextGuardDetector[PiiEntityResult]         `json:"pii_entity,omitempty"`
+	MaliciousEntity      *TextGuardDetector[MaliciousEntityResult]   `json:"malicious_entity,omitempty"`
+	SecretsDetection     *TextGuardDetector[SecretsEntityResult]     `json:"secrets_detection,omitempty"`
+	ProfanityAndToxicity *TextGuardDetector[any]                     `json:"profanity_and_toxicity,omitempty"`
+	CustomEntity         *TextGuardDetector[any]                     `json:"custom_entity,omitempty"`
+	LanguageDetection    *TextGuardDetector[LanguageDetectionResult] `json:"language_detection,omitempty"`
+	CodeDetection        *TextGuardDetector[CodeDetectionResult]     `json:"code_detection,omitempty"`
 }
 
 type TextGuardRequest struct {
 	pangea.BaseRequest
 
-	Text   string `json:"text"`
-	Recipe string `json:"recipe,omitempty"`
-	Debug  bool   `json:"debug,omitempty"`
+	Text     string `json:"text,omitempty"`     // Text to be scanned by AI Guard for PII, sensitive data, malicious content, and other data types defined by the configuration. Supports processing up to 10KB of text.
+	Messages any    `json:"messages,omitempty"` // Structured data to be scanned by AI Guard for PII, sensitive data, malicious content, and other data types defined by the configuration. Supports processing up to 10KB of text.
+	Recipe   string `json:"recipe,omitempty"`   // Recipe key of a configuration of data types and settings defined in the Pangea User Console. It specifies the rules that are to be applied to the text, such as defang malicious URLs.
+	Debug    bool   `json:"debug,omitempty"`    // Setting this value to true will provide a detailed analysis of the text data
 }
 
 type TextGuardResult struct {
-	Detectors TextGuardDetectors `json:"detectors"`
-	Prompt    string             `json:"prompt"`
+	Detectors      TextGuardDetectors `json:"detectors"`       // Result of the recipe analyzing and input prompt.
+	PromptText     string             `json:"prompt_text"`     // Updated prompt text, if applicable.
+	PromptMessages any                `json:"prompt_messages"` // Updated prompt messages, if applicable.
+	Blocked        bool               `json:"blocked"`
 }
