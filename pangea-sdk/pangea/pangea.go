@@ -89,8 +89,8 @@ type Config struct {
 	// @deprecated: Set config_id with options in service initialization if supported
 	ConfigID string
 
-	// The HTTP client to be used by the client.
-	//  It defaults to defaults.HTTPClient
+	// The HTTP client to be used by the client. It defaults to
+	// defaults.HTTPClient
 	HTTPClient *http.Client
 
 	// Base domain for API requests.
@@ -99,7 +99,14 @@ type Config struct {
 	// Set to true to use plain http
 	Insecure bool
 
+	// Environment specifies the Pangea environment. If set to "local", then
+	// Domain must be the full host (i.e., hostname and port) for the Pangea
+	// service that this Config will be used for.
+	Environment string
+
 	// Set to "local" for testing locally
+	//
+	// Deprecated: Enviroment is a typo. Use Environment instead.
 	Enviroment string
 
 	// AdditionalHeaders is a map of additional headers to be sent with the request.
@@ -234,7 +241,7 @@ func (c *Client) GetURL(path string) (string, error) {
 		if cfg.Insecure {
 			scheme = "http://"
 		}
-		if cfg.Enviroment == "local" {
+		if cfg.Environment == "local" || cfg.Enviroment == "local" {
 			// If we are testing locally do not use service
 			endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
 		} else {
@@ -894,7 +901,7 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 	err := r.UnmarshalResult(&pa)
 	if err != nil {
 		pa = PangeaErrors{}
-		em = fmt.Sprintf("API error: %s. Unmarshall Error: %s.", *r.ResponseHeader.Summary, err.Error())
+		em = fmt.Sprintf("API error: %s. Unmarshal Error: %s.", *r.ResponseHeader.Summary, err.Error())
 		apiError = fmt.Errorf(em)
 	} else {
 		em = fmt.Sprintf("API error: %s.", *r.ResponseHeader.Summary)
@@ -930,6 +937,10 @@ func mergeInConfig(dst *Config, other *Config) {
 
 	if other.Domain != "" {
 		dst.Domain = other.Domain
+	}
+
+	if other.Environment != "" {
+		dst.Environment = other.Environment
 	}
 
 	if other.Enviroment != "" {

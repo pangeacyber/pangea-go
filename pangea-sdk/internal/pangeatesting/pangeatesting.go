@@ -49,10 +49,10 @@ func TestConfig(url string) *pangea.Config {
 	}
 
 	return &pangea.Config{
-		Token:      "TestToken",
-		Domain:     url,
-		Insecure:   true,
-		Enviroment: "local",
+		Token:       "TestToken",
+		Domain:      url,
+		Insecure:    true,
+		Environment: "local",
 	}
 }
 
