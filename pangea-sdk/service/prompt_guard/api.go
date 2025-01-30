@@ -28,22 +28,24 @@ type Message struct {
 
 type Classification struct {
 	Category   string  `json:"category"`   // Classification category
-	Label      string  `json:"label"`      // Classification label
+	Detected   bool    `json:"detected"`   // Classification detection result
 	Confidence float32 `json:"confidence"` // Confidence score for the classification
 }
 
 type GuardRequest struct {
 	pangea.BaseRequest
 
-	Messages  []Message `json:"messages"`            // Prompt content and role array.
-	Analyzers []string  `json:"analyzers,omitempty"` // Specific analyzers to be used in the call.
+	Messages  []Message `json:"messages"`            // Prompt content and role array. The content is the text that will be analyzed for redaction.
+	Analyzers []string  `json:"analyzers,omitempty"` // Specific analyzers to be used in the call
+	Classify  bool      `json:"classify,omitempty"`  // Boolean to enable classification of the content
+	Threshold float32   `json:"threshold,omitempty"` // Threshold for the confidence score to consider the prompt as malicious
 }
 
 type GuardResult struct {
 	Detected        bool             `json:"detected"`           // Boolean response for if the prompt was considered malicious or not
 	Type            string           `json:"type,omitempty"`     // Type of analysis, either direct or indirect
 	Analyzer        string           `json:"analyzer,omitempty"` // Prompt Analyzers for identifying and rejecting properties of prompts
-	Confidence      int              `json:"confidence"`         // Percent of confidence in the detection result, ranging from 0 to 100
+	Confidence      float32          `json:"confidence"`         // Percent of confidence in the detection result, ranging from 0 to 1
 	Info            string           `json:"info,omitempty"`     // Extra information about the detection result
 	Classifications []Classification `json:"classifications"`    // List of classification results with labels and confidence scores
 }
