@@ -1,6 +1,6 @@
 module examples/vault
 
-go 1.22
+go 1.23.6
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.3.0
 
