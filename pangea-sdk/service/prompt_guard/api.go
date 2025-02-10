@@ -38,7 +38,6 @@ type GuardRequest struct {
 	Messages  []Message `json:"messages"`            // Prompt content and role array. The content is the text that will be analyzed for redaction.
 	Analyzers []string  `json:"analyzers,omitempty"` // Specific analyzers to be used in the call
 	Classify  bool      `json:"classify,omitempty"`  // Boolean to enable classification of the content
-	Threshold float32   `json:"threshold,omitempty"` // Threshold for the confidence score to consider the prompt as malicious
 }
 
 type GuardResult struct {
