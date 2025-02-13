@@ -7,18 +7,18 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 )
 
-// @summary Text guard (Beta)
+// @summary Text guard
 //
 // @description Guard text.
 //
-// @operationId ai_guard_post_v1beta_text_guard
+// @operationId ai_guard_post_v1_text_guard
 //
 // @example
 //
 //	input := &ai_guard.TextGuardRequest{Text: "hello world"}
 //	response, err := client.GuardText(ctx, input)
 func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/text/guard", input, &TextGuardResult{})
+	return request.DoPost(ctx, e.Client, "v1/text/guard", input, &TextGuardResult{})
 }
 
 type AnalyzerResponse struct {
