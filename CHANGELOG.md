@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated `Config.Enviroment` (typo) in favor of `Config.Environment`.
 - Clarified what `Config.Environment` affects.
 - AI Guard: replaced `redacted` with `action`.
+- AI Guard: updated to v1.
 
 ### Removed
 
