@@ -1,6 +1,6 @@
 module examples/share
 
-go 1.22
+go 1.24.0
 
 require (
 	github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.3.0
