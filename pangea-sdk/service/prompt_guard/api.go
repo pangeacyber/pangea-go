@@ -7,18 +7,18 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
 )
 
-// @summary Guard (Beta)
+// @summary Guard
 //
 // @description Guard messages.
 //
-// @operationId prompt_guard_post_v1beta_guard
+// @operationId prompt_guard_post_v1_guard
 //
 // @example
 //
 //	input := &prompt_guard.GuardRequest{Messages: []prompt_guard.Message{{Role: "user", Content: "how are you?"}}}
 //	response, err := client.Guard(ctx, input)
 func (e *promptGuard) Guard(ctx context.Context, input *GuardRequest) (*pangea.PangeaResponse[GuardResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/guard", input, &GuardResult{})
+	return request.DoPost(ctx, e.Client, "v1/guard", input, &GuardResult{})
 }
 
 type Message struct {
