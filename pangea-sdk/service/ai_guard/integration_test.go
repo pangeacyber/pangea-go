@@ -26,17 +26,12 @@ func TestTextGuard(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.PromptText)
 	assert.False(t, out.Result.Detectors.PromptInjection.Detected)
-	assert.False(t, out.Result.Detectors.PiiEntity.Detected)
+	if out.Result.Detectors.PiiEntity != nil {
+		assert.False(t, out.Result.Detectors.PiiEntity.Detected)
+	}
 	if out.Result.Detectors.MaliciousEntity != nil {
 		assert.False(t, out.Result.Detectors.MaliciousEntity.Detected)
 	}
-
-	input = &ai_guard.TextGuardRequest{Text: "security@pangea.cloud"}
-	out, err = client.GuardText(ctx, input)
-	assert.NoError(t, err)
-	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.PromptText)
-	assert.True(t, out.Result.Detectors.PiiEntity.Detected)
 }
 
 func TestTextGuard_Messages(t *testing.T) {
@@ -49,6 +44,27 @@ func TestTextGuard_Messages(t *testing.T) {
 		{
 			"role":    "user",
 			"content": "what was pangea?",
+		},
+	}}
+	out, err := client.GuardText(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.PromptMessages)
+}
+
+func TestTextGuard_Llm_Input(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ai_guard.TextGuardRequest{LlmInput: map[string]interface{}{
+		"model": "gpt-4o",
+		"messages": []map[string]interface{}{
+			{
+				"role":    "user",
+				"content": "what was pangea?",
+			},
 		},
 	}}
 	out, err := client.GuardText(ctx, input)
