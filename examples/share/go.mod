@@ -3,7 +3,7 @@ module examples/share
 go 1.22
 
 require (
-	github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.3.0
+	github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.4.0
 	github.com/spf13/cobra v1.9.1
 )
 
@@ -15,7 +15,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/rs/zerolog v1.33.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 )
 
 replace github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.0.0 => ../../pangea-sdk
