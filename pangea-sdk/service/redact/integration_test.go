@@ -41,6 +41,7 @@ func Test_Integration_Redact(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.Equal(t, redacted, *out.Result.RedactedText)
 	assert.Equal(t, 1, out.Result.Count)
+	assert.Nil(t, out.Result.FPEContext)
 }
 
 func Test_Integration_Redact_DebugTrue(t *testing.T) {
@@ -69,7 +70,7 @@ func Test_Integration_Redact_DebugTrue(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Report.RecognizerResults)
 	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Score)
 	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Text)
-
+	assert.Nil(t, out.Result.FPEContext)
 }
 
 func Test_Integration_Redact_NoResult(t *testing.T) {
@@ -92,6 +93,7 @@ func Test_Integration_Redact_NoResult(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.Nil(t, out.Result.RedactedText)
 	assert.Equal(t, 1, out.Result.Count)
+	assert.Nil(t, out.Result.FPEContext)
 }
 
 func Test_Integration_Redact_Structured(t *testing.T) {
@@ -117,6 +119,7 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.Equal(t, redacted, out.Result.RedactedData)
 	assert.Equal(t, 1, out.Result.Count)
+	assert.Nil(t, out.Result.FPEContext)
 }
 
 func Test_Integration_Redact_Structured_DebugTrue(t *testing.T) {
@@ -147,6 +150,7 @@ func Test_Integration_Redact_Structured_DebugTrue(t *testing.T) {
 	assert.NotEmpty(t, out.Result.Report.RecognizerResults)
 	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Score)
 	assert.NotNil(t, out.Result.Report.RecognizerResults[0].Text)
+	assert.Nil(t, out.Result.FPEContext)
 }
 
 func Test_Integration_Redact_Structured_NoResult(t *testing.T) {
@@ -254,4 +258,35 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 	out, err := client.Redact(ctx, input)
 	assert.Error(t, err)
 	assert.Nil(t, out)
+}
+
+func Test_Integration_Unredact(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancelFn()
+
+	cfg := redactIntegrationCfg(t)
+	client := redact.New(cfg)
+
+	text := "Visit our web is https://pangea.cloud"
+
+	input := &redact.TextRequest{
+		Text: pangea.String(text),
+	}
+	out, err := client.Redact(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotEqual(t, text, *out.Result.RedactedText)
+	assert.Equal(t, 1, out.Result.Count)
+	assert.NotNil(t, out.Result.FPEContext)
+
+	unredactInput := &redact.UnredactRequest{
+		RedactedData: *out.Result.RedactedText,
+		FPEContext:   *out.Result.FPEContext,
+	}
+	unredactOut, err := client.Unredact(ctx, unredactInput)
+	assert.NoError(t, err)
+	assert.NotNil(t, unredactOut.Result)
+	data, ok := (unredactOut.Result.Data).(string)
+	assert.True(t, ok)
+	assert.Equal(t, text, data)
 }

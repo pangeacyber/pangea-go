@@ -10,6 +10,7 @@ import (
 type Client interface {
 	Redact(ctx context.Context, req *TextRequest) (*pangea.PangeaResponse[TextResult], error)
 	RedactStructured(ctx context.Context, req *StructuredRequest) (*pangea.PangeaResponse[StructuredResult], error)
+	Unredact(ctx context.Context, input *UnredactRequest) (*pangea.PangeaResponse[UnredactResult], error)
 
 	// Base service methods
 	pangea.BaseServicer
