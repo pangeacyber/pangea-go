@@ -38,6 +38,7 @@ go-sdk-examples:
     - export PANGEA_URL_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_USER_INTEL_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
     - export PANGEA_VAULT_TOKEN="${PANGEA_INTEGRATION_TOKEN_LVE_AWS}"
+    - export PANGEA_VAULT_FPE_KEY_ID="${PANGEA_INTEGRATION_FPE_KEY_ID_LVE_AWS}"
   script:
     - cd examples/${EXAMPLE_FOLDER}
     - bash ../../dev/run_examples.sh
