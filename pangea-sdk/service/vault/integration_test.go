@@ -1097,7 +1097,7 @@ func Test_List_And_Delete(t *testing.T) {
 	end := time.Now().UnixMilli()
 	fmt.Printf("Deleted %d keys\n", item_counter)
 	fmt.Printf("Deleted %d keys in %d s\n", item_counter, (end-start)/1000)
-	fmt.Printf("Average delete time: %f ms\n", float64((end-start)/1000)/float64(item_counter))
+	fmt.Printf("Average delete time: %f ms\n", float64(end-start)/float64(item_counter))
 }
 
 func Test_List_And_Delete_Folders(t *testing.T) {
