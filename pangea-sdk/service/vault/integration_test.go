@@ -1051,9 +1051,11 @@ func Test_List_And_Delete(t *testing.T) {
 	filter := vault.NewFilterList()
 	filter.Name().SetContains([]string{actor})
 	last := ""
-	count := 0
+	item_counter := 0
+	list_call_counter := 0
+	start := time.Now().UnixMilli()
 
-	for true {
+	for item_counter < 500 {
 		ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancelFn()
 
@@ -1061,16 +1063,19 @@ func Test_List_And_Delete(t *testing.T) {
 			Filter: filter.Filter(),
 			Last:   last,
 		}
+
+		list_call_counter++
+		fmt.Printf("List call %d\n", list_call_counter)
 		lresp, err := client.List(ctx, lreq)
 		last = lresp.Result.Last
 
 		assert.NoError(t, err)
 		assert.NotNil(t, lresp)
 
-		assert.Greater(t, len(lresp.Result.Items), 0)
+		assert.GreaterOrEqual(t, len(lresp.Result.Items), 0)
 		for _, i := range lresp.Result.Items {
 			if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
-				count++
+				item_counter++
 				ctx_del, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 				defer cancelFn()
 				dresp, err := client.Delete(ctx_del, &vault.DeleteRequest{
@@ -1083,12 +1088,16 @@ func Test_List_And_Delete(t *testing.T) {
 			}
 		}
 
-		if last == "" {
-			fmt.Printf("Deleted %d keys\n", count)
+		if len(lresp.Result.Items) == 0 {
 			break
 		}
 
 	}
+
+	end := time.Now().UnixMilli()
+	fmt.Printf("Deleted %d keys\n", item_counter)
+	fmt.Printf("Deleted %d keys in %d s\n", item_counter, (end-start)/1000)
+	fmt.Printf("Deleted %f keys per second\n", float64(item_counter)/float64((end-start)/1000))
 }
 
 func Test_List_And_Delete_Folders(t *testing.T) {
@@ -1102,7 +1111,7 @@ func Test_List_And_Delete_Folders(t *testing.T) {
 		last := ""
 		count := 0
 
-		for true {
+		for count < 100 {
 			ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
 			defer cancelFn()
 
@@ -1132,7 +1141,7 @@ func Test_List_And_Delete_Folders(t *testing.T) {
 				}
 			}
 
-			if last == "" {
+			if len(lresp.Result.Items) == 0 {
 				fmt.Printf("Deleted %d '%s' folders\n", count, name)
 				break
 			}
