@@ -1045,29 +1045,49 @@ func Test_Integration_Error_BadToken(t *testing.T) {
 }
 
 func Test_List_And_Delete(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancelFn()
-
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
 	client := vault.New(cfg)
 
-	lreq := &vault.ListRequest{}
-	lresp, err := client.List(ctx, lreq)
+	filter := vault.NewFilterList()
+	filter.Name().SetContains([]string{actor})
+	last := ""
+	count := 0
 
-	assert.NoError(t, err)
-	assert.NotNil(t, lresp)
+	for true {
+		ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancelFn()
 
-	assert.Greater(t, len(lresp.Result.Items), 0)
-	for _, i := range lresp.Result.Items {
-		if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
-			dresp, err := client.Delete(ctx, &vault.DeleteRequest{
-				ID: i.ID,
-			})
-
-			assert.NoError(t, err)
-			assert.NotNil(t, dresp)
-			assert.NotNil(t, dresp.Result)
+		lreq := &vault.ListRequest{
+			Filter: filter.Filter(),
+			Last:   last,
 		}
+		lresp, err := client.List(ctx, lreq)
+		last = lresp.Result.Last
+
+		assert.NoError(t, err)
+		assert.NotNil(t, lresp)
+
+		assert.Greater(t, len(lresp.Result.Items), 0)
+		for _, i := range lresp.Result.Items {
+			if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
+				count++
+				ctx_del, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+				defer cancelFn()
+				dresp, err := client.Delete(ctx_del, &vault.DeleteRequest{
+					ID: i.ID,
+				})
+
+				assert.NoError(t, err)
+				assert.NotNil(t, dresp)
+				assert.NotNil(t, dresp.Result)
+			}
+		}
+
+		if last == "" {
+			fmt.Printf("Deleted %d keys\n", count)
+			break
+		}
+
 	}
 }
 
