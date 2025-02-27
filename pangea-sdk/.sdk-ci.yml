@@ -106,7 +106,7 @@ sdk-test-it:
     - if: '$CI_COMMIT_BRANCH && $CLOUD != "GCP"'
       allow_failure: false
   script:
-    - go test -count=1 -tags integration -v ./service/${TEST}/...
+    - go test -count=1 -timeout=20m -tags integration -v ./service/${TEST}/...
 
 sdk-lint:
   extends: .sdk-base
