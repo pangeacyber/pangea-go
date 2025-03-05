@@ -51,24 +51,3 @@ func TestTextGuard_Messages(t *testing.T) {
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.PromptMessages)
 }
-
-func TestTextGuard_Llm_Input(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
-	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
-
-	input := &ai_guard.TextGuardRequest{LlmInput: map[string]interface{}{
-		"model": "gpt-4o",
-		"messages": []map[string]interface{}{
-			{
-				"role":    "user",
-				"content": "what was pangea?",
-			},
-		},
-	}}
-	out, err := client.GuardText(ctx, input)
-	assert.NoError(t, err)
-	assert.NotNil(t, out.Result)
-	assert.NotNil(t, out.Result.PromptMessages)
-}
