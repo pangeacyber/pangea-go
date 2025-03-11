@@ -3,7 +3,7 @@ go-sdk-examples:
   retry: 2
   parallel:
     matrix:
-      - GO_VERSION: ["1.22", "1.23"]
+      - GO_VERSION: ["1.23", "1.24"]
         EXAMPLE_FOLDER:
           - audit
           - authn
