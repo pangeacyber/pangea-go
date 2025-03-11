@@ -1,6 +1,6 @@
 module examples/intel
 
-go 1.22
+go 1.24.1
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.4.0
 
