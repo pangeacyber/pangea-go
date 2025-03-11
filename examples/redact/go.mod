@@ -1,6 +1,6 @@
 module examples/redact
 
-go 1.22
+go 1.23
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.4.0
 
