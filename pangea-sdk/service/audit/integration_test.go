@@ -783,9 +783,7 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
-	// We will leave config ID empty now
-	cfg.ConfigID = ""
-	client, _ := audit.New(cfg)
+	client, _ := audit.New(cfg, audit.WithConfigID(""))
 
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,
