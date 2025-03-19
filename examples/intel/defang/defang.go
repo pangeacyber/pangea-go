@@ -87,10 +87,10 @@ func main() {
 
 	ctx = context.Background()
 	domainReq := &domain_intel.DomainReputationRequest{
-		BaseURLTemplate: domain,
-		Raw:             pangea.Bool(true),
-		Verbose:         pangea.Bool(true),
-		Provider:        "domaintools",
+		Domain:   domain,
+		Raw:      pangea.Bool(true),
+		Verbose:  pangea.Bool(true),
+		Provider: "domaintools",
 	}
 
 	domainResp, err := domainc.Reputation(ctx, domainReq)

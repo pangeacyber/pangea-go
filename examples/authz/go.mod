@@ -13,4 +13,4 @@ require (
 	golang.org/x/sys v0.30.0 // indirect
 )
 
-replace github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.0.0 => ../../pangea-sdk
+replace github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.4.0 => ../../pangea-sdk
