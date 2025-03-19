@@ -39,20 +39,11 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 	return mux, url.String(), server.Close
 }
 
-func TestConfig(url string) *pangea.Config {
-	// Clean scheme. It will be adden after decide if it should be secure o insecure
-	// It only happens on testing because of local server
-	if strings.HasPrefix(url, "https://") {
-		url = strings.TrimPrefix(url, "https://")
-	} else if strings.HasPrefix(url, "http://") {
-		url = strings.TrimPrefix(url, "http://")
-	}
-
+func TestConfig(urlTemplate string) *pangea.Config {
 	return &pangea.Config{
-		Token:       "TestToken",
-		Domain:      url,
-		Insecure:    true,
-		Environment: "local",
+		Token:           "TestToken",
+		BaseURLTemplate: urlTemplate,
+		Insecure:        true,
 	}
 }
 
@@ -77,13 +68,13 @@ func TestBody(t *testing.T, r *http.Request, want string) {
 func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.Config) error) {
 	t.Helper()
 
-	emptyDomainCfg := &pangea.Config{Domain: ""}
+	emptyDomainCfg := &pangea.Config{BaseURLTemplate: ""}
 	doErr := f(emptyDomainCfg)
 	if doErr == nil {
 		t.Fatalf("call to method %v with empty Enpoint got nil err, want error", method)
 	}
 
-	badUrlCfg := &pangea.Config{Domain: "htt://   "}
+	badUrlCfg := &pangea.Config{BaseURLTemplate: "htt://   "}
 	newRequestErr := f(badUrlCfg)
 	if newRequestErr == nil {
 		t.Fatalf("call to method %v with bad Domain got nil err, want error", method)
@@ -118,9 +109,9 @@ const (
 	Staging TestEnvironment = "STG"
 )
 
-func GetTestDomain(t *testing.T, env TestEnvironment) string {
+func GetTestURLTemplate(t *testing.T, env TestEnvironment) string {
 	t.Helper()
-	varname := "PANGEA_INTEGRATION_DOMAIN_" + string(env)
+	varname := "PANGEA_INTEGRATION_URL_TEMPLATE_" + string(env)
 	return GetEnvVarOrFail(t, varname)
 }
 

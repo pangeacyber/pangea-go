@@ -28,7 +28,7 @@ func main() {
 	// create a new store client with pangea token and domain
 	client := share.New(&pangea.Config{
 		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		BaseURLTemplate:    os.Getenv("PANGEA_URL_TEMPLATE"),
 		QueuedRetryEnabled: true,
 		PollResultTimeout:  60 * time.Second,
 	})

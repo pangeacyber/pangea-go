@@ -22,8 +22,8 @@ func main() {
 	}
 
 	redactcli := redact.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	var text = "Visit our web is https://pangea.cloud"

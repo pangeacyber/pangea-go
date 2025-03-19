@@ -13,15 +13,15 @@ import (
 
 func main() {
 	vaultToken := os.Getenv("PANGEA_VAULT_TOKEN")
-	domain := os.Getenv("PANGEA_DOMAIN")
+	domain := os.Getenv("PANGEA_URL_TEMPLATE")
 	auditTokenVaultId := os.Getenv("PANGEA_AUDIT_TOKEN_VAULT_ID")
 	if vaultToken == "" {
 		log.Fatal("Unauthorized: No vault token present")
 	}
 
 	vaultcli := vault.New(&pangea.Config{
-		Token:  vaultToken,
-		Domain: domain,
+		Token:           vaultToken,
+		BaseURLTemplate: domain,
 	})
 	getInput := &vault.GetRequest{
 		ID: auditTokenVaultId,
@@ -37,8 +37,8 @@ func main() {
 	}
 
 	auditcli, err := audit.New(&pangea.Config{
-		Token:  *auditToken,
-		Domain: domain,
+		Token:           *auditToken,
+		BaseURLTemplate: domain,
 	})
 	if err != nil {
 		log.Fatal("failed to create audit client")

@@ -47,8 +47,8 @@ func main() {
 	}
 
 	urlc := url_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	url := "http://113.235.101.11:54384"
@@ -81,16 +81,16 @@ func main() {
 	}
 	fmt.Println(domain)
 	domainc := domain_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	ctx = context.Background()
 	domainReq := &domain_intel.DomainReputationRequest{
-		Domain:   domain,
-		Raw:      pangea.Bool(true),
-		Verbose:  pangea.Bool(true),
-		Provider: "domaintools",
+		BaseURLTemplate: domain,
+		Raw:             pangea.Bool(true),
+		Verbose:         pangea.Bool(true),
+		Provider:        "domaintools",
 	}
 
 	domainResp, err := domainc.Reputation(ctx, domainReq)

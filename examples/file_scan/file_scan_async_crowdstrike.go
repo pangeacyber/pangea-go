@@ -27,7 +27,7 @@ func main() {
 	// When .Scan() is called it will return an AcceptedError immediately when server returns a 202 response
 	client := file_scan.New(&pangea.Config{
 		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		BaseURLTemplate:    os.Getenv("PANGEA_URL_TEMPLATE"),
 		QueuedRetryEnabled: false,
 	})
 

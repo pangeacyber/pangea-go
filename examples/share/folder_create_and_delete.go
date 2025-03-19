@@ -26,8 +26,8 @@ func main() {
 
 	// create a new store client with pangea token and domain
 	client := share.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	// Create a FolderCreateRequest and set the path of the folder to be created

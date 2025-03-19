@@ -86,7 +86,7 @@ Initialize your client:
 // Initialize the Secure Audit Log client.
 auditcli, err := audit.New(&pangea.Config{
 	Token: os.Getenv("PANGEA_AUDIT_TOKEN"), // NEVER hardcode your token here, always use env vars
-	Domain: os.Getenv("PANGEA_DOMAIN"),
+	BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 })
 if err != nil {
 	log.Fatal("failed to create Audit client")

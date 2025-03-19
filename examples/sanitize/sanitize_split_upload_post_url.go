@@ -27,7 +27,7 @@ func main() {
 	// Create a new Sanitize client with Pangea token and domain
 	client := sanitize.New(&pangea.Config{
 		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		BaseURLTemplate:    os.Getenv("PANGEA_URL_TEMPLATE"),
 		QueuedRetryEnabled: true,
 		PollResultTimeout:  120 * time.Second,
 		Retry:              true,

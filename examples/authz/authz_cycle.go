@@ -39,7 +39,7 @@ func main() {
 	// create a new AuthZ client with pangea token and domain
 	client := authz.New(&pangea.Config{
 		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		BaseURLTemplate:    os.Getenv("PANGEA_URL_TEMPLATE"),
 		QueuedRetryEnabled: true,
 		PollResultTimeout:  120 * time.Second,
 		Retry:              true,

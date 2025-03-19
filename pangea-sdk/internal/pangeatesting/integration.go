@@ -13,7 +13,7 @@ import (
 func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	return &pangea.Config{
 		HTTPClient:         defaults.HTTPClient(),
-		Domain:             GetTestDomain(t, env),
+		BaseURLTemplate:    GetTestURLTemplate(t, env),
 		Token:              GetTestToken(t, env),
 		QueuedRetryEnabled: true,
 		PollResultTimeout:  60 * time.Second,
@@ -27,7 +27,7 @@ func IntegrationConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	return &pangea.Config{
 		HTTPClient:         defaults.HTTPClient(),
-		Domain:             GetTestDomain(t, env),
+		BaseURLTemplate:    GetTestURLTemplate(t, env),
 		Token:              GetVaultSignatureTestToken(t, env),
 		QueuedRetryEnabled: true,
 		PollResultTimeout:  60 * time.Second,
@@ -41,7 +41,7 @@ func IntegrationAuditVaultConfig(t *testing.T, env TestEnvironment) *pangea.Conf
 func IntegrationCustomSchemaConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	return &pangea.Config{
 		HTTPClient:         defaults.HTTPClient(),
-		Domain:             GetTestDomain(t, env),
+		BaseURLTemplate:    GetTestURLTemplate(t, env),
 		Token:              GetCustomSchemaTestToken(t, env),
 		PollResultTimeout:  60 * time.Second,
 		QueuedRetryEnabled: true,
@@ -50,8 +50,8 @@ func IntegrationCustomSchemaConfig(t *testing.T, env TestEnvironment) *pangea.Co
 
 func IntegrationMultiConfigConfig(t *testing.T, env TestEnvironment) *pangea.Config {
 	return &pangea.Config{
-		HTTPClient: defaults.HTTPClient(),
-		Domain:     GetTestDomain(t, env),
-		Token:      GetMultiConfigTestToken(t, env),
+		HTTPClient:      defaults.HTTPClient(),
+		BaseURLTemplate: GetTestURLTemplate(t, env),
+		Token:           GetMultiConfigTestToken(t, env),
 	}
 }

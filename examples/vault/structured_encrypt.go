@@ -17,14 +17,14 @@ func main() {
 		log.Fatal("missing PANGEA_VAULT_TOKEN environment variable")
 	}
 
-	domain := os.Getenv("PANGEA_DOMAIN")
+	domain := os.Getenv("PANGEA_URL_TEMPLATE")
 	if domain == "" {
 		log.Fatal("missing PANGEA_DOMAIN environment variable")
 	}
 
 	vaultClient := vault.New(&pangea.Config{
-		Token:  token,
-		Domain: domain,
+		Token:           token,
+		BaseURLTemplate: domain,
 	})
 
 	ctx := context.Background()
