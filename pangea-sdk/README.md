@@ -49,10 +49,10 @@ Let's walk through an example using:
 - Service: [Secure Audit Log](https://pangea.cloud/services/secure-audit-log/)
 - Endpoint: [/v1/log](https://pangea.cloud/docs/api/audit#log-an-entry)
 
-We need two things to initialize your client: a `Token` and `Domain`. These can
+We need two things to initialize your client: a `Token` and `BaseURLTemplate`. These can
 be found on the service overview page. For the Secure Audit Log service, go to
 <https://console.pangea.cloud/service/audit> and take a look at the
-"Configuration Details" box where it has "Default Token" and "Domain" listed.
+"Configuration Details" box where it has "Default Token" and "BaseURLTemplate" listed.
 
 Go ahead and set the token and domain as environment variables in our terminal.
 
@@ -61,7 +61,7 @@ $ export PANGEA_AUDIT_TOKEN=pts_tokenvaluehere
 ```
 
 ```bash
-$ export PANGEA_DOMAIN=aws.us.pangea.cloud
+$ export PANGEA_URL_TEMPLATE=https://{SERVICE_NAME}.aws.us.pangea.cloud
 ```
 
 Now let's add the SDK to our code.
