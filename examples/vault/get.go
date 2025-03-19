@@ -23,8 +23,8 @@ func main() {
 		log.Fatal("Error: No audit token id present")
 	}
 	vaultConfig := pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	}
 	vaultClient := vault.New(&vaultConfig)
 
@@ -45,8 +45,8 @@ func main() {
 
 	fmt.Println("Initialize Log...")
 	auditConfig := pangea.Config{
-		Token:  *auditToken,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           *auditToken,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	}
 	auditClient, err := audit.New(&auditConfig)
 	if err != nil {

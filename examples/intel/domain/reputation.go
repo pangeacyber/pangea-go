@@ -25,8 +25,8 @@ func main() {
 	}
 
 	intelcli := domain_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	ctx := context.Background()

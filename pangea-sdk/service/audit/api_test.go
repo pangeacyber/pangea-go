@@ -1154,7 +1154,7 @@ func Test_BadDomain(t *testing.T) {
 	defer teardown()
 
 	cfg := pangeatesting.TestConfig(url)
-	cfg.Domain = "fakedomain^^"
+	cfg.BaseURLTemplate = "https://.fakedomain^^"
 	client, _ := audit.New(cfg)
 	event := &audit.StandardEvent{
 		Message: "test",

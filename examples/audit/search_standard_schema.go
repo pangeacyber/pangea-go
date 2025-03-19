@@ -21,7 +21,7 @@ func main() {
 
 	auditcli, err := audit.New(&pangea.Config{
 		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		BaseURLTemplate:    os.Getenv("PANGEA_URL_TEMPLATE"),
 		PollResultTimeout:  60 * time.Second,
 		QueuedRetryEnabled: true,
 	})

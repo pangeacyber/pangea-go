@@ -23,8 +23,8 @@ func main() {
 
 	// Set configId in service construction
 	auditcli, err := audit.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	}, audit.WithConfigID(configId))
 	if err != nil {
 		log.Fatal("failed to create audit client")

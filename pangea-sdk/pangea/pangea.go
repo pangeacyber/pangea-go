@@ -93,16 +93,11 @@ type Config struct {
 	// defaults.HTTPClient
 	HTTPClient *http.Client
 
-	// Base domain for API requests.
-	Domain string
+	// Used to set Pangea domain and protocol and port if needed. It should include the SERVICE_NAME placeholder.
+	BaseURLTemplate string
 
 	// Set to true to use plain http
 	Insecure bool
-
-	// Environment specifies the Pangea environment. If set to "local", then
-	// Domain must be the full host (i.e., hostname and port) for the Pangea
-	// service that this Config will be used for.
-	Environment string
 
 	// Set to "local" for testing locally
 	//
@@ -152,8 +147,11 @@ type Client struct {
 	// Client logger
 	Logger zerolog.Logger
 
-	// config ID on request
+	// Config ID on request
 	configID string
+
+	// Base URL for the service
+	baseURL string
 }
 
 type FileData struct {
@@ -183,6 +181,8 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		userAgent = pangeaUserAgent
 	}
 
+	baseURL := strings.Replace(cfg.BaseURLTemplate, "{SERVICE_NAME}", service, -1)
+
 	return &Client{
 		serviceName:      service,
 		token:            cfg.Token,
@@ -191,6 +191,7 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		configID:         "",
 		pendingRequestID: make(map[string]bool),
 		Logger:           *cfg.Logger,
+		baseURL:          baseURL,
 	}
 }
 
@@ -227,33 +228,7 @@ func (c *Client) GetRequestIDURL(rid string) (string, error) {
 }
 
 func (c *Client) GetURL(path string) (string, error) {
-	cfg := c.config
-	endpoint := ""
-	// Remove slashes, just in case
-	path = strings.TrimPrefix(path, "/")
-	domain := strings.TrimSuffix(cfg.Domain, "/")
-
-	if strings.HasPrefix(cfg.Domain, "http://") || strings.HasPrefix(cfg.Domain, "https://") {
-		// URL
-		endpoint = fmt.Sprintf("%s/%s", domain, path)
-	} else {
-		scheme := "https://"
-		if cfg.Insecure {
-			scheme = "http://"
-		}
-		if cfg.Environment == "local" || cfg.Enviroment == "local" {
-			// If we are testing locally do not use service
-			endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
-		} else {
-			endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, c.serviceName, domain, path)
-		}
-	}
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return "", err
-	}
-	return u.String(), nil
+	return url.JoinPath(c.baseURL, path)
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr,
@@ -935,12 +910,8 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.Token = other.Token
 	}
 
-	if other.Domain != "" {
-		dst.Domain = other.Domain
-	}
-
-	if other.Environment != "" {
-		dst.Environment = other.Environment
+	if other.BaseURLTemplate != "" {
+		dst.BaseURLTemplate = other.BaseURLTemplate
 	}
 
 	if other.Enviroment != "" {

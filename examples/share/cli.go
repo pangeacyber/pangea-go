@@ -84,8 +84,8 @@ func main() {
 			defer cancelFn()
 
 			client := share.New(&pangea.Config{
-				Token:  token,
-				Domain: os.Getenv("PANGEA_DOMAIN"),
+				Token:           token,
+				BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 			})
 
 			files, err := getFiles(input)

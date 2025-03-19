@@ -23,8 +23,8 @@ func main() {
 
 	// Set configId in service construction
 	redactcli := redact.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	}, redact.WithConfigID(configId))
 
 	var text = "Hello, my phone number is 123-456-7890"

@@ -47,8 +47,8 @@ func main() {
 	}
 
 	urlc := url_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	url := "http://113.235.101.11:54384"
@@ -81,8 +81,8 @@ func main() {
 	}
 	fmt.Println(domain)
 	domainc := domain_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+		Token:           token,
+		BaseURLTemplate: os.Getenv("PANGEA_URL_TEMPLATE"),
 	})
 
 	ctx = context.Background()

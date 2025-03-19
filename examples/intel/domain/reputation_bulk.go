@@ -33,7 +33,7 @@ func main() {
 
 	intelcli := domain_intel.New(&pangea.Config{
 		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
+		BaseURLTemplate:    os.Getenv("PANGEA_URL_TEMPLATE"),
 		QueuedRetryEnabled: true,
 		PollResultTimeout:  60 * time.Second,
 	})
