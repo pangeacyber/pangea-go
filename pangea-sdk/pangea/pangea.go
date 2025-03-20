@@ -85,10 +85,6 @@ type Config struct {
 	// The Bearer token used to authenticate requests.
 	Token string
 
-	// Config ID for multi-config projects
-	// @deprecated: Set config_id with options in service initialization if supported
-	ConfigID string
-
 	// The HTTP client to be used by the client. It defaults to
 	// defaults.HTTPClient
 	HTTPClient *http.Client
@@ -103,11 +99,6 @@ type Config struct {
 	// Domain must be the full host (i.e., hostname and port) for the Pangea
 	// service that this Config will be used for.
 	Environment string
-
-	// Set to "local" for testing locally
-	//
-	// Deprecated: Enviroment is a typo. Use Environment instead.
-	Enviroment string
 
 	// AdditionalHeaders is a map of additional headers to be sent with the request.
 	AdditionalHeaders map[string]string
@@ -241,7 +232,7 @@ func (c *Client) GetURL(path string) (string, error) {
 		if cfg.Insecure {
 			scheme = "http://"
 		}
-		if cfg.Environment == "local" || cfg.Enviroment == "local" {
+		if cfg.Environment == "local" {
 			// If we are testing locally do not use service
 			endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
 		} else {
@@ -943,10 +934,6 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.Environment = other.Environment
 	}
 
-	if other.Enviroment != "" {
-		dst.Enviroment = other.Enviroment
-	}
-
 	dst.Insecure = other.Insecure
 
 	if other.AdditionalHeaders != nil {
@@ -964,7 +951,6 @@ func mergeInConfig(dst *Config, other *Config) {
 	dst.QueuedRetryEnabled = other.QueuedRetryEnabled
 	dst.PollResultTimeout = other.PollResultTimeout
 	dst.Logger = other.Logger
-	dst.ConfigID = other.ConfigID
 }
 
 // Copy will return a shallow copy of the Config object. If any additional

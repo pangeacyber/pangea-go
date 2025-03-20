@@ -68,14 +68,6 @@ func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 		schema:                StandardEvent{},
 	}
 
-	// FIXME: Just to still support ConfigID in PangeaConfig. Remove when deprecated
-	if cfg.ConfigID != "" {
-		err := WithConfigID(cfg.ConfigID)(cli)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	for _, opt := range opts {
 		err := opt(cli)
 		if err != nil {
