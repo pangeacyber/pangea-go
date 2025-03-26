@@ -27,8 +27,8 @@ func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pang
 }
 
 type TopicDetectionOverride struct {
-	Disabled  *bool     `json:"disabled,omitempty"`
-	BlockList *[]string `json:"block_list,omitempty"`
+	Disabled  *bool    `json:"disabled,omitempty"`
+	BlockList []string `json:"block_list,omitempty"`
 }
 
 type AnalyzerResponse struct {
