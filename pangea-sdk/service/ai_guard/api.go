@@ -26,6 +26,11 @@ func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pang
 	return request.DoPost(ctx, e.Client, "v1/text/guard", input, &TextGuardResult{})
 }
 
+type TopicDetectionOverride struct {
+	Disabled  *bool    `json:"disabled,omitempty"`
+	BlockList []string `json:"block_list,omitempty"`
+}
+
 type AnalyzerResponse struct {
 	Analyzer   string  `json:"analyzer"`
 	Confidence float64 `json:"confidence"`
@@ -39,7 +44,7 @@ type PromptInjectionResult struct {
 type PiiEntity struct {
 	Type     string `json:"type"`
 	Value    string `json:"value"`
-	Action   string `json:"action"`
+	Action   string `json:"action"` // The action taken on this Entity
 	StartPos *int   `json:"start_pos,omitempty"`
 }
 
@@ -56,13 +61,13 @@ type MaliciousEntity struct {
 }
 
 type MaliciousEntityResult struct {
-	Entities []MaliciousEntity `json:"entities"`
+	Entities []MaliciousEntity `json:"entities"` // Detected harmful items.
 }
 
 type SecretsEntity struct {
 	Type          string `json:"type"`
 	Value         string `json:"value"`
-	Action        string `json:"action"`
+	Action        string `json:"action"` // The action taken on this Entity
 	StartPos      *int   `json:"start_pos,omitempty"`
 	RedactedValue string `json:"redacted_value,omitempty"`
 }
@@ -74,6 +79,10 @@ type SecretsEntityResult struct {
 type LanguageDetectionResult struct {
 	Language string `json:"language"`
 	Action   string `json:"action"`
+}
+
+type TopicDetectionResult struct {
+	Action string `json:"action"` // The action taken by this Detector
 }
 
 type CodeDetectionResult struct {
@@ -93,7 +102,12 @@ type TextGuardDetectors struct {
 	ProfanityAndToxicity *TextGuardDetector[any]                     `json:"profanity_and_toxicity,omitempty"`
 	CustomEntity         *TextGuardDetector[any]                     `json:"custom_entity,omitempty"`
 	LanguageDetection    *TextGuardDetector[LanguageDetectionResult] `json:"language_detection,omitempty"`
+	TopicDetection       *TextGuardDetector[TopicDetectionResult]    `json:"topic_detection,omitempty"`
 	CodeDetection        *TextGuardDetector[CodeDetectionResult]     `json:"code_detection,omitempty"`
+}
+
+type Overrides struct {
+	TopicDetection *TopicDetectionOverride `json:"topic_detection,omitempty"`
 }
 
 // LogFields are additional fields to include in activity log
@@ -108,11 +122,12 @@ type LogFields struct {
 type TextGuardRequest struct {
 	pangea.BaseRequest
 
-	Text      string    `json:"text,omitempty"`       // Text to be scanned by AI Guard for PII, sensitive data, malicious content, and other data types defined by the configuration. Supports processing up to 10KB of text.
-	Messages  any       `json:"messages,omitempty"`   // Structured messages data to be scanned by AI Guard for PII, sensitive data, malicious content, and other data types defined by the configuration. Supports processing up to 10KB of JSON text.
-	Recipe    string    `json:"recipe,omitempty"`     // Recipe key of a configuration of data types and settings defined in the Pangea User Console. It specifies the rules that are to be applied to the text, such as defang malicious URLs.
-	Debug     bool      `json:"debug,omitempty"`      // Setting this value to true will provide a detailed analysis of the text data
-	LogFields LogFields `json:"log_fields,omitempty"` // Additional fields to include in activity log
+	Text      string     `json:"text,omitempty"`     // Text to be scanned by AI Guard for PII, sensitive data, malicious content, and other data types defined by the configuration. Supports processing up to 10KB of text.
+	Messages  any        `json:"messages,omitempty"` // Structured messages data to be scanned by AI Guard for PII, sensitive data, malicious content, and other data types defined by the configuration. Supports processing up to 10KB of JSON text.
+	Recipe    string     `json:"recipe,omitempty"`   // Recipe key of a configuration of data types and settings defined in the Pangea User Console. It specifies the rules that are to be applied to the text, such as defang malicious URLs.
+	Debug     bool       `json:"debug,omitempty"`    // Setting this value to true will provide a detailed analysis of the text data
+	Overrides *Overrides `json:"overrides,omitempty"`
+	LogFields LogFields  `json:"log_fields,omitempty"` // Additional fields to include in activity log
 }
 
 type TextGuardResult struct {
