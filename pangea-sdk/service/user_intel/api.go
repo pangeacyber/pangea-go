@@ -3,8 +3,8 @@ package user_intel
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/request"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/request"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 type HashType string

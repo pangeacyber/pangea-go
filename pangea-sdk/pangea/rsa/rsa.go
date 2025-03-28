@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"golang.org/x/crypto/ssh"
 )
 
