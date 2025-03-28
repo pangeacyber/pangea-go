@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/sanitize"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/sanitize"
 	"github.com/stretchr/testify/assert"
 )
 

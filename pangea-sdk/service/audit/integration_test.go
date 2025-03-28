@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 	"github.com/stretchr/testify/assert"
 )
 

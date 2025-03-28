@@ -3,7 +3,7 @@ package ai_guard
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 // AI Guard API client.

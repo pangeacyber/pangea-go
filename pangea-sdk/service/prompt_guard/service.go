@@ -3,7 +3,7 @@ package prompt_guard
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 // Prompt Guard API client.
