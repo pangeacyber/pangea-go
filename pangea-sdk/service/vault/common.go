@@ -3,7 +3,7 @@ package vault
 import (
 	"fmt"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 // EncodedPublicKey is a PEM public key, with no further encoding (i.e. no base64)
