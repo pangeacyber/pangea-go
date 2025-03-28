@@ -9,10 +9,10 @@ import (
 	"reflect"
 	"time"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/request"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/request"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 // @summary Log an entry

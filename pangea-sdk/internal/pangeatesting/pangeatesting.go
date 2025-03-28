@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 const baseURLPath = "/api"

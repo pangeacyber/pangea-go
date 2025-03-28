@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/authn"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/authn"
 	"github.com/stretchr/testify/assert"
 )
 
