@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"mime"
+	"net/url"
+	"path"
 	"reflect"
 	"sort"
 	"strings"
@@ -183,7 +185,6 @@ func GetFilenameFromContentDisposition(contentDisposition string) (string, error
 	return "", fmt.Errorf("filename not found in Content-Disposition header")
 }
 
-func GetFileNameFromURL(url string) string {
-	parts := strings.Split(url, "/")
-	return strings.Split(parts[len(parts)-1], "?")[0]
+func GetFileNameFromURL(url *url.URL) string {
+	return path.Base(url.Path)
 }
