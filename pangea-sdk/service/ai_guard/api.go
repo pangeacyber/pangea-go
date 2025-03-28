@@ -27,8 +27,8 @@ func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pang
 }
 
 type TopicDetectionOverride struct {
-	Disabled  *bool    `json:"disabled,omitempty"`
-	BlockList []string `json:"block_list,omitempty"`
+	Disabled *bool    `json:"disabled,omitempty"`
+	Block    []string `json:"block,omitempty"`
 }
 
 type AnalyzerResponse struct {
@@ -81,14 +81,21 @@ type LanguageDetectionResult struct {
 	Action   string `json:"action"`
 }
 
+type Topic struct {
+	Topic      string  `json:"topic"`
+	Confidence float64 `json:"confidence"`
+}
+
 type TopicDetectionResult struct {
-	Action string `json:"action"` // The action taken by this Detector
+	Action string  `json:"action"` // The action taken by this Detector
+	Topics []Topic `json:"topics"` // List of topics detected
 }
 
 type CodeDetectionResult struct {
 	Language string `json:"language"`
 	Action   string `json:"action"`
 }
+
 type TextGuardDetector[T any] struct {
 	Detected bool `json:"detected"`
 	Data     *T   `json:"data,omitempty"`
