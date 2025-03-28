@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `BaseURLTemplate` has been added to `Config` to allow for greater control over
+  the complete API URL. This option may be a full URL with the optional
+  `SERVICE_NAME` placeholder, which will be replaced by the slug of the
+  respective service name. This supersedes `Environment` and `Insecure`.
 - Redact: `Unredact()` method on service interface.
 - Redact: `FPEContext` on `RedactResult` and `StructuredResult`.
 - AI Guard: topic detector.
@@ -19,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `Environment` and `Insecure` have been removed from `Config`, as the
+  functionality they provided can now be accomplished via `BaseURLTemplate`
+  (see above).
 - AI Guard: `LlmInfo` and `LlmInput`.
 - PangeaConfig: `ConfigID` and `Enviroment` field.
 

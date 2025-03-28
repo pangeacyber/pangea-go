@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
@@ -16,7 +17,7 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
 )
 
-func testClient(t *testing.T, url string) *pangea.Client {
+func testClient(t *testing.T, url *url.URL) *pangea.Client {
 	t.Helper()
 	cfg := pangeatesting.TestConfig(url)
 	headers := make(map[string]string, 0)
@@ -26,7 +27,7 @@ func testClient(t *testing.T, url string) *pangea.Client {
 }
 
 func TestClientCustomUserAgent(t *testing.T) {
-	cfg := pangeatesting.TestConfig("https://pangea.cloud")
+	cfg := pangeatesting.TestConfig(&url.URL{Host: "pangea.cloud"})
 	cfg.CustomUserAgent = "Test"
 	c := pangea.NewClient("service", cfg)
 	assert.NotNil(t, c)
@@ -38,7 +39,7 @@ func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
 
 	client := testClient(t, url)
 
-	req, _ := client.NewRequest("GET", ".", nil)
+	req, _ := client.NewRequest("GET", url, nil)
 	_, err := client.Do(nil, req, nil, true)
 
 	assert.Error(t, err)
