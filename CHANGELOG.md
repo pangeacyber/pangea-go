@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `BaseURLTemplate` has been added to `Config` to allow for greater control over
   the complete API URL. This option may be a full URL with the optional
-  `SERVICE_NAME` placeholder, which will be replaced by the slug of the
+  `{SERVICE_NAME}` placeholder, which will be replaced by the slug of the
   respective service name. This supersedes `Environment` and `Insecure`.
 - Redact: `Unredact()` method on service interface.
 - Redact: `FPEContext` on `RedactResult` and `StructuredResult`.

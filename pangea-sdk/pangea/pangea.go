@@ -25,7 +25,7 @@ import (
 const (
 	version                = "4.4.0"
 	pangeaUserAgent        = "pangea-go/" + version
-	serviceNamePlaceholder = "SERVICE_NAME"
+	serviceNamePlaceholder = "{SERVICE_NAME}"
 )
 
 var (
@@ -91,10 +91,10 @@ type Config struct {
 	HTTPClient *http.Client
 
 	// Template for constructing the base URL for API requests. The placeholder
-	// `SERVICE_NAME` will be replaced with the service name slug. This is a
+	// `{SERVICE_NAME}` will be replaced with the service name slug. This is a
 	// more powerful version of Domain that allows for setting more than just
 	// the host of the API server. Defaults to
-	// `https://SERVICE_NAME.aws.us.pangea.cloud`.
+	// `https://{SERVICE_NAME}.aws.us.pangea.cloud`.
 	BaseURLTemplate string
 
 	// Base domain for API requests. This is a weaker version of BaseURLTemplate
