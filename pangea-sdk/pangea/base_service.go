@@ -3,6 +3,8 @@ package pangea
 import (
 	"context"
 	"errors"
+
+	"github.com/rs/zerolog"
 )
 
 type BaseService struct {
@@ -20,7 +22,8 @@ type BaseServicer interface {
 func NewBaseService(name string, baseCfg *Config) BaseService {
 	cfg := baseCfg.Copy()
 	if cfg.Logger == nil {
-		cfg.Logger = GetDefaultPangeaLogger()
+		l := zerolog.Nop()
+		cfg.Logger = &l
 	}
 	bs := BaseService{
 		Client: NewClient(name, cfg),
