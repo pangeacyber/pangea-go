@@ -1,6 +1,6 @@
 module examples/audit
 
-go 1.23
+go 1.24.2
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v4 v4.4.0
 
