@@ -11,9 +11,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
-	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -26,11 +24,6 @@ const (
 	version                = "5.0.0"
 	pangeaUserAgent        = "pangea-go/" + version
 	serviceNamePlaceholder = "{SERVICE_NAME}"
-)
-
-var (
-	initFileWriterOnce sync.Once
-	file               *os.File
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
@@ -173,7 +166,8 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 	}
 
 	if cfg.Logger == nil {
-		cfg.Logger = GetDefaultPangeaLogger()
+		l := zerolog.Nop()
+		cfg.Logger = &l
 	}
 
 	cfg.HTTPClient = chooseHTTPClient(cfg)
@@ -1027,29 +1021,4 @@ func (c *Client) addPendingRequestID(rid string) {
 
 func (c *Client) removePendingRequestID(rid string) {
 	delete(c.pendingRequestID, rid)
-}
-
-func initFileWriter() {
-	// Open the output file
-	filename := "pangea_sdk_log.json"
-	var err error
-	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// Where should we close this file?
-	if err != nil {
-		fmt.Printf("Failed to open log file: %s. Logger will go to stdout", filename)
-		file = os.Stdout
-	}
-}
-
-func GetDefaultPangeaLogger() *zerolog.Logger {
-	// Set up the logger
-	initFileWriterOnce.Do(initFileWriter)
-
-	zerolog.TimestampFieldName = "time"
-	zerolog.LevelFieldName = "level"
-	zerolog.MessageFieldName = "message"
-
-	// Set up the JSON file writer as the output
-	logger := zerolog.New(file).With().Timestamp().Logger()
-	return &logger
 }
