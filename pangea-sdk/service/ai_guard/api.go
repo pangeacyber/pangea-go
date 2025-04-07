@@ -31,6 +31,165 @@ type TopicDetectionOverride struct {
 	Block    []string `json:"block,omitempty"`
 }
 
+// This is named "prompt injection" in the API spec even though it is also used
+// for many other detectors.
+type PromptInjectionAction string
+
+const (
+	PromptInjectionActionReport PromptInjectionAction = "report"
+	PromptInjectionActionBlock  PromptInjectionAction = "block"
+)
+
+type MaliciousEntityAction string
+
+const (
+	MaliciousEntityActionReport   MaliciousEntityAction = "report"
+	MaliciousEntityActionDefang   MaliciousEntityAction = "defang"
+	MaliciousEntityActionDisabled MaliciousEntityAction = "disabled"
+	MaliciousEntityActionBlock    MaliciousEntityAction = "block"
+)
+
+type PiiEntityAction string
+
+const (
+	PiiEntityActionDisabled       PiiEntityAction = "disabled"
+	PiiEntityActionReport         PiiEntityAction = "report"
+	PiiEntityActionBlock          PiiEntityAction = "block"
+	PiiEntityActionMask           PiiEntityAction = "mask"
+	PiiEntityActionPartialMasking PiiEntityAction = "partial_masking"
+	PiiEntityActionReplacement    PiiEntityAction = "replacement"
+	PiiEntityActionHash           PiiEntityAction = "hash"
+	PiiEntityActionFPE            PiiEntityAction = "fpe"
+)
+
+// Override models
+type CodeDetectionOverride struct {
+	Disabled *bool   `json:"disabled,omitempty"`
+	Action   *string `json:"action,omitempty"`
+}
+
+type LanguageDetectionOverride struct {
+	Disabled *bool    `json:"disabled,omitempty"`
+	Allow    []string `json:"allow,omitempty"`
+	Block    []string `json:"block,omitempty"`
+	Report   []string `json:"report,omitempty"`
+}
+
+type PromptInjectionOverride struct {
+	Disabled *bool                  `json:"disabled,omitempty"`
+	Action   *PromptInjectionAction `json:"action,omitempty"`
+}
+
+type SelfHarmOverride struct {
+	Disabled  *bool                  `json:"disabled,omitempty"`
+	Action    *PromptInjectionAction `json:"action,omitempty"`
+	Threshold *float64               `json:"threshold,omitempty"`
+}
+
+type GibberishOverride struct {
+	Disabled *bool                  `json:"disabled,omitempty"`
+	Action   *PromptInjectionAction `json:"action,omitempty"`
+}
+
+type RoleplayOverride struct {
+	Disabled *bool                  `json:"disabled,omitempty"`
+	Action   *PromptInjectionAction `json:"action,omitempty"`
+}
+
+type SentimentOverride struct {
+	Disabled  *bool                  `json:"disabled,omitempty"`
+	Action    *PromptInjectionAction `json:"action,omitempty"`
+	Threshold *float64               `json:"threshold,omitempty"`
+}
+
+type MaliciousEntityOverride struct {
+	Disabled  *bool                  `json:"disabled,omitempty"`
+	IPAddress *MaliciousEntityAction `json:"ip_address,omitempty"`
+	URL       *MaliciousEntityAction `json:"url,omitempty"`
+	Domain    *MaliciousEntityAction `json:"domain,omitempty"`
+}
+
+type CompetitorsOverride struct {
+	Disabled *bool                  `json:"disabled,omitempty"`
+	Action   *PromptInjectionAction `json:"action,omitempty"`
+}
+
+type PiiEntityOverride struct {
+	Disabled         *bool            `json:"disabled,omitempty"`
+	EmailAddress     *PiiEntityAction `json:"email_address,omitempty"`
+	NRP              *PiiEntityAction `json:"nrp,omitempty"`
+	Location         *PiiEntityAction `json:"location,omitempty"`
+	Person           *PiiEntityAction `json:"person,omitempty"`
+	PhoneNumber      *PiiEntityAction `json:"phone_number,omitempty"`
+	DateTime         *PiiEntityAction `json:"date_time,omitempty"`
+	IPAddress        *PiiEntityAction `json:"ip_address,omitempty"`
+	URL              *PiiEntityAction `json:"url,omitempty"`
+	Money            *PiiEntityAction `json:"money,omitempty"`
+	CreditCard       *PiiEntityAction `json:"credit_card,omitempty"`
+	Crypto           *PiiEntityAction `json:"crypto,omitempty"`
+	IBANCode         *PiiEntityAction `json:"iban_code,omitempty"`
+	USBankNumber     *PiiEntityAction `json:"us_bank_number,omitempty"`
+	NIF              *PiiEntityAction `json:"nif,omitempty"`
+	AUABN            *PiiEntityAction `json:"au_abn,omitempty"`
+	AUACN            *PiiEntityAction `json:"au_acn,omitempty"`
+	AUTFN            *PiiEntityAction `json:"au_tfn,omitempty"`
+	MedicalLicense   *PiiEntityAction `json:"medical_license,omitempty"`
+	UKNHS            *PiiEntityAction `json:"uk_nhs,omitempty"`
+	AUMedicare       *PiiEntityAction `json:"au_medicare,omitempty"`
+	USDriversLicense *PiiEntityAction `json:"us_drivers_license,omitempty"`
+	USITIN           *PiiEntityAction `json:"us_itin,omitempty"`
+	USPassport       *PiiEntityAction `json:"us_passport,omitempty"`
+	USSSN            *PiiEntityAction `json:"us_ssn,omitempty"`
+}
+
+type SecretsDetectionOverride struct {
+	Disabled                          *bool            `json:"disabled,omitempty"`
+	SlackToken                        *PiiEntityAction `json:"slack_token,omitempty"`
+	RSAPrivateKey                     *PiiEntityAction `json:"rsa_private_key,omitempty"`
+	SSHDSAPrivateKey                  *PiiEntityAction `json:"ssh_dsa_private_key,omitempty"`
+	SSHECPrivateKey                   *PiiEntityAction `json:"ssh_ec_private_key,omitempty"`
+	PGPPrivateKeyBlock                *PiiEntityAction `json:"pgp_private_key_block,omitempty"`
+	AmazonAWSAccessKeyID              *PiiEntityAction `json:"amazon_aws_access_key_id,omitempty"`
+	AmazonAWSSecretAccessKey          *PiiEntityAction `json:"amazon_aws_secret_access_key,omitempty"`
+	AmazonMWSAuthToken                *PiiEntityAction `json:"amazon_mws_auth_token,omitempty"`
+	FacebookAccessToken               *PiiEntityAction `json:"facebook_access_token,omitempty"`
+	GitHubAccessToken                 *PiiEntityAction `json:"github_access_token,omitempty"`
+	JWTToken                          *PiiEntityAction `json:"jwt_token,omitempty"`
+	GoogleAPIKey                      *PiiEntityAction `json:"google_api_key,omitempty"`
+	GoogleCloudPlatformAPIKey         *PiiEntityAction `json:"google_cloud_platform_api_key,omitempty"`
+	GoogleDriveAPIKey                 *PiiEntityAction `json:"google_drive_api_key,omitempty"`
+	GoogleCloudPlatformServiceAccount *PiiEntityAction `json:"google_cloud_platform_service_account,omitempty"`
+	GoogleGmailAPIKey                 *PiiEntityAction `json:"google_gmail_api_key,omitempty"`
+	YouTubeAPIKey                     *PiiEntityAction `json:"youtube_api_key,omitempty"`
+	MailchimpAPIKey                   *PiiEntityAction `json:"mailchimp_api_key,omitempty"`
+	MailgunAPIKey                     *PiiEntityAction `json:"mailgun_api_key,omitempty"`
+	BasicAuth                         *PiiEntityAction `json:"basic_auth,omitempty"`
+	PicaticAPIKey                     *PiiEntityAction `json:"picatic_api_key,omitempty"`
+	SlackWebhook                      *PiiEntityAction `json:"slack_webhook,omitempty"`
+	StripeAPIKey                      *PiiEntityAction `json:"stripe_api_key,omitempty"`
+	StripeRestrictedAPIKey            *PiiEntityAction `json:"stripe_restricted_api_key,omitempty"`
+	SquareAccessToken                 *PiiEntityAction `json:"square_access_token,omitempty"`
+	SquareOAuthSecret                 *PiiEntityAction `json:"square_oauth_secret,omitempty"`
+	TwilioAPIKey                      *PiiEntityAction `json:"twilio_api_key,omitempty"`
+	PangeaToken                       *PiiEntityAction `json:"pangea_token,omitempty"`
+}
+
+type Overrides struct {
+	IgnoreRecipe      *bool                      `json:"ignore_recipe,omitempty"` // Bypass existing Recipe content and create an on-the-fly Recipe.
+	CodeDetection     *CodeDetectionOverride     `json:"code_detection,omitempty"`
+	Competitors       *CompetitorsOverride       `json:"competitors,omitempty"`
+	Gibberish         *GibberishOverride         `json:"gibberish,omitempty"`
+	LanguageDetection *LanguageDetectionOverride `json:"language_detection,omitempty"`
+	MaliciousEntity   *MaliciousEntityOverride   `json:"malicious_entity,omitempty"`
+	PiiEntity         *PiiEntityOverride         `json:"pii_entity,omitempty"`
+	PromptInjection   *PromptInjectionOverride   `json:"prompt_injection,omitempty"`
+	Roleplay          *RoleplayOverride          `json:"roleplay,omitempty"`
+	SecretsDetection  *SecretsDetectionOverride  `json:"secrets_detection,omitempty"`
+	SelfHarm          *SelfHarmOverride          `json:"selfharm,omitempty"`
+	Sentiment         *SentimentOverride         `json:"sentiment,omitempty"`
+	TopicDetection    *TopicDetectionOverride    `json:"topic_detection,omitempty"`
+}
+
 type AnalyzerResponse struct {
 	Analyzer   string  `json:"analyzer"`
 	Confidence float64 `json:"confidence"`
@@ -113,10 +272,6 @@ type TextGuardDetectors struct {
 	CodeDetection        *TextGuardDetector[CodeDetectionResult]     `json:"code_detection,omitempty"`
 }
 
-type Overrides struct {
-	TopicDetection *TopicDetectionOverride `json:"topic_detection,omitempty"`
-}
-
 // LogFields are additional fields to include in activity log
 type LogFields struct {
 	Citations string `json:"citations,omitempty"`  // Origin or source application of the event
@@ -141,5 +296,6 @@ type TextGuardResult struct {
 	Detectors      TextGuardDetectors `json:"detectors"`       // Result of the recipe analyzing and input prompt.
 	PromptText     string             `json:"prompt_text"`     // Updated prompt text, if applicable.
 	PromptMessages any                `json:"prompt_messages"` // Updated prompt messages, if applicable.
-	Blocked        bool               `json:"blocked"`
+	Blocked        bool               `json:"blocked"`         // Whether or not the prompt triggered a block detection.
+	Recipe         string             `json:"recipe"`          // The Recipe that was used.
 }
