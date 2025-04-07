@@ -8,11 +8,15 @@ import (
 	"fmt"
 	"mime"
 	"net/url"
+	"os"
 	"path"
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
 func CanonicalizeStruct(v interface{}) ([]byte, error) {
@@ -187,4 +191,34 @@ func GetFilenameFromContentDisposition(contentDisposition string) (string, error
 
 func GetFileNameFromURL(url *url.URL) string {
 	return path.Base(url.Path)
+}
+
+var (
+	initFileWriterOnce sync.Once
+	logFile            *os.File
+)
+
+func initFileWriter() {
+	// Open the output file
+	filename := "pangea_sdk_log.json"
+	var err error
+	logFile, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	// Where should we close this file?
+	if err != nil {
+		fmt.Printf("Failed to open log file: %s. Logger will go to stdout", filename)
+		logFile = os.Stdout
+	}
+}
+
+func GetDebugLogger() *zerolog.Logger {
+	// Set up the logger
+	initFileWriterOnce.Do(initFileWriter)
+
+	zerolog.TimestampFieldName = "time"
+	zerolog.LevelFieldName = "level"
+	zerolog.MessageFieldName = "message"
+
+	// Set up the JSON file writer as the output
+	logger := zerolog.New(logFile).With().Timestamp().Logger()
+	return &logger
 }
