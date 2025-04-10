@@ -200,15 +200,23 @@ type PromptInjectionResult struct {
 	AnalyzerResponses []AnalyzerResponse `json:"analyzer_responses"`
 }
 
-type PiiEntity struct {
+// TODO: remove in favor of RedactEntity
+type PiiEntity = RedactEntity
+
+// TODO: remove in favor of RedactEntityResult
+type PiiEntityResult struct {
+	Entities []PiiEntity `json:"entities"` // Detected redaction rules.
+}
+
+type RedactEntity struct {
 	Type     string `json:"type"`
 	Value    string `json:"value"`
 	Action   string `json:"action"` // The action taken on this Entity
 	StartPos *int   `json:"start_pos,omitempty"`
 }
 
-type PiiEntityResult struct {
-	Entities []PiiEntity `json:"entities"`
+type RedactEntityResult struct {
+	Entities []RedactEntity `json:"entities"` // Detected redaction rules.
 }
 
 type MaliciousEntity struct {
@@ -255,6 +263,21 @@ type CodeDetectionResult struct {
 	Action   string `json:"action"`
 }
 
+type SingleEntityResult struct {
+	Action   string   `json:"action"`   // The action taken by this Detector
+	Entities []string `json:"entities"` // Detected entities
+}
+
+type Classification struct {
+	Category   string  `json:"category"`
+	Confidence float64 `json:"confidence"`
+}
+
+type ClassificationResult struct {
+	Action          string           `json:"action"` // The action taken by this Detector
+	Classifications []Classification `json:"classifications"`
+}
+
 type TextGuardDetector[T any] struct {
 	Detected bool `json:"detected"`
 	Data     *T   `json:"data,omitempty"`
@@ -262,11 +285,15 @@ type TextGuardDetector[T any] struct {
 
 type TextGuardDetectors struct {
 	PromptInjection      *TextGuardDetector[PromptInjectionResult]   `json:"prompt_injection,omitempty"`
+	Gibberish            *TextGuardDetector[ClassificationResult]    `json:"gibberish,omitempty"`
+	Sentiment            *TextGuardDetector[ClassificationResult]    `json:"sentiment,omitempty"`
+	SelfHarm             *TextGuardDetector[ClassificationResult]    `json:"selfharm,omitempty"`
 	PiiEntity            *TextGuardDetector[PiiEntityResult]         `json:"pii_entity,omitempty"`
 	MaliciousEntity      *TextGuardDetector[MaliciousEntityResult]   `json:"malicious_entity,omitempty"`
+	CustomEntity         *TextGuardDetector[RedactEntityResult]      `json:"custom_entity,omitempty"`
 	SecretsDetection     *TextGuardDetector[SecretsEntityResult]     `json:"secrets_detection,omitempty"`
-	ProfanityAndToxicity *TextGuardDetector[any]                     `json:"profanity_and_toxicity,omitempty"`
-	CustomEntity         *TextGuardDetector[any]                     `json:"custom_entity,omitempty"`
+	Competitors          *TextGuardDetector[SingleEntityResult]      `json:"competitors,omitempty"`
+	ProfanityAndToxicity *TextGuardDetector[ClassificationResult]    `json:"profanity_and_toxicity,omitempty"`
 	LanguageDetection    *TextGuardDetector[LanguageDetectionResult] `json:"language_detection,omitempty"`
 	TopicDetection       *TextGuardDetector[TopicDetectionResult]    `json:"topic_detection,omitempty"`
 	CodeDetection        *TextGuardDetector[CodeDetectionResult]     `json:"code_detection,omitempty"`
