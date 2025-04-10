@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - AI Guard: `ignore_recipe` in detector overrides.
+- AI Guard: new detectors: Competitors, Gibberish, Negative Sentiment, and
+  Self-Harm and Violence.
 
 ### Changed
 
