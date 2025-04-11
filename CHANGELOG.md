@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Disable logger by default
+- AI Guard: updated the Topic detector's overrides.
 
 ## 5.0.0 - 2025-03-28
 
