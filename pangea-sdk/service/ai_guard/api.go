@@ -27,8 +27,10 @@ func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pang
 }
 
 type TopicDetectionOverride struct {
-	Disabled *bool    `json:"disabled,omitempty"`
-	Block    []string `json:"block,omitempty"`
+	Disabled  *bool    `json:"disabled,omitempty"`
+	Action    *string  `json:"action,omitempty"`
+	Topics    []string `json:"topics,omitempty"`
+	Threshold *float64 `json:"threshold,omitempty"`
 }
 
 // This is named "prompt injection" in the API spec even though it is also used
@@ -187,7 +189,7 @@ type Overrides struct {
 	SecretsDetection  *SecretsDetectionOverride  `json:"secrets_detection,omitempty"`
 	SelfHarm          *SelfHarmOverride          `json:"selfharm,omitempty"`
 	Sentiment         *SentimentOverride         `json:"sentiment,omitempty"`
-	TopicDetection    *TopicDetectionOverride    `json:"topic_detection,omitempty"`
+	TopicDetection    *TopicDetectionOverride    `json:"topic,omitempty"`
 }
 
 type AnalyzerResponse struct {
@@ -295,7 +297,7 @@ type TextGuardDetectors struct {
 	Competitors          *TextGuardDetector[SingleEntityResult]      `json:"competitors,omitempty"`
 	ProfanityAndToxicity *TextGuardDetector[ClassificationResult]    `json:"profanity_and_toxicity,omitempty"`
 	LanguageDetection    *TextGuardDetector[LanguageDetectionResult] `json:"language_detection,omitempty"`
-	TopicDetection       *TextGuardDetector[TopicDetectionResult]    `json:"topic_detection,omitempty"`
+	TopicDetection       *TextGuardDetector[TopicDetectionResult]    `json:"topic,omitempty"`
 	CodeDetection        *TextGuardDetector[CodeDetectionResult]     `json:"code_detection,omitempty"`
 }
 
