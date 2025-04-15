@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 5.1.0 - 2025-04-15
+
 ### Added
 
 - AI Guard: `ignore_recipe` in detector overrides.
