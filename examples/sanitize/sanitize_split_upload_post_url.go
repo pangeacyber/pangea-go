@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/sanitize"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/sanitize"
 )
 
 func main() {
@@ -122,7 +122,8 @@ func main() {
 	}
 
 	if i >= maxRetry {
-		log.Fatal("Failed to poll result. Max retry reached.")
+		log.Println("Result was not ready in time.")
+		return
 	}
 
 	// After receiving the result, cast it before using it.

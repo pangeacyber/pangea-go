@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/sanitize"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/sanitize"
 )
 
 func main() {
@@ -80,6 +80,12 @@ func main() {
 	fmt.Println("Sending Sanitize request...")
 	resp, err := client.Sanitize(ctx, input, file)
 	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			log.Printf("Result of request '%s' was not ready in time.\n", *acceptedError.RequestID)
+			return
+		}
+
 		log.Fatalf("Failed to process Sanitize request. Unexpected error: %v", err.Error())
 	}
 
