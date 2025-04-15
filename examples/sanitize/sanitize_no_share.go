@@ -79,6 +79,12 @@ func main() {
 	fmt.Println("Sending Sanitize request...")
 	resp, err := client.Sanitize(ctx, input, file)
 	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			log.Printf("Result of request '%s' was not ready in time.\n", *acceptedError.RequestID)
+			return
+		}
+
 		log.Fatalf("Failed to process Sanitize request. Unexpected error: %v", err.Error())
 	}
 

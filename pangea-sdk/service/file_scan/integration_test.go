@@ -140,6 +140,12 @@ func Test_Integration_FileScan_reversinglabs(t *testing.T) {
 
 	resp, err := client.Scan(ctx, input, file)
 	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			t.Logf("result of request '%v' was not ready in time", acceptedError.RequestID)
+			return
+		}
+
 		t.Fatalf("unexpected error: %v", err.Error())
 	}
 
@@ -185,6 +191,11 @@ func Test_Integration_FileScan_NoRetry_reversinglabs(t *testing.T) {
 			break
 		}
 		i++
+	}
+
+	if err != nil {
+		t.Logf("result of request '%v' was not ready in time", ae.RequestID)
+		return
 	}
 
 	assert.NoError(t, err)

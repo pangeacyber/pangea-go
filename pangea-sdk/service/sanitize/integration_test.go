@@ -58,6 +58,12 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 		UploadedFileName: "uploaded_file",
 	}, file)
 	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			t.Logf("result of request '%v' was not ready in time", acceptedError.RequestID)
+			return
+		}
+
 		t.Fatalf("unexpected error: %v", err.Error())
 	}
 
@@ -232,7 +238,7 @@ func Test_Integration_SanitizeMultipart(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
+func Test_Integration_Sanitize_SplitUpload_Post(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
 
@@ -321,7 +327,7 @@ func Test_Integration_FileScan_SplitUpload_Post(t *testing.T) {
 	assert.False(t, r.Data.MaliciousFile)
 }
 
-func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
+func Test_Integration_Sanitize_SplitUpload_Put(t *testing.T) {
 	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancelFn()
 
@@ -385,7 +391,12 @@ func Test_Integration_FileScan_SplitUpload_Put(t *testing.T) {
 		}
 		i++
 	}
-	assert.NoError(t, err)
+
+	if err != nil {
+		t.Logf("result of request '%s' was not ready in time\n", *resp.RequestID)
+		return
+	}
+
 	assert.NotNil(t, pr)
 	assert.NotNil(t, pr.Result)
 

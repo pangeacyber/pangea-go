@@ -122,7 +122,8 @@ func main() {
 	}
 
 	if i >= maxRetry {
-		log.Fatal("Failed to poll result. Max retry reached.")
+		log.Println("Result was not ready in time.")
+		return
 	}
 
 	// After receiving the result, cast it before using it.
