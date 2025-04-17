@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 const baseURLPath = "/api"
@@ -20,7 +20,7 @@ const baseURLPath = "/api"
 //
 // Tests should register handlers on
 // mux which provide mock responses for the API method being tested.
-func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
+func SetupServer() (mux *http.ServeMux, serverURL *url.URL, teardown func()) {
 	// mux is the HTTP request multiplexer used with the test server.
 	mux = http.NewServeMux()
 	mux.Handle("/", http.FileServer(http.Dir(".")))
@@ -36,23 +36,13 @@ func SetupServer() (mux *http.ServeMux, serverURL string, teardown func()) {
 
 	url, _ := url.Parse(server.URL + baseURLPath)
 
-	return mux, url.String(), server.Close
+	return mux, url, server.Close
 }
 
-func TestConfig(url string) *pangea.Config {
-	// Clean scheme. It will be adden after decide if it should be secure o insecure
-	// It only happens on testing because of local server
-	if strings.HasPrefix(url, "https://") {
-		url = strings.TrimPrefix(url, "https://")
-	} else if strings.HasPrefix(url, "http://") {
-		url = strings.TrimPrefix(url, "http://")
-	}
-
+func TestConfig(url *url.URL) *pangea.Config {
 	return &pangea.Config{
-		Token:       "TestToken",
-		Domain:      url,
-		Insecure:    true,
-		Environment: "local",
+		Token:           "TestToken",
+		BaseURLTemplate: url.String(),
 	}
 }
 
@@ -80,7 +70,7 @@ func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.
 	emptyDomainCfg := &pangea.Config{Domain: ""}
 	doErr := f(emptyDomainCfg)
 	if doErr == nil {
-		t.Fatalf("call to method %v with empty Enpoint got nil err, want error", method)
+		t.Fatalf("call to method %v with empty Endpoint got nil err, want error", method)
 	}
 
 	badUrlCfg := &pangea.Config{Domain: "htt://   "}

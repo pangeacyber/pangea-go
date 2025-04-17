@@ -6,12 +6,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -97,7 +98,7 @@ func TestLog_FailHashVerification(t *testing.T) {
 }
 
 func TestLog_FailSigner(t *testing.T) {
-	client, err := audit.New(pangeatesting.TestConfig("someurl"), audit.WithLogLocalSigning("notarealkey"))
+	client, err := audit.New(pangeatesting.TestConfig(&url.URL{Host: "someurl"}), audit.WithLogLocalSigning("notarealkey"))
 
 	assert.Error(t, err)
 	assert.Nil(t, client)
@@ -129,9 +130,12 @@ func TestDomainTrailingSlash(t *testing.T) {
 			}`)
 	})
 
-	url = url + "/" // Add trailing slash to domain
+	testConfig := pangeatesting.TestConfig(url)
 
-	client, _ := audit.New(pangeatesting.TestConfig(url))
+	// Add trailing slash to domain
+	testConfig.Domain = testConfig.Domain + "/"
+
+	client, _ := audit.New(testConfig)
 	event := &audit.StandardEvent{
 		Message: "test",
 	}
@@ -1239,13 +1243,13 @@ func TestRootError(t *testing.T) {
 
 func TestFailedOptions(t *testing.T) {
 	_, err := audit.New(
-		pangeatesting.TestConfig("url"),
+		pangeatesting.TestConfig(&url.URL{Host: "url"}),
 		audit.WithLogLocalSigning("bad file name"),
 	)
 	assert.Error(t, err)
 
 	_, err = audit.New(
-		pangeatesting.TestConfig("url"),
+		pangeatesting.TestConfig(&url.URL{Host: "url"}),
 		audit.DisableEventVerification(),
 	)
 	assert.NoError(t, err)

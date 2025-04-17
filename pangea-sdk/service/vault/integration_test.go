@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea/rsa"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/vault"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea/rsa"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/vault"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -1045,29 +1045,113 @@ func Test_Integration_Error_BadToken(t *testing.T) {
 }
 
 func Test_List_And_Delete(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancelFn()
-
 	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
 	client := vault.New(cfg)
 
-	lreq := &vault.ListRequest{}
-	lresp, err := client.List(ctx, lreq)
+	filter := vault.NewFilterList()
+	filter.Name().SetContains([]string{actor})
+	last := ""
+	item_counter := 0
+	list_call_counter := 0
+	start := time.Now().UnixMilli()
 
-	assert.NoError(t, err)
-	assert.NotNil(t, lresp)
+	for item_counter < 500 {
+		ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancelFn()
 
-	assert.Greater(t, len(lresp.Result.Items), 0)
-	for _, i := range lresp.Result.Items {
-		if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
-			dresp, err := client.Delete(ctx, &vault.DeleteRequest{
-				ID: i.ID,
-			})
-
-			assert.NoError(t, err)
-			assert.NotNil(t, dresp)
-			assert.NotNil(t, dresp.Result)
+		lreq := &vault.ListRequest{
+			Filter: filter.Filter(),
+			Last:   last,
 		}
+
+		list_call_counter++
+		fmt.Printf("List call %d\n", list_call_counter)
+		lresp, err := client.List(ctx, lreq)
+		last = lresp.Result.Last
+
+		assert.NoError(t, err)
+		assert.NotNil(t, lresp)
+
+		assert.GreaterOrEqual(t, len(lresp.Result.Items), 0)
+		for _, i := range lresp.Result.Items {
+			if i.ID != "" && i.Type != "folder" && i.Folder != "/service-tokens/" {
+				item_counter++
+				ctx_del, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+				defer cancelFn()
+				dresp, err := client.Delete(ctx_del, &vault.DeleteRequest{
+					ID: i.ID,
+				})
+
+				assert.NoError(t, err)
+				assert.NotNil(t, dresp)
+				assert.NotNil(t, dresp.Result)
+			}
+		}
+
+		if len(lresp.Result.Items) == 0 {
+			break
+		}
+
+	}
+
+	end := time.Now().UnixMilli()
+	fmt.Printf("Deleted %d keys\n", item_counter)
+	fmt.Printf("Deleted %d keys in %d s\n", item_counter, (end-start)/1000)
+	fmt.Printf("Average delete time: %f ms\n", float64(end-start)/float64(item_counter))
+}
+
+func Test_List_And_Delete_Folders(t *testing.T) {
+	cfg := pangeatesting.IntegrationConfig(t, testingEnvironment)
+	client := vault.New(cfg)
+	list_call_counter := 0
+
+	for _, name := range []string{"test_folder_name_new", "test_folder_name", "test_parent_folder_"} {
+		fmt.Printf("Deleting folders with name '%s'\n", name)
+		last := ""
+		item_counter := 0
+		start := time.Now().UnixMilli()
+		filter := vault.NewFilterList()
+		filter.Name().SetContains([]string{name})
+
+		for item_counter < 100 {
+			ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+			defer cancelFn()
+			fmt.Printf("List call %d. Deleted items: %d\n", list_call_counter, item_counter)
+
+			lreq := &vault.ListRequest{
+				Filter: filter.Filter(),
+				Last:   last,
+			}
+			lresp, err := client.List(ctx, lreq)
+			assert.NoError(t, err)
+			assert.NotNil(t, lresp)
+			list_call_counter++
+			last = lresp.Result.Last
+
+			assert.GreaterOrEqual(t, len(lresp.Result.Items), 0)
+			for _, i := range lresp.Result.Items {
+				if i.ID != "" && i.Type == "folder" && i.Folder != "/service-tokens/" {
+					item_counter++
+					ctx_del, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+					defer cancelFn()
+					dresp, err := client.Delete(ctx_del, &vault.DeleteRequest{
+						ID: i.ID,
+					})
+
+					assert.NoError(t, err)
+					assert.NotNil(t, dresp)
+					assert.NotNil(t, dresp.Result)
+				}
+			}
+
+			if len(lresp.Result.Items) == 0 {
+				break
+			}
+		}
+
+		end := time.Now().UnixMilli()
+		fmt.Printf("Deleted folders in %d s\n", (end-start)/1000)
+		fmt.Printf("Average delete time: %f ms\n", float64(end-start)/float64(item_counter))
 	}
 }
 

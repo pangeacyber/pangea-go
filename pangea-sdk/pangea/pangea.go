@@ -11,25 +11,19 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
-	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/defaults"
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/defaults"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
 	"github.com/rs/zerolog"
 )
 
 const (
-	version         = "4.4.0-beta.2"
-	pangeaUserAgent = "pangea-go/" + version
-)
-
-var (
-	initFileWriterOnce sync.Once
-	file               *os.File
+	version                = "5.1.0"
+	pangeaUserAgent        = "pangea-go/" + version
+	serviceNamePlaceholder = "{SERVICE_NAME}"
 )
 
 var errNonNilContext = errors.New("context must be non-nil")
@@ -85,29 +79,22 @@ type Config struct {
 	// The Bearer token used to authenticate requests.
 	Token string
 
-	// Config ID for multi-config projects
-	// @deprecated: Set config_id with options in service initialization if supported
-	ConfigID string
-
 	// The HTTP client to be used by the client. It defaults to
 	// defaults.HTTPClient
 	HTTPClient *http.Client
 
-	// Base domain for API requests.
+	// Template for constructing the base URL for API requests. The placeholder
+	// `{SERVICE_NAME}` will be replaced with the service name slug. This is a
+	// more powerful version of Domain that allows for setting more than just
+	// the host of the API server. Defaults to
+	// `https://{SERVICE_NAME}.aws.us.pangea.cloud`.
+	BaseURLTemplate string
+
+	// Base domain for API requests. This is a weaker version of BaseURLTemplate
+	// that only allows for setting the host of the API server. Use
+	// BaseURLTemplate for more control over the URL, such as setting
+	// service-specific paths. Defaults to `aws.us.pangea.cloud`.
 	Domain string
-
-	// Set to true to use plain http
-	Insecure bool
-
-	// Environment specifies the Pangea environment. If set to "local", then
-	// Domain must be the full host (i.e., hostname and port) for the Pangea
-	// service that this Config will be used for.
-	Environment string
-
-	// Set to "local" for testing locally
-	//
-	// Deprecated: Enviroment is a typo. Use Environment instead.
-	Enviroment string
 
 	// AdditionalHeaders is a map of additional headers to be sent with the request.
 	AdditionalHeaders map[string]string
@@ -170,8 +157,17 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 	cfg := baseCfg.Copy()
 	cfg.MergeIn(additionalConfigs...)
 
+	if len(cfg.BaseURLTemplate) == 0 && len(cfg.Domain) == 0 {
+		cfg.BaseURLTemplate = fmt.Sprintf("https://%s.aws.us.pangea.cloud", serviceNamePlaceholder)
+	}
+
+	if len(cfg.BaseURLTemplate) == 0 && len(cfg.Domain) > 0 {
+		cfg.BaseURLTemplate = fmt.Sprintf("https://%s.%s", serviceNamePlaceholder, cfg.Domain)
+	}
+
 	if cfg.Logger == nil {
-		cfg.Logger = GetDefaultPangeaLogger()
+		l := zerolog.Nop()
+		cfg.Logger = &l
 	}
 
 	cfg.HTTPClient = chooseHTTPClient(cfg)
@@ -222,38 +218,25 @@ func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
 	}
 }
 
-func (c *Client) GetRequestIDURL(rid string) (string, error) {
+func (c *Client) GetRequestIDURL(rid string) (*url.URL, error) {
 	return c.GetURL(fmt.Sprintf("request/%v", rid))
 }
 
-func (c *Client) GetURL(path string) (string, error) {
-	cfg := c.config
-	endpoint := ""
-	// Remove slashes, just in case
-	path = strings.TrimPrefix(path, "/")
-	domain := strings.TrimSuffix(cfg.Domain, "/")
-
-	if strings.HasPrefix(cfg.Domain, "http://") || strings.HasPrefix(cfg.Domain, "https://") {
-		// URL
-		endpoint = fmt.Sprintf("%s/%s", domain, path)
-	} else {
-		scheme := "https://"
-		if cfg.Insecure {
-			scheme = "http://"
-		}
-		if cfg.Environment == "local" || cfg.Enviroment == "local" {
-			// If we are testing locally do not use service
-			endpoint = fmt.Sprintf("%s%s/%s", scheme, domain, path)
-		} else {
-			endpoint = fmt.Sprintf("%s%s.%s/%s", scheme, c.serviceName, domain, path)
-		}
-	}
-
-	u, err := url.Parse(endpoint)
+func (c *Client) GetURL(path string) (*url.URL, error) {
+	u, err := url.Parse(strings.Replace(c.config.BaseURLTemplate, serviceNamePlaceholder, c.serviceName, 1))
 	if err != nil {
-		return "", err
+		c.config.Logger.Error().Msgf("failed to parse URL: %s\n", err)
+		return nil, err
 	}
-	return u.String(), nil
+
+	p, err := url.JoinPath(u.Path, path)
+	if err != nil {
+		c.config.Logger.Error().Msgf("failed to join paths: %s\n", err)
+		return nil, err
+	}
+	u.Path = p
+
+	return u, nil
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr,
@@ -261,12 +244,12 @@ func (c *Client) GetURL(path string) (string, error) {
 // Relative URLs should always be specified without a preceding slash. If
 // specified, the value pointed to by body is JSON encoded and included as the
 // request body.
-func (c *Client) NewRequest(method, url string, body any) (*http.Request, error) {
+func (c *Client) NewRequest(method string, url *url.URL, body any) (*http.Request, error) {
 	c.Logger.Info().
 		Str("service", c.serviceName).
 		Str("method", "NewRequest").
 		Str("action", method).
-		Str("url", url).
+		Str("url", url.String()).
 		Send()
 
 	if c.configID != "" {
@@ -289,11 +272,11 @@ func (c *Client) NewRequest(method, url string, body any) (*http.Request, error)
 		Str("service", c.serviceName).
 		Str("method", "NewRequest").
 		Str("action", method).
-		Str("url", url).
+		Str("url", url.String()).
 		Interface("data", body).
 		Send()
 
-	req, err := http.NewRequest(method, url, buf)
+	req, err := http.NewRequest(method, url.String(), buf)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
@@ -310,7 +293,7 @@ func (c *Client) NewRequest(method, url string, body any) (*http.Request, error)
 	return req, nil
 }
 
-func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*Response, *AcceptedResult, error) {
+func (c *Client) GetPresignedURL(ctx context.Context, url *url.URL, input any) (*Response, *AcceptedResult, error) {
 	req, err := c.NewRequest("POST", url, input)
 	if err != nil {
 		return nil, nil, err
@@ -324,7 +307,7 @@ func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*R
 	c.Logger.Debug().
 		Str("service", c.serviceName).
 		Str("method", "GetPresignedURL").
-		Str("url", url).
+		Str("url", url.String()).
 		Interface("header", pr.ResponseHeader).
 		Interface("result", pr.RawResult).
 		Send()
@@ -343,7 +326,7 @@ func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*R
 			c.Logger.Error().
 				Str("service", c.serviceName).
 				Str("method", "GetPresignedURL").
-				Str("url", url).
+				Str("url", url.String()).
 				Err(err)
 			// Return APIError
 			return nil, nil, err
@@ -358,8 +341,17 @@ func (c *Client) GetPresignedURL(ctx context.Context, url string, input any) (*R
 	return pr, ar, nil
 }
 
-func (c *Client) DownloadFile(ctx context.Context, url string) (*AttachedFile, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func (c *Client) DownloadFile(ctx context.Context, rawUrl string) (*AttachedFile, error) {
+	parsedUrl, err := url.Parse(rawUrl)
+	if err != nil {
+		c.Logger.Fatal().
+			Str("service", c.serviceName).
+			Str("method", "DownloadFile.ParseURL").
+			Err(err)
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", parsedUrl.String(), nil)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
@@ -385,7 +377,7 @@ func (c *Client) DownloadFile(ctx context.Context, url string) (*AttachedFile, e
 
 	filename, _ := pu.GetFilenameFromContentDisposition(resp.Header.Get("Content-Disposition"))
 	if filename == "" {
-		filename = pu.GetFileNameFromURL(url)
+		filename = pu.GetFileNameFromURL(parsedUrl)
 		if filename == "" {
 			filename = "default_filename"
 		}
@@ -438,7 +430,7 @@ func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, 
 	return nil
 }
 
-func (c *Client) FullPostPresignedURL(ctx context.Context, url string, input ConfigIDer, out any, fd FileData) (*Response, error) {
+func (c *Client) FullPostPresignedURL(ctx context.Context, url *url.URL, input ConfigIDer, out any, fd FileData) (*Response, error) {
 	pr, ar, err := c.GetPresignedURL(ctx, url, input)
 	if err != nil {
 		c.Logger.Error().
@@ -479,7 +471,7 @@ func (c *Client) FullPostPresignedURL(ctx context.Context, url string, input Con
 		c.Logger.Error().
 			Str("service", c.serviceName).
 			Str("method", "PostPresignedURL.CheckResponse").
-			Str("url", url).
+			Str("url", url.String()).
 			Err(err)
 		// Return APIError
 		return nil, err
@@ -488,7 +480,7 @@ func (c *Client) FullPostPresignedURL(ctx context.Context, url string, input Con
 	return pr, nil
 }
 
-func (c *Client) PostMultipart(ctx context.Context, url string, input any, out any, fd FileData) (*Response, error) {
+func (c *Client) PostMultipart(ctx context.Context, url *url.URL, input any, out any, fd FileData) (*Response, error) {
 	req, err := c.NewRequestMultipart("POST", url, input, fd)
 	if err != nil {
 		return nil, err
@@ -496,7 +488,7 @@ func (c *Client) PostMultipart(ctx context.Context, url string, input any, out a
 	return c.Do(ctx, req, out, true)
 }
 
-func (c *Client) NewRequestMultipart(method, url string, body any, fd FileData) (*http.Request, error) {
+func (c *Client) NewRequestMultipart(method string, url *url.URL, body any, fd FileData) (*http.Request, error) {
 	if c.configID != "" {
 		v, ok := body.(ConfigIDer)
 		if ok && v.GetConfigID() == "" {
@@ -517,7 +509,7 @@ func (c *Client) NewRequestMultipart(method, url string, body any, fd FileData) 
 		Str("service", c.serviceName).
 		Str("method", "NewRequestMultipart").
 		Str("action", method).
-		Str("url", url).
+		Str("url", url.String()).
 		Interface("data", body).
 		Send()
 
@@ -549,7 +541,7 @@ func (c *Client) NewRequestMultipart(method, url string, body any, fd FileData) 
 
 	// close the multipart writer.
 	w.Close()
-	req, err := http.NewRequest(method, url, &b)
+	req, err := http.NewRequest(method, url.String(), &b)
 	if err != nil {
 		return nil, err
 	}
@@ -811,7 +803,7 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 	c.Logger.Info().
 		Str("service", c.serviceName).
 		Str("method", "handledQueued.Start").
-		Str("url", u).
+		Str("url", u.String()).
 		Send()
 
 	for r.HTTPResponse.StatusCode == http.StatusAccepted && !c.reachTimeout(start) {
@@ -850,13 +842,13 @@ func (c *Client) handledQueued(ctx context.Context, r *Response) (*Response, err
 	c.Logger.Info().
 		Str("service", c.serviceName).
 		Str("method", "handledQueued.Exit").
-		Str("url", u).
+		Str("url", u.String()).
 		Send()
 
 	c.Logger.Debug().
 		Str("service", c.serviceName).
 		Str("method", "handleQueued").
-		Str("url", u).
+		Str("url", u.String()).
 		Interface("header", r.ResponseHeader).
 		Interface("result", r.RawResult).
 		Send()
@@ -935,19 +927,13 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.Token = other.Token
 	}
 
+	if other.BaseURLTemplate != "" {
+		dst.BaseURLTemplate = other.BaseURLTemplate
+	}
+
 	if other.Domain != "" {
 		dst.Domain = other.Domain
 	}
-
-	if other.Environment != "" {
-		dst.Environment = other.Environment
-	}
-
-	if other.Enviroment != "" {
-		dst.Enviroment = other.Enviroment
-	}
-
-	dst.Insecure = other.Insecure
 
 	if other.AdditionalHeaders != nil {
 		dst.AdditionalHeaders = other.AdditionalHeaders
@@ -964,7 +950,6 @@ func mergeInConfig(dst *Config, other *Config) {
 	dst.QueuedRetryEnabled = other.QueuedRetryEnabled
 	dst.PollResultTimeout = other.PollResultTimeout
 	dst.Logger = other.Logger
-	dst.ConfigID = other.ConfigID
 }
 
 // Copy will return a shallow copy of the Config object. If any additional
@@ -994,7 +979,7 @@ func (c *Client) FetchAcceptedResponse(ctx context.Context, reqID string, v inte
 	c.Logger.Info().
 		Str("service", c.serviceName).
 		Str("method", "FetchAcceptedResponse").
-		Str("url", u).
+		Str("url", u.String()).
 		Send()
 
 	req, err := c.NewRequest("GET", u, nil)
@@ -1036,29 +1021,4 @@ func (c *Client) addPendingRequestID(rid string) {
 
 func (c *Client) removePendingRequestID(rid string) {
 	delete(c.pendingRequestID, rid)
-}
-
-func initFileWriter() {
-	// Open the output file
-	filename := "pangea_sdk_log.json"
-	var err error
-	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	// Where should we close this file?
-	if err != nil {
-		fmt.Printf("Failed to open log file: %s. Logger will go to stdout", filename)
-		file = os.Stdout
-	}
-}
-
-func GetDefaultPangeaLogger() *zerolog.Logger {
-	// Set up the logger
-	initFileWriterOnce.Do(initFileWriter)
-
-	zerolog.TimestampFieldName = "time"
-	zerolog.LevelFieldName = "level"
-	zerolog.MessageFieldName = "message"
-
-	// Set up the JSON file writer as the output
-	logger := zerolog.New(file).With().Timestamp().Logger()
-	return &logger
 }

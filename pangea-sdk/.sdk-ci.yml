@@ -8,6 +8,8 @@ sdk-test-it:
   stage: integration_tests
   retry: 2
   variables:
+    CLOUD: AWS
+
     # Set each service test environment
     SERVICE_AI_GUARD_ENV: LVE
     SERVICE_AUDIT_ENV: LVE
@@ -20,7 +22,7 @@ sdk-test-it:
     SERVICE_URL_INTEL_ENV: LVE
     SERVICE_FILE_INTEL_ENV: LVE
     SERVICE_USER_INTEL_ENV: LVE
-    SERVICE_PROMPT_GUARD_ENV: DEV
+    SERVICE_PROMPT_GUARD_ENV: LVE
     SERVICE_REDACT_ENV: LVE
     SERVICE_SANITIZE_ENV: LVE
     SERVICE_VAULT_ENV: LVE
@@ -42,64 +44,47 @@ sdk-test-it:
     - export PANGEA_AUDIT_CONFIG_ID_3_${ENV}="$(eval echo \$PANGEA_AUDIT_CONFIG_ID_3_${ENV}_${CLOUD})"
     - export PANGEA_REDACT_CONFIG_ID_1_${ENV}="$(eval echo \$PANGEA_REDACT_CONFIG_ID_1_${ENV}_${CLOUD})"
     - export PANGEA_REDACT_CONFIG_ID_2_${ENV}="$(eval echo \$PANGEA_REDACT_CONFIG_ID_2_${ENV}_${CLOUD})"
+    # Vault key ids
+    - export PANGEA_INTEGRATION_FPE_KEY_ID_${ENV}="$(eval echo \$PANGEA_INTEGRATION_FPE_KEY_ID_${ENV}_${CLOUD})"
 
     - cd pangea-sdk
 
   parallel:
     matrix:
-      - CLOUD: [AWS]
-        ENV: ${SERVICE_AI_GUARD_ENV}
+      - ENV: ${SERVICE_AI_GUARD_ENV}
         TEST: ai_guard
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_AUDIT_ENV}
+      - ENV: ${SERVICE_AUDIT_ENV}
         TEST: audit
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_AUTHN_ENV}
+      - ENV: ${SERVICE_AUTHN_ENV}
         TEST: authn
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_AUTHZ_ENV}
+      - ENV: ${SERVICE_AUTHZ_ENV}
         TEST: authz
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_EMBARGO_ENV}
+      - ENV: ${SERVICE_EMBARGO_ENV}
         TEST: embargo
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_DOMAIN_INTEL_ENV}
+      - ENV: ${SERVICE_DOMAIN_INTEL_ENV}
         TEST: domain_intel
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_IP_INTEL_ENV}
+      - ENV: ${SERVICE_IP_INTEL_ENV}
         TEST: ip_intel
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_URL_INTEL_ENV}
+      - ENV: ${SERVICE_URL_INTEL_ENV}
         TEST: url_intel
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_USER_INTEL_ENV}
+      - ENV: ${SERVICE_USER_INTEL_ENV}
         TEST: user_intel
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_FILE_INTEL_ENV}
+      - ENV: ${SERVICE_FILE_INTEL_ENV}
         TEST: file_intel
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_FILE_SCAN_ENV}
+      - ENV: ${SERVICE_FILE_SCAN_ENV}
         TEST: file_scan
-      - CLOUD: [AWS]
-        ENV: ${SERVICE_PROMPT_GUARD_ENV}
+      - ENV: ${SERVICE_PROMPT_GUARD_ENV}
         TEST: prompt_guard
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_REDACT_ENV}
+      - ENV: ${SERVICE_REDACT_ENV}
         TEST: redact
-      - CLOUD: [AWS]
-        ENV: ${SERVICE_SANITIZE_ENV}
+      - ENV: ${SERVICE_SANITIZE_ENV}
         TEST: sanitize
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_VAULT_ENV}
+      - ENV: ${SERVICE_VAULT_ENV}
         TEST: vault
-      - CLOUD: [AWS, GCP]
-        ENV: ${SERVICE_SHARE_ENV}
+      - ENV: ${SERVICE_SHARE_ENV}
         TEST: share
-  allow_failure: false
-  rules:
-    - if: $CI_COMMIT_BRANCH
   script:
-    - go test -count=1 -tags integration -v ./service/${TEST}/...
+    - go test -count=1 -timeout=20m -tags integration -v ./service/${TEST}/...
 
 sdk-lint:
   extends: .sdk-base

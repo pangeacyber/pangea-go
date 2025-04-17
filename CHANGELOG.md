@@ -7,11 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 5.1.0 - 2025-04-15
+
 ### Added
 
-- AI Guard: support for structured input.
-- AI Guard: more detectors.
-- AI Guard: support for `llm_input`, `llm_info`, and `log_fields`.
+- AI Guard: `ignore_recipe` in detector overrides.
+- AI Guard: new detectors: Competitors, Gibberish, Negative Sentiment, and
+  Self-Harm and Violence.
+
+### Changed
+
+- Disable logger by default
+- AI Guard: updated the Topic detector's overrides.
+
+## 5.0.0 - 2025-03-28
+
+### Added
+
+- `BaseURLTemplate` has been added to `Config` to allow for greater control over
+  the complete API URL. This option may be a full URL with the optional
+  `{SERVICE_NAME}` placeholder, which will be replaced by the slug of the
+  respective service name. This supersedes `Environment` and `Insecure`.
+- Redact: `Unredact()` method on service interface.
+- Redact: `FPEContext` on `RedactResult` and `StructuredResult`.
+- AI Guard: topic detector.
+
+### Changed
+
+- Minimum supported Go version is now v1.23
+
+### Removed
+
+- `Environment` and `Insecure` have been removed from `Config`, as the
+  functionality they provided can now be accomplished via `BaseURLTemplate`
+  (see above).
+- AI Guard: `LlmInfo` and `LlmInput`.
+- PangeaConfig: `ConfigID` and `Enviroment` field.
+
+## 4.4.0 - 2025-02-16
+
+### Added
+
+- AI Guard and Prompt Guard services.
 
 ### Changed
 

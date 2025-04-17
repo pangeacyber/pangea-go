@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeatesting"
-	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/pangeautil"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -783,9 +783,7 @@ func Test_Integration_Multi_Config_No_ConfigID(t *testing.T) {
 	defer cancelFn()
 
 	cfg := pangeatesting.IntegrationMultiConfigConfig(t, testingEnvironment)
-	// We will leave config ID empty now
-	cfg.ConfigID = ""
-	client, _ := audit.New(cfg)
+	client, _ := audit.New(cfg, audit.WithConfigID(""))
 
 	event := &audit.StandardEvent{
 		Message: MSG_NO_SIGNED,

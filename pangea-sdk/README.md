@@ -4,19 +4,18 @@
 
 <br />
 
-[![documentation](https://img.shields.io/badge/documentation-pangea-blue?style=for-the-badge&labelColor=551B76)][Documentation]
-[![Discourse](https://img.shields.io/badge/Discourse-4A154B?style=for-the-badge&logo=discourse&logoColor=white)][Discourse]
+[![Documentation](https://img.shields.io/badge/documentation-pangea-blue?style=for-the-badge&labelColor=551B76)][Documentation]
 
 # Pangea Go SDK
 
-A Go SDK for integrating with Pangea services. Supports Go v1.22 and above.
+A Go SDK for integrating with Pangea services. Supports Go v1.23 and above.
 
 ## Installation
 
 #### GA releases
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v4
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v5
 ```
 
 <a name="beta-releases"></a>
@@ -76,8 +75,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/service/audit"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 )
 ```
 
@@ -122,5 +121,4 @@ Full code for the above example available in [the examples directory](https://gi
    [GA Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
    [Beta Examples]: https://github.com/pangeacyber/pangea-go/tree/beta/examples
    [Pangea Console]: https://console.pangea.cloud/
-   [Discourse]: https://l.pangea.cloud/Jd4wlGs
    [Secure Audit Log]: https://pangea.cloud/docs/audit

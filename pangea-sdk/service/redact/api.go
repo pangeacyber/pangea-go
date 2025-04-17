@@ -3,8 +3,8 @@ package redact
 import (
 	"context"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/request"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/request"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 // @summary Redact
@@ -105,7 +105,11 @@ type TextResult struct {
 	// Number of redactions present in the response
 	Count int `json:"count"`
 
+	// Describes the decision process for redactions
 	Report *DebugReport `json:"report"`
+
+	// FPE context used to encrypt and redact data
+	FPEContext *string `json:"fpe_context"`
 }
 
 type DebugReport struct {
@@ -179,7 +183,11 @@ type StructuredResult struct {
 	// Number of redactions present in the response
 	Count int `json:"count"`
 
+	// Describes the decision process for redactions
 	Report *DebugReport `json:"report"`
+
+	// FPE context used to encrypt and redact data
+	FPEContext *string `json:"fpe_context"`
 }
 
 type UnredactRequest struct {

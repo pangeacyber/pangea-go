@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/internal/signer"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v4/pangea"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/signer"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
 type Client interface {
@@ -66,14 +66,6 @@ func New(cfg *pangea.Config, opts ...Option) (Client, error) {
 		publicKeyInfo:         nil,
 		tenantID:              "",
 		schema:                StandardEvent{},
-	}
-
-	// FIXME: Just to still support ConfigID in PangeaConfig. Remove when deprecated
-	if cfg.ConfigID != "" {
-		err := WithConfigID(cfg.ConfigID)(cli)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	for _, opt := range opts {
