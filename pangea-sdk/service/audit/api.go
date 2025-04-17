@@ -1121,3 +1121,215 @@ func (a *audit) Export(ctx context.Context, input *ExportRequest) (*pangea.Pange
 	}
 	return response, nil
 }
+
+// AuditSchemaField A description of a field in an audit log.
+type AuditSchemaField struct {
+	// Prefix name / identity for the field.
+	Id string `json:"id" validate:"regexp=^[a-z][0-9a-z_]*$"`
+	// Human display description of the field.
+	Description *string `json:"description,omitempty"`
+	// Human display name/title of the field.
+	Name *string `json:"name,omitempty"`
+	// If true, redaction is performed against this field (if configured.) Only valid for string type.
+	Redact *bool `json:"redact,omitempty"`
+	// If true, this field is required to exist in all logged events.
+	Required *bool `json:"required,omitempty"`
+	// The maximum size of the field. Only valid for strings, which limits number of UTF-8 characters.
+	Size *int32 `json:"size,omitempty"`
+	// The data type for the field.
+	Type string `json:"type"`
+	// If true, this field is visible by default in audit UIs.
+	UiDefaultVisible *bool `json:"ui_default_visible,omitempty"`
+}
+
+// AuditSchema A description of acceptable fields for an audit log.
+type AuditSchema struct {
+	// If true, records contain fields to support client/vault signing.
+	ClientSignable *bool `json:"client_signable,omitempty"`
+	// Save (or reject) malformed AuditEvents.
+	SaveMalformed *string `json:"save_malformed,omitempty"`
+	// If true, records contain fields to support tamper-proofing.
+	TamperProofing *bool              `json:"tamper_proofing,omitempty"`
+	Fields         []AuditSchemaField `json:"fields,omitempty"`
+}
+
+type ForwardingConfiguration struct {
+	Type *string `json:"type,omitempty"`
+	// URL where events will be written to. Must use HTTPS
+	EventUrl string `json:"event_url"`
+	// If indexer acknowledgement is required, this must be provided along with a 'channel_id'.
+	AckUrl *string `json:"ack_url,omitempty"`
+	// An optional splunk channel included in each request if indexer acknowledgement is required for the HEC token along with the 'ack_url'
+	ChannelId *string `json:"channel_id,omitempty"`
+	// Public certificate if a self signed TLS cert is being used
+	PublicCert *string `json:"public_cert,omitempty"`
+	// Optional splunk index passed in the record bodies
+	Index *string `json:"index,omitempty"`
+	// The vault config used to store the HEC token
+	VaultConfigId string `json:"vault_config_id"`
+	// The secret ID where the HEC token is stored in vault
+	VaultSecretId string `json:"vault_secret_id"`
+}
+
+type AuditSavedSearch struct {
+	// User facing title of the search query.
+	Title *string `json:"title,omitempty"`
+	// Natural search string; a space-separated list of case-sensitive values used to search for records, which includes the optional `<field>:` prefix to limit the search to a specific field. Values with a space can be enclosed in double-quote (`\"`) characters:   * `\"search text\"`: any field contains \"search text\"  * `actor:\"Jane Doe\"`: the actor field contains \"Jane Doe\"  * `actor:alice target:bob sent`: actor contains \"alice\", target contains \"bob\", and any field contains \"sent\".   The following optional prefixes are supported: `action:`, `actor:`,  `message:`, `new:`, `old:`, `source:`, `status:`, `target:`.
+	Query *string `json:"query,omitempty"`
+	// An RFC-3339 formatted timestamp, or relative time adjustment from the current time.
+	Start *string `json:"start,omitempty"`
+	// An RFC-3339 formatted timestamp, or relative time adjustment from the current time.
+	End *string `json:"end,omitempty"`
+	// Specify the sort order of the response.
+	Order *string `json:"order,omitempty"`
+	// Name of column to sort the results by.
+	OrderBy *string `json:"order_by,omitempty"`
+}
+
+// AuditUiMetadata Represents metadata configurations for the UI elements of the Audit search interface
+type AuditUiMetadata struct {
+	SavedSearches []AuditSavedSearch `json:"saved_searches,omitempty"`
+}
+
+type ServiceConfig struct {
+	// A period of time.
+	ColdQueryResultRetention *string `json:"cold_query_result_retention,omitempty" validate:"regexp=^(\\\\d+)(d|da|day|days|h|hour|hr|hrs|hours|mi|min|mins|minute|minutes|mo|mon|month|months|s|sec|secs|second|seconds|w|week|weeks|y|year|years)$"`
+	ColdStorage              *string `json:"cold_storage,omitempty"`
+	// The DB timestamp when this config was created. Ignored when submitted.
+	CreatedAt               *time.Time               `json:"created_at,omitempty"`
+	ForwardingConfiguration *ForwardingConfiguration `json:"forwarding_configuration,omitempty"`
+	HotStorage              *string                  `json:"hot_storage,omitempty"`
+	// The config ID
+	Id *string `json:"id,omitempty"`
+	// configuration name
+	Name *string `json:"name,omitempty"`
+	// A period of time.
+	QueryResultRetention *string `json:"query_result_retention,omitempty" validate:"regexp=^(\\\\d+)(d|da|day|days|h|hour|hr|hrs|hours|mi|min|mins|minute|minutes|mo|mon|month|months|s|sec|secs|second|seconds|w|week|weeks|y|year|years)$"`
+	// A redact service config that will be used to redact PII from logs.
+	RedactServiceConfigId *string     `json:"redact_service_config_id,omitempty"`
+	Schema                AuditSchema `json:"schema"`
+	// Number of OpenSearch shards to use per index.
+	Shards     *int32           `json:"shards,omitempty"`
+	UiMetadata *AuditUiMetadata `json:"ui_metadata,omitempty"`
+	// The DB timestamp when this config was last updated at
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	// ID of the Vault key used for signing. If missing, use a default Audit key
+	VaultKeyId *string `json:"vault_key_id,omitempty"`
+	// A vault service config that will be used to sign logs.
+	VaultServiceConfigId *string `json:"vault_service_config_id,omitempty"`
+	// Enable/disable event signing
+	VaultSign   *bool   `json:"vault_sign,omitempty"`
+	Version     int32   `json:"version"`
+	WarmStorage *string `json:"warm_storage,omitempty"`
+}
+
+type GetServiceConfigConfigRequest struct {
+	pangea.BaseRequest
+
+	Id string `json:"id"`
+}
+
+// @summary Get a service config.
+//
+// @description Get a service config.
+//
+// @operationId audit_post_v1beta_config
+func (a *audit) GetServiceConfig(ctx context.Context, configId string) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config", &GetServiceConfigConfigRequest{Id: configId}, &ServiceConfig{})
+}
+
+type CreateServiceConfigRequest struct {
+	pangea.BaseRequest
+	ServiceConfig
+}
+
+// @summary Create a service config.
+//
+// @description Create a service config.
+//
+// @operationId audit_post_v1beta_config_create
+func (a *audit) CreateServiceConfig(ctx context.Context, input *CreateServiceConfigRequest) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/create", input, &ServiceConfig{})
+}
+
+type UpdateServiceConfigRequest struct {
+	pangea.BaseRequest
+	ServiceConfig
+}
+
+// @summary Update a service config.
+//
+// @description Update a service config.
+//
+// @operationId audit_post_v1beta_config_update
+func (a *audit) UpdateServiceConfig(ctx context.Context, input *UpdateServiceConfigRequest) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/update", input, &ServiceConfig{})
+}
+
+type DeleteServiceConfigRequest struct {
+	pangea.BaseRequest
+
+	Id string `json:"id"`
+}
+
+// @summary Delete a service config.
+//
+// @description Delete a service config.
+//
+// @operationId audit_post_v1beta_config_delete
+func (a *audit) DeleteServiceConfig(ctx context.Context, configId string) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/delete", &DeleteServiceConfigRequest{Id: configId}, &ServiceConfig{})
+}
+
+type ServiceConfigListFilter struct {
+	// Only records where id equals this value.
+	Id *string `json:"id,omitempty"`
+	// Only records where id includes each substring.
+	IdContains []string `json:"id__contains,omitempty"`
+	// Only records where id equals one of the provided substrings.
+	IdIn []string `json:"id__in,omitempty"`
+	// Only records where created_at equals this value.
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// Only records where created_at is greater than this value.
+	CreatedAtGt *time.Time `json:"created_at__gt,omitempty"`
+	// Only records where created_at is greater than or equal to this value.
+	CreatedAtGte *time.Time `json:"created_at__gte,omitempty"`
+	// Only records where created_at is less than this value.
+	CreatedAtLt *time.Time `json:"created_at__lt,omitempty"`
+	// Only records where created_at is less than or equal to this value.
+	CreatedAtLte *time.Time `json:"created_at__lte,omitempty"`
+	// Only records where updated_at equals this value.
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	// Only records where updated_at is greater than this value.
+	UpdatedAtGt *time.Time `json:"updated_at__gt,omitempty"`
+	// Only records where updated_at is greater than or equal to this value.
+	UpdatedAtGte *time.Time `json:"updated_at__gte,omitempty"`
+	// Only records where updated_at is less than this value.
+	UpdatedAtLt *time.Time `json:"updated_at__lt,omitempty"`
+	// Only records where updated_at is less than or equal to this value.
+	UpdatedAtLte *time.Time `json:"updated_at__lte,omitempty"`
+}
+
+// ListServiceConfigsRequest List or filter/search records.
+type ListServiceConfigsRequest struct {
+	pangea.BaseRequest
+
+	Filter *ServiceConfigListFilter `json:"filter,omitempty"`
+	// Reflected value from a previous response to obtain the next page of results.
+	Last *string `json:"last,omitempty"`
+	// Order results asc(ending) or desc(ending).
+	Order *string `json:"order,omitempty"`
+	// Which field to order results by.
+	OrderBy *string `json:"order_by,omitempty"`
+	// Maximum results to include in the response.
+	Size *int32 `json:"size,omitempty"`
+}
+
+// @summary List service configs.
+//
+// @description List service configs.
+//
+// @operationId audit_post_v1beta_config_list
+func (a *audit) ListServiceConfigs(ctx context.Context, input *ListServiceConfigsRequest) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/list", input, &ServiceConfig{})
+}

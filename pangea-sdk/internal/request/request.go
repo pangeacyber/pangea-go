@@ -4,9 +4,14 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
+
+type Queryer interface {
+	URLQuery() (url.Values, error)
+}
 
 func getPostRequest(c *pangea.Client, path string, input pangea.ConfigIDer) (*http.Request, error) {
 	if input == nil {
@@ -34,6 +39,68 @@ func getPostRequest(c *pangea.Client, path string, input pangea.ConfigIDer) (*ht
 	return req, nil
 }
 
+// Delete makes a DELETE request with the given URL, params, and optionally
+// deserializes to a response.
+func Delete(ctx context.Context, client *pangea.Client, path string, params any, res any) error {
+	url, err := client.GetURL(path)
+	if err != nil {
+		return err
+	}
+
+	if params != nil {
+		if queryer, ok := params.(Queryer); ok {
+			query, err := queryer.URLQuery()
+			if err != nil {
+				return err
+			}
+			url.RawQuery = query.Encode()
+		}
+	}
+
+	req, err := client.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Do(ctx, req, res, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Get makes a GET request with the given URL, params, and optionally
+// deserializes to a response.
+func Get(ctx context.Context, client *pangea.Client, path string, params any, res any) error {
+	url, err := client.GetURL(path)
+	if err != nil {
+		return err
+	}
+
+	if params != nil {
+		if queryer, ok := params.(Queryer); ok {
+			query, err := queryer.URLQuery()
+			if err != nil {
+				return err
+			}
+			url.RawQuery = query.Encode()
+		}
+	}
+
+	req, err := client.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.Do(ctx, req, res, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func DoPost[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {
 	if out == nil {
 		return nil, errors.New("nil pointer to struct")
@@ -55,6 +122,25 @@ func DoPost[T any](ctx context.Context, c *pangea.Client, path string, input pan
 		Result:   out,
 	}
 	return &panresp, nil
+}
+
+func DoPostNonPangeaResponse[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*T, error) {
+	if out == nil {
+		return nil, errors.New("nil pointer to struct")
+	}
+
+	req, err := getPostRequest(c, path, input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Pass true to HANDLE 202 in queue
+	_, err = c.Do(ctx, req, out, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func DoPostNoQueue[T any](ctx context.Context, c *pangea.Client, path string, input pangea.ConfigIDer, out *T) (*pangea.PangeaResponse[T], error) {

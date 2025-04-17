@@ -61,6 +61,57 @@ func (r *redact) Unredact(ctx context.Context, input *UnredactRequest) (*pangea.
 	return request.DoPost(ctx, r.Client, "v1/unredact", input, &UnredactResult{})
 }
 
+type GetServiceConfigConfigRequest struct {
+	pangea.BaseRequest
+
+	Id string `json:"id"`
+}
+
+// @summary Get a service config.
+//
+// @description Get a service config.
+//
+// @operationId redact_post_v1beta_config
+func (a *redact) GetServiceConfig(ctx context.Context, configId string) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config", &GetServiceConfigConfigRequest{Id: configId}, &ServiceConfig{})
+}
+
+// @summary Create a service config.
+//
+// @description Create a service config.
+//
+// @operationId redact_post_v1beta_config_create
+func (a *redact) CreateServiceConfig(ctx context.Context, input *CreateServiceConfigRequest) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/create", input, &ServiceConfig{})
+}
+
+// @summary Update a service config.
+//
+// @description Update a service config.
+//
+// @operationId redact_post_v1beta_config_update
+func (a *redact) UpdateServiceConfig(ctx context.Context, input *UpdateServiceConfigRequest) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/update", input, &ServiceConfig{})
+}
+
+// @summary Delete a service config.
+//
+// @description Delete a service config.
+//
+// @operationId redact_post_v1beta_config_delete
+func (a *redact) DeleteServiceConfig(ctx context.Context, configId string) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/delete", &DeleteServiceConfigRequest{Id: configId}, &ServiceConfig{})
+}
+
+// @summary List service configs.
+//
+// @description List service configs.
+//
+// @operationId redact_post_v1beta_config_list
+func (a *redact) ListServiceConfigs(ctx context.Context, input *ListServiceConfigsRequest) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, a.Client, "v1beta/config/list", input, &ServiceConfig{})
+}
+
 type TextRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -82,7 +133,7 @@ type TextRequest struct {
 	ReturnResult *bool `json:"return_result,omitempty"`
 
 	// A set of redaction method overrides for any enabled rule. These methods override the config declared methods
-	RedactionMethodOverrides *RedactionMethodOverrides `json:"redaction_method_overrides,omitempty"`
+	RedactionMethodOverrides map[string]Redaction `json:"redaction_method_overrides,omitempty"`
 
 	VaultParameters *VaultParameters `json:"vault_parameters,omitempty"`
 
@@ -168,7 +219,7 @@ type StructuredRequest struct {
 	ReturnResult *bool `json:"return_result,omitempty"`
 
 	// A set of redaction method overrides for any enabled rule. These methods override the config declared methods
-	RedactionMethodOverrides *RedactionMethodOverrides `json:"redaction_method_overrides,omitempty"`
+	RedactionMethodOverrides map[string]Redaction `json:"redaction_method_overrides,omitempty"`
 
 	VaultParameters *VaultParameters `json:"vault_parameters,omitempty"`
 
@@ -239,10 +290,108 @@ type PartialMasking struct {
 	MaskingChar       []string     `json:"masking_char,omitempty"`
 }
 
-type RedactionMethodOverrides struct {
+type Redaction struct {
 	RedactionType  RedactType             `json:"redaction_type"`
 	Hash           map[string]interface{} `json:"hash,omitempty"`
 	FPEAlphabet    *FPEAlphabet           `json:"fpe_alphabet,omitempty"`
 	PartialMasking *PartialMasking        `json:"partial_masking,omitempty"`
 	RedactionValue *string                `json:"redaction_value,omitempty"`
+}
+
+type Rule struct {
+	EntityName            string   `json:"entity_name"`
+	MatchThreshold        *float32 `json:"match_threshold,omitempty"`
+	ContextValues         []string `json:"context_values,omitempty"`
+	NegativeContextValues []string `json:"negative_context_values,omitempty"`
+	Name                  *string  `json:"name,omitempty"`
+	Description           *string  `json:"description,omitempty"`
+}
+
+type Ruleset struct {
+	Name        *string  `json:"name,omitempty"`
+	Description *string  `json:"description,omitempty"`
+	Rules       []string `json:"rules,omitempty"`
+}
+
+type ServiceConfig struct {
+	Version      *string  `json:"version,omitempty"`
+	Id           *string  `json:"id,omitempty"`
+	Name         *string  `json:"name,omitempty"`
+	UpdatedAt    *string  `json:"updated_at,omitempty"`
+	EnabledRules []string `json:"enabled_rules,omitempty"`
+	// Always run service config enabled rules across all redact calls regardless of flags?
+	EnforceEnabledRules *bool                `json:"enforce_enabled_rules,omitempty"`
+	Redactions          map[string]Redaction `json:"redactions,omitempty"`
+	// Service config used to create the secret
+	VaultServiceConfigId *string `json:"vault_service_config_id,omitempty"`
+	// Pangea only allows hashing to be done using a salt value to prevent brute-force attacks.
+	SaltVaultSecretId *string `json:"salt_vault_secret_id,omitempty"`
+	// The ID of the key used by FF3 Encryption algorithms for FPE.
+	FpeVaultSecretId   *string            `json:"fpe_vault_secret_id,omitempty"`
+	Rules              map[string]Rule    `json:"rules,omitempty"`
+	Rulesets           map[string]Ruleset `json:"rulesets,omitempty"`
+	SupportedLanguages []string           `json:"supported_languages,omitempty"`
+}
+
+type CreateServiceConfigRequest struct {
+	pangea.BaseRequest
+
+	// An ID for a service config
+	Id string `json:"id" validate:"regexp=^pci_[a-z2-7]{32}$"`
+}
+
+type UpdateServiceConfigRequest struct {
+	pangea.BaseRequest
+	ServiceConfig
+}
+
+type DeleteServiceConfigRequest struct {
+	pangea.BaseRequest
+
+	// An ID for a service config
+	Id string `json:"id" validate:"regexp=^pci_[a-z2-7]{32}$"`
+}
+
+type ServiceConfigListFilter struct {
+	// Only records where id equals this value.
+	Id *string `json:"id,omitempty"`
+	// Only records where id includes each substring.
+	IdContains []string `json:"id__contains,omitempty"`
+	// Only records where id equals one of the provided substrings.
+	IdIn []string `json:"id__in,omitempty"`
+	// Only records where created_at equals this value.
+	CreatedAt *string `json:"created_at,omitempty"`
+	// Only records where created_at is greater than this value.
+	CreatedAtGt *string `json:"created_at__gt,omitempty"`
+	// Only records where created_at is greater than or equal to this value.
+	CreatedAtGte *string `json:"created_at__gte,omitempty"`
+	// Only records where created_at is less than this value.
+	CreatedAtLt *string `json:"created_at__lt,omitempty"`
+	// Only records where created_at is less than or equal to this value.
+	CreatedAtLte *string `json:"created_at__lte,omitempty"`
+	// Only records where updated_at equals this value.
+	UpdatedAt *string `json:"updated_at,omitempty"`
+	// Only records where updated_at is greater than this value.
+	UpdatedAtGt *string `json:"updated_at__gt,omitempty"`
+	// Only records where updated_at is greater than or equal to this value.
+	UpdatedAtGte *string `json:"updated_at__gte,omitempty"`
+	// Only records where updated_at is less than this value.
+	UpdatedAtLt *string `json:"updated_at__lt,omitempty"`
+	// Only records where updated_at is less than or equal to this value.
+	UpdatedAtLte *string `json:"updated_at__lte,omitempty"`
+}
+
+// ListServiceConfigsRequest List or filter/search records.
+type ListServiceConfigsRequest struct {
+	pangea.BaseRequest
+
+	Filter *ServiceConfigListFilter `json:"filter,omitempty"`
+	// Reflected value from a previous response to obtain the next page of results.
+	Last *string `json:"last,omitempty"`
+	// Order results asc(ending) or desc(ending).
+	Order *string `json:"order,omitempty"`
+	// Which field to order results by.
+	OrderBy *string `json:"order_by,omitempty"`
+	// Maximum results to include in the response.
+	Size *int32 `json:"size,omitempty"`
 }
