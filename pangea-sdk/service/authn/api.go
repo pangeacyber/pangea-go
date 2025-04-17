@@ -377,7 +377,7 @@ func NewFilterUserList() *FilterUserList {
 		FilterBase:       *pangea.NewFilterBase(filter),
 		acceptedEulaID:   pangea.NewFilterMatch[string]("accepted_eula_id", &filter),
 		createdAt:        pangea.NewFilterRange[string]("created_at", &filter),
-		disabled:         pangea.NewFilterEqual[bool]("diabled", &filter),
+		disabled:         pangea.NewFilterEqual[bool]("disabled", &filter),
 		email:            pangea.NewFilterMatch[string]("email", &filter),
 		id:               pangea.NewFilterMatch[string]("id", &filter),
 		lastLoginAt:      pangea.NewFilterMatch[string]("last_login_at", &filter),
