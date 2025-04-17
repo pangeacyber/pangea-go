@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Management: new API client.
+- Redact: config APIs.
+- Secure Audit Log: config APIs.
+
 ## 5.1.0 - 2025-04-15
 
 ### Added
