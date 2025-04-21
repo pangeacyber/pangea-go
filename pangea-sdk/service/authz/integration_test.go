@@ -214,5 +214,31 @@ func Test_Integration(t *testing.T) {
 	assert.NotNil(t, rListSubjects)
 	assert.NotNil(t, rListSubjects.Result)
 	assert.Equal(t, len(rListSubjects.Result.Subjects), 1)
+}
 
+func Test_Integration_ExpiresAt(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancelFn()
+
+	cli := authz.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	response, err := cli.TupleCreate(ctx, &authz.TupleCreateRequest{
+		Tuples: []authz.Tuple{
+			{
+				Resource: authz.Resource{
+					Type: typeFolder,
+					ID:   folder1,
+				},
+				Relation: relationReader,
+				Subject: authz.Subject{
+					Type: typeUser,
+					ID:   user1,
+				},
+				ExpiresAt: "2999-09-21T17:24:33.105Z",
+			},
+		},
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, response)
 }
