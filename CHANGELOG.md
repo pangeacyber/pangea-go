@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- AuthZ: `ExpiresAt` to tuples.
+
 ### Fixed
 
 - Secure Audit Log: "diabled" typo in `NewFilterUserList()`.
