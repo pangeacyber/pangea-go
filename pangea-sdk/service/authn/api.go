@@ -1034,6 +1034,81 @@ func (a *UserAuthenticators) List(ctx context.Context, input UserAuthenticatorsL
 	return request.DoPost(ctx, a.Client, "v2/user/authenticators/list", &input, &UserAuthenticatorsListResult{})
 }
 
+type UserGroupAssignRequest struct {
+	pangea.BaseRequest
+
+	ID       string   `json:"id"`
+	GroupIDs []string `json:"group_ids"`
+}
+
+// @summary Assign groups to a user
+//
+// @description Add a list of groups to a specified user
+//
+// @operationId authn_post_v2_user_group_assign
+//
+// @example
+//
+//	input := authn.UserGroupAssignRequest{
+//		ID: "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+//		GroupIDs: []string{"my-group"},
+//	}
+//
+//	resp, err := authncli.User.Group.Assign(ctx, input)
+func (a *UserGroup) Assign(ctx context.Context, input UserGroupAssignRequest) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	return request.DoPost(ctx, a.Client, "v2/user/group/assign", &input, &result)
+}
+
+type UserGroupRemoveRequest struct {
+	pangea.BaseRequest
+
+	ID      string `json:"id"`
+	GroupID string `json:"group_id"`
+}
+
+// @summary Remove a group assigned to a user
+//
+// @description Remove a group assigned to a user
+//
+// @operationId authn_post_v2_user_group_remove
+//
+// @example
+//
+//	input := authn.UserGroupRemoveRequest{
+//		ID: "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+//		GroupID: "my-group",
+//	}
+//
+//	resp, err := authncli.User.Group.Remove(ctx, input)
+func (a *UserGroup) Remove(ctx context.Context, input UserGroupRemoveRequest) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	return request.DoPost(ctx, a.Client, "v2/user/group/remove", &input, &result)
+}
+
+type UserGroupListRequest struct {
+	pangea.BaseRequest
+
+	ID string `json:"id"`
+}
+
+// @summary List of groups assigned to a user
+//
+// @description Return a list of ids for groups assigned to a user
+//
+// @operationId authn_post_v2_user_group_list
+//
+// @example
+//
+//	input := authn.UserGroupListRequest{
+//		ID: "pui_xpkhwpnz2cmegsws737xbsqnmnuwtvm5",
+//	}
+//
+//	resp, err := authncli.User.Group.List(ctx, input)
+func (a *UserGroup) List(ctx context.Context, input UserGroupListRequest) (*pangea.PangeaResponse[GroupList], error) {
+	return request.DoPost(ctx, a.Client, "v2/user/group/list", &input, &GroupList{})
+}
+
 type ClientSessionInvalidateRequest struct {
 	// Base request has ConfigID for multi-config projects
 	pangea.BaseRequest
@@ -1530,4 +1605,210 @@ type AgreementUpdateResult AgreementInfo
 //	resp, err := authncli.Agreements.Update(ctx, input)
 func (a *Agreements) Update(ctx context.Context, input AgreementUpdateRequest) (*pangea.PangeaResponse[AgreementUpdateResult], error) {
 	return request.DoPost(ctx, a.Client, "v2/agreements/update", &input, &AgreementUpdateResult{})
+}
+
+type GroupInfo struct {
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Type        string            `json:"type"`
+	Description string            `json:"description,nullable"`
+	Attributes  map[string]string `json:"attributes,nullable"`
+	CreatedAt   string            `json:"created_at,nullable"`
+	UpdatedAt   string            `json:"updated_at,nullable"`
+}
+
+// GroupsFilter is a search filter for groups.
+type GroupsFilter struct {
+	CreatedAt                   string   `json:"created_at,omitempty"`           // Only records where created_at equals this value.
+	CreatedAtGreaterThan        string   `json:"created_at__gt,omitempty"`       // Only records where created_at is greater than this value.
+	CreatedAtGreaterThanOrEqual string   `json:"created_at__gte,omitempty"`      // Only records where created_at is greater than or equal to this value.
+	CreatedAtLessThan           string   `json:"created_at__lt,omitempty"`       // Only records where created_at is less than this value.
+	CreatedAtLessThanOrEqual    string   `json:"created_at__lte,omitempty"`      // Only records where created_at is less than or equal to this value.
+	CreatedAtContains           string   `json:"created_at__contains,omitempty"` // Only records where created_at includes this value.
+	ID                          string   `json:"id,omitempty"`                   // Only records where id equals this value.
+	IDContains                  []string `json:"id__contains,omitempty"`         // Only records where id includes each substring.
+	IDIn                        []string `json:"id__in,omitempty"`               // Only records where id equals one of the provided substrings.
+	Name                        string   `json:"name,omitempty"`                 // Only records where name equals this value.
+	NameContains                []string `json:"name__contains,omitempty"`       // Only records where name includes each substring.
+	NameIn                      []string `json:"name__in,omitempty"`             // Only records where name equals one of the provided substrings.
+	Type                        string   `json:"type,omitempty"`                 // Only records where type equals this value.
+	TypeContains                []string `json:"type__contains,omitempty"`       // Only records where type includes each substring.
+	TypeIn                      []string `json:"type__in,omitempty"`             // Only records where type equals one of the provided substrings.
+	UpdatedAt                   string   `json:"updated_at,omitempty"`           // Only records where updated_at equals this value.
+	UpdatedAtGreaterThan        string   `json:"updated_at__gt,omitempty"`       // Only records where updated_at is greater than this value.
+	UpdatedAtGreaterThanOrEqual string   `json:"updated_at__gte,omitempty"`      // Only records where updated_at is greater than or equal to this value.
+	UpdatedAtLessThan           string   `json:"updated_at__lt,omitempty"`       // Only records where updated_at is less than this value.
+	UpdatedAtLessThanOrEqual    string   `json:"updated_at__lte,omitempty"`      // Only records where updated_at is less than or equal to this value.
+	UpdatedAtContains           string   `json:"updated_at__contains,omitempty"` // Only records where updated_at includes this value.
+}
+
+type GroupList struct {
+	Groups []GroupInfo `json:"groups"` // List of matching groups
+	Count  int         `json:"count"`
+	Last   string      `json:"last,nullable"`
+}
+
+type GroupUserList struct {
+	Users []User `json:"users"`
+	Count int    `json:"count"`
+	Last  string `json:"last,nullable"`
+}
+
+type CreateGroupRequest struct {
+	pangea.BaseRequest
+
+	Name        string            `json:"name"`
+	Type        string            `json:"type"`
+	Description string            `json:"description,omitempty"`
+	Attributes  map[string]string `json:"attributes,omitempty"`
+}
+
+// @summary Create a new group
+//
+// @description Create a new group
+//
+// @operationId authn_post_v2_group_create
+//
+// @example
+//
+//	input := authn.CreateGroupRequest{
+//		Name: "my-group",
+//		Type: "my-type",
+//		Description: "my-description",
+//		Attributes: map[string]string{"my-attribute": "my-value"},
+//	}
+//
+//	resp, err := authncli.Group.Create(ctx, input)
+func (a *Group) Create(ctx context.Context, input CreateGroupRequest) (*pangea.PangeaResponse[GroupInfo], error) {
+	return request.DoPost(ctx, a.Client, "v2/group/create", &input, &GroupInfo{})
+}
+
+type DeleteGroupRequest struct {
+	pangea.BaseRequest
+
+	ID string `json:"id"`
+}
+
+// @summary Delete a group
+//
+// @description Delete a group
+//
+// @operationId authn_post_v2_group_delete
+//
+// @example
+//
+//	input := authn.DeleteGroupRequest{
+//		ID: "my-group",
+//	}
+//
+//	resp, err := authncli.Group.Delete(ctx, input)
+func (a *Group) Delete(ctx context.Context, input DeleteGroupRequest) (*pangea.PangeaResponse[struct{}], error) {
+	var result struct{}
+	return request.DoPost(ctx, a.Client, "v2/group/delete", &input, &result)
+}
+
+type GetGroupRequest struct {
+	pangea.BaseRequest
+
+	ID string `json:"id"`
+}
+
+// @summary Get group information
+//
+// @description Look up a group by ID and return its information
+//
+// @operationId authn_post_v2_group_get
+//
+// @example
+//
+//	input := authn.GetGroupRequest{
+//		ID: "my-group",
+//	}
+//
+//	resp, err := authncli.Group.Get(ctx, input)
+func (a *Group) Get(ctx context.Context, input GetGroupRequest) (*pangea.PangeaResponse[GroupInfo], error) {
+	return request.DoPost(ctx, a.Client, "v2/group/get", &input, &GroupInfo{})
+}
+
+type GroupListRequest struct {
+	pangea.BaseRequest
+
+	Filter  GroupsFilter `json:"filter,omitempty"`
+	Last    string       `json:"last,omitempty"`
+	Order   ItemOrder    `json:"order,omitempty"`
+	OrderBy string       `json:"order_by,omitempty"`
+	Size    int          `json:"size,omitempty"`
+}
+
+// @summary List groups
+//
+// @description Look up groups by name, type, or attributes
+//
+// @operationId authn_post_v2_group_list
+//
+// @example
+//
+//	input := authn.GroupListRequest{
+//		Filter: authn.GroupsFilter{
+//			Name: "my-group",
+//		},
+//	}
+//
+//	resp, err := authncli.Group.List(ctx, input)
+func (a *Group) List(ctx context.Context, input GroupListRequest) (*pangea.PangeaResponse[GroupList], error) {
+	return request.DoPost(ctx, a.Client, "v2/group/list", &input, &GroupList{})
+}
+
+type GroupUserListRequest struct {
+	pangea.BaseRequest
+
+	ID   string `json:"id"`
+	Last string `json:"last,omitempty"`
+	Size int    `json:"size,omitempty"`
+}
+
+// @summary List of users assigned to a group
+//
+// @description Return a list of ids for users assigned to a group
+//
+// @operationId authn_post_v2_group_user_list
+//
+// @example
+//
+//	input := authn.GroupUserListRequest{
+//		ID: "my-group",
+//	}
+//
+//	resp, err := authncli.Group.ListUsers(ctx, input)
+func (a *Group) ListUsers(ctx context.Context, input GroupUserListRequest) (*pangea.PangeaResponse[GroupUserList], error) {
+	return request.DoPost(ctx, a.Client, "v2/group/user/list", &input, &GroupUserList{})
+}
+
+type GroupUpdateRequest struct {
+	pangea.BaseRequest
+
+	ID          string            `json:"id"`
+	Name        string            `json:"name,omitempty"`
+	Description string            `json:"description,omitempty"`
+	Type        string            `json:"type,omitempty"`
+	Attributes  map[string]string `json:"attributes,omitempty"`
+}
+
+// @summary Update group information
+//
+// @description Update group information
+//
+// @operationId authn_post_v2_group_update
+//
+// @example
+//
+//	input := authn.GroupUpdateRequest{
+//		ID: "my-group",
+//		Name: "new-name",
+//		Description: "new-description",
+//	}
+//
+//	resp, err := authncli.Group.Update(ctx, input)
+func (a *Group) Update(ctx context.Context, input GroupUpdateRequest) (*pangea.PangeaResponse[GroupInfo], error) {
+	return request.DoPost(ctx, a.Client, "v2/group/update", &input, &GroupInfo{})
 }
