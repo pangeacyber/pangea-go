@@ -8,6 +8,16 @@ type Agreements struct {
 	*pangea.Client
 }
 
+// Group is an API client for AuthN's `/group/` endpoints.
+type Group struct {
+	*pangea.Client
+}
+
+// UserGroup is an API client for AuthN's `/user/group/` endpoints.
+type UserGroup struct {
+	*pangea.Client
+}
+
 type UserProfile struct {
 	*pangea.Client
 }
@@ -25,6 +35,7 @@ type User struct {
 	Profile        *UserProfile
 	Invites        *UserInvite
 	Authenticators *UserAuthenticators
+	Group          *UserGroup
 }
 
 type Session struct {
@@ -61,10 +72,18 @@ type AuthN struct {
 	Client     *Client
 	Session    *Session
 	Agreements *Agreements
+	Group      *Group
 }
 
 func newAgreements(cli *pangea.Client) *Agreements {
 	return &Agreements{
+		Client: cli,
+	}
+}
+
+// newGroup creates a new Group client.
+func newGroup(cli *pangea.Client) *Group {
+	return &Group{
 		Client: cli,
 	}
 }
@@ -114,6 +133,13 @@ func newUserAuthenticators(cli *pangea.Client) *UserAuthenticators {
 	}
 }
 
+// newUserGroup creates a new UserGroup client.
+func newUserGroup(cli *pangea.Client) *UserGroup {
+	return &UserGroup{
+		Client: cli,
+	}
+}
+
 func newUserProfile(cli *pangea.Client) *UserProfile {
 	return &UserProfile{
 		Client: cli,
@@ -132,6 +158,7 @@ func newUser(cli *pangea.Client) *User {
 		Profile:        newUserProfile(cli),
 		Invites:        newUserInvites(cli),
 		Authenticators: newUserAuthenticators(cli),
+		Group:          newUserGroup(cli),
 	}
 }
 
@@ -144,6 +171,7 @@ func New(cfg *pangea.Config) *AuthN {
 		Client:     newClient(pc),
 		Session:    newSession(pc),
 		Agreements: newAgreements(pc),
+		Group:      newGroup(pc),
 	}
 	return cli
 }
