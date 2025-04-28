@@ -3,7 +3,7 @@ module examples/share
 go 1.23
 
 require (
-	github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.1.0
+	github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.2.0
 	github.com/spf13/cobra v1.9.1
 )
 
