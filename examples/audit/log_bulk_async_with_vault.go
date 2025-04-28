@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/vault"
@@ -19,10 +20,15 @@ func main() {
 		log.Fatal("Unauthorized: No vault token present")
 	}
 
-	vaultcli := vault.New(&pangea.Config{
-		Token:  vaultToken,
-		Domain: domain,
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(vaultToken),
+		option.WithDomain(domain),
+	)
+	if err != nil {
+		log.Fatal("failed to create config")
+	}
+
+	vaultcli := vault.New(config)
 	getInput := &vault.GetRequest{
 		ID: auditTokenVaultId,
 	}

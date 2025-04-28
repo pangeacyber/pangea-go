@@ -26,6 +26,12 @@ func testClient(t *testing.T, url *url.URL) *pangea.Client {
 	return pangea.NewClient("service", cfg)
 }
 
+func TestConfigDefaults(t *testing.T) {
+	config, err := pangea.NewConfig()
+	assert.NoError(t, err)
+	assert.Equal(t, true, config.Retry)
+}
+
 func TestClientCustomUserAgent(t *testing.T) {
 	cfg := pangeatesting.TestConfig(&url.URL{Host: "pangea.cloud"})
 	cfg.CustomUserAgent = "Test"

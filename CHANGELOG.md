@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Added `pangea.NewConfig()` as a constructor for the `Config` struct that will
+  set defaults such as enabling failed request retrying (`Retry`).
+
 ## 5.2.0 - 2025-04-25
 
 ### Added

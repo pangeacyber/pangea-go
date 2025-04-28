@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 )
@@ -16,10 +17,15 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	auditcli, err := audit.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatal("failed to create config")
+	}
+
+	auditcli, err := audit.New(config)
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}
