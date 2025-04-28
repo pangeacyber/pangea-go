@@ -29,7 +29,7 @@ compatibility guarantees as stable releases.
 [Beta changelog](https://github.com/pangeacyber/pangea-go/blob/beta/CHANGELOG.md).
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v4@v4.4.0-beta.2
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v5@v5.3.0-beta.1
 ```
 
 ## Usage
