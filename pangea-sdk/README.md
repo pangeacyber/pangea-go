@@ -83,13 +83,19 @@ import (
 Initialize your client:
 
 ```go
-// Initialize the Secure Audit Log client.
-auditcli, err := audit.New(&pangea.Config{
-	Token: os.Getenv("PANGEA_AUDIT_TOKEN"), // NEVER hardcode your token here, always use env vars
-	Domain: os.Getenv("PANGEA_DOMAIN"),
-})
+// Client configuration.
+config, err := pangea.NewConfig(
+	option.WithToken(os.Getenv("PANGEA_AUDIT_TOKEN")),
+	option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+)
 if err != nil {
-	log.Fatal("failed to create Audit client")
+	// Handle error.
+}
+
+// Initialize the Secure Audit Log client.
+auditcli, err := audit.New(config)
+if err != nil {
+	// Handle error.
 }
 ```
 

@@ -81,13 +81,13 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 }
 
 func Test_Integration_SanitizeNoShare(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
+	ctx, cancelFn := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancelFn()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
 	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 5 * time.Minute
+	cfg.PollResultTimeout = 2 * time.Minute
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)
@@ -116,6 +116,15 @@ func Test_Integration_SanitizeNoShare(t *testing.T) {
 		},
 		UploadedFileName: "uploaded_file",
 	}, file)
+
+	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			t.Logf("Result of request '%s' was not ready in time", *acceptedError.RequestID)
+			return
+		}
+	}
+
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result)

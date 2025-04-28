@@ -11,7 +11,9 @@ import (
 	"testing"
 
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
+	"github.com/stretchr/testify/assert"
 )
 
 const baseURLPath = "/api"
@@ -40,10 +42,11 @@ func SetupServer() (mux *http.ServeMux, serverURL *url.URL, teardown func()) {
 }
 
 func TestConfig(url *url.URL) *pangea.Config {
-	return &pangea.Config{
-		Token:           "TestToken",
-		BaseURLTemplate: url.String(),
+	config, err := pangea.NewConfig(option.WithBaseURLTemplate(url.String()), option.WithToken("TestToken"))
+	if err != nil {
+		panic(err)
 	}
+	return config
 }
 
 func TestMethod(t *testing.T, r *http.Request, want string) {
@@ -67,13 +70,17 @@ func TestBody(t *testing.T, r *http.Request, want string) {
 func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.Config) error) {
 	t.Helper()
 
-	emptyDomainCfg := &pangea.Config{Domain: ""}
+	emptyDomainCfg, err := pangea.NewConfig(option.WithDomain(""))
+	assert.NoError(t, err)
+
 	doErr := f(emptyDomainCfg)
 	if doErr == nil {
 		t.Fatalf("call to method %v with empty Endpoint got nil err, want error", method)
 	}
 
-	badUrlCfg := &pangea.Config{Domain: "htt://   "}
+	badUrlCfg, err := pangea.NewConfig(option.WithDomain("http://"))
+	assert.NoError(t, err)
+
 	newRequestErr := f(badUrlCfg)
 	if newRequestErr == nil {
 		t.Fatalf("call to method %v with bad Domain got nil err, want error", method)

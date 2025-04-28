@@ -14,8 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/creasty/defaults"
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/defaults"
+	internaldefaults "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/defaults"
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
 	"github.com/rs/zerolog"
 )
@@ -72,7 +73,7 @@ type RetryConfig struct {
 	RetryWaitMin time.Duration // Minimum time to wait
 	RetryWaitMax time.Duration // Maximum time to wait
 	RetryMax     int           // Maximum number of retries
-	BackOff      float32       //Exponential back of factor
+	BackOff      float32       // Exponential back of factor
 }
 
 type Config struct {
@@ -80,7 +81,7 @@ type Config struct {
 	Token string
 
 	// The HTTP client to be used by the client. It defaults to
-	// defaults.HTTPClient
+	// internaldefaults.HTTPClient
 	HTTPClient *http.Client
 
 	// Template for constructing the base URL for API requests. The placeholder
@@ -104,7 +105,7 @@ type Config struct {
 
 	// if it should retry request
 	// if HTTPClient is set in the config this value won't take effect
-	Retry bool
+	Retry bool `default:"true"`
 
 	// Enable queued request retry support
 	QueuedRetryEnabled bool
@@ -118,6 +119,35 @@ type Config struct {
 	// Logger
 	Logger *zerolog.Logger
 }
+
+func NewConfig(opts ...ConfigOption) (*Config, error) {
+	config := &Config{}
+	if err := defaults.Set(config); err != nil {
+		return nil, err
+	}
+	if err := config.Apply(opts...); err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+func (cfg *Config) Apply(opts ...ConfigOption) error {
+	for _, opt := range opts {
+		err := opt.Apply(cfg)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type ConfigOption interface {
+	Apply(*Config) error
+}
+
+type ConfigOptionFunc func(*Config) error
+
+func (s ConfigOptionFunc) Apply(r *Config) error { return s(r) }
 
 // A Client manages communication with the Pangea API.
 type Client struct {
@@ -203,9 +233,9 @@ func chooseHTTPClient(cfg *Config) *http.Client {
 			cli.Logger = nil
 			return cli.StandardClient()
 		}
-		return defaults.HTTPClientWithRetries()
+		return internaldefaults.HTTPClientWithRetries()
 	}
-	return defaults.HTTPClient()
+	return internaldefaults.HTTPClient()
 }
 
 func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
