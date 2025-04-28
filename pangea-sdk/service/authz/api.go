@@ -19,9 +19,10 @@ type Subject struct {
 }
 
 type Tuple struct {
-	Resource Resource `json:"resource"`
-	Relation string   `json:"relation"`
-	Subject  Subject  `json:"subject"`
+	Resource  Resource `json:"resource"`
+	Relation  string   `json:"relation"`
+	Subject   Subject  `json:"subject"`
+	ExpiresAt string   `json:"expires_at,omitempty"` // A time in ISO-8601 format
 }
 
 type TupleCreateRequest struct {
@@ -68,6 +69,7 @@ type TupleListFilter struct {
 	subjectType   *pangea.FilterMatch[string]
 	subjectID     *pangea.FilterMatch[string]
 	subjectAction *pangea.FilterMatch[string]
+	expiresAt     *pangea.FilterMatch[string]
 }
 
 func NewFilterUserList() *TupleListFilter {
@@ -80,6 +82,7 @@ func NewFilterUserList() *TupleListFilter {
 		subjectID:     pangea.NewFilterMatch[string]("subject_id", &filter),
 		subjectAction: pangea.NewFilterMatch[string]("subject_action", &filter),
 		relation:      pangea.NewFilterMatch[string]("relation", &filter),
+		expiresAt:     pangea.NewFilterMatch[string]("expires_at", &filter),
 	}
 }
 
@@ -111,6 +114,11 @@ func (fu *TupleListFilter) SubjectAction() *pangea.FilterMatch[string] {
 // Only records where relation equals this value.
 func (fu *TupleListFilter) Relation() *pangea.FilterMatch[string] {
 	return fu.relation
+}
+
+// Only records where expires_at equals this value.
+func (fu *TupleListFilter) ExpiresAt() *pangea.FilterMatch[string] {
+	return fu.expiresAt
 }
 
 type ItemOrder string

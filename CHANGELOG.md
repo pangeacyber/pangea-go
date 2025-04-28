@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redact: config APIs.
 - Secure Audit Log: config APIs.
 
+## 5.2.0 - 2025-04-25
+
+### Added
+
+- AuthZ: `ExpiresAt` to tuples.
+- AuthN: groups.
+
+### Fixed
+
+- Secure Audit Log: "diabled" typo in `NewFilterUserList()`.
+
 ## 5.1.0 - 2025-04-15
 
 ### Added
