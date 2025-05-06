@@ -47,7 +47,7 @@ Set up the SDK in your project in 3 steps:
 Let's walk through an example using:
 
 - Service: [Secure Audit Log](https://pangea.cloud/services/secure-audit-log/)
-- Endpoint: [/v1/log](https://pangea.cloud/docs/api/audit#/v1/log)
+- Endpoint: [/v1/log](https://pangea.cloud/docs/api/audit#/v1/log-post)
 
 We need two things to initialize your client: a `Token` and `Domain`. These can
 be found on the service overview page. For the Secure Audit Log service, go to
