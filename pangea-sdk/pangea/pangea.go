@@ -770,7 +770,7 @@ func (c *Client) pollPresignedURL(ctx context.Context, ae *AcceptedError) (*Acce
 	for !aeLoop.AcceptedResult.HasUploadURL() && !c.reachTimeout(start) {
 		delay := c.getDelay(retry, start)
 		if !pu.Sleep(delay, ctx) {
-			// If context closed, return inmediatly
+			// If context closed, return immediately
 			return nil, errors.New("context closed")
 		}
 

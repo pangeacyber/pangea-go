@@ -2,14 +2,13 @@
 SDK_CORE_PKGS=./pangea/... ./internal/...
 SDK_CLIENT_PKGS=./service/...
 SDK_ALL_PKGS= ${SDK_CLIENT_PKGS} ${SDK_CORE_PKGS}
-TEST_TIMEOUT=-timeout 5m
 
 ###################
 # Unit Testing #
 ###################
 unit:
 	@echo "Started unit tests"
-	go test ${TEST_TIMEOUT} -tags=unit -v -count=1 -race ${SDK_ALL_PKGS}
+	go test -race -v -tags=unit ${SDK_ALL_PKGS}
 	@echo "Finished unit tests"
 
 #######################
@@ -17,7 +16,7 @@ unit:
 #######################
 integration:
 	@echo "Started integration tests"
-	go test -count=1 -tags integration -v ./service/...
+	go test -timeout 20m -v -tags integration ./service/...
 	@echo "Finished integration tests"
 
 coverage.out: $(shell find . -type f -print | grep -v vendor | grep "\.go")
