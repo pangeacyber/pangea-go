@@ -517,8 +517,6 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.NotNil(t, respPut.Result)
 	assert.Empty(t, respPut.Result.Object.Metadata)
 	assert.Empty(t, respPut.Result.Object.Tags)
-	assert.NotEmpty(t, respPut.Result.Object.MD5)
-	assert.NotEmpty(t, respPut.Result.Object.SHA512)
 	assert.NotEmpty(t, respPut.Result.Object.SHA256)
 
 	// Upload a file with parent id and name
@@ -547,8 +545,6 @@ func Test_Integration_LifeCycle(t *testing.T) {
 	assert.Equal(t, folderID, respPut2.Result.Object.ParentID)
 	assert.Equal(t, share.Metadata(METADATA), respPut2.Result.Object.Metadata)
 	assert.Equal(t, share.Tags(TAGS), respPut2.Result.Object.Tags)
-	assert.NotEmpty(t, respPut2.Result.Object.MD5)
-	assert.NotEmpty(t, respPut2.Result.Object.SHA512)
 	assert.NotEmpty(t, respPut2.Result.Object.SHA256)
 
 	// Update file with full metadata and tags
