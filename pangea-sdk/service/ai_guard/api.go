@@ -3,6 +3,7 @@ package ai_guard
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/request"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
@@ -24,6 +25,31 @@ func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pang
 	}
 
 	return request.DoPost(ctx, e.Client, "v1/text/guard", input, &TextGuardResult{})
+}
+
+// @operationId ai_guard_post_v1beta_config
+func (e *aiGuard) GetServiceConfig(ctx context.Context, body GetServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/config", &body, &ServiceConfig{})
+}
+
+// @operationId ai_guard_post_v1beta_config_create
+func (e *aiGuard) CreateServiceConfig(ctx context.Context, body CreateServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/config/create", &body, &ServiceConfig{})
+}
+
+// @operationId ai_guard_post_v1beta_config_update
+func (e *aiGuard) UpdateServiceConfig(ctx context.Context, body UpdateServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/config/update", &body, &ServiceConfig{})
+}
+
+// @operationId ai_guard_post_v1beta_config_delete
+func (e *aiGuard) DeleteServiceConfig(ctx context.Context, body DeleteServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/config/delete", &body, &ServiceConfig{})
+}
+
+// @operationId ai_guard_post_v1beta_config_list
+func (e *aiGuard) ListServiceConfigs(ctx context.Context, body ListServiceConfigsParams) (*pangea.PangeaResponse[ListServiceConfigsResult], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/config/list", &body, &ListServiceConfigsResult{})
 }
 
 type TopicDetectionOverride struct {
@@ -327,4 +353,138 @@ type TextGuardResult struct {
 	PromptMessages any                `json:"prompt_messages"` // Updated prompt messages, if applicable.
 	Blocked        bool               `json:"blocked"`         // Whether or not the prompt triggered a block detection.
 	Recipe         string             `json:"recipe"`          // The Recipe that was used.
+}
+
+type GetServiceConfigParams struct {
+	pangea.BaseRequest
+
+	Id string `json:"id"`
+}
+
+type CreateServiceConfigParams struct {
+	pangea.BaseRequest
+	ServiceConfig
+}
+
+type UpdateServiceConfigParams struct {
+	pangea.BaseRequest
+	ServiceConfig
+}
+
+type DeleteServiceConfigParams struct {
+	pangea.BaseRequest
+
+	Id string `json:"id"`
+}
+
+type AuditDataActivityConfigAreas struct {
+	TextGuard bool `json:"text_guard"`
+}
+
+type AuditDataActivityConfig struct {
+	Enabled              bool                         `json:"enabled"`
+	AuditServiceConfigId string                       `json:"audit_service_config_id"`
+	Areas                AuditDataActivityConfigAreas `json:"areas"`
+}
+
+type ConnectionsConfigPromptGuard struct {
+	Enabled             *bool    `json:"enabled,omitempty"`
+	ConfigId            *string  `json:"config_id,omitempty"`
+	ConfidenceThreshold *float32 `json:"confidence_threshold,omitempty"`
+}
+
+type ConnectionsConfigIpIntel struct {
+	Enabled            *bool    `json:"enabled,omitempty"`
+	ConfigId           *string  `json:"config_id,omitempty"`
+	ReputationProvider *string  `json:"reputation_provider,omitempty"`
+	RiskThreshold      *float32 `json:"risk_threshold,omitempty"`
+}
+
+type ConnectionsConfigUserIntel struct {
+	Enabled        *bool   `json:"enabled,omitempty"`
+	ConfigId       *string `json:"config_id,omitempty"`
+	BreachProvider *string `json:"breach_provider,omitempty"`
+}
+type ConnectionsConfigUrlIntel struct {
+	Enabled            *bool    `json:"enabled,omitempty"`
+	ConfigId           *string  `json:"config_id,omitempty"`
+	ReputationProvider *string  `json:"reputation_provider,omitempty"`
+	RiskThreshold      *float32 `json:"risk_threshold,omitempty"`
+}
+
+type ConnectionsConfigFileScan struct {
+	Enabled       *bool    `json:"enabled,omitempty"`
+	ConfigId      *string  `json:"config_id,omitempty"`
+	ScanProvider  *string  `json:"scan_provider,omitempty"`
+	RiskThreshold *float32 `json:"risk_threshold,omitempty"`
+}
+
+type ConnectionsConfigRedact struct {
+	Enabled  *bool   `json:"enabled,omitempty"`
+	ConfigId *string `json:"config_id,omitempty"`
+}
+
+type ConnectionsConfigVault struct {
+	ConfigId *string `json:"config_id,omitempty"`
+}
+
+type ConnectionsConfigLingua struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+type ConnectionsConfigCode struct {
+	Enabled *bool `json:"enabled,omitempty"`
+}
+
+type ConnectionsConfig struct {
+	PromptGuard *ConnectionsConfigPromptGuard `json:"prompt_guard,omitempty"`
+	IpIntel     *ConnectionsConfigIpIntel     `json:"ip_intel,omitempty"`
+	UserIntel   *ConnectionsConfigUserIntel   `json:"user_intel,omitempty"`
+	UrlIntel    *ConnectionsConfigUrlIntel    `json:"url_intel,omitempty"`
+	DomainIntel *ConnectionsConfigUrlIntel    `json:"domain_intel,omitempty"`
+	FileScan    *ConnectionsConfigFileScan    `json:"file_scan,omitempty"`
+	Redact      *ConnectionsConfigRedact      `json:"redact,omitempty"`
+	Vault       *ConnectionsConfigVault       `json:"vault,omitempty"`
+	Lingua      *ConnectionsConfigLingua      `json:"lingua,omitempty"`
+	Code        *ConnectionsConfigCode        `json:"code,omitempty"`
+}
+
+type ServiceConfig struct {
+	Id                *string                  `json:"id,omitempty"`
+	Name              *string                  `json:"name,omitempty"`
+	AuditDataActivity *AuditDataActivityConfig `json:"audit_data_activity,omitempty"`
+	Connections       *ConnectionsConfig       `json:"connections,omitempty"`
+	Recipes           map[string]any           `json:"recipes,omitempty"`
+}
+
+type ServiceConfigListFilter struct {
+	Id           *string    `json:"id,omitempty"`              // Only records where id equals this value.
+	IdContains   []string   `json:"id__contains,omitempty"`    // Only records where id includes each substring.
+	IdIn         []string   `json:"id__in,omitempty"`          // Only records where id equals one of the provided substrings.
+	CreatedAt    *time.Time `json:"created_at,omitempty"`      // Only records where created_at equals this value.
+	CreatedAtGt  *time.Time `json:"created_at__gt,omitempty"`  // Only records where created_at is greater than this value.
+	CreatedAtGte *time.Time `json:"created_at__gte,omitempty"` // Only records where created_at is greater than or equal to this value.
+	CreatedAtLt  *time.Time `json:"created_at__lt,omitempty"`  // Only records where created_at is less than this value.
+	CreatedAtLte *time.Time `json:"created_at__lte,omitempty"` // Only records where created_at is less than or equal to this value.
+	UpdatedAt    *time.Time `json:"updated_at,omitempty"`      // Only records where updated_at equals this value.
+	UpdatedAtGt  *time.Time `json:"updated_at__gt,omitempty"`  // Only records where updated_at is greater than this value.
+	UpdatedAtGte *time.Time `json:"updated_at__gte,omitempty"` // Only records where updated_at is greater than or equal to this value.
+	UpdatedAtLt  *time.Time `json:"updated_at__lt,omitempty"`  // Only records where updated_at is less than this value.
+	UpdatedAtLte *time.Time `json:"updated_at__lte,omitempty"` // Only records where updated_at is less than or equal to this value.
+}
+
+type ListServiceConfigsParams struct {
+	pangea.BaseRequest
+
+	Filter  *ServiceConfigListFilter `json:"filter,omitempty"`
+	Last    *string                  `json:"last,omitempty"`     // Reflected value from a previous response to obtain the next page of results.
+	Order   *string                  `json:"order,omitempty"`    // Order results asc(ending) or desc(ending).
+	OrderBy *string                  `json:"order_by,omitempty"` // Which field to order results by.
+	Size    *int                     `json:"size,omitempty"`     // Maximum results to include in the response.
+}
+
+type ListServiceConfigsResult struct {
+	Count *int            `json:"count,omitempty"` // The total number of service configs matched by the list request.
+	Last  *string         `json:"last,omitempty"`  // Used to fetch the next page of the current listing when provided in a repeated request's last parameter.
+	Items []ServiceConfig `json:"items,omitempty"`
 }
