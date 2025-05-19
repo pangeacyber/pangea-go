@@ -47,7 +47,7 @@ Set up the SDK in your project in 3 steps:
 Let's walk through an example using:
 
 - Service: [Secure Audit Log](https://pangea.cloud/services/secure-audit-log/)
-- Endpoint: [/v1/log](https://pangea.cloud/docs/api/audit#log-an-entry)
+- Endpoint: [/v1/log](https://pangea.cloud/docs/api/audit#/v1/log-post)
 
 We need two things to initialize your client: a `Token` and `Domain`. These can
 be found on the service overview page. For the Secure Audit Log service, go to
@@ -83,13 +83,19 @@ import (
 Initialize your client:
 
 ```go
-// Initialize the Secure Audit Log client.
-auditcli, err := audit.New(&pangea.Config{
-	Token: os.Getenv("PANGEA_AUDIT_TOKEN"), // NEVER hardcode your token here, always use env vars
-	Domain: os.Getenv("PANGEA_DOMAIN"),
-})
+// Client configuration.
+config, err := pangea.NewConfig(
+	option.WithToken(os.Getenv("PANGEA_AUDIT_TOKEN")),
+	option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+)
 if err != nil {
-	log.Fatal("failed to create Audit client")
+	// Handle error.
+}
+
+// Initialize the Secure Audit Log client.
+auditcli, err := audit.New(config)
+if err != nil {
+	// Handle error.
 }
 ```
 

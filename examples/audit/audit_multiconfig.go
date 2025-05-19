@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 )
@@ -17,15 +18,20 @@ func main() {
 	}
 
 	configId := os.Getenv("PANGEA_AUDIT_CONFIG_ID")
-	if token == "" {
+	if configId == "" {
 		log.Fatal("Need to set PANGEA_AUDIT_CONFIG_ID env var")
 	}
 
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatal("failed to create config")
+	}
+
 	// Set configId in service construction
-	auditcli, err := audit.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	}, audit.WithConfigID(configId))
+	auditcli, err := audit.New(config, audit.WithConfigID(configId))
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}

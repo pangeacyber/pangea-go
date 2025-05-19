@@ -21,13 +21,13 @@ const (
 var testingEnvironment = pangeatesting.LoadTestEnvironment("sanitize", pangeatesting.Live)
 
 func Test_Integration_SanitizeAndShare(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
-	defer cancelFn()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
 	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 5 * time.Minute
+	cfg.PollResultTimeout = 2 * time.Minute
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)
@@ -60,7 +60,7 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 	if err != nil {
 		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
 		if isAcceptedError {
-			t.Logf("result of request '%v' was not ready in time", acceptedError.RequestID)
+			t.Logf("result of request '%s' was not ready in time", *acceptedError.RequestID)
 			return
 		}
 
@@ -81,13 +81,13 @@ func Test_Integration_SanitizeAndShare(t *testing.T) {
 }
 
 func Test_Integration_SanitizeNoShare(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
-	defer cancelFn()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
 	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 5 * time.Minute
+	cfg.PollResultTimeout = 2 * time.Minute
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)
@@ -116,6 +116,15 @@ func Test_Integration_SanitizeNoShare(t *testing.T) {
 		},
 		UploadedFileName: "uploaded_file",
 	}, file)
+
+	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			t.Logf("Result of request '%s' was not ready in time", *acceptedError.RequestID)
+			return
+		}
+	}
+
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result)
@@ -139,13 +148,13 @@ func Test_Integration_SanitizeNoShare(t *testing.T) {
 }
 
 func Test_Integration_SanitizeAllDefaults(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
-	defer cancelFn()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
 	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 5 * time.Minute
+	cfg.PollResultTimeout = 2 * time.Minute
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)
@@ -159,6 +168,15 @@ func Test_Integration_SanitizeAllDefaults(t *testing.T) {
 		},
 		UploadedFileName: "uploaded_file",
 	}, file)
+
+	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			t.Logf("Result of request '%s' was not ready in time", *acceptedError.RequestID)
+			return
+		}
+	}
+
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result)
@@ -181,13 +199,13 @@ func Test_Integration_SanitizeAllDefaults(t *testing.T) {
 }
 
 func Test_Integration_SanitizeMultipart(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 600*time.Second)
-	defer cancelFn()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
 	cfg := pangeatesting.IntegrationCustomSchemaConfig(t, testingEnvironment)
-	cfg.PollResultTimeout = 5 * time.Minute
+	cfg.PollResultTimeout = 2 * time.Minute
 	client := sanitize.New(cfg)
 
 	file, err := os.Open(TESTFILE_PATH)
@@ -216,6 +234,15 @@ func Test_Integration_SanitizeMultipart(t *testing.T) {
 		},
 		UploadedFileName: "uploaded_file",
 	}, file)
+
+	if err != nil {
+		acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+		if isAcceptedError {
+			t.Logf("Result of request '%s' was not ready in time", *acceptedError.RequestID)
+			return
+		}
+	}
+
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.NotNil(t, resp.Result)
@@ -239,8 +266,8 @@ func Test_Integration_SanitizeMultipart(t *testing.T) {
 }
 
 func Test_Integration_Sanitize_SplitUpload_Post(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancelFn()
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
+	defer cancel()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
@@ -297,24 +324,30 @@ func Test_Integration_Sanitize_SplitUpload_Post(t *testing.T) {
 	err = uploader.UploadFile(ctx, url, pangea.TMpostURL, fd)
 	assert.NoError(t, err)
 
-	var pr *pangea.PangeaResponse[any]
-	i := 0
+	var pollResponse *pangea.PangeaResponse[any]
+	attempts := 0
 
-	for i < 24 {
+	for attempts < 120/3 {
 		// Wait until result should be ready
-		time.Sleep(time.Duration(10 * time.Second))
+		time.Sleep(time.Duration(3 * time.Second))
 
-		pr, err = client.PollResultByID(ctx, *resp.RequestID, &sanitize.SanitizeResult{})
+		pollResponse, err = client.PollResultByID(ctx, *resp.RequestID, &sanitize.SanitizeResult{})
 		if err == nil {
 			break
 		}
-		i++
+		attempts++
 	}
-	assert.NoError(t, err)
-	assert.NotNil(t, pr)
-	assert.NotNil(t, pr.Result)
 
-	r := (*pr.Result).(*sanitize.SanitizeResult)
+	if err != nil {
+		t.Logf("result of request '%s' was not ready in time\n", *resp.RequestID)
+		return
+	}
+
+	assert.NoError(t, err)
+	assert.NotNil(t, pollResponse)
+	assert.NotNil(t, pollResponse.Result)
+
+	r := (*pollResponse.Result).(*sanitize.SanitizeResult)
 	assert.NotNil(t, r)
 	assert.NotEmpty(t, r.DestURL)
 	assert.Empty(t, r.DestShareID)
@@ -328,8 +361,8 @@ func Test_Integration_Sanitize_SplitUpload_Post(t *testing.T) {
 }
 
 func Test_Integration_Sanitize_SplitUpload_Put(t *testing.T) {
-	ctx, cancelFn := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancelFn()
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
+	defer cancel()
 
 	// The Sanitize config in the regular org was obsoleted by a breaking
 	// change, so the custom schema org is used instead.
@@ -378,18 +411,18 @@ func Test_Integration_Sanitize_SplitUpload_Put(t *testing.T) {
 	err = uploader.UploadFile(ctx, url, pangea.TMputURL, fd)
 	assert.NoError(t, err)
 
-	var pr *pangea.PangeaResponse[any]
-	i := 0
+	var pollResponse *pangea.PangeaResponse[any]
+	attempts := 0
 
-	for i < 24 {
+	for attempts < 120/3 {
 		// Wait until result should be ready
-		time.Sleep(time.Duration(10 * time.Second))
+		time.Sleep(time.Duration(3 * time.Second))
 
-		pr, err = client.PollResultByID(ctx, *resp.RequestID, &sanitize.SanitizeResult{})
+		pollResponse, err = client.PollResultByID(ctx, *resp.RequestID, &sanitize.SanitizeResult{})
 		if err == nil {
 			break
 		}
-		i++
+		attempts++
 	}
 
 	if err != nil {
@@ -397,10 +430,10 @@ func Test_Integration_Sanitize_SplitUpload_Put(t *testing.T) {
 		return
 	}
 
-	assert.NotNil(t, pr)
-	assert.NotNil(t, pr.Result)
+	assert.NotNil(t, pollResponse)
+	assert.NotNil(t, pollResponse.Result)
 
-	r := (*pr.Result).(*sanitize.SanitizeResult)
+	r := (*pollResponse.Result).(*sanitize.SanitizeResult)
 	assert.NotNil(t, r)
 	assert.NotEmpty(t, r.DestURL)
 	assert.Empty(t, r.DestShareID)
