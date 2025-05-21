@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `pangea.NewConfig()` as a constructor for the `Config` struct that will
   set defaults such as enabling failed request retrying (`Retry`).
+- AI Guard: config APIs.
+- Prompt Guard: config APIs.
 
 ## 5.3.0-beta.1 - 2025-04-28
 
