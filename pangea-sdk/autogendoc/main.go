@@ -324,5 +324,5 @@ func prettify(node interface{}, fs *token.FileSet) string {
 	var stringBuffer bytes.Buffer
 	printer.Fprint(&stringBuffer, fs, node)
 
-	return string(stringBuffer.Bytes())
+	return stringBuffer.String()
 }
