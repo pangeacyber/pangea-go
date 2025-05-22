@@ -26,7 +26,10 @@ func CanonicalizeStruct(v interface{}) ([]byte, error) {
 		return nil, err
 	}
 	// Order keys
-	json.Unmarshal(ebytes, &smap)
+	err = json.Unmarshal(ebytes, &smap)
+	if err != nil {
+		return nil, err
+	}
 	mbytes, err := json.Marshal(smap)
 	if err != nil {
 		return nil, err
