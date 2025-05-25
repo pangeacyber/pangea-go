@@ -78,7 +78,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4.4.0
         with:
-          node-version: "24.0.2"
+          node-version: "24.1.0"
 
       - name: Integration test
         run: bash ./dev/test.sh
