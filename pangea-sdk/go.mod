@@ -1,13 +1,15 @@
 module github.com/pangeacyber/pangea-go/pangea-sdk/v5
 
-go 1.23
+go 1.23.0
+
+toolchain go1.24.4
 
 require (
 	github.com/creasty/defaults v1.8.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 )
 
 require (
