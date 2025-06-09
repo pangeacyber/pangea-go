@@ -1,6 +1,6 @@
 module examples/authn
 
-go 1.23
+go 1.24.4
 
 require github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.2.0
 
