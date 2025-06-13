@@ -115,7 +115,7 @@ func TestGetServiceConfig(t *testing.T) {
 	assert.NoError(t, err)
 	client := ai_guard.New(config)
 
-	_, err = client.GetServiceConfig(context.TODO(), ai_guard.GetServiceConfigParams{Id: "my-service-config-id"})
+	_, err = client.GetServiceConfig(context.TODO(), ai_guard.GetServiceConfigParams{Id: "pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"})
 	assert.NoError(t, err)
 }
 
@@ -134,7 +134,7 @@ func TestCreateServiceConfig(t *testing.T) {
 
 	_, err = client.CreateServiceConfig(context.TODO(), ai_guard.CreateServiceConfigParams{
 		ServiceConfig: ai_guard.ServiceConfig{
-			Id:   pangea.String("my-service-config-id"),
+			Id:   pangea.String("pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"),
 			Name: pangea.String("my-service-config-name"),
 		},
 	})
@@ -156,7 +156,7 @@ func TestUpdateServiceConfig(t *testing.T) {
 
 	_, err = client.UpdateServiceConfig(context.TODO(), ai_guard.UpdateServiceConfigParams{
 		ServiceConfig: ai_guard.ServiceConfig{
-			Id:   pangea.String("my-service-config-id"),
+			Id:   pangea.String("pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"),
 			Name: pangea.String("my-service-config-name"),
 		},
 	})
@@ -176,7 +176,7 @@ func TestDeleteServiceConfig(t *testing.T) {
 	assert.NoError(t, err)
 	client := ai_guard.New(config)
 
-	_, err = client.DeleteServiceConfig(context.TODO(), ai_guard.DeleteServiceConfigParams{Id: "my-service-config-id"})
+	_, err = client.DeleteServiceConfig(context.TODO(), ai_guard.DeleteServiceConfigParams{Id: "pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"})
 	assert.NoError(t, err)
 }
 
@@ -195,7 +195,7 @@ func TestListServiceConfigs(t *testing.T) {
 
 	_, err = client.ListServiceConfigs(context.TODO(), ai_guard.ListServiceConfigsParams{
 		Filter: &ai_guard.ServiceConfigListFilter{
-			Id:        pangea.String("my-service-config-id"),
+			Id:        pangea.String("pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"),
 			CreatedAt: pangea.P(time.Now()),
 		},
 		Last:    pangea.P("last"),
