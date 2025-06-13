@@ -2,6 +2,7 @@ package ai_guard
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -25,6 +26,15 @@ func (e *aiGuard) GuardText(ctx context.Context, input *TextGuardRequest) (*pang
 	}
 
 	return request.DoPost(ctx, e.Client, "v1/text/guard", input, &TextGuardResult{})
+}
+
+// @summary Guard LLM input and output
+//
+// @description Analyze and redact content to avoid manipulation of the model, addition of malicious content, and other undesirable data transfers.
+//
+// @operationId ai_guard_post_v1beta_guard
+func (e *aiGuard) Guard(ctx context.Context, body GuardRequest) (*pangea.PangeaResponse[GuardResult], error) {
+	return request.DoPost(ctx, e.Client, "v1beta/guard", &body, &GuardResult{})
 }
 
 // @operationId ai_guard_post_v1beta_config
@@ -353,6 +363,83 @@ type TextGuardResult struct {
 	PromptMessages any                `json:"prompt_messages"` // Updated prompt messages, if applicable.
 	Blocked        bool               `json:"blocked"`         // Whether or not the prompt triggered a block detection.
 	Recipe         string             `json:"recipe"`          // The Recipe that was used.
+}
+
+type TextContent struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+}
+
+type ImageContent struct {
+	Type     string `json:"type"`
+	ImageSrc string `json:"image_src" validate:"regexp=^(data:image\\/(jpeg|png|gif);base64,|https?:\\/\\/).*"`
+}
+
+type MultimodalContentInner struct {
+	TextContent  *TextContent
+	ImageContent *ImageContent
+}
+
+func (src MultimodalContentInner) MarshalJSON() ([]byte, error) {
+	if src.TextContent != nil {
+		return json.Marshal(&src.TextContent)
+	}
+
+	if src.ImageContent != nil {
+		return json.Marshal(&src.ImageContent)
+	}
+
+	return nil, nil
+}
+
+type MultimodalContent struct {
+	OfString         *string
+	OfArrayOfContent []MultimodalContentInner
+}
+
+func (src MultimodalContent) MarshalJSON() ([]byte, error) {
+	if src.OfString != nil {
+		return json.Marshal(&src.OfString)
+	}
+
+	if src.OfArrayOfContent != nil {
+		return json.Marshal(&src.OfArrayOfContent)
+	}
+
+	return nil, nil
+}
+
+type MultimodalMessage struct {
+	Role    string            `json:"role"`
+	Content MultimodalContent `json:"content"`
+}
+
+type GuardRequest struct {
+	pangea.BaseRequest
+
+	Messages           []MultimodalMessage `json:"messages,omitempty"` // Prompt content and role array in JSON format. The `content` is the multimodal text or image input that will be analyzed.
+	Recipe             string              `json:"recipe,omitempty"`   // Recipe key of a configuration of data types and settings defined in the Pangea User Console. It specifies the rules that are to be applied to the text, such as defang malicious URLs.
+	Debug              bool                `json:"debug,omitempty"`    // Setting this value to true will provide a detailed analysis of the text data
+	Overrides          Overrides           `json:"overrides,omitempty"`
+	AppName            string              `json:"app_name,omitempty"`             // Name of source application.
+	LlmProvider        string              `json:"llm_provider,omitempty"`         // Underlying LLM.  Example: 'OpenAI'.
+	Model              string              `json:"model,omitempty"`                // Model used to perform the event. Example: 'gpt'.
+	ModelVersion       string              `json:"model_version,omitempty"`        // Model version used to perform the event. Example: '3.5'.
+	RequestTokenCount  int32               `json:"request_token_count,omitempty"`  // Number of tokens in the request.
+	ResponseTokenCount int32               `json:"response_token_count,omitempty"` // Number of tokens in the response.
+	SourceIp           string              `json:"source_ip,omitempty"`            // IP address of user or app or agent.
+	SourceLocation     string              `json:"source_location,omitempty"`      // Location of user or app or agent.
+	TenantId           string              `json:"tenant_id,omitempty"`            // For gateway-like integrations with multi-tenant support.
+	SensorMode         string              `json:"sensor_mode,omitempty"`          // (AIDR) sensor mode.
+	Context            map[string]any      `json:"context,omitempty"`              // (AIDR) Logging schema.
+}
+
+type GuardResult struct {
+	PromptMessages map[string]any     `json:"prompt_messages,omitempty"` // Updated structured prompt.
+	Blocked        bool               `json:"blocked,omitempty"`         // Whether or not the prompt triggered a block detection.
+	Recipe         string             `json:"recipe,omitempty"`          // The Recipe that was used.
+	Detectors      TextGuardDetectors `json:"detectors"`
+	FpeContext     string             `json:"fpe_context,omitempty"` // If an FPE redaction method returned results, this will be the context passed to unredact.
 }
 
 type GetServiceConfigParams struct {
