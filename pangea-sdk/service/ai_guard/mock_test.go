@@ -53,6 +53,55 @@ func TestGuardText_Messages(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestGuard(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+
+	config, err := pangea.NewConfig(
+		option.WithBaseURLTemplate(baseURL),
+		option.WithToken("my API token"),
+	)
+	assert.NoError(t, err)
+	client := ai_guard.New(config)
+
+	response, err := client.Guard(context.TODO(), ai_guard.GuardRequest{Messages: []ai_guard.MultimodalMessage{
+		{
+			Role: "user",
+			Content: ai_guard.MultimodalContent{
+				OfString: pangea.P("what was pangea?"),
+			},
+		},
+	}})
+	assert.NoError(t, err)
+	assert.NotNil(t, response.Result.Detectors)
+
+	response, err = client.Guard(context.TODO(), ai_guard.GuardRequest{Messages: []ai_guard.MultimodalMessage{
+		{
+			Role: "user",
+			Content: ai_guard.MultimodalContent{
+				OfArrayOfContent: []ai_guard.MultimodalContentInner{
+					{
+						TextContent: &ai_guard.TextContent{
+							Type: "text",
+							Text: "what was pangea?",
+						},
+					},
+					{
+						ImageContent: &ai_guard.ImageContent{
+							Type:     "image",
+							ImageSrc: "https://example.org/favicon.ico",
+						},
+					},
+				},
+			},
+		},
+	}})
+	assert.NoError(t, err)
+	assert.NotNil(t, response.Result.Detectors)
+}
+
 func TestGetServiceConfig(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
@@ -66,7 +115,7 @@ func TestGetServiceConfig(t *testing.T) {
 	assert.NoError(t, err)
 	client := ai_guard.New(config)
 
-	_, err = client.GetServiceConfig(context.TODO(), ai_guard.GetServiceConfigParams{Id: "my-service-config-id"})
+	_, err = client.GetServiceConfig(context.TODO(), ai_guard.GetServiceConfigParams{Id: "pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"})
 	assert.NoError(t, err)
 }
 
@@ -85,7 +134,7 @@ func TestCreateServiceConfig(t *testing.T) {
 
 	_, err = client.CreateServiceConfig(context.TODO(), ai_guard.CreateServiceConfigParams{
 		ServiceConfig: ai_guard.ServiceConfig{
-			Id:   pangea.String("my-service-config-id"),
+			Id:   pangea.String("pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"),
 			Name: pangea.String("my-service-config-name"),
 		},
 	})
@@ -107,7 +156,7 @@ func TestUpdateServiceConfig(t *testing.T) {
 
 	_, err = client.UpdateServiceConfig(context.TODO(), ai_guard.UpdateServiceConfigParams{
 		ServiceConfig: ai_guard.ServiceConfig{
-			Id:   pangea.String("my-service-config-id"),
+			Id:   pangea.String("pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"),
 			Name: pangea.String("my-service-config-name"),
 		},
 	})
@@ -127,7 +176,7 @@ func TestDeleteServiceConfig(t *testing.T) {
 	assert.NoError(t, err)
 	client := ai_guard.New(config)
 
-	_, err = client.DeleteServiceConfig(context.TODO(), ai_guard.DeleteServiceConfigParams{Id: "my-service-config-id"})
+	_, err = client.DeleteServiceConfig(context.TODO(), ai_guard.DeleteServiceConfigParams{Id: "pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"})
 	assert.NoError(t, err)
 }
 
@@ -146,7 +195,7 @@ func TestListServiceConfigs(t *testing.T) {
 
 	_, err = client.ListServiceConfigs(context.TODO(), ai_guard.ListServiceConfigsParams{
 		Filter: &ai_guard.ServiceConfigListFilter{
-			Id:        pangea.String("my-service-config-id"),
+			Id:        pangea.String("pci_hgxhjm6w2l72ujzoxtfugaf6her7d27w"),
 			CreatedAt: pangea.P(time.Now()),
 		},
 		Last:    pangea.P("last"),
