@@ -123,8 +123,31 @@ fmt.Printf("Logged event: %s", pangea.Stringify(e))
 
 Full code for the above example available in [the examples directory](https://github.com/pangeacyber/pangea-go/blob/main/examples/audit/log_standard_schema.go).
 
+<a name="asynchronous-responses"></a>
+
+## Asynchronous responses
+
+Any response from Pangea may become [an asynchronous one][Asynchronous API Responses]
+if the result takes too long to be ready. These HTTP/202 responses will manifest
+themselves as `AcceptedError`s in the SDK. Use a type assertion to check for
+this error type.
+
+```go
+resp, err := auditcli.Log(ctx, event, true)
+if err != nil {
+	acceptedError, isAcceptedError := err.(*pangea.AcceptedError)
+	if isAcceptedError {
+		// Result is not ready yet. One may poll for it by using
+		// PollResultByError() or PollResultByID() + acceptedError.RequestID.
+	} else {
+		// Handle other error types.
+	}
+}
+```
+
    [Documentation]: https://pangea.cloud/docs/sdk/go/
    [GA Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
    [Beta Examples]: https://github.com/pangeacyber/pangea-go/tree/beta/examples
    [Pangea Console]: https://console.pangea.cloud/
    [Secure Audit Log]: https://pangea.cloud/docs/audit
+   [Asynchronous API Responses]: https://pangea.cloud/docs/api/async
