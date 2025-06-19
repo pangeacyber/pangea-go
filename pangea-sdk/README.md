@@ -29,7 +29,7 @@ compatibility guarantees as stable releases.
 [Beta changelog](https://github.com/pangeacyber/pangea-go/blob/beta/CHANGELOG.md).
 
 ```bash
-$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v4@v4.4.0-beta.2
+$ go get github.com/pangeacyber/pangea-go/pangea-sdk/v5@v5.3.0-beta.2
 ```
 
 ## Usage
@@ -123,6 +123,29 @@ fmt.Printf("Logged event: %s", pangea.Stringify(e))
 
 Full code for the above example available in [the examples directory](https://github.com/pangeacyber/pangea-go/blob/main/examples/audit/log_standard_schema.go).
 
+<a name="configuration"></a>
+
+## Configuration
+
+The SDK supports the following configuration options via `pangea.NewConfig`:
+
+- `option.WithBaseURLTemplate()` — Template for constructing the base URL for
+  API requests. The placeholder `{SERVICE_NAME}` will be replaced with the
+  service name slug. This is a more powerful version of Domain that allows for
+  setting more than just the host of the API server. Defaults to
+  `https://{SERVICE_NAME}.aws.us.pangea.cloud`.
+- `option.WithDomain()` — Base domain for API requests. This is a weaker version
+  of `BaseURLTemplate` that only allows for setting the host of the API server.
+  Use `BaseURLTemplate` for more control over the URL, such as setting
+  service-specific paths. Defaults to `aws.us.pangea.cloud`.
+- `option.WithLogger()` - Logger to be used by the client.
+- `option.WithPollResultTimeout()` - Timeout used to poll results after
+  HTTP/202.
+- `option.WithQueuedRetryEnabled()` - Whether or not the client should retry
+  queued requests.
+- `option.WithRetry()` - Whether or not the client should retry requests.
+- `option.WithToken()` - API token used to authenticate requests.
+
 <a name="asynchronous-responses"></a>
 
 ## Asynchronous responses
@@ -145,9 +168,9 @@ if err != nil {
 }
 ```
 
-   [Documentation]: https://pangea.cloud/docs/sdk/go/
-   [GA Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
-   [Beta Examples]: https://github.com/pangeacyber/pangea-go/tree/beta/examples
-   [Pangea Console]: https://console.pangea.cloud/
-   [Secure Audit Log]: https://pangea.cloud/docs/audit
-   [Asynchronous API Responses]: https://pangea.cloud/docs/api/async
+[Documentation]: https://pangea.cloud/docs/sdk/go/
+[GA Examples]: https://github.com/pangeacyber/pangea-go/tree/main/examples
+[Beta Examples]: https://github.com/pangeacyber/pangea-go/tree/beta/examples
+[Pangea Console]: https://console.pangea.cloud/
+[Secure Audit Log]: https://pangea.cloud/docs/audit
+[Asynchronous API Responses]: https://pangea.cloud/docs/api/async
