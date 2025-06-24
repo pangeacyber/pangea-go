@@ -9,6 +9,15 @@ import (
 
 type ConfigOption = pangea.ConfigOption
 
+// WithAdditionalHeaders returns a ConfigOption that sets the AdditionalHeaders
+// for the client.
+func WithAdditionalHeaders(headers map[string]string) ConfigOption {
+	return pangea.ConfigOptionFunc(func(c *pangea.Config) error {
+		c.AdditionalHeaders = headers
+		return nil
+	})
+}
+
 // WithBaseURLTemplate returns a ConfigOption that sets the BaseURLTemplate for
 // the client.
 func WithBaseURLTemplate(baseURLTemplate string) ConfigOption {
