@@ -320,6 +320,11 @@ func (c *Client) NewRequest(method string, url *url.URL, body any) (*http.Reques
 		req.Header.Set("Content-Type", "application/json")
 	}
 
+	// Promote Host header to Request.Host.
+	if req.Header.Get("Host") != "" {
+		req.Host = req.Header.Get("Host")
+	}
+
 	return req, nil
 }
 
