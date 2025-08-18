@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/audit"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/vault"
@@ -22,11 +23,14 @@ func main() {
 	if auditTokenID == "" {
 		log.Fatal("Error: No audit token id present")
 	}
-	vaultConfig := pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatal("Failed to create config: %v", err)
 	}
-	vaultClient := vault.New(&vaultConfig)
+	vaultClient := vault.New(config)
 
 	ctx := context.Background()
 
@@ -44,11 +48,14 @@ func main() {
 	}
 
 	fmt.Println("Initialize Log...")
-	auditConfig := pangea.Config{
-		Token:  *auditToken,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
+	auditConfig, err := pangea.NewConfig(
+		option.WithToken(*auditToken),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatal("Failed to create config: %v", err)
 	}
-	auditClient, err := audit.New(&auditConfig)
+	auditClient, err := audit.New(auditConfig)
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}

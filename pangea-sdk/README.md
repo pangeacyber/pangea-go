@@ -138,12 +138,16 @@ The SDK supports the following configuration options via `pangea.NewConfig`:
   of `BaseURLTemplate` that only allows for setting the host of the API server.
   Use `BaseURLTemplate` for more control over the URL, such as setting
   service-specific paths. Defaults to `aws.us.pangea.cloud`.
+- `option.WithHTTPClient()` - HTTP client to be used by the client. Defaults to
+  `http.DefaultClient`.
 - `option.WithLogger()` - Logger to be used by the client.
+- `option.WithMaxRetries()` - Maximum number of retries to attempt. When set to
+  0, the client only makes one request. By default, the client retries two
+  times.
 - `option.WithPollResultTimeout()` - Timeout used to poll results after
   HTTP/202.
 - `option.WithQueuedRetryEnabled()` - Whether or not the client should retry
   queued requests.
-- `option.WithRetry()` - Whether or not the client should retry requests.
 - `option.WithToken()` - API token used to authenticate requests.
 
 <a name="asynchronous-responses"></a>

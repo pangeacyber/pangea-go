@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/redact"
 )
@@ -21,11 +22,16 @@ func main() {
 		log.Fatal("Need to set PANGEA_REDACT_CONFIG_ID env var")
 	}
 
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+
 	// Set configId in service construction
-	redactcli := redact.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	}, redact.WithConfigID(configId))
+	redactcli := redact.New(config, redact.WithConfigID(configId))
 
 	var text = "Hello, my phone number is 123-456-7890"
 

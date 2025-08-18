@@ -70,7 +70,7 @@ func TestBody(t *testing.T, r *http.Request, want string) {
 func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.Config) error) {
 	t.Helper()
 
-	emptyDomainCfg, err := pangea.NewConfig(option.WithDomain(""))
+	emptyDomainCfg, err := pangea.NewConfig(option.WithDomain(""), option.WithMaxRetries(0))
 	assert.NoError(t, err)
 
 	doErr := f(emptyDomainCfg)
@@ -78,7 +78,7 @@ func TestNewRequestAndDoFailure(t *testing.T, method string, f func(cfg *pangea.
 		t.Fatalf("call to method %v with empty Endpoint got nil err, want error", method)
 	}
 
-	badUrlCfg, err := pangea.NewConfig(option.WithDomain("http://"))
+	badUrlCfg, err := pangea.NewConfig(option.WithDomain("http://"), option.WithMaxRetries(0))
 	assert.NoError(t, err)
 
 	newRequestErr := f(badUrlCfg)

@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -15,8 +17,6 @@ import (
 	"time"
 
 	"github.com/creasty/defaults"
-	"github.com/hashicorp/go-retryablehttp"
-	internaldefaults "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/defaults"
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
 	"github.com/rs/zerolog"
 )
@@ -69,20 +69,16 @@ func (br *BaseRequest) SetConfigID(c string) {
 	br.ConfigID = c
 }
 
-type RetryConfig struct {
-	RetryWaitMin time.Duration // Minimum time to wait
-	RetryWaitMax time.Duration // Maximum time to wait
-	RetryMax     int           // Maximum number of retries
-	BackOff      float32       // Exponential back of factor
-}
-
+// Config represents the configuration for a Pangea client.
+//
+// Editing the variables inside Config directly is unstable API. Prefer
+// composing ConfigOptions instead.
 type Config struct {
 	// The Bearer token used to authenticate requests.
 	Token string
 
-	// The HTTP client to be used by the client. It defaults to
-	// internaldefaults.HTTPClient
-	HTTPClient *http.Client
+	// The HTTP client to be used by the client.
+	HTTPClient *http.Client `default:"http.DefaultClient"`
 
 	// Template for constructing the base URL for API requests. The placeholder
 	// `{SERVICE_NAME}` will be replaced with the service name slug. This is a
@@ -103,18 +99,16 @@ type Config struct {
 	// Custom user agent is a string to be added to pangea sdk user agent header and identify app
 	CustomUserAgent string
 
-	// if it should retry request
-	// if HTTPClient is set in the config this value won't take effect
-	Retry bool `default:"true"`
-
 	// Enable queued request retry support
 	QueuedRetryEnabled bool
 
 	// Timeout used to poll results after HTTP/202.
 	PollResultTimeout time.Duration
 
-	// Retry config defaults to a base retry option
-	RetryConfig *RetryConfig
+	// Maximum number of retries that the client should attempt. When set to 0,
+	// the client only makes one request. By default, the client retries two
+	// times.
+	MaxRetries int `default:"2"`
 
 	// Logger
 	Logger *zerolog.Logger
@@ -195,12 +189,14 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		cfg.BaseURLTemplate = fmt.Sprintf("https://%s.%s", serviceNamePlaceholder, cfg.Domain)
 	}
 
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = http.DefaultClient
+	}
+
 	if cfg.Logger == nil {
 		l := zerolog.Nop()
 		cfg.Logger = &l
 	}
-
-	cfg.HTTPClient = chooseHTTPClient(cfg)
 
 	var userAgent string
 	if len(baseCfg.CustomUserAgent) > 0 {
@@ -218,24 +214,6 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		pendingRequestID: make(map[string]bool),
 		Logger:           *cfg.Logger,
 	}
-}
-
-func chooseHTTPClient(cfg *Config) *http.Client {
-	if cfg.HTTPClient != nil {
-		return cfg.HTTPClient
-	}
-	if cfg.Retry {
-		if cfg.RetryConfig != nil {
-			cli := retryablehttp.NewClient()
-			cli.RetryMax = cfg.RetryConfig.RetryMax
-			cli.RetryWaitMin = cfg.RetryConfig.RetryWaitMin
-			cli.RetryWaitMax = cfg.RetryConfig.RetryWaitMax
-			cli.Logger = nil
-			return cli.StandardClient()
-		}
-		return internaldefaults.HTTPClientWithRetries()
-	}
-	return internaldefaults.HTTPClient()
 }
 
 func mergeHeaders(req *http.Request, additionalHeaders map[string]string) {
@@ -386,7 +364,7 @@ func (c *Client) DownloadFile(ctx context.Context, rawUrl string) (*AttachedFile
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", parsedUrl.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", parsedUrl.String(), nil)
 	if err != nil {
 		c.Logger.Error().
 			Str("service", c.serviceName).
@@ -440,7 +418,7 @@ func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, 
 		if err != nil {
 			return err
 		}
-		req, err = http.NewRequest("PUT", url, bytes.NewReader(buffer.Bytes()))
+		req, err = http.NewRequestWithContext(ctx, "PUT", url, bytes.NewReader(buffer.Bytes()))
 	} else {
 		req, err = c.NewRequestForm("POST", url, fd, false)
 	}
@@ -650,11 +628,60 @@ func (c *Client) SetHeaders(req *http.Request) {
 //	If an error or API Error occurs, the error will contain more information. Otherwise you
 //	are supposed to read and close the response's Body.
 func (c *Client) BareDo(ctx context.Context, req *http.Request) (*http.Response, error) {
-	resp, err := c.config.HTTPClient.Do(req.WithContext(ctx))
+	var res *http.Response
+	var err error
+
+	requestIds := make(map[string]struct{})
+
+	for retryCount := 0; retryCount <= c.config.MaxRetries; retryCount++ {
+		request := req.Clone(ctx)
+
+		if len(requestIds) > 0 {
+			keys := make([]string, 0, len(requestIds))
+			for k := range requestIds {
+				keys = append(keys, k)
+			}
+			request.Header.Set("X-Pangea-Retried-Request-Ids", strings.Join(keys, ","))
+		}
+
+		res, err = c.config.HTTPClient.Do(request)
+		if ctx != nil && ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		if err != nil {
+			return nil, err
+		}
+
+		if !shouldRetry(request, res) || retryCount > c.config.MaxRetries {
+			break
+		}
+
+		if req.GetBody != nil {
+			req.Body, err = req.GetBody()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if req.GetBody == nil && req.Body != nil {
+			break
+		}
+
+		if res != nil {
+			requestId := res.Header.Get("x-request-id")
+			if requestId != "" {
+				requestIds[requestId] = struct{}{}
+			}
+		}
+
+		time.Sleep(retryDelay(retryCount))
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
+
+	return res, err
 }
 
 func (c *Client) simplePost(ctx context.Context, req *http.Request) (*Response, error) {
@@ -958,6 +985,10 @@ func mergeInConfig(dst *Config, other *Config) {
 		return
 	}
 
+	if other.HTTPClient != nil {
+		dst.HTTPClient = other.HTTPClient
+	}
+
 	if other.Token != "" {
 		dst.Token = other.Token
 	}
@@ -974,14 +1005,7 @@ func mergeInConfig(dst *Config, other *Config) {
 		dst.AdditionalHeaders = other.AdditionalHeaders
 	}
 
-	if other.Retry {
-		dst.Retry = other.Retry
-	}
-
-	if other.RetryConfig != nil {
-		dst.RetryConfig = other.RetryConfig
-	}
-
+	dst.MaxRetries = other.MaxRetries
 	dst.QueuedRetryEnabled = other.QueuedRetryEnabled
 	dst.PollResultTimeout = other.PollResultTimeout
 	dst.Logger = other.Logger
@@ -1056,4 +1080,30 @@ func (c *Client) addPendingRequestID(rid string) {
 
 func (c *Client) removePendingRequestID(rid string) {
 	delete(c.pendingRequestID, rid)
+}
+
+func shouldRetry(req *http.Request, res *http.Response) bool {
+	if req.Body != nil && req.GetBody == nil {
+		return false
+	}
+
+	if res == nil {
+		return true
+	}
+
+	return res.StatusCode == http.StatusInternalServerError ||
+		res.StatusCode == http.StatusBadGateway ||
+		res.StatusCode == http.StatusServiceUnavailable ||
+		res.StatusCode == http.StatusGatewayTimeout
+}
+
+func retryDelay(retryCount int) time.Duration {
+	maxDelay := 8 * time.Second
+	delay := time.Duration(0.5 * float64(time.Second) * math.Pow(2, float64(retryCount)))
+	delay = min(delay, maxDelay)
+
+	jitter := rand.Int63n(int64(delay / 4))
+	delay -= time.Duration(jitter)
+
+	return delay
 }

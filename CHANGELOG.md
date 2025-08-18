@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Retries now include a request header `X-Pangea-Retried-Request-Ids` to track
+  the request IDs of the retries.
+- Configuring retries has been simplified to configuring only the number of
+  retries via `option.WithMaxRetries(...)`.
+
 ## 5.3.0 - 2025-06-24
 
 ### Added

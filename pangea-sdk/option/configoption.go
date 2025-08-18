@@ -1,6 +1,8 @@
 package option
 
 import (
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
@@ -35,10 +37,42 @@ func WithDomain(domain string) ConfigOption {
 	})
 }
 
+// WithHTTPClient returns a ConfigOption that changes the underlying HTTP
+// client used, which by default is [http.DefaultClient].
+//
+// For custom uses cases, it is recommended to provide an [*http.Client] with a
+// custom [http.RoundTripper] as its transport, rather than directly
+// implementing [HTTPClient].
+func WithHTTPClient(client *http.Client) ConfigOption {
+	return pangea.ConfigOptionFunc(func(c *pangea.Config) error {
+		if client == nil {
+			return fmt.Errorf("configoption: custom HTTP client cannot be nil")
+		}
+
+		c.HTTPClient = client
+		return nil
+	})
+}
+
 // WithLogger returns a ConfigOption that sets the logger for the client.
 func WithLogger(logger *zerolog.Logger) ConfigOption {
 	return pangea.ConfigOptionFunc(func(c *pangea.Config) error {
 		c.Logger = logger
+		return nil
+	})
+}
+
+// WithMaxRetries returns a ConfigOption that sets the maximum number of retries
+// that the client attempts to make. When given 0, the client only makes one
+// request. By default, the client retries two times.
+//
+// WithMaxRetries panics when retries is negative.
+func WithMaxRetries(retries int) ConfigOption {
+	if retries < 0 {
+		panic("configoption: cannot have fewer than 0 retries")
+	}
+	return pangea.ConfigOptionFunc(func(r *pangea.Config) error {
+		r.MaxRetries = retries
 		return nil
 	})
 }
@@ -57,15 +91,6 @@ func WithPollResultTimeout(pollResultTimeout time.Duration) ConfigOption {
 func WithQueuedRetryEnabled(queuedRetryEnabled bool) ConfigOption {
 	return pangea.ConfigOptionFunc(func(c *pangea.Config) error {
 		c.QueuedRetryEnabled = queuedRetryEnabled
-		return nil
-	})
-}
-
-// WithRetry returns a ConfigOption that sets whether or not the client should
-// retry failed requests.
-func WithRetry(retry bool) ConfigOption {
-	return pangea.ConfigOptionFunc(func(c *pangea.Config) error {
-		c.Retry = retry
 		return nil
 	})
 }

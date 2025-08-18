@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/defaults"
 )
 
 const baseURL = "https://arweave.net"
@@ -20,7 +18,7 @@ type Arweave struct {
 
 func New() *Arweave {
 	return &Arweave{
-		Client: defaults.HTTPClient(),
+		Client: http.DefaultClient,
 	}
 }
 

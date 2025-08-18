@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,7 @@ type FileUploader struct {
 
 func NewFileUploader() FileUploader {
 	cfg := &Config{
+		HTTPClient:         http.DefaultClient,
 		QueuedRetryEnabled: false,
 	}
 

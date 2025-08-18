@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/redact"
 )
@@ -20,10 +21,14 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	redactcli := redact.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	redactcli := redact.New(config)
 
 	ctx := context.Background()
 

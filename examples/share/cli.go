@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/share"
 	"github.com/spf13/cobra"
@@ -83,10 +84,14 @@ func main() {
 			ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancelFn()
 
-			client := share.New(&pangea.Config{
-				Token:  token,
-				Domain: os.Getenv("PANGEA_DOMAIN"),
-			})
+			config, err := pangea.NewConfig(
+				option.WithToken(token),
+				option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+			)
+			if err != nil {
+				log.Fatalf("expected no error got: %v", err)
+			}
+			client := share.New(config)
 
 			files, err := getFiles(input)
 			if err != nil {

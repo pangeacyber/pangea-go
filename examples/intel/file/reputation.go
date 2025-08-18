@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/file_intel"
 )
@@ -24,10 +25,14 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	intelcli := file_intel.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	intelcli := file_intel.New(config)
 
 	ctx := context.Background()
 	indicator := "142b638c6a60b60c7f9928da4fb85a5a8e1422a9ffdc9ee49e17e56ccca9cf6e"
