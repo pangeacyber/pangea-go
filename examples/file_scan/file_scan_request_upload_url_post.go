@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/file_scan"
 )
@@ -24,12 +25,16 @@ func main() {
 	defer cancelFn()
 
 	// To enable sync mode, set QueuedRetryEnabled to true and set a timeout
-	client := file_scan.New(&pangea.Config{
-		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
-		QueuedRetryEnabled: true,
-		PollResultTimeout:  30 * time.Second,
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+		option.WithQueuedRetryEnabled(true),
+		option.WithPollResultTimeout(30*time.Second),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	client := file_scan.New(config)
 
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {

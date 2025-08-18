@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/sanitize"
 )
@@ -25,16 +26,16 @@ func main() {
 	defer cancelFn()
 
 	// Create a new Sanitize client with Pangea token and domain
-	client := sanitize.New(&pangea.Config{
-		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
-		QueuedRetryEnabled: true,
-		PollResultTimeout:  120 * time.Second,
-		Retry:              true,
-		RetryConfig: &pangea.RetryConfig{
-			RetryMax: 4,
-		},
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+		option.WithQueuedRetryEnabled(true),
+		option.WithPollResultTimeout(120*time.Second),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	client := sanitize.New(config)
 
 	// Create a SanitizeRequest to request an presigned upload url.
 	// In this case TransferMethod is set to TMputURL

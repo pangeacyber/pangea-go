@@ -101,7 +101,6 @@ func Test_Integration_Redact_Structured(t *testing.T) {
 	defer cancelFn()
 
 	cfg := redactIntegrationCfg(t)
-	cfg.Retry = true
 	client := redact.New(cfg)
 
 	data := map[string]any{"phone": "415-867-5309"}
@@ -127,7 +126,6 @@ func Test_Integration_Redact_Structured_DebugTrue(t *testing.T) {
 	defer cancelFn()
 
 	cfg := redactIntegrationCfg(t)
-	cfg.Retry = true
 	client := redact.New(cfg)
 
 	data := map[string]any{"phone": "415-867-5309"}
@@ -158,7 +156,6 @@ func Test_Integration_Redact_Structured_NoResult(t *testing.T) {
 	defer cancelFn()
 
 	cfg := redactIntegrationCfg(t)
-	cfg.Retry = true
 	client := redact.New(cfg)
 
 	data := map[string]any{"phone": "415-867-5309"}
@@ -183,7 +180,6 @@ func Test_Integration_Redact_Error_BadToken(t *testing.T) {
 	defer cancelFn()
 
 	cfg := redactIntegrationCfg(t)
-	cfg.Retry = true
 	cfg.Token = "notarealtoken"
 	client := redact.New(cfg)
 

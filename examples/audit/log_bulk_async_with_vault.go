@@ -42,10 +42,11 @@ func main() {
 		log.Fatal("Unexpected nil auditToken")
 	}
 
-	auditcli, err := audit.New(&pangea.Config{
-		Token:  *auditToken,
-		Domain: domain,
-	})
+	config, err = pangea.NewConfig(option.WithToken(*auditToken), option.WithDomain(domain))
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	auditcli, err := audit.New(config)
 	if err != nil {
 		log.Fatal("failed to create audit client")
 	}

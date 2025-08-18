@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
@@ -31,8 +32,9 @@ type FileUploader struct {
 }
 
 func NewFileUploader() FileUploader {
-	cfg := &pangea.Config{
-		QueuedRetryEnabled: false,
+	cfg, err := pangea.NewConfig(option.WithQueuedRetryEnabled(false))
+	if err != nil {
+		panic(err)
 	}
 
 	return FileUploader{

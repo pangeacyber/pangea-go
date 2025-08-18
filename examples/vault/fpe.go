@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/vault"
 )
@@ -21,10 +22,14 @@ func main() {
 		log.Fatal("Missing `PANGEA_VAULT_TOKEN` environment variable.")
 	}
 
-	vaultClient := vault.New(&pangea.Config{
-		Token:  token,
-		Domain: os.Getenv("PANGEA_DOMAIN"),
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	vaultClient := vault.New(config)
 
 	ctx := context.Background()
 

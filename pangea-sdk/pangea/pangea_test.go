@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"testing"
 
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/stretchr/testify/assert"
 
@@ -29,7 +30,7 @@ func testClient(t *testing.T, url *url.URL) *pangea.Client {
 func TestConfigDefaults(t *testing.T) {
 	config, err := pangea.NewConfig()
 	assert.NoError(t, err)
-	assert.Equal(t, true, config.Retry)
+	assert.Equal(t, 2, config.MaxRetries)
 }
 
 func TestClientCustomUserAgent(t *testing.T) {
@@ -91,15 +92,20 @@ func TestDo_When_Server_Returns_500_It_Returns_Error(t *testing.T) {
 	client := testClient(t, url)
 
 	mux.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, `{
-			"request_id": "some-id",
+		id, err := gonanoid.New()
+		if err != nil {
+			t.Fatalf("expected no error got: %v", err)
+		}
+		w.Header().Set("x-request-id", id)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{
+			"request_id": "%s",
 			"request_time": "1970-01-01T00:00:00Z",
 			"response_time": "1970-01-01T00:00:10Z",
 			"status": "InternalError",
 			"result": null,
 			"summary": "error"
-		}`)
+		}`, id)
 	})
 
 	url, _ = client.GetURL("/test")
@@ -222,10 +228,7 @@ func TestDo_With_Retries_Error(t *testing.T) {
 	mux, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
 	cfg := pangeatesting.TestConfig(url)
-	cfg.Retry = true
-	cfg.RetryConfig = &pangea.RetryConfig{
-		RetryMax: 1,
-	}
+	cfg.MaxRetries = 1
 
 	client := pangea.NewClient("service", cfg)
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/file_scan"
 )
@@ -25,11 +26,11 @@ func main() {
 
 	// To enable async mode, set QueuedRetryEnabled to false
 	// When .Scan() is called it will return an AcceptedError immediately when server returns a 202 response
-	client := file_scan.New(&pangea.Config{
-		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
-		QueuedRetryEnabled: false,
-	})
+	config, err := pangea.NewConfig(option.WithToken(token), option.WithDomain(os.Getenv("PANGEA_DOMAIN")), option.WithQueuedRetryEnabled(false))
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	client := file_scan.New(config)
 
 	input := &file_scan.FileScanRequest{
 		Raw:      true,
@@ -40,7 +41,7 @@ func main() {
 	// This should be your own file to scan
 	file, err := os.Open(TESTFILE_PATH)
 	if err != nil {
-		log.Fatal("expected no error got: %v", err)
+		log.Fatalf("expected no error got: %v", err)
 	}
 
 	fmt.Println("File Scan request...")

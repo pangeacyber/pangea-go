@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/ip_intel"
 )
@@ -33,12 +34,16 @@ func main() {
 		log.Fatal("Unauthorized: No token present")
 	}
 
-	intelcli := ip_intel.New(&pangea.Config{
-		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
-		QueuedRetryEnabled: true,
-		PollResultTimeout:  60 * time.Second,
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+		option.WithQueuedRetryEnabled(true),
+		option.WithPollResultTimeout(60*time.Second),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	intelcli := ip_intel.New(config)
 
 	ctx := context.Background()
 	input := &ip_intel.IpProxyBulkRequest{

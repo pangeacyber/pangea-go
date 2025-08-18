@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/option"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/share"
 )
@@ -26,16 +27,16 @@ func main() {
 	defer cancelFn()
 
 	// create a new store client with pangea token and domain
-	client := share.New(&pangea.Config{
-		Token:              token,
-		Domain:             os.Getenv("PANGEA_DOMAIN"),
-		QueuedRetryEnabled: true,
-		PollResultTimeout:  120 * time.Second,
-		Retry:              true,
-		RetryConfig: &pangea.RetryConfig{
-			RetryMax: 4,
-		},
-	})
+	config, err := pangea.NewConfig(
+		option.WithToken(token),
+		option.WithDomain(os.Getenv("PANGEA_DOMAIN")),
+		option.WithQueuedRetryEnabled(true),
+		option.WithPollResultTimeout(120*time.Second),
+	)
+	if err != nil {
+		log.Fatalf("expected no error got: %v", err)
+	}
+	client := share.New(config)
 
 	// Create a PutRequest. In this case TransferMethod is set to TMpostURL
 	// So SDK is going to request a post url, upload the file to that url and then request to pangea for the /put result
