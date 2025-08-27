@@ -950,16 +950,13 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 
 	var apiError error
 	var pa PangeaErrors
-	em := ""
 
 	err := r.UnmarshalResult(&pa)
 	if err != nil {
 		pa = PangeaErrors{}
-		em = fmt.Sprintf("API error: %s. Unmarshal Error: %s.", *r.ResponseHeader.Summary, err.Error())
-		apiError = fmt.Errorf(em)
+		apiError = fmt.Errorf("API error: %s. Unmarshal Error: %s.", *r.ResponseHeader.Summary, err.Error())
 	} else {
-		em = fmt.Sprintf("API error: %s.", *r.ResponseHeader.Summary)
-		apiError = fmt.Errorf(em)
+		apiError = fmt.Errorf("API error: %s.", *r.ResponseHeader.Summary)
 	}
 
 	return &APIError{

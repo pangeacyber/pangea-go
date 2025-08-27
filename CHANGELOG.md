@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AI Guard: `GuardTextWithRelevantContent()` method which allows for sending
   only relevant messages to AI Guard.
 
+### Changed
+
+- Minimum supported Go version is now v1.24.
+
 ## 5.4.0 - 2025-08-27
 
 ### Changed
