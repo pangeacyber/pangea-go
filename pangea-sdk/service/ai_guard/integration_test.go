@@ -40,14 +40,35 @@ func TestTextGuard_Messages(t *testing.T) {
 
 	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
 
-	input := &ai_guard.TextGuardRequest{Messages: []map[string]interface{}{
-		{
-			"role":    "user",
-			"content": "what was pangea?",
-		},
-	}}
+	input := &ai_guard.TextGuardRequest{Messages: []ai_guard.PromptMessage{{
+		Role:    "user",
+		Content: "what was pangea?",
+	}}}
 	out, err := client.GuardText(ctx, input)
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.PromptMessages)
+}
+
+func TestTextGuard_RelevantContent(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := &ai_guard.TextGuardRequest{
+		Messages: []ai_guard.PromptMessage{
+			{Role: "system", Content: "what was pangea?"},
+			{Role: "user", Content: "what was pangea?"},
+			{Role: "context", Content: "what was pangea?"},
+			{Role: "assistant", Content: "what was pangea?"},
+			{Role: "tool", Content: "what was pangea?"},
+			{Role: "context", Content: "what was pangea?"},
+		},
+	}
+	out, err := client.GuardTextWithRelevantContent(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Result)
+	assert.NotNil(t, out.Result.PromptMessages)
+	assert.Len(t, out.Result.PromptMessages, 6)
 }

@@ -9,6 +9,7 @@ import (
 // AI Guard API client.
 type Client interface {
 	GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error)
+	GuardTextWithRelevantContent(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error)
 
 	// Base service methods.
 	pangea.BaseServicer

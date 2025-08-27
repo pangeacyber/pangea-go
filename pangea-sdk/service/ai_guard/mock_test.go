@@ -43,11 +43,9 @@ func TestGuardText_Messages(t *testing.T) {
 	assert.NoError(t, err)
 	client := ai_guard.New(config)
 
-	_, err = client.GuardText(context.TODO(), &ai_guard.TextGuardRequest{Messages: []map[string]interface{}{
-		{
-			"role":    "user",
-			"content": "what was pangea?",
-		},
-	}})
+	_, err = client.GuardText(context.TODO(), &ai_guard.TextGuardRequest{Messages: []ai_guard.PromptMessage{{
+		Role:    "user",
+		Content: "what was pangea?",
+	}}})
 	assert.NoError(t, err)
 }
