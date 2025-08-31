@@ -22,6 +22,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.3.0 h1:oTKimTT/p8LpJOdF4Ng2pGCDCx0WIKxmS1iht9lsZBQ=
 github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.3.0/go.mod h1:voBKMNLtTMiiUZA0U5m3hpPmInjm8PXNIWpZUUuJSOo=
+github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.4.0 h1:3AxCZtWX3klTU6qRrGE6ZGTtUIrywtpOmFrQpOkVm5g=
+github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.4.0/go.mod h1:rxahzQjsMha+AXNEP9aYfAaAbt8+UnDC/0hWZj2YJ24=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
