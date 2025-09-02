@@ -6,7 +6,7 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/rs/zerolog v1.34.0
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.41.0
 )
 
