@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeatesting"
+	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/service/ai_guard"
 	"github.com/stretchr/testify/assert"
 )
@@ -50,4 +51,25 @@ func TestTextGuard_Messages(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, out.Result)
 	assert.NotNil(t, out.Result.PromptMessages)
+}
+
+func TestIntegration_GuardAsync(t *testing.T) {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFn()
+
+	client := ai_guard.New(pangeatesting.IntegrationConfig(t, testingEnvironment))
+
+	input := ai_guard.GuardRequest{Input: map[string]any{
+		"messages": []map[string]string{
+			{
+				"role":    "user",
+				"content": "what was pangea?",
+			},
+		}},
+	}
+	out, err := client.GuardAsync(ctx, input)
+	assert.NoError(t, err)
+	assert.NotNil(t, out)
+	assert.Equal(t, "Accepted", pangea.StringValue(out.Status))
+	assert.NotEmpty(t, out.RequestID)
 }

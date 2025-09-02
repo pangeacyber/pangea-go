@@ -43,7 +43,20 @@ func (e *aiGuard) Guard(ctx context.Context, body GuardRequest) (*pangea.PangeaR
 //
 // @operationId ai_guard_post_v1beta_guard_async
 func (e *aiGuard) GuardAsync(ctx context.Context, body GuardRequest) (*pangea.PangeaResponse[GuardResult], error) {
-	return request.DoPost(ctx, e.Client, "v1beta/guard_async", &body, &GuardResult{})
+	response, err := request.DoPostNoQueue(ctx, e.Client, "v1beta/guard_async", &body, &GuardResult{})
+	if err != nil {
+		acceptedErr, ok := err.(*pangea.AcceptedError)
+		if ok {
+			return &pangea.PangeaResponse[GuardResult]{
+				AcceptedResult: &acceptedErr.AcceptedResult,
+				Response:       acceptedErr.Response,
+				Result:         nil,
+			}, nil
+		}
+
+		return nil, err
+	}
+	return response, nil
 }
 
 // @operationId ai_guard_post_v1beta_config
