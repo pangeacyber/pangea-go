@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 5.3.0-beta.4 - 2025-09-02
+
 ### Fixed
 
 - AI Guard: async guard no longer polls on HTTP/202 responses.
