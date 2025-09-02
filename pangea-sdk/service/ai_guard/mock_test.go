@@ -66,38 +66,98 @@ func TestGuard(t *testing.T) {
 	assert.NoError(t, err)
 	client := ai_guard.New(config)
 
-	response, err := client.Guard(context.TODO(), ai_guard.GuardRequest{Messages: []ai_guard.MultimodalMessage{
-		{
-			Role: "user",
-			Content: ai_guard.MultimodalContent{
-				OfString: pangea.P("what was pangea?"),
+	response, err := client.Guard(context.TODO(), ai_guard.GuardRequest{Input: map[string]any{
+		"messages": []ai_guard.MultimodalMessage{
+			{
+				Role: "user",
+				Content: ai_guard.MultimodalContent{
+					OfString: pangea.P("what was pangea?"),
+				},
 			},
-		},
-	}})
+		}}})
 	assert.NoError(t, err)
 	assert.NotNil(t, response.Result.Detectors)
 
-	response, err = client.Guard(context.TODO(), ai_guard.GuardRequest{Messages: []ai_guard.MultimodalMessage{
-		{
-			Role: "user",
-			Content: ai_guard.MultimodalContent{
-				OfArrayOfContent: []ai_guard.MultimodalContentInner{
-					{
-						TextContent: &ai_guard.TextContent{
-							Type: "text",
-							Text: "what was pangea?",
-						},
-					},
-					{
-						ImageContent: &ai_guard.ImageContent{
-							Type:     "image",
-							ImageSrc: "https://example.org/favicon.ico",
+	response, err = client.Guard(context.TODO(), ai_guard.GuardRequest{
+		Input: map[string]any{
+			"messages": []ai_guard.MultimodalMessage{
+				{
+					Role: "user",
+					Content: ai_guard.MultimodalContent{
+						OfArrayOfContent: []ai_guard.MultimodalContentInner{
+							{
+								TextContent: &ai_guard.TextContent{
+									Type: "text",
+									Text: "what was pangea?",
+								},
+							},
+							{
+								ImageContent: &ai_guard.ImageContent{
+									Type:     "image",
+									ImageSrc: "https://example.org/favicon.ico",
+								},
+							},
 						},
 					},
 				},
 			},
 		},
-	}})
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, response.Result.Detectors)
+}
+
+func TestGuardAsync(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+
+	config, err := pangea.NewConfig(
+		option.WithBaseURLTemplate(baseURL),
+		option.WithToken("my API token"),
+	)
+	assert.NoError(t, err)
+	client := ai_guard.New(config)
+
+	response, err := client.Guard(context.TODO(), ai_guard.GuardRequest{
+		Input: map[string]any{
+			"messages": []ai_guard.MultimodalMessage{
+				{
+					Role: "user",
+					Content: ai_guard.MultimodalContent{
+						OfString: pangea.P("what was pangea?"),
+					},
+				}},
+		},
+	})
+	assert.NoError(t, err)
+	assert.NotNil(t, response.Result.Detectors)
+
+	response, err = client.Guard(context.TODO(), ai_guard.GuardRequest{
+		Input: map[string]any{
+			"messages": []ai_guard.MultimodalMessage{
+				{
+					Role: "user",
+					Content: ai_guard.MultimodalContent{
+						OfArrayOfContent: []ai_guard.MultimodalContentInner{
+							{
+								TextContent: &ai_guard.TextContent{
+									Type: "text",
+									Text: "what was pangea?",
+								},
+							},
+							{
+								ImageContent: &ai_guard.ImageContent{
+									Type:     "image",
+									ImageSrc: "https://example.org/favicon.ico",
+								},
+							},
+						},
+					},
+				}},
+		},
+	})
 	assert.NoError(t, err)
 	assert.NotNil(t, response.Result.Detectors)
 }

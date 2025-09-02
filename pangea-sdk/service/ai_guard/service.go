@@ -10,6 +10,7 @@ import (
 type Client interface {
 	GuardText(ctx context.Context, input *TextGuardRequest) (*pangea.PangeaResponse[TextGuardResult], error)
 	Guard(ctx context.Context, body GuardRequest) (*pangea.PangeaResponse[GuardResult], error)
+	GuardAsync(ctx context.Context, body GuardRequest) (*pangea.PangeaResponse[GuardResult], error)
 	GetServiceConfig(ctx context.Context, body GetServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error)
 	CreateServiceConfig(ctx context.Context, body CreateServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error)
 	UpdateServiceConfig(ctx context.Context, body UpdateServiceConfigParams) (*pangea.PangeaResponse[ServiceConfig], error)
