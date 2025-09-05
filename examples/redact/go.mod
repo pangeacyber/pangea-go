@@ -2,7 +2,7 @@ module examples/redact
 
 go 1.24
 
-require github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.4.0
+require github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.5.0
 
 require (
 	github.com/creasty/defaults v1.8.0 // indirect
