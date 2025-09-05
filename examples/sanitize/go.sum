@@ -30,6 +30,8 @@ github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.3.0 h1:oTKimTT/p8LpJOdF4Ng2pGC
 github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.3.0/go.mod h1:voBKMNLtTMiiUZA0U5m3hpPmInjm8PXNIWpZUUuJSOo=
 github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.4.0 h1:3AxCZtWX3klTU6qRrGE6ZGTtUIrywtpOmFrQpOkVm5g=
 github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.4.0/go.mod h1:rxahzQjsMha+AXNEP9aYfAaAbt8+UnDC/0hWZj2YJ24=
+github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.5.0 h1:wTtEipsOdOWs6HxiRqxASLGmKzzJhcgQw7D3pPwgy6M=
+github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.5.0/go.mod h1:bkDWW3q7hUn+T9srNIL2Ejf7NX2VGwbwWzHdg+1bZ98=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
