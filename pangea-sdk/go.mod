@@ -1,6 +1,6 @@
 module github.com/pangeacyber/pangea-go/pangea-sdk/v5
 
-go 1.24
+go 1.25.1
 
 require (
 	github.com/creasty/defaults v1.8.0
