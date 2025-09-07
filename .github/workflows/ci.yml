@@ -34,7 +34,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5.5.0
         with:
-          go-version: "1.24"
+          go-version: "1.25.1"
           cache-dependency-path: "**/*.sum"
 
   test-unit:
@@ -112,7 +112,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5.5.0
         with:
-          go-version: "1.24"
+          go-version: "1.25.1"
           cache-dependency-path: ./examples/${{ matrix.example }}/go.sum
 
       # TODO: reorganize each individual example into their own directory to
