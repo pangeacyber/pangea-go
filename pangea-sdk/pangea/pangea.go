@@ -14,6 +14,7 @@ import (
 	"net/textproto"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/creasty/defaults"
@@ -158,7 +159,7 @@ type Client struct {
 	serviceName string
 
 	// Map to save pending requests id
-	pendingRequestID map[string]bool
+	pendingRequestID sync.Map // map[string]bool
 
 	// Client logger
 	Logger zerolog.Logger
@@ -211,7 +212,7 @@ func NewClient(service string, baseCfg *Config, additionalConfigs ...*Config) *C
 		config:           cfg,
 		userAgent:        userAgent,
 		configID:         "",
-		pendingRequestID: make(map[string]bool),
+		pendingRequestID: sync.Map{},
 		Logger:           *cfg.Logger,
 	}
 }
@@ -1062,21 +1063,20 @@ func ClientWithConfigID(cid string) ClientOption {
 }
 
 func (c *Client) GetPendingRequestID() []string {
-	keys := make([]string, len(c.pendingRequestID))
-	i := 0
-	for k := range c.pendingRequestID {
-		keys[i] = k
-		i++
-	}
+	keys := make([]string, 0)
+	c.pendingRequestID.Range(func(k, v any) bool {
+		keys = append(keys, k.(string))
+		return true
+	})
 	return keys
 }
 
 func (c *Client) addPendingRequestID(rid string) {
-	c.pendingRequestID[rid] = true
+	c.pendingRequestID.Store(rid, true)
 }
 
 func (c *Client) removePendingRequestID(rid string) {
-	delete(c.pendingRequestID, rid)
+	c.pendingRequestID.Delete(rid)
 }
 
 func shouldRetry(req *http.Request, res *http.Response) bool {
