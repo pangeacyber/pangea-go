@@ -40,6 +40,16 @@ func TestClientCustomUserAgent(t *testing.T) {
 	assert.NotNil(t, c)
 }
 
+func TestClientPendingRequests(t *testing.T) {
+	config, err := pangea.NewConfig()
+	assert.NoError(t, err)
+
+	client := pangea.NewClient("service", config)
+
+	result := client.GetPendingRequestID()
+	assert.Empty(t, result)
+}
+
 func TestDo_When_Nil_Context_Is_Given_It_Returns_Error(t *testing.T) {
 	_, url, teardown := pangeatesting.SetupServer()
 	defer teardown()
