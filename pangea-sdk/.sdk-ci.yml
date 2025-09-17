@@ -6,6 +6,7 @@
 
 sdk-test-it:
   stage: integration_tests
+  needs: []
   retry: 2
   variables:
     CLOUD: AWS
@@ -89,12 +90,14 @@ sdk-test-it:
 sdk-lint:
   extends: .sdk-base
   stage: lint
+  needs: []
   script:
     - make verify
 
 sdk-generate-docs:
   extends: .sdk-base
   stage: lint
+  needs: []
   allow_failure: true
   script:
     - make docgen
@@ -107,11 +110,13 @@ sdk-generate-docs:
 sdk-unit-testing:
   extends: .sdk-base
   stage: unit_tests
+  needs: []
   script:
     - make unit
 
 sdk-publish:
   stage: publish
+  needs: []
   variables:
     GOPROXY: proxy.golang.org
   script:
