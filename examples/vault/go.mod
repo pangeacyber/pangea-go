@@ -12,5 +12,3 @@ require (
 	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 )
-
-replace github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.5.0 => ../../pangea-sdk
