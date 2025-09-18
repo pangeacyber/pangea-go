@@ -14,9 +14,11 @@ and look out for what environment variables it loads at the beginning.
 
 ## Run
 
-To run an example, navigate to its directory and use `go run`:
+```shell
+$ go build
 
-```bash
-$ cd examples/intel
-$ go run url/reputation.go
+$ ./examples ai_guard guard_text
+$ ./examples audit log_bulk_async
+$ ./examples vault encrypt
+# etc.
 ```

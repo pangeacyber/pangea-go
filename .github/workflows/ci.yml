@@ -25,6 +25,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-modules:
+    runs-on: ubuntu-24.04
+    outputs:
+      modules: ${{ steps.set-modules.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v5.0.0
+      - uses: actions/setup-go@v6.0.0
+        with:
+          go-version: "1.24"
+      - id: set-modules
+        run: echo "modules=$(go list -m -json | jq -s '.' | jq -c '[.[].Dir]')" >> $GITHUB_OUTPUT
+
   prefetch:
     runs-on: ubuntu-latest
     steps:
@@ -85,40 +97,18 @@ jobs:
       - name: Integration test
         run: bash ./dev/test.sh
 
-  examples:
-    needs: [prefetch]
-    runs-on: ubuntu-latest
+  golangci-lint:
+    needs: detect-modules
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        example:
-          - audit
-          - authn
-          - embargo
-          - file_scan
-          - intel
-          - redact
-          - vault
-    defaults:
-      run:
-        working-directory: ./examples/${{ matrix.example }}
-    permissions:
-      contents: read
-      pull-requests: read
-      checks: write
+        modules: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5.0.0
-
-      - name: Setup Go
-        uses: actions/setup-go@v6.0.0
+      - uses: actions/checkout@v5.0.0
+      - uses: actions/setup-go@v6.0.0
         with:
           go-version: "1.24"
-          cache-dependency-path: ./examples/${{ matrix.example }}/go.sum
-
-      # TODO: reorganize each individual example into their own directory to
-      # enable tools like this.
-      # - name: golangci-lint
-      #   uses: golangci/golangci-lint-action@v3.7.0
-      #   with:
-      #     version: v1.55.2
-      #     working-directory: ./examples/${{ matrix.example }}
+      - name: golangci-lint ${{ matrix.modules }}
+        uses: golangci/golangci-lint-action@v8.0.0
+        with:
+          working-directory: ${{ matrix.modules }}
