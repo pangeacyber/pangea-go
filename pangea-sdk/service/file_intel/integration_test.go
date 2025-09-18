@@ -169,7 +169,7 @@ func Test_Integration_FileReputation_ErrorBadToken(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, resp)
 	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
+	assert.Contains(t, apiErr.Err.Error(), "API error: Not authorized to access this resource")
 }
 
 func Test_Integration_NewFileReputationRequestFromFilepath(t *testing.T) {

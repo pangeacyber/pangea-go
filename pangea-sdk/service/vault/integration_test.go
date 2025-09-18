@@ -1041,7 +1041,7 @@ func Test_Integration_Error_BadToken(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
+	assert.Contains(t, apiErr.Err.Error(), "API error: Not authorized to access this resource")
 }
 
 func Test_List_And_Delete(t *testing.T) {

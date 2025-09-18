@@ -141,13 +141,14 @@ func passwordBreached(cmd *cobra.Command) error {
 		log.Fatal(err)
 	}
 
-	if s == user_intel.PSbreached {
+	switch s {
+	case user_intel.PSbreached:
 		fmt.Printf("Password '%s' has been breached.\n", password)
-	} else if s == user_intel.PSunbreached {
+	case user_intel.PSunbreached:
 		fmt.Printf("Password '%s' has not been breached.\n", password)
-	} else if s == user_intel.PSinconclusive {
+	case user_intel.PSinconclusive:
 		fmt.Printf("Not enough information to confirm if password '%s' has been or has not been breached.\n", password)
-	} else {
+	default:
 		fmt.Printf("Unknown status: %d.\n", s)
 	}
 	return nil

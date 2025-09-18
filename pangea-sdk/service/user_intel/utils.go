@@ -16,11 +16,11 @@ const (
 
 func IsPasswordBreached(r *pangea.PangeaResponse[UserPasswordBreachedResult], h string) (PasswordStatus, error) {
 	if r == nil {
-		return PSinconclusive, errors.New("Response nil pointer")
+		return PSinconclusive, errors.New("response nil pointer")
 	}
 
 	if r.Result.RawData == nil {
-		return PSinconclusive, errors.New("Need raw data to check if hash is breached. Send request with raw=true")
+		return PSinconclusive, errors.New("need raw data to check if hash is breached. Send request with raw=true")
 	}
 
 	_, ok := r.Result.RawData[h]

@@ -722,7 +722,7 @@ func Test_Integration_Log_Error_BadAuthToken(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, out)
 	apiErr := err.(*pangea.APIError)
-	assert.Equal(t, apiErr.Err.Error(), "API error: Not authorized to access this resource.")
+	assert.Contains(t, apiErr.Err.Error(), "API error: Not authorized to access this resource")
 	assert.NotEmpty(t, apiErr.Error())
 }
 

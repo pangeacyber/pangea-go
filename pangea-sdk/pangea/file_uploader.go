@@ -81,7 +81,7 @@ func GetUploadFileParams(input io.ReadSeeker) (*UploadFileParams, error) {
 	crc32c := crcHash.Sum32()
 
 	// Reset to be sent
-	input.Seek(0, 0)
+	input.Seek(0, 0) //nolint:errcheck
 
 	// Convert the CRC32 value to hexadecimal
 	crcStr := strconv.FormatUint(uint64(crc32c), 16)
@@ -108,7 +108,7 @@ func GetFileSize(input *os.File) (int64, error) {
 	}
 
 	// Reset to be sent
-	input.Seek(0, io.SeekStart)
+	_, err = input.Seek(0, io.SeekStart)
 	if err != nil {
 		return 0, err
 	}

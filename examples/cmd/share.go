@@ -26,7 +26,10 @@ func init() {
 		RunE:  shareCli,
 	}
 	shareCliCmd.Flags().StringP("input", "i", "", "Local path to upload.")
-	shareCliCmd.MarkFlagRequired("input")
+	err := shareCliCmd.MarkFlagRequired("input")
+	if err != nil {
+		log.Fatalf("failed to mark flag as required: %v", err)
+	}
 	shareCliCmd.Flags().String("dest", "/", "Destination path in Share.")
 	shareCliCmd.Flags().String("email", "", "Email address to protect the share link with.")
 	shareCliCmd.Flags().String("phone", "", "Phone number to protect the share link with.")
@@ -183,13 +186,18 @@ func shareCli(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		uploadResponse, err := client.Put(ctx, &share.PutRequest{Folder: fmt.Sprintf("%s/%s", dest, filepath.Base(file))}, f)
 		if err != nil {
+			// We are returning an error, so we can ignore the error on Close.
+			_ = f.Close()
 			return err
 		}
 		objectIDs = append(objectIDs, uploadResponse.Result.Object.ID)
+
+		if err = f.Close(); err != nil {
+			return err
+		}
 	}
 
 	linkResponse, err := client.ShareLinkCreate(ctx, &share.ShareLinkCreateRequest{

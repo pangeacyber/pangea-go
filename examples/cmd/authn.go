@@ -44,7 +44,6 @@ func init() {
 
 func authnInviteActions(cmd *cobra.Command) error {
 	// Set up variables to be used
-	rand.Seed(time.Now().UnixNano())
 	RANDOM_VALUE := strconv.Itoa(rand.Intn(10000000))
 	USER_EMAIL := "user.email+goexample" + RANDOM_VALUE + "@pangea.cloud"
 	EMAIL_INVITE_1 := "user.invite1+goexample" + RANDOM_VALUE + "@pangea.cloud"
@@ -256,7 +255,6 @@ func CreateAndLogin(client *authn.AuthN, email, password string, profile *authn.
 
 func authnUserActions(cmd *cobra.Command) error {
 	// Set up variables to be used
-	rand.Seed(time.Now().UnixNano())
 	RANDOM_VALUE := strconv.Itoa(rand.Intn(10000000))
 	USER_EMAIL := "user.email+goexample" + RANDOM_VALUE + "@pangea.cloud"
 	PROFILE_INITIAL := &authn.ProfileData{
@@ -322,7 +320,7 @@ func authnUserActions(cmd *cobra.Command) error {
 	fmt.Println("Get profile success. Profile: " + pangea.Stringify(resp4.Result.Profile))
 
 	// User profile get by id
-	fmt.Println("Get profile by ID... %s", USER_ID)
+	fmt.Printf("Get profile by ID... %s\n", USER_ID)
 	input5 := authn.UserProfileGetRequest{
 		ID: pangea.String(USER_ID),
 	}

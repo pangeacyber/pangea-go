@@ -27,11 +27,11 @@ func (a *Arweave) TransactionByID(ctx context.Context, id string) ([]byte, error
 	url := fmt.Sprintf("%s/tx/%s/data", baseURL, id)
 	req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
 
-	resp, err := a.Client.Do(req)
+	resp, err := a.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("arweave: failed GET %v: %w", url, err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("arweave: GET %v with status code %v", url, resp.StatusCode)
 	}
@@ -73,11 +73,11 @@ func (a *Arweave) TransactionConnectionByTags(ctx context.Context, tags TagFilte
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 
-	resp, err := a.Client.Do(req)
+	resp, err := a.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("arweave: failed POST %v: %w", url, err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	// A graphql API should always return a 200 status code
 	// but we'll check for a non-200 status code anyway

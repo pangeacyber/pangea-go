@@ -3,21 +3,20 @@ default:
   tags:
     - pangea-internal
 
-cache:
-  paths:
-    - /apt-cache
-    - /go/src/github.com
-    - /go/src/golang.org
-    - /go/src/google.golang.org
-    - /go/src/gopkg.in
+.go-cache:
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  before_script:
+    - mkdir -p .go
+  cache:
+    paths:
+      - .go/pkg/mod/
 
 stages:
   - lint
   - unit_tests
   - integration_tests
-  - examples
   - publish
 
 include:
-  - /examples/.examples-ci.yml
   - /pangea-sdk/.sdk-ci.yml

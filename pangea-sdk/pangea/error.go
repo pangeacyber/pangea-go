@@ -45,9 +45,9 @@ func NewAPIError(err error, r *Response) *APIError {
 	errUnm := r.UnmarshalResult(&pa)
 	if errUnm != nil {
 		pa = PangeaErrors{}
-		errRes = fmt.Errorf("Error: %s. Unmarshall Error: %s.", err.Error(), errUnm.Error())
+		errRes = fmt.Errorf("Error: %s. Unmarshal Error: %s", err.Error(), errUnm.Error())
 	} else {
-		errRes = fmt.Errorf("Error: %s.", err.Error())
+		errRes = fmt.Errorf("Error: %s", err.Error())
 	}
 
 	return &APIError{
@@ -68,14 +68,14 @@ func (e *BaseError) Error() string {
 func (e *APIError) Error() string {
 	b := new(bytes.Buffer)
 	if e.Err != nil {
-		b.WriteString(fmt.Sprintf("%s\n", e.Err.Error()))
+		fmt.Fprintf(b, "%s\n", e.Err.Error())
 	}
 	if e.HTTPResponse != nil {
-		b.WriteString(fmt.Sprintf("%v %v\n", e.HTTPResponse.Request.Method, e.HTTPResponse.Request.URL))
+		fmt.Fprintf(b, "%v %v\n", e.HTTPResponse.Request.Method, e.HTTPResponse.Request.URL)
 		if e.ResponseHeader != nil {
 			b.WriteString(StringifyIndented(e.ResponseHeader))
 		} else {
-			b.WriteString(fmt.Sprintf("Status code: %v\n", e.HTTPResponse.StatusCode))
+			fmt.Fprintf(b, "Status code: %v\n", e.HTTPResponse.StatusCode)
 		}
 	}
 	if len(e.PangeaErrors.Errors) > 0 {
@@ -106,7 +106,7 @@ func (e *UnmarshalError) Error() string {
 	b.WriteString("Failed to unmarshall body")
 	if len(e.Bytes) > 0 {
 		pad(b, ": ")
-		b.WriteString(fmt.Sprintf("body: %s", string(e.Bytes)))
+		fmt.Fprintf(b, "body: %s", string(e.Bytes))
 	}
 	return b.String()
 }
