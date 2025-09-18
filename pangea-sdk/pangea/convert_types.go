@@ -9,17 +9,20 @@ import (
 	pu "github.com/pangeacyber/pangea-go/pangea-sdk/v5/internal/pangeautil"
 )
 
+// P returns a pointer to v.
+func P[T any](v T) *T { return &v }
+
 // Bool is a helper routine that allocates a new bool value
 // to store v and returns a pointer to it.
-func Bool(v bool) *bool { return &v }
+func Bool(v bool) *bool { return P(v) }
 
 // Int is a helper routine that allocates a new int value
 // to store v and returns a pointer to it.
-func Int(v int) *int { return &v }
+func Int(v int) *int { return P(v) }
 
 // String is a helper routine that allocates a new string value
 // to store v and returns a pointer to it.
-func String(v string) *string { return &v }
+func String(v string) *string { return P(v) }
 
 // StringValue is a helper routine that returns the value of a string pointer or a default value if nil
 func StringValue(v *string) string {

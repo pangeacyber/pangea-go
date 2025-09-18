@@ -8,6 +8,47 @@ import (
 	"github.com/pangeacyber/pangea-go/pangea-sdk/v5/pangea"
 )
 
+// @summary Guard LLM input and output
+//
+// @description Analyze and redact content to avoid manipulation of the model, addition of malicious content, and other undesirable data transfers.
+//
+// @operationId ai_guard_post_v1_guard
+//
+// @example
+//
+//	input := &ai_guard.GuardRequest{Text: "hello world"}
+//	response, err := client.Guard(ctx, input)
+func (e *aiGuard) Guard(ctx context.Context, input GuardRequest) (*pangea.PangeaResponse[GuardResult], error) {
+	return request.DoPost(ctx, e.Client, "v1/guard", &input, &GuardResult{})
+}
+
+// @summary Guard LLM input and output
+//
+// @description Analyze and redact content to avoid manipulation of the model, addition of malicious content, and other undesirable data transfers.
+//
+// @operationId ai_guard_post_v1_guard_async
+//
+// @example
+//
+//	input := &ai_guard.GuardRequest{Text: "hello world"}
+//	response, err := client.Guard(ctx, input)
+func (e *aiGuard) GuardAsync(ctx context.Context, input GuardRequest) (*pangea.PangeaResponse[GuardResult], error) {
+	response, err := request.DoPostNoQueue(ctx, e.Client, "v1/guard_async", &input, &GuardResult{})
+	if err != nil {
+		acceptedErr, ok := err.(*pangea.AcceptedError)
+		if ok {
+			return &pangea.PangeaResponse[GuardResult]{
+				AcceptedResult: &acceptedErr.AcceptedResult,
+				Response:       acceptedErr.Response,
+				Result:         nil,
+			}, nil
+		}
+
+		return nil, err
+	}
+	return response, nil
+}
+
 // @summary Text guard
 //
 // @description Guard text.
@@ -418,4 +459,491 @@ type TextGuardResult struct {
 	PromptText     string             `json:"prompt_text"`                 // Updated prompt text, if applicable.
 	Recipe         string             `json:"recipe"`                      // The Recipe that was used.
 	Transformed    bool               `json:"transformed"`                 // Whether or not the original input was transformed.
+}
+
+// (AIDR) Event Type.
+type GuardEventType string
+
+const (
+	GuardEventTypeInput       GuardEventType = "input"
+	GuardEventTypeOutput      GuardEventType = "output"
+	GuardEventTypeToolInput   GuardEventType = "tool_input"
+	GuardEventTypeToolOutput  GuardEventType = "tool_output"
+	GuardEventTypeToolListing GuardEventType = "tool_listing"
+)
+
+// The properties ServerName, Tools are required.
+type GuardExtraInfoMcpToolParam struct {
+	// MCP server name
+	ServerName string   `json:"server_name"`
+	Tools      []string `json:"tools,omitzero"`
+}
+
+// (AIDR) Logging schema.
+type GuardExtraInfoParam struct {
+	// The group of subject actor.
+	ActorGroup string `json:"actor_group,omitzero"`
+	// Name of subject actor/service account.
+	ActorName string `json:"actor_name,omitzero"`
+	// The group of source application/agent.
+	AppGroup string `json:"app_group,omitzero"`
+	// Name of source application/agent.
+	AppName string `json:"app_name,omitzero"`
+	// Version of the source application/agent.
+	AppVersion string `json:"app_version,omitzero"`
+	// Geographic region or data center.
+	SourceRegion string `json:"source_region,omitzero"`
+	// Sub tenant of the user or organization
+	SubTenant string `json:"sub_tenant,omitzero"`
+	// Each item groups tools for a given MCP server.
+	McpTools    []GuardExtraInfoMcpToolParam `json:"mcp_tools,omitzero"`
+	ExtraFields map[string]any               `json:"-"`
+}
+
+type CodeDetectionAction string
+
+const (
+	CodeDetectionActionReport CodeDetectionAction = "report"
+	CodeDetectionActionBlock  CodeDetectionAction = "block"
+)
+
+type CompetitorsAction string
+
+const (
+	CompetitorsActionReport CompetitorsAction = "report"
+	CompetitorsActionBlock  CompetitorsAction = "block"
+)
+
+type LanguageDetectionItemsAction string
+
+const (
+	LanguageDetectionItemsActionEmpty  LanguageDetectionItemsAction = ""
+	LanguageDetectionItemsActionReport LanguageDetectionItemsAction = "report"
+	LanguageDetectionItemsActionAllow  LanguageDetectionItemsAction = "allow"
+	LanguageDetectionItemsActionBlock  LanguageDetectionItemsAction = "block"
+)
+
+type TopicDetectionItemsAction string
+
+const (
+	TopicDetectionItemsActionEmpty  TopicDetectionItemsAction = ""
+	TopicDetectionItemsActionReport TopicDetectionItemsAction = "report"
+	TopicDetectionItemsActionBlock  TopicDetectionItemsAction = "block"
+)
+
+type GuardOverridesCodeParam struct {
+	Disabled  bool    `json:"disabled,omitzero"`
+	Threshold float64 `json:"threshold,omitzero"`
+	// Any of "report", "block".
+	Action CodeDetectionAction `json:"action,omitzero"`
+}
+
+type GuardOverridesCompetitorsParam struct {
+	Disabled bool `json:"disabled,omitzero"`
+	// Any of "report", "block".
+	Action CompetitorsAction `json:"action,omitzero"`
+}
+
+type GuardOverridesConfidentialAndPiiEntityParam struct {
+	Disabled bool `json:"disabled,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AuAbn PiiEntityAction `json:"au_abn,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AuAcn PiiEntityAction `json:"au_acn,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AuMedicare PiiEntityAction `json:"au_medicare,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AuTfn PiiEntityAction `json:"au_tfn,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	CreditCard PiiEntityAction `json:"credit_card,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	Crypto PiiEntityAction `json:"crypto,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	DateTime PiiEntityAction `json:"date_time,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	EmailAddress PiiEntityAction `json:"email_address,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	FinNric PiiEntityAction `json:"fin/nric,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	IbanCode PiiEntityAction `json:"iban_code,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	IPAddress PiiEntityAction `json:"ip_address,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	Location PiiEntityAction `json:"location,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	MedicalLicense PiiEntityAction `json:"medical_license,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	Money PiiEntityAction `json:"money,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	Nif PiiEntityAction `json:"nif,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	Nrp PiiEntityAction `json:"nrp,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	Person PiiEntityAction `json:"person,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	PhoneNumber PiiEntityAction `json:"phone_number,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	UkNhs PiiEntityAction `json:"uk_nhs,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	URL PiiEntityAction `json:"url,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	UsBankNumber PiiEntityAction `json:"us_bank_number,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	UsDriversLicense PiiEntityAction `json:"us_drivers_license,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	UsItin PiiEntityAction `json:"us_itin,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	UsPassport PiiEntityAction `json:"us_passport,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	UsSsn PiiEntityAction `json:"us_ssn,omitzero"`
+}
+
+type GuardOverridesImageParam struct {
+	Disabled  bool    `json:"disabled,omitzero"`
+	Threshold float64 `json:"threshold,omitzero"`
+	// Any of "", "report", "block".
+	Action string   `json:"action,omitzero"`
+	Topics []string `json:"topics,omitzero"`
+}
+
+type LanguageDetectionItemsParam struct {
+	Disabled  bool    `json:"disabled,omitzero"`
+	Threshold float64 `json:"threshold,omitzero"`
+	// Any of "", "report", "allow", "block".
+	Action    LanguageDetectionItemsAction `json:"action,omitzero"`
+	Languages []string                     `json:"languages,omitzero"`
+}
+
+type GuardOverridesMaliciousEntityParam struct {
+	Disabled bool `json:"disabled,omitzero"`
+	// Any of "report", "defang", "disabled", "block".
+	Domain MaliciousEntityAction `json:"domain,omitzero"`
+	// Any of "report", "defang", "disabled", "block".
+	IPAddress MaliciousEntityAction `json:"ip_address,omitzero"`
+	// Any of "report", "defang", "disabled", "block".
+	URL MaliciousEntityAction `json:"url,omitzero"`
+}
+
+type GuardOverridesMaliciousPromptParam struct {
+	Disabled bool `json:"disabled,omitzero"`
+	// Any of "report", "block".
+	Action PromptInjectionAction `json:"action,omitzero"`
+}
+
+type GuardOverridesSecretAndKeyEntityParam struct {
+	Disabled bool `json:"disabled,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AmazonAwsAccessKeyID PiiEntityAction `json:"amazon_aws_access_key_id,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AmazonAwsSecretAccessKey PiiEntityAction `json:"amazon_aws_secret_access_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	AmazonMwsAuthToken PiiEntityAction `json:"amazon_mws_auth_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	BasicAuth PiiEntityAction `json:"basic_auth,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	FacebookAccessToken PiiEntityAction `json:"facebook_access_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	GitHubAccessToken PiiEntityAction `json:"github_access_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	GoogleAPIKey PiiEntityAction `json:"google_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	GoogleCloudPlatformAPIKey PiiEntityAction `json:"google_cloud_platform_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	GoogleCloudPlatformServiceAccount PiiEntityAction `json:"google_cloud_platform_service_account,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	GoogleDriveAPIKey PiiEntityAction `json:"google_drive_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	GoogleGmailAPIKey PiiEntityAction `json:"google_gmail_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	JwtToken PiiEntityAction `json:"jwt_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	MailchimpAPIKey PiiEntityAction `json:"mailchimp_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	MailgunAPIKey PiiEntityAction `json:"mailgun_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	PangeaToken PiiEntityAction `json:"pangea_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	PgpPrivateKeyBlock PiiEntityAction `json:"pgp_private_key_block,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	PicaticAPIKey PiiEntityAction `json:"picatic_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	RsaPrivateKey PiiEntityAction `json:"rsa_private_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	SlackToken PiiEntityAction `json:"slack_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	SlackWebhook PiiEntityAction `json:"slack_webhook,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	SquareAccessToken PiiEntityAction `json:"square_access_token,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	SquareOAuthSecret PiiEntityAction `json:"square_oauth_secret,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	SSHDsaPrivateKey PiiEntityAction `json:"ssh_dsa_private_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	SSHEcPrivateKey PiiEntityAction `json:"ssh_ec_private_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	StripeAPIKey PiiEntityAction `json:"stripe_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	StripeRestrictedAPIKey PiiEntityAction `json:"stripe_restricted_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	TwilioAPIKey PiiEntityAction `json:"twilio_api_key,omitzero"`
+	// Any of "disabled", "report", "block", "mask", "partial_masking", "replacement",
+	// "hash", "fpe".
+	YoutubeAPIKey PiiEntityAction `json:"youtube_api_key,omitzero"`
+}
+
+type TopicDetectionItemsParam struct {
+	Disabled  bool    `json:"disabled,omitzero"`
+	Threshold float64 `json:"threshold,omitzero"`
+	// Any of "", "report", "block".
+	Action TopicDetectionItemsAction `json:"action,omitzero"`
+	Topics []string                  `json:"topics,omitzero"`
+}
+
+// Overrides flags. Note: This parameter has no effect when the request is made by
+// AIDR
+type GuardOverridesParam struct {
+	// Bypass existing Recipe content and create an on-the-fly Recipe.
+	IgnoreRecipe             bool                                        `json:"ignore_recipe,omitzero"`
+	Code                     GuardOverridesCodeParam                     `json:"code,omitzero"`
+	Competitors              GuardOverridesCompetitorsParam              `json:"competitors,omitzero"`
+	ConfidentialAndPiiEntity GuardOverridesConfidentialAndPiiEntityParam `json:"confidential_and_pii_entity,omitzero"`
+	Image                    GuardOverridesImageParam                    `json:"image,omitzero"`
+	Language                 LanguageDetectionItemsParam                 `json:"language,omitzero"`
+	MaliciousEntity          GuardOverridesMaliciousEntityParam          `json:"malicious_entity,omitzero"`
+	MaliciousPrompt          GuardOverridesMaliciousPromptParam          `json:"malicious_prompt,omitzero"`
+	SecretAndKeyEntity       GuardOverridesSecretAndKeyEntityParam       `json:"secret_and_key_entity,omitzero"`
+	Topic                    TopicDetectionItemsParam                    `json:"topic,omitzero"`
+}
+
+// The property Input is required.
+type GuardRequest struct {
+	pangea.BaseRequest
+
+	// 'messages' (required) contains Prompt content and role array in JSON format. The
+	// `content` is the multimodal text or image input that will be analyzed.
+	// Additional properties such as 'tools' may be provided for analysis.
+	Input any `json:"input,omitzero"`
+	// User/Service account id/service account
+	ActorID string `json:"actor_id,omitzero"`
+	// Id of source application/agent
+	AppID string `json:"app_id,omitzero"`
+	// (AIDR) collector instance id.
+	CollectorInstanceID string `json:"collector_instance_id,omitzero"`
+	// Provide input and output token count.
+	CountTokens bool `json:"count_tokens,omitzero"`
+	// Setting this value to true will provide a detailed analysis of the text data
+	Debug bool `json:"debug,omitzero"`
+	// Underlying LLM. Example: 'OpenAI'.
+	LlmProvider string `json:"llm_provider,omitzero"`
+	// Model used to perform the event. Example: 'gpt'.
+	Model string `json:"model,omitzero"`
+	// Model version used to perform the event. Example: '3.5'.
+	ModelVersion string `json:"model_version,omitzero"`
+	// Recipe key of a configuration of data types and settings defined in the Pangea
+	// User Console. It specifies the rules that are to be applied to the text, such as
+	// defang malicious URLs. Note: This parameter has no effect when the request is
+	// made by AIDR
+	Recipe string `json:"recipe,omitzero"`
+	// Number of tokens in the request.
+	RequestTokenCount int64 `json:"request_token_count,omitzero"`
+	// Number of tokens in the response.
+	ResponseTokenCount int64 `json:"response_token_count,omitzero"`
+	// IP address of user or app or agent.
+	SourceIP string `json:"source_ip,omitzero"`
+	// Location of user or app or agent.
+	SourceLocation string `json:"source_location,omitzero"`
+	// For gateway-like integrations with multi-tenant support.
+	TenantID string `json:"tenant_id,omitzero"`
+	// (AIDR) Event Type.
+	//
+	// Any of "input", "output", "tool_input", "tool_output", "tool_listing".
+	EventType GuardEventType `json:"event_type,omitzero"`
+	// (AIDR) Logging schema.
+	ExtraInfo GuardExtraInfoParam `json:"extra_info,omitzero"`
+	// Overrides flags. Note: This parameter has no effect when the request is made by
+	// AIDR
+	Overrides GuardOverridesParam `json:"overrides,omitzero"`
+}
+
+type HardeningResult struct {
+	// The action taken by this Detector
+	Action string `json:"action"`
+	// Descriptive information about the hardening detector execution
+	Message string `json:"message"`
+	// Number of tokens counted in the last user prompt
+	TokenCount float64 `json:"token_count"`
+}
+
+type LanguageResult struct {
+	// The action taken by this Detector
+	Action   string `json:"action"`
+	Language string `json:"language"`
+}
+
+type TopicResultTopic struct {
+	Confidence float64 `json:"confidence"`
+	Topic      string  `json:"topic"`
+}
+
+type TopicResult struct {
+	// The action taken by this Detector
+	Action string `json:"action"`
+	// List of topics detected
+	Topics []TopicResultTopic `json:"topics"`
+}
+
+type GuardResultDetectorsCode struct {
+	// Details about the detected code.
+	Data LanguageResult `json:"data"`
+	// Whether or not the Code was detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsCompetitors struct {
+	// Details about the detected entities.
+	Data SingleEntityResult `json:"data"`
+	// Whether or not the Competitors were detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsConfidentialAndPiiEntity struct {
+	// Details about the detected entities.
+	Data RedactEntityResult `json:"data"`
+	// Whether or not the PII Entities were detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsCustomEntity struct {
+	// Details about the detected entities.
+	Data RedactEntityResult `json:"data"`
+	// Whether or not the Custom Entities were detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsLanguage struct {
+	// Details about the detected languages.
+	Data LanguageResult `json:"data"`
+	// Whether or not the Languages were detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsMaliciousEntity struct {
+	// Details about the detected entities.
+	Data MaliciousEntityResult `json:"data"`
+	// Whether or not the Malicious Entities were detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsMaliciousPrompt struct {
+	// Details about the analyzers.
+	Data PromptInjectionResult `json:"data"`
+	// Whether or not the Malicious Prompt was detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsPromptHardening struct {
+	// Details about the detected languages.
+	Data HardeningResult `json:"data"`
+}
+
+type GuardResultDetectorsSecretAndKeyEntity struct {
+	// Details about the detected entities.
+	Data RedactEntityResult `json:"data"`
+	// Whether or not the Secret Entities were detected.
+	Detected bool `json:"detected"`
+}
+
+type GuardResultDetectorsTopic struct {
+	// Details about the detected topics.
+	Data TopicResult `json:"data"`
+	// Whether or not the Topics were detected.
+	Detected bool `json:"detected"`
+}
+
+// Result of the recipe analyzing and input prompt.
+type GuardResultDetectors struct {
+	Code                     GuardResultDetectorsCode                     `json:"code"`
+	Competitors              GuardResultDetectorsCompetitors              `json:"competitors"`
+	ConfidentialAndPiiEntity GuardResultDetectorsConfidentialAndPiiEntity `json:"confidential_and_pii_entity"`
+	CustomEntity             GuardResultDetectorsCustomEntity             `json:"custom_entity"`
+	Language                 GuardResultDetectorsLanguage                 `json:"language"`
+	MaliciousEntity          GuardResultDetectorsMaliciousEntity          `json:"malicious_entity"`
+	MaliciousPrompt          GuardResultDetectorsMaliciousPrompt          `json:"malicious_prompt"`
+	PromptHardening          GuardResultDetectorsPromptHardening          `json:"prompt_hardening"`
+	SecretAndKeyEntity       GuardResultDetectorsSecretAndKeyEntity       `json:"secret_and_key_entity"`
+	Topic                    GuardResultDetectorsTopic                    `json:"topic"`
+}
+
+type GuardResult struct {
+	// Result of the recipe analyzing and input prompt.
+	Detectors GuardResultDetectors `json:"detectors"`
+	// Result of the recipe evaluating configured rules
+	AccessRules any `json:"access_rules"`
+	// Whether or not the prompt triggered a block detection.
+	Blocked bool `json:"blocked"`
+	// If an FPE redaction method returned results, this will be the context passed to
+	// unredact.
+	FpeContext string `json:"fpe_context" format:"base64"`
+	// Number of tokens counted in the input
+	InputTokenCount float64 `json:"input_token_count"`
+	// Updated structured prompt.
+	Output any `json:"output"`
+	// Number of tokens counted in the output
+	OutputTokenCount float64 `json:"output_token_count"`
+	// The Recipe that was used.
+	Recipe string `json:"recipe"`
+	// Whether or not the original input was transformed.
+	Transformed bool `json:"transformed"`
 }

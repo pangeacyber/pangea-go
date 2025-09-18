@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- AI Guard: multimodal guard.
+
 ### Changed
 
 - Pending request IDs are now stored in a `sync.Map`.
