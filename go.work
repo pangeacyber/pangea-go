@@ -1,15 +1,6 @@
 go 1.24.0
 
 use (
-	./examples/audit
-	./examples/authn
-	./examples/authz
-	./examples/embargo
-	./examples/file_scan
-	./examples/intel
-	./examples/redact
-	./examples/sanitize
-	./examples/share
-	./examples/vault
+	./examples
 	./pangea-sdk
 )
