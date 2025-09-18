@@ -75,7 +75,7 @@ func (e *FileScan) Scan(ctx context.Context, input *FileScanRequest, file *os.Fi
 
 func (e *FileScan) RequestUploadURL(ctx context.Context, input *FileScanGetURLRequest, file *os.File) (*pangea.PangeaResponse[FileScanResult], error) {
 	if input.TransferMethod == pangea.TMpostURL && input.FileParams == nil {
-		return nil, errors.New("Need to set FileParams in order to use TMpostURL or TMdirect")
+		return nil, errors.New("need to set FileParams in order to use TMpostURL or TMdirect")
 	}
 
 	req := &FileScanFullRequest{
@@ -170,7 +170,10 @@ func GetUploadFileParams(file *os.File) (*FileScanFileParams, error) {
 	crc32c := crcHash.Sum32()
 
 	// Reset to be sent
-	file.Seek(0, 0)
+	_, err = file.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
 
 	return &FileScanFileParams{
 		CRC:    strconv.FormatUint(uint64(crc32c), 16),
@@ -182,7 +185,7 @@ func GetUploadFileParams(file *os.File) (*FileScanFileParams, error) {
 
 func (fu *FileUploader) UploadFile(ctx context.Context, url string, tm pangea.TransferMethod, fd pangea.FileData) error {
 	if tm == pangea.TMmultipart {
-		return errors.New(fmt.Sprintf("%s is not supported in UploadFile. Use Scan() instead", tm))
+		return fmt.Errorf("%s is not supported in UploadFile. Use Scan() instead", tm)
 	}
 
 	fds := pangea.FileData{

@@ -47,7 +47,7 @@ func NewSignerFromPrivateKeyFile(name string) (Signer, error) {
 		return (signerEd25519)(privateKey), nil
 	}
 
-	return nil, fmt.Errorf("Not supported key type")
+	return nil, fmt.Errorf("not supported key type")
 }
 
 func (s signerEd25519) Sign(msg []byte) ([]byte, error) {
@@ -78,7 +78,7 @@ func NewVerifierFromPubKey(pkPem string) (Verifier, error) {
 	if strings.HasPrefix(pkPem, "-----") {
 		block, _ := pem.Decode([]byte(pkPem))
 		if block == nil {
-			return nil, errors.New("Failed to decode PEM block")
+			return nil, errors.New("failed to decode PEM block")
 		}
 
 		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -96,7 +96,7 @@ func NewVerifierFromPubKey(pkPem string) (Verifier, error) {
 		// case *dsa.PublicKey:
 		// case *ecdsa.PublicKey:
 		default:
-			return nil, errors.New("Not supported key type")
+			return nil, errors.New("not supported key type")
 		}
 	} else {
 		// Done to keep backward compatibility with old key format without header

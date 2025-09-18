@@ -74,11 +74,11 @@ func (e *sanitize) Sanitize(ctx context.Context, input *SanitizeRequest, file io
 //	response, err := client.PollResultByID(ctx, *presignedUrl.RequestID, &sanitize.SanitizeResult{})
 func (e *sanitize) RequestUploadURL(ctx context.Context, input *SanitizeRequest) (*pangea.PangeaResponse[SanitizeResult], error) {
 	if input.TransferMethod == pangea.TMmultipart || input.TransferMethod == pangea.TMdestURL || input.TransferMethod == pangea.TMsourceURL {
-		return nil, fmt.Errorf("transfer method [%s] is not supported in RequestUploadURL. Use Sanitize() method instead.", input.TransferMethod)
+		return nil, fmt.Errorf("transfer method [%s] is not supported in RequestUploadURL. Use Sanitize() method instead", input.TransferMethod)
 	}
 
 	if input.TransferMethod == pangea.TMpostURL && (input.SHA256 == "" || input.CRC32C == "" || input.Size == nil) {
-		return nil, errors.New("Need to set SHA256, CRC32C and Size in order to use TMpostURL")
+		return nil, errors.New("need to set SHA256, CRC32C and Size in order to use TMpostURL")
 	}
 
 	return request.GetUploadURL(ctx, e.Client, "v1/sanitize", input, &SanitizeResult{})

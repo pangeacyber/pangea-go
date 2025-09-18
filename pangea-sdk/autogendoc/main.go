@@ -322,7 +322,7 @@ func gatherAstFieldList(fl []*ast.Field, fs *token.FileSet) []*AstField {
 // Pretty print the ast Node as a string
 func prettify(node interface{}, fs *token.FileSet) string {
 	var stringBuffer bytes.Buffer
-	printer.Fprint(&stringBuffer, fs, node)
+	printer.Fprint(&stringBuffer, fs, node) //nolint:errcheck
 
 	return stringBuffer.String()
 }

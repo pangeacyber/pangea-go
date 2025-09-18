@@ -64,7 +64,7 @@ func (r *Response) UnmarshalResult(target interface{}) error {
 // newResponse takes a http.Response and tries to parse the body into a base pangea API response.
 func newResponse(r *http.Response) (*Response, error) {
 	response := &Response{HTTPResponse: r}
-	defer r.Body.Close()
+	defer r.Body.Close() //nolint:errcheck
 	var data []byte
 	if isMultipart(r.Header) {
 		boundary, err := pu.GetBoundary(r.Header.Get("Content-Type"))
@@ -84,7 +84,7 @@ func newResponse(r *http.Response) (*Response, error) {
 			if err != nil {
 				return nil, err
 			}
-			defer part.Close()
+			defer part.Close() //nolint:errcheck
 			if n == 0 {
 				// Read the part's content
 				data, err = io.ReadAll(part)

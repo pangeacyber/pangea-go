@@ -94,7 +94,7 @@ func CreateFile(t *testing.T, contents []byte) *os.File {
 	if err != nil {
 		t.Fatal("failed to create temp file")
 	}
-	file.Write(contents)
+	file.Write(contents) //nolint:errcheck
 	return file
 }
 
@@ -175,16 +175,17 @@ func LoadTestEnvironment(serviceName string, def TestEnvironment) TestEnvironmen
 	serviceName = strings.ToUpper(strings.ReplaceAll(serviceName, "-", "_"))
 	varName := fmt.Sprintf("SERVICE_%s_ENV", serviceName)
 	value := os.Getenv(varName)
-	if value == "" {
+	switch value {
+	case "":
 		fmt.Printf("%s is empty. Returning default value: %s\n", varName, def)
 		return def
-	} else if value == "DEV" {
+	case "DEV":
 		return Develop
-	} else if value == "STG" {
+	case "STG":
 		return Staging
-	} else if value == "LVE" {
+	case "LVE":
 		return Live
-	} else {
+	default:
 		panic(fmt.Sprintf("%s not allowed value: %s\n", varName, value))
 	}
 }

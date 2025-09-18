@@ -86,7 +86,7 @@ func defang(cmd *cobra.Command, url string) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(fmt.Sprintf("Defanged URL: %s", du))
+		fmt.Printf("Defanged URL: %s\n", du)
 		return nil
 	}
 
@@ -123,10 +123,10 @@ func defang(cmd *cobra.Command, url string) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(fmt.Sprintf("Defanged URL: %s", du))
+		fmt.Printf("Defanged URL: %s\n", du)
 		return nil
 	}
 
-	fmt.Println(fmt.Sprintf("URL: %s seems to be secure", url))
+	fmt.Printf("URL: %s seems to be secure\n", url)
 	return nil
 }

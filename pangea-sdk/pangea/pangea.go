@@ -383,7 +383,7 @@ func (c *Client) DownloadFile(ctx context.Context, rawUrl string) (*AttachedFile
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -438,7 +438,7 @@ func (c *Client) UploadFile(ctx context.Context, url string, tm TransferMethod, 
 	}
 
 	if psURLr.StatusCode < 200 || psURLr.StatusCode >= 300 {
-		defer psURLr.Body.Close()
+		defer psURLr.Body.Close() //nolint:errcheck
 		return errors.New("presigned url upload failure")
 	}
 	return nil
@@ -554,7 +554,7 @@ func (c *Client) NewRequestMultipart(method string, url *url.URL, body any, fd F
 	}
 
 	// close the multipart writer.
-	w.Close()
+	w.Close() //nolint:errcheck
 	req, err := http.NewRequest(method, url.String(), &b)
 	if err != nil {
 		return nil, err
@@ -600,7 +600,7 @@ func (c *Client) NewRequestForm(method, url string, fd FileData, setHeaders bool
 	}
 
 	// close the multipart writer.
-	w.Close()
+	w.Close() //nolint:errcheck
 	req, err := http.NewRequest(method, url, &b)
 	if err != nil {
 		return nil, err
@@ -935,7 +935,7 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 		}
 	}
 
-	if r.HTTPResponse.StatusCode == http.StatusOK && *r.ResponseHeader.Status == "Success" {
+	if r.HTTPResponse.StatusCode == http.StatusOK && *r.Status == "Success" {
 		switch v.(type) {
 		case nil:
 			// This should never be fired to user because Client is to internal use
@@ -955,9 +955,9 @@ func (c *Client) CheckResponse(r *Response, v any) error {
 	err := r.UnmarshalResult(&pa)
 	if err != nil {
 		pa = PangeaErrors{}
-		apiError = fmt.Errorf("API error: %s. Unmarshal Error: %s.", *r.ResponseHeader.Summary, err.Error())
+		apiError = fmt.Errorf("API error: %s. Unmarshal Error: %s", *r.Summary, err.Error())
 	} else {
-		apiError = fmt.Errorf("API error: %s.", *r.ResponseHeader.Summary)
+		apiError = fmt.Errorf("API error: %s", *r.Summary)
 	}
 
 	return &APIError{

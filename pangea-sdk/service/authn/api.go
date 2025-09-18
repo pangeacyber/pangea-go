@@ -1611,10 +1611,10 @@ type GroupInfo struct {
 	ID          string            `json:"id"`
 	Name        string            `json:"name"`
 	Type        string            `json:"type"`
-	Description string            `json:"description,nullable"`
-	Attributes  map[string]string `json:"attributes,nullable"`
-	CreatedAt   string            `json:"created_at,nullable"`
-	UpdatedAt   string            `json:"updated_at,nullable"`
+	Description string            `json:"description,omitzero"`
+	Attributes  map[string]string `json:"attributes,omitzero"`
+	CreatedAt   string            `json:"created_at,omitzero"`
+	UpdatedAt   string            `json:"updated_at,omitzero"`
 }
 
 // GroupsFilter is a search filter for groups.
@@ -1645,13 +1645,13 @@ type GroupsFilter struct {
 type GroupList struct {
 	Groups []GroupInfo `json:"groups"` // List of matching groups
 	Count  int         `json:"count"`
-	Last   string      `json:"last,nullable"`
+	Last   string      `json:"last,omitzero"`
 }
 
 type GroupUserList struct {
 	Users []User `json:"users"`
 	Count int    `json:"count"`
-	Last  string `json:"last,nullable"`
+	Last  string `json:"last,omitzero"`
 }
 
 type CreateGroupRequest struct {
