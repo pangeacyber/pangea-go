@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -45,9 +46,18 @@ type ConfigIDer interface {
 	GetConfigID() string
 }
 
+type HeadersGetter interface {
+	GetAdditionalHeaders() map[string]string
+}
+
 type BaseRequest struct {
 	// Config ID.
 	ConfigID string `json:"config_id,omitempty"`
+
+	// AdditionalHeaders is a map of additional headers to be sent with the
+	// request. These headers are applied after the Client Config's
+	// AdditionalHeaders.
+	AdditionalHeaders map[string]string `json:"-"`
 }
 
 type TransferRequester interface {
@@ -68,6 +78,10 @@ func (br *BaseRequest) GetConfigID() string {
 
 func (br *BaseRequest) SetConfigID(c string) {
 	br.ConfigID = c
+}
+
+func (br *BaseRequest) GetAdditionalHeaders() map[string]string {
+	return br.AdditionalHeaders
 }
 
 // Config represents the configuration for a Pangea client.
@@ -297,6 +311,14 @@ func (c *Client) NewRequest(method string, url *url.URL, body any) (*http.Reques
 	c.SetHeaders(req)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+
+		// Apply per-request headers after config headers.
+		if headersGetter, ok := body.(HeadersGetter); ok {
+			rv := reflect.ValueOf(headersGetter)
+			if rv.Kind() == reflect.Pointer && !rv.IsNil() {
+				mergeHeaders(req, headersGetter.GetAdditionalHeaders())
+			}
+		}
 	}
 
 	// Promote Host header to Request.Host.
@@ -562,6 +584,13 @@ func (c *Client) NewRequestMultipart(method string, url *url.URL, body any, fd F
 
 	c.SetHeaders(req)
 	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	// Apply per-request headers after config headers.
+	if body != nil {
+		if headersGetter, ok := body.(HeadersGetter); ok {
+			mergeHeaders(req, headersGetter.GetAdditionalHeaders())
+		}
+	}
 
 	return req, nil
 }

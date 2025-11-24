@@ -40,32 +40,24 @@ func CanonicalizeStruct(v interface{}) ([]byte, error) {
 type PangeaTimestamp time.Time
 
 const ptLayout_Z = "2006-01-02T15:04:05.000000Z"
-const ptLayout_3Z = "2006-01-02T15:04:05.000Z"
-const ptLayout_noZ = "2006-01-02T15:04:05.000000"
-const ptLayout_3noZ = "2006-01-02T15:04:05.000"
+
+var ptLayouts = []string{
+	"2006-01-02T15:04:05.000",
+	"2006-01-02T15:04:05.000000",
+	"2006-01-02T15:04:05.0Z",
+	"2006-01-02T15:04:05.000Z",
+	ptLayout_Z,
+}
 
 // UnmarshalJSON Parses the json string in the custom format
-func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) (err error) {
+func (ct *PangeaTimestamp) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), `"`)
-	nt, err := time.Parse(ptLayout_Z, s)
-	if err == nil {
-		*ct = PangeaTimestamp(nt)
-		return nil
-	}
-	nt, err = time.Parse(ptLayout_noZ, s)
-	if err == nil {
-		*ct = PangeaTimestamp(nt)
-		return nil
-	}
-	nt, err = time.Parse(ptLayout_3Z, s)
-	if err == nil {
-		*ct = PangeaTimestamp(nt)
-		return nil
-	}
-	nt, err = time.Parse(ptLayout_3noZ, s)
-	if err == nil {
-		*ct = PangeaTimestamp(nt)
-		return nil
+	var err error
+	for _, layout := range ptLayouts {
+		if nt, err := time.Parse(layout, s); err == nil {
+			*ct = PangeaTimestamp(nt)
+			return nil
+		}
 	}
 	return err
 }
@@ -82,7 +74,6 @@ func (ct *PangeaTimestamp) String() string {
 	return fmt.Sprintf("%q", utc.Format(ptLayout_Z))
 }
 
-// CanonicalizeJSONMarshall is not a true canoni
 func CanonicalizeJSONMarshall(v interface{}) []byte {
 	buf := new(bytes.Buffer)
 	canonicalizeJSONMarshall(reflect.ValueOf(v), buf)
