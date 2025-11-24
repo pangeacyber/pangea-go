@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 5.7.0 - 2025-11-24
+
+### Added
+
+- Additional headers can now be set per request via `BaseRequest.AdditionalHeaders`.
+
 ## 5.6.0 - 2025-10-31
 
 ### Added
