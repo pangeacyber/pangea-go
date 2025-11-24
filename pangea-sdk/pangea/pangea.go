@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	version                = "5.6.0"
+	version                = "5.7.0"
 	pangeaUserAgent        = "pangea-go/" + version
 	serviceNamePlaceholder = "{SERVICE_NAME}"
 )
