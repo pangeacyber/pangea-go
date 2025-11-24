@@ -34,7 +34,21 @@ func (a *audit) Log(ctx context.Context, event any, verbose bool) (*pangea.Pange
 		return nil, err
 	}
 
-	resp, err := request.DoPost(ctx, a.Client, "v1/log", input, &LogResult{})
+	resp, err := a.LogRequest(ctx, *input)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (a *audit) LogRequest(ctx context.Context, input LogRequest) (*pangea.PangeaResponse[LogResult], error) {
+	if a.verifyProofs {
+		// Need this info to verify
+		input.Verbose = true
+	}
+
+	resp, err := request.DoPost(ctx, a.Client, "v1/log", &input, &LogResult{})
 	if err != nil {
 		return nil, err
 	}
