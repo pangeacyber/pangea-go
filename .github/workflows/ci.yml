@@ -97,6 +97,6 @@ jobs:
         with:
           go-version: "1.24"
       - name: golangci-lint ${{ matrix.modules }}
-        uses: golangci/golangci-lint-action@v9.1.0
+        uses: golangci/golangci-lint-action@v9.2.0
         with:
           working-directory: ${{ matrix.modules }}
