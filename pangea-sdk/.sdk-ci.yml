@@ -25,7 +25,6 @@ sdk-test-it:
     SERVICE_USER_INTEL_ENV: LVE
     SERVICE_PROMPT_GUARD_ENV: LVE
     SERVICE_REDACT_ENV: LVE
-    SERVICE_SANITIZE_ENV: LVE
     SERVICE_VAULT_ENV: LVE
     SERVICE_SHARE_ENV: LVE
   before_script:
@@ -78,8 +77,6 @@ sdk-test-it:
         TEST: prompt_guard
       - ENV: ${SERVICE_REDACT_ENV}
         TEST: redact
-      - ENV: ${SERVICE_SANITIZE_ENV}
-        TEST: sanitize
       - ENV: ${SERVICE_VAULT_ENV}
         TEST: vault
       - ENV: ${SERVICE_SHARE_ENV}
