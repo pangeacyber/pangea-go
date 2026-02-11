@@ -1,6 +1,6 @@
 module github.com/pangeacyber/pangea-go/examples
 
-go 1.24.0
+go 1.25.7
 
 require (
 	github.com/pangeacyber/pangea-go/pangea-sdk/v5 v5.7.0
