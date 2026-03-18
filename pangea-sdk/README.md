@@ -8,7 +8,7 @@
 
 # Pangea Go SDK
 
-A Go SDK for integrating with Pangea services. Supports Go v1.24 and above.
+A Go SDK for integrating with Pangea services. Supports Go v1.25 and above.
 
 ## Installation
 
